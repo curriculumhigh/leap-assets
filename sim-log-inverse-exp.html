@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logarithm as Inverse of Exponential</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 12px; background: #fafafa; }
+        #board { width: 100%; height: 380px; }
+        .legend { display: flex; gap: 16px; justify-content: center; padding: 8px 0; font-size: 13px; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-dot { width: 24px; height: 3px; border-radius: 2px; }
+        .info { text-align: center; font-size: 13px; color: #666; padding: 6px 0; line-height: 1.5; }
+        .info b { color: #333; }
+    </style>
+</head>
+<body>
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1565C0"></div> y = b<sup>x</sup></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e53935"></div> y = log<sub>b</sub>(x)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888;height:1px;border-top:2px dashed #888"></div> y = x</div>
+    </div>
+    <div id="board"></div>
+    <div class="info" id="info">
+        Drag point <b style="color:#1565C0">A</b> on the exponential curve. Its reflection <b style="color:#e53935">A'</b> on the logarithmic curve shows the inverse relationship.
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 9, 9, -5],
+            axis: true, grid: true,
+            showNavigation: false, showCopyright: false
+        });
+
+        // Base slider
+        var base = board.create('slider', [[-4, 8], [0, 8], [1.2, 2, 5]], {
+            name: 'b', snapWidth: 0.1,
+            strokeColor: '#7b1fa2', fillColor: '#7b1fa2',
+            label: { fontSize: 13, color: '#7b1fa2' }
+        });
+
+        // y = b^x (exponential)
+        var expCurve = board.create('functiongraph', [
+            function(x) { return Math.pow(base.Value(), x); }
+        ], { strokeColor: '#1565C0', strokeWidth: 2.5 });
+
+        // y = log_b(x) (logarithm)
+        board.create('functiongraph', [
+            function(x) {
+                if (x <= 0) return NaN;
+                return Math.log(x) / Math.log(base.Value());
+            }
+        ], { strokeColor: '#e53935', strokeWidth: 2.5 });
+
+        // y = x line (mirror)
+        board.create('functiongraph', [function(x) { return x; }], {
+            strokeColor: '#888', strokeWidth: 1, dash: 3
+        });
+
+        // Draggable point A on the exponential curve
+        var A = board.create('glider', [1, Math.pow(2, 1), expCurve], {
+            name: 'A', size: 5, color: '#1565C0',
+            label: { fontSize: 14, color: '#1565C0', offset: [-15, 10] }
+        });
+
+        // Reflection point A' on the log curve (swap x and y)
+        var Aprime = board.create('point', [
+            function() { return Math.pow(base.Value(), A.X()); },
+            function() { return A.X(); }
+        ], {
+            name: "A'", size: 5, color: '#e53935', fixed: true,
+            label: { fontSize: 14, color: '#e53935', offset: [10, -10] }
+        });
+
+        // Dashed line connecting A and A' through y=x
+        board.create('segment', [A, Aprime], {
+            strokeColor: '#aaa', strokeWidth: 1, dash: 2
+        });
+
+        // Midpoint sits on y = x (proof of reflection)
+        var mid = board.create('midpoint', [A, Aprime], {
+            name: '', size: 3, color: '#888', fixed: true
+        });
+
+        // Dynamic coordinate labels
+        board.create('text', [2, 7.5, function() {
+            var bv = base.Value();
+            var ax = A.X();
+            var ay = Math.pow(bv, ax);
+            return '<span style="color:#1565C0">A = (' + ax.toFixed(2) + ', ' + ay.toFixed(2) + ')</span>' +
+                   '  →  <span style="color:#e53935">A\' = (' + ay.toFixed(2) + ', ' + ax.toFixed(2) + ')</span>';
+        }], { fontSize: 12, useMathJax: false });
+
+        // Relationship text
+        board.create('text', [2, 6.5, function() {
+            var bv = base.Value();
+            var ax = A.X();
+            var ay = Math.pow(bv, ax);
+            return '<span style="color:#1565C0">' + bv.toFixed(1) + '<sup>' + ax.toFixed(2) + '</sup> = ' + ay.toFixed(2) + '</span>' +
+                   '  ↔  <span style="color:#e53935">log<sub>' + bv.toFixed(1) + '</sub>(' + ay.toFixed(2) + ') = ' + ax.toFixed(2) + '</span>';
+        }], { fontSize: 13, useMathJax: false });
+    </script>
+</body>
+</html>
