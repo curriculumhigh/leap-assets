@@ -28,7 +28,11 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             );
         }
 
-        this._loadDeps(this._render.bind(this));
+        var self = this;
+        this._loadDeps(function () {
+            self._render();
+            init.events.trigger("ready");
+        });
     }
 
     ScaffoldQuestion.prototype._loadDeps = function (cb) {
