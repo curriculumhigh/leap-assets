@@ -1,0 +1,62 @@
+/* Learnosity Custom Question — Progressive Scaffold */
+.scaffold-q * { margin: 0; padding: 0; box-sizing: border-box; }
+.scaffold-q { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #222; max-width: 720px; }
+
+/* Header */
+.scaffold-q .sq-header { background: #f0f4ff; border: 1px solid #c5cae9; border-radius: 8px; padding: 14px 18px; margin-bottom: 14px; }
+.scaffold-q .sq-stimulus { font-size: 15px; font-weight: 600; line-height: 1.5; margin-bottom: 6px; }
+.scaffold-q .sq-given { font-size: 14px; color: #1565C0; background: #e3f2fd; border-radius: 6px; padding: 8px 12px; margin-top: 8px; line-height: 1.6; }
+
+/* Scaffold card */
+.scaffold-q .sq-scaffold { border: 1px solid #e0e0e0; border-radius: 8px; margin-top: 10px; background: white; overflow: hidden; transition: border-color 0.3s, opacity 0.3s; }
+.scaffold-q .sq-scaffold.active { border-color: #1565C0; box-shadow: 0 0 0 1px #1565C0; }
+.scaffold-q .sq-scaffold.completed { border-color: #2E7D32; background: #f9fdf6; }
+.scaffold-q .sq-scaffold.locked { opacity: 0.4; pointer-events: none; }
+
+/* Scaffold header */
+.scaffold-q .sq-scaffold-header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; font-size: 14px; font-weight: 600; border-bottom: 1px solid #f0f0f0; }
+.scaffold-q .sq-badge { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; font-size: 13px; color: white; flex-shrink: 0; }
+.scaffold-q .sq-scaffold.locked .sq-badge { background: #bbb; }
+.scaffold-q .sq-scaffold.active .sq-badge { background: #1565C0; }
+.scaffold-q .sq-scaffold.completed .sq-badge { background: #2E7D32; }
+.scaffold-q .sq-check { color: #2E7D32; font-size: 16px; margin-left: auto; }
+
+/* Scaffold body */
+.scaffold-q .sq-scaffold-body { padding: 12px 14px 14px; }
+.scaffold-q .sq-problem { font-size: 15px; font-weight: 500; margin-bottom: 10px; line-height: 1.5; }
+
+/* Steps table */
+.scaffold-q .sq-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 10px; }
+.scaffold-q .sq-table thead th { background: #f8f9fa; padding: 6px 10px; text-align: left; font-size: 12px; font-weight: 600; color: #666; border-bottom: 2px solid #e0e0e0; }
+.scaffold-q .sq-table td { padding: 8px 10px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; line-height: 1.8; }
+.scaffold-q .sq-table tr:last-child td { border-bottom: none; }
+.scaffold-q .sq-reason { color: #666; font-size: 12px; font-style: italic; }
+
+/* Input fields */
+.scaffold-q .sq-input { width: 72px; padding: 4px 8px; border: 2px solid #c5cae9; border-radius: 6px; font-size: 14px; font-family: inherit; text-align: center; transition: border-color 0.2s; background: #fafcff; }
+.scaffold-q .sq-input:focus { outline: none; border-color: #1565C0; background: white; }
+.scaffold-q .sq-input.correct { border-color: #2E7D32; background: #f1f8e9; color: #2E7D32; }
+.scaffold-q .sq-input.wrong { border-color: #c62828; background: #fff5f5; }
+.scaffold-q .sq-input:disabled { opacity: 0.8; cursor: default; }
+.scaffold-q .sq-math-inline { font-size: 14px; }
+
+/* Buttons */
+.scaffold-q .sq-actions { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+.scaffold-q .sq-btn { padding: 7px 20px; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.scaffold-q .sq-check-btn { background: #1565C0; color: white; }
+.scaffold-q .sq-check-btn:hover:not(:disabled) { background: #0d47a1; }
+.scaffold-q .sq-check-btn:disabled { background: #bbb; cursor: default; }
+
+/* Feedback */
+.scaffold-q .sq-fb { font-size: 13px; border-radius: 6px; padding: 4px 10px; display: none; }
+.scaffold-q .sq-fb.correct { display: inline-block; background: #e8f5e9; color: #2E7D32; }
+.scaffold-q .sq-fb.wrong { display: inline-block; background: #ffebee; color: #c62828; }
+
+/* Hint */
+.scaffold-q .sq-hint-toggle { margin-top: 8px; }
+.scaffold-q .sq-hint-btn { background: none; border: 1px dashed #999; border-radius: 6px; padding: 4px 12px; font-size: 12px; color: #666; cursor: pointer; }
+.scaffold-q .sq-hint-btn:hover { border-color: #1565C0; color: #1565C0; }
+.scaffold-q .sq-hint { margin-top: 6px; padding: 8px 12px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 6px; font-size: 13px; line-height: 1.5; }
+
+/* Done banner */
+.scaffold-q .sq-done { margin-top: 14px; padding: 12px; border-radius: 8px; background: #e8f5e9; border: 1px solid #a5d6a7; font-size: 15px; color: #2E7D32; font-weight: 600; text-align: center; }

@@ -1,0 +1,116 @@
+/*
+ * Learnosity Custom Question Scorer — Progressive Scaffold
+ * Runs headless on Learnosity's servers (no DOM).
+ */
+LearnosityAmd.define(function () {
+    function Scorer(question, response) {
+        this.question = question;
+        this.response = response;
+    }
+
+    Scorer.prototype.isValid = function () {
+        return this.score() === this.maxScore();
+    };
+
+    Scorer.prototype.score = function () {
+        if (!this.response || !this.response.scaffolds) return 0;
+
+        var scaffolds = this.question.scaffolds || [];
+        var earned = 0;
+
+        for (var i = 0; i < scaffolds.length; i++) {
+            var sc = scaffolds[i];
+            var resp = this.response.scaffolds[String(i)];
+            if (!resp) continue;
+
+            var steps = sc.steps || [];
+            for (var j = 0; j < steps.length; j++) {
+                var inputs = steps[j].inputs;
+                if (!inputs) continue;
+                for (var k = 0; k < inputs.length; k++) {
+                    var key = "s" + j + "_" + k;
+                    var userVal = resp[key];
+                    if (!userVal) continue;
+
+                    var answers = String(inputs[k].answer).split("|");
+                    for (var a = 0; a < answers.length; a++) {
+                        var expected = answers[a].replace(/\s+/g, '').toLowerCase();
+                        var normUser = String(userVal).replace(/\s+/g, '').toLowerCase();
+                        if (normUser === expected) {
+                            earned++;
+                            break;
+                        }
+                        var numUser = parseFloat(userVal);
+                        var numExpected = parseFloat(answers[a]);
+                        if (!isNaN(numUser) && !isNaN(numExpected) && Math.abs(numUser - numExpected) < 0.001) {
+                            earned++;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return earned;
+    };
+
+    Scorer.prototype.maxScore = function () {
+        if (this.question.score) return this.question.score;
+
+        // Count total inputs across all scaffolds
+        var scaffolds = this.question.scaffolds || [];
+        var total = 0;
+        for (var i = 0; i < scaffolds.length; i++) {
+            var steps = scaffolds[i].steps || [];
+            for (var j = 0; j < steps.length; j++) {
+                if (steps[j].inputs) total += steps[j].inputs.length;
+            }
+        }
+        return total;
+    };
+
+    Scorer.prototype.canValidateResponse = function () {
+        return true;
+    };
+
+    Scorer.prototype.validateIndividualResponses = function () {
+        if (!this.response || !this.response.scaffolds) return {};
+
+        var result = {};
+        var scaffolds = this.question.scaffolds || [];
+
+        for (var i = 0; i < scaffolds.length; i++) {
+            var sc = scaffolds[i];
+            var resp = this.response.scaffolds[String(i)];
+            var steps = sc.steps || [];
+
+            for (var j = 0; j < steps.length; j++) {
+                var inputs = steps[j].inputs;
+                if (!inputs) continue;
+                for (var k = 0; k < inputs.length; k++) {
+                    var key = "scaffold" + i + "_s" + j + "_" + k;
+                    if (!resp || !resp["s" + j + "_" + k]) {
+                        result[key] = false;
+                        continue;
+                    }
+                    var userVal = resp["s" + j + "_" + k];
+                    var answers = String(inputs[k].answer).split("|");
+                    var correct = false;
+                    for (var a = 0; a < answers.length; a++) {
+                        var expected = answers[a].replace(/\s+/g, '').toLowerCase();
+                        var normUser = String(userVal).replace(/\s+/g, '').toLowerCase();
+                        if (normUser === expected) { correct = true; break; }
+                        var numUser = parseFloat(userVal);
+                        var numExpected = parseFloat(answers[a]);
+                        if (!isNaN(numUser) && !isNaN(numExpected) && Math.abs(numUser - numExpected) < 0.001) { correct = true; break; }
+                    }
+                    result[key] = correct;
+                }
+            }
+        }
+
+        return result;
+    };
+
+    return Scorer;
+});
