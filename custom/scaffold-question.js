@@ -1,7 +1,7 @@
 /*
  * Learnosity Custom Question — Progressive Scaffold Reveal
  * Renders a multi-scaffold problem where each scaffold unlocks after the previous is correct.
- * Uses KaTeX for math rendering.
+ * Uses KaTeX for math rendering (with graceful fallback).
  */
 LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     "use strict";
@@ -13,7 +13,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     function ScaffoldQuestion(init, lrnUtils) {
         this.init = init;
         this.lrnUtils = lrnUtils;
-        this.question = init.question;
+        this.question = init.question || {};
         this.response = init.response || {};
         this.$el = init.$el;
         this.scaffolds = this.question.scaffolds || [];
@@ -29,27 +29,45 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         }
 
         var self = this;
-        this._loadDeps(function () {
-            self._render();
+        try {
+            this._loadDeps(function () {
+                try {
+                    self._render();
+                } catch (e) {
+                    console.error("[scaffold-question] render error:", e);
+                    self.$el.html('<div style="color:red;padding:12px;">Render error: ' + e.message + '</div>');
+                }
+                init.events.trigger("ready");
+            });
+        } catch (e) {
+            console.error("[scaffold-question] init error:", e);
+            this.$el.html('<div style="color:red;padding:12px;">Init error: ' + e.message + '</div>');
             init.events.trigger("ready");
-        });
+        }
     }
 
     ScaffoldQuestion.prototype._loadDeps = function (cb) {
-        var self = this;
-        if (window.katex) { cb(); return; }
+        if (window.katex && window.renderMathInElement) { cb(); return; }
 
         // Load KaTeX CSS
         if (!$('link[href*="katex"]').length) {
             $("head").append('<link rel="stylesheet" href="' + KATEX_CSS + '">');
         }
 
-        // Load KaTeX JS then auto-render
-        $.getScript(KATEX_JS).done(function () {
-            $.getScript(KATEX_AUTO).done(function () {
+        // Load KaTeX JS then auto-render, with fallback on failure
+        $.getScript(KATEX_JS)
+            .done(function () {
+                $.getScript(KATEX_AUTO)
+                    .done(function () { cb(); })
+                    .fail(function () {
+                        console.warn("[scaffold-question] KaTeX auto-render failed to load, proceeding without math rendering");
+                        cb();
+                    });
+            })
+            .fail(function () {
+                console.warn("[scaffold-question] KaTeX failed to load, proceeding without math rendering");
                 cb();
             });
-        });
     };
 
     ScaffoldQuestion.prototype._render = function () {
@@ -171,14 +189,18 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     };
 
     ScaffoldQuestion.prototype._renderMath = function () {
-        if (window.renderMathInElement) {
-            renderMathInElement(this.$el[0], {
-                delimiters: [
-                    { left: "$$", right: "$$", display: true },
-                    { left: "$", right: "$", display: false }
-                ],
-                throwOnError: false
-            });
+        try {
+            if (window.renderMathInElement) {
+                renderMathInElement(this.$el[0], {
+                    delimiters: [
+                        { left: "$$", right: "$$", display: true },
+                        { left: "$", right: "$", display: false }
+                    ],
+                    throwOnError: false
+                });
+            }
+        } catch (e) {
+            console.warn("[scaffold-question] math render error:", e);
         }
     };
 
