@@ -1,7 +1,7 @@
 /*
  * Learnosity Custom Question — Progressive Scaffold Reveal
  * Renders a multi-scaffold problem where each scaffold unlocks after the previous is correct.
- * Uses KaTeX for math rendering (with graceful fallback).
+ * Uses KaTeX for math rendering (loaded async after ready).
  */
 LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     "use strict";
@@ -15,7 +15,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         this.lrnUtils = lrnUtils;
         this.question = init.question || {};
         this.response = init.response || {};
-        this.$el = init.$el;
+        this.$el = $(init.$el);
         this.scaffolds = this.question.scaffolds || [];
         this.currentScaffold = 0;
         this.enabled = true;
@@ -28,46 +28,36 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             );
         }
 
-        var self = this;
-        try {
-            this._loadDeps(function () {
-                try {
-                    self._render();
-                } catch (e) {
-                    console.error("[scaffold-question] render error:", e);
-                    self.$el.html('<div style="color:red;padding:12px;">Render error: ' + e.message + '</div>');
-                }
-                init.events.trigger("ready");
-            });
-        } catch (e) {
-            console.error("[scaffold-question] init error:", e);
-            this.$el.html('<div style="color:red;padding:12px;">Init error: ' + e.message + '</div>');
-            init.events.trigger("ready");
-        }
+        // Render immediately, fire ready synchronously, then load KaTeX async
+        this._render();
+        this._bindEvents();
+        this._updateState();
+        init.events.trigger("ready");
+
+        // Load KaTeX in the background and re-render math when ready
+        this._loadKaTeX();
     }
 
-    ScaffoldQuestion.prototype._loadDeps = function (cb) {
-        if (window.katex && window.renderMathInElement) { cb(); return; }
+    ScaffoldQuestion.prototype._loadKaTeX = function () {
+        var self = this;
+        if (window.katex && window.renderMathInElement) {
+            self._renderMath();
+            return;
+        }
 
-        // Load KaTeX CSS
+        // Load CSS
         if (!$('link[href*="katex"]').length) {
             $("head").append('<link rel="stylesheet" href="' + KATEX_CSS + '">');
         }
 
-        // Load KaTeX JS then auto-render, with fallback on failure
+        // Load JS then auto-render
         $.getScript(KATEX_JS)
             .done(function () {
                 $.getScript(KATEX_AUTO)
-                    .done(function () { cb(); })
-                    .fail(function () {
-                        console.warn("[scaffold-question] KaTeX auto-render failed to load, proceeding without math rendering");
-                        cb();
-                    });
+                    .done(function () { self._renderMath(); })
+                    .fail(function () { console.warn("[scaffold-q] auto-render load failed"); });
             })
-            .fail(function () {
-                console.warn("[scaffold-question] KaTeX failed to load, proceeding without math rendering");
-                cb();
-            });
+            .fail(function () { console.warn("[scaffold-q] KaTeX load failed"); });
     };
 
     ScaffoldQuestion.prototype._render = function () {
@@ -106,21 +96,15 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         html += '</div>';
         this.$el.html(html);
-
-        this._renderMath();
-        this._bindEvents();
-        this._updateState();
     };
 
     ScaffoldQuestion.prototype._renderScaffoldContent = function (sc, idx, state) {
         var html = '';
 
-        // Problem statement
         if (sc.problem) {
             html += '<div class="sq-problem">' + sc.problem + '</div>';
         }
 
-        // Steps table
         if (sc.steps && sc.steps.length) {
             html += '<table class="sq-table">';
             html += '<thead><tr><th>Expression</th><th>Result</th><th>Reason</th></tr></thead>';
@@ -139,9 +123,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                             this.response.scaffolds[idx]['s' + j + '_' + k] !== undefined) {
                             savedVal = this.response.scaffolds[idx]['s' + j + '_' + k];
                         }
-                        var before = inp.before || '';
-                        var after = inp.after || '';
-                        html += '<span class="sq-math-inline">' + before + '</span>';
+                        html += '<span class="sq-math-inline">' + (inp.before || '') + '</span>';
                         html += '<input type="text" class="sq-input" ';
                         html += 'data-scaffold="' + idx + '" ';
                         html += 'data-step="' + j + '" ';
@@ -153,7 +135,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                             html += 'disabled ';
                         }
                         html += '/>';
-                        html += '<span class="sq-math-inline">' + after + '</span>';
+                        html += '<span class="sq-math-inline">' + (inp.after || '') + '</span>';
                     }
                 } else {
                     html += step.result || '';
@@ -165,7 +147,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             html += '</tbody></table>';
         }
 
-        // Check button
         html += '<div class="sq-actions">';
         html += '<button class="sq-btn sq-check-btn" data-idx="' + idx + '"';
         if (state !== 'active' || !this.enabled) html += ' disabled';
@@ -173,7 +154,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         html += '<div class="sq-fb" data-idx="' + idx + '"></div>';
         html += '</div>';
 
-        // Hint
         if (sc.hint) {
             html += '<div class="sq-hint-toggle">';
             html += '<button class="sq-hint-btn" data-idx="' + idx + '">Show Hint</button>';
@@ -200,20 +180,18 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 });
             }
         } catch (e) {
-            console.warn("[scaffold-question] math render error:", e);
+            console.warn("[scaffold-q] math render error:", e);
         }
     };
 
     ScaffoldQuestion.prototype._bindEvents = function () {
         var self = this;
 
-        // Check button
         this.$el.on("click", ".sq-check-btn", function () {
             var idx = parseInt($(this).attr("data-idx"));
             self._checkScaffold(idx);
         });
 
-        // Hint button
         this.$el.on("click", ".sq-hint-btn", function () {
             var idx = $(this).attr("data-idx");
             var $hint = self.$el.find('.sq-hint[data-idx="' + idx + '"]');
@@ -221,12 +199,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             $(this).text($hint.is(":visible") ? "Hide Hint" : "Show Hint");
         });
 
-        // Input changes
         this.$el.on("input", ".sq-input", function () {
             self._saveCurrentResponse();
         });
 
-        // Enter key to check
         this.$el.on("keydown", ".sq-input", function (e) {
             if (e.key === "Enter") {
                 var idx = parseInt($(this).attr("data-scaffold"));
@@ -238,49 +214,32 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     ScaffoldQuestion.prototype._checkScaffold = function (idx) {
         if (idx !== this.currentScaffold) return;
 
-        var sc = this.scaffolds[idx];
         var $scaffold = this.$el.find('.sq-scaffold[data-idx="' + idx + '"]');
         var allCorrect = true;
         var anyFilled = false;
 
-        // Check each input in this scaffold
         $scaffold.find(".sq-input").each(function () {
             var $inp = $(this);
             var userVal = $.trim($inp.val());
             var answer = $inp.attr("data-answer");
-            var answers = answer.split("|"); // Allow multiple acceptable answers
+            var answers = answer.split("|");
 
-            if (!userVal) {
-                allCorrect = false;
-                return;
-            }
+            if (!userVal) { allCorrect = false; return; }
             anyFilled = true;
 
             var correct = false;
             for (var a = 0; a < answers.length; a++) {
                 var expected = $.trim(answers[a]);
-                // Normalize: remove spaces, lowercase
                 var normUser = userVal.replace(/\s+/g, '').toLowerCase();
                 var normExpected = expected.replace(/\s+/g, '').toLowerCase();
-                if (normUser === normExpected) {
-                    correct = true;
-                    break;
-                }
-                // Also try numeric comparison
+                if (normUser === normExpected) { correct = true; break; }
                 var numUser = parseFloat(userVal);
                 var numExpected = parseFloat(expected);
-                if (!isNaN(numUser) && !isNaN(numExpected) && Math.abs(numUser - numExpected) < 0.001) {
-                    correct = true;
-                    break;
-                }
+                if (!isNaN(numUser) && !isNaN(numExpected) && Math.abs(numUser - numExpected) < 0.001) { correct = true; break; }
             }
 
-            if (correct) {
-                $inp.removeClass("wrong").addClass("correct");
-            } else {
-                $inp.removeClass("correct").addClass("wrong");
-                allCorrect = false;
-            }
+            $inp.removeClass("wrong correct").addClass(correct ? "correct" : "wrong");
+            if (!correct) allCorrect = false;
         });
 
         var $fb = this.$el.find('.sq-fb[data-idx="' + idx + '"]');
@@ -292,8 +251,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         if (allCorrect) {
             $fb.attr("class", "sq-fb correct").text("Correct!").show();
-
-            // Lock this scaffold, unlock next
             $scaffold.removeClass("active").addClass("completed");
             $scaffold.find(".sq-input").prop("disabled", true);
             $scaffold.find(".sq-check-btn").prop("disabled", true);
@@ -302,25 +259,20 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             this.currentScaffold = idx + 1;
             this._saveCurrentResponse();
 
-            // Unlock next scaffold
             if (this.currentScaffold < this.scaffolds.length) {
                 var $next = this.$el.find('.sq-scaffold[data-idx="' + this.currentScaffold + '"]');
                 $next.removeClass("locked").addClass("active");
                 $next.find(".sq-input").prop("disabled", false);
                 $next.find(".sq-check-btn").prop("disabled", false);
                 this._renderMath();
-
-                // Scroll to next scaffold
                 $next[0].scrollIntoView({ behavior: "smooth", block: "nearest" });
             } else {
-                // All done
                 var score = this._computeScore();
                 this.$el.find(".sq-done").show().find(".sq-score").text(
                     score + " / " + (this.question.score || this.scaffolds.length)
                 );
             }
 
-            // Notify Learnosity
             this.init.events.trigger("changed", this.response);
         } else {
             $fb.attr("class", "sq-fb wrong").text("Some answers are incorrect. Try again.").show();
@@ -329,7 +281,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
     ScaffoldQuestion.prototype._saveCurrentResponse = function () {
         var resp = { scaffolds: {}, completedScaffolds: this.currentScaffold };
-
         this.$el.find(".sq-input").each(function () {
             var $inp = $(this);
             var si = $inp.attr("data-scaffold");
@@ -337,35 +288,27 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             if (!resp.scaffolds[si]) resp.scaffolds[si] = {};
             resp.scaffolds[si][key] = $inp.val();
         });
-
         this.response = resp;
     };
 
     ScaffoldQuestion.prototype._computeScore = function () {
-        var total = 0;
         var correct = 0;
-
         this.$el.find(".sq-input").each(function () {
-            total++;
             if ($(this).hasClass("correct")) correct++;
         });
-
         return correct;
     };
 
     ScaffoldQuestion.prototype._updateState = function () {
-        // If we have saved progress, show completion
         if (this.currentScaffold >= this.scaffolds.length) {
             this.$el.find(".sq-done").show();
         }
     };
 
-    // Learnosity facade
     ScaffoldQuestion.prototype.enable = function () {
         this.enabled = true;
-        var $active = this.$el.find(".sq-scaffold.active");
-        $active.find(".sq-input").prop("disabled", false);
-        $active.find(".sq-check-btn").prop("disabled", false);
+        this.$el.find(".sq-scaffold.active .sq-input").prop("disabled", false);
+        this.$el.find(".sq-scaffold.active .sq-check-btn").prop("disabled", false);
     };
 
     ScaffoldQuestion.prototype.disable = function () {
@@ -378,6 +321,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         this.response = {};
         this.currentScaffold = 0;
         this._render();
+        this._bindEvents();
+        this._loadKaTeX();
     };
 
     return {
