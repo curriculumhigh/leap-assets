@@ -112,8 +112,9 @@
                     <div class="panel-label">Look for</div>
                     <div id="observation" style="font-size: 12px; color: #888; line-height: 1.5;"></div>
                 </div>
-                <div class="panel-section" style="border-top: 1px solid #e5e7eb; padding-top: 12px;">
+                <div class="panel-section" style="border-top: 1px solid #e5e7eb; padding-top: 12px; display: flex; gap: 8px;">
                     <button id="reset-btn" style="font-size: 12px; padding: 4px 12px; border: 1px solid #d0d0d0; border-radius: 4px; background: #f5f5f5; color: #555; cursor: pointer;">Reset</button>
+                    <button id="zoom-btn" style="font-size: 12px; padding: 4px 12px; border: 1px solid #d0d0d0; border-radius: 4px; background: #f5f5f5; color: #555; cursor: pointer;">Zoom in</button>
                 </div>
             </div>
             <div class="board-wrapper">
@@ -229,6 +230,17 @@
             s1.value = INIT_M1; s2.value = INIT_M2; s3.value = INIT_M3;
             board.update();
             updatePanel();
+        });
+
+        // Zoom toggle
+        var DEFAULT_BB = [-4.5, 8, 5.5, -8];
+        var ZOOMED_BB = [-3, 3, 4, -3];
+        var isZoomed = false;
+
+        document.getElementById('zoom-btn').addEventListener('click', function() {
+            isZoomed = !isZoomed;
+            board.setBoundingBox(isZoomed ? ZOOMED_BB : DEFAULT_BB);
+            this.textContent = isZoomed ? 'Zoom out' : 'Zoom in';
         });
     </script>
 </body>
