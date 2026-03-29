@@ -83,20 +83,20 @@
                 x: {
                     strokeColor: '#444444', strokeWidth: 1.2,
                     lastArrow: { type: 2, size: 6 },
-                    name: 'x',
-                    label: { position: 'rt', offset: [-15, -2], fontSize: 14, cssStyle: 'font-style: italic;', parse: false },
                     ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 2 }
                 },
                 y: {
                     strokeColor: '#444444', strokeWidth: 1.2,
                     lastArrow: { type: 2, size: 6 },
-                    name: 'y',
-                    label: { position: 'rt', offset: [5, 0], fontSize: 14, cssStyle: 'font-style: italic;', parse: false },
                     ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0 }
                 }
             },
             grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
         });
+
+        // Axis labels
+        board.create('text', [9.5, -0.4, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 4.7, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
 
         var xVal = 1;
 
