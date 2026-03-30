@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>g(x) = a/x — Parameter Exploration</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0;
+            padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .sim-layout {
+            display: flex;
+            gap: 12px;
+            height: 100%;
+        }
+        .left-panel {
+            width: 190px;
+            flex-shrink: 0;
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .slider-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2563EB;
+            margin-bottom: 6px;
+        }
+        .slider-group input[type="range"] {
+            width: 100%;
+            accent-color: #2563EB;
+        }
+        .slider-value {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2563EB;
+            margin-top: 4px;
+        }
+        .equation-section {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .eq-line {
+            min-height: 24px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .eq-swatch {
+            width: 20px;
+            height: 3px;
+            border-radius: 1px;
+            flex-shrink: 0;
+        }
+        .eq-swatch.dashed {
+            background: repeating-linear-gradient(
+                90deg,
+                #222222 0px, #222222 5px,
+                transparent 5px, transparent 9px
+            );
+        }
+        .eq-swatch.solid {
+            background: #2563EB;
+            height: 4px;
+        }
+        .eq-katex {
+            flex: 1;
+        }
+        .warning-msg {
+            font-size: 11.5px;
+            line-height: 1.5;
+            color: #D97706;
+            background: #FFFBEB;
+            border: 1px solid #FDE68A;
+            border-radius: 6px;
+            padding: 10px;
+            display: none;
+        }
+        .board-wrapper {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            height: calc(100% - 20px);
+        }
+        #board {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="slider-group">
+                    <label>Parameter <i>a</i></label>
+                    <input type="range" id="slider-a" min="-5" max="5" step="0.1" value="1">
+                    <div class="slider-value" id="slider-a-value">a = 1.0</div>
+                </div>
+                <div class="equation-section">
+                    <div class="eq-line">
+                        <div class="eq-swatch dashed"></div>
+                        <div class="eq-katex" id="eq-ref"></div>
+                    </div>
+                    <div class="eq-line">
+                        <div class="eq-swatch solid"></div>
+                        <div class="eq-katex" id="eq-general"></div>
+                    </div>
+                    <div class="eq-line" style="padding-top: 4px;">
+                        <div style="width: 20px; flex-shrink: 0;"></div>
+                        <div class="eq-katex" id="eq-dynamic"></div>
+                    </div>
+                </div>
+                <div class="warning-msg" id="warning-msg">
+                    When <i>a</i> = 0, <i>g</i>(<i>x</i>) = 0 for all <i>x</i> &ne; 0. The function is no longer a hyperbola.
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ── Wait for KaTeX to load ─────────────────────────────────────── */
+        function whenKatexReady(cb) {
+            if (typeof katex !== 'undefined') { cb(); return; }
+            var check = setInterval(function() {
+                if (typeof katex !== 'undefined') { clearInterval(check); cb(); }
+            }, 50);
+        }
+
+        whenKatexReady(function() {
+            /* ── State ──────────────────────────────────────────────────── */
+            var INIT_A = 1;
+            var aVal = INIT_A;
+
+            /* ── Board ──────────────────────────────────────────────────── */
+            var board = JXG.JSXGraph.initBoard('board', {
+                boundingbox: [-8, 6, 8, -6],
+                axis: true,
+                showNavigation: false,
+                showCopyright: false,
+                keepAspectRatio: false,
+                pan: { enabled: false },
+                zoom: { enabled: false },
+                defaultAxes: {
+                    x: {
+                        strokeColor: '#444444',
+                        strokeWidth: 1.2,
+                        lastArrow: { type: 2, size: 6 },
+                        ticks: {
+                            strokeColor: '#444444',
+                            label: { fontSize: 11 },
+                            minorTicks: 0,
+                            ticksDistance: 2
+                        }
+                    },
+                    y: {
+                        strokeColor: '#444444',
+                        strokeWidth: 1.2,
+                        lastArrow: { type: 2, size: 6 },
+                        ticks: {
+                            strokeColor: '#444444',
+                            label: { fontSize: 11 },
+                            minorTicks: 0,
+                            ticksDistance: 2
+                        }
+                    }
+                },
+                grid: {
+                    strokeColor: '#D1D5DB',
+                    strokeWidth: 0.4
+                }
+            });
+
+            /* ── Axis labels — use board bbox for reliable placement ───── */
+            board.create('text', [
+                function() { return board.getBoundingBox()[2] - 0.5; },
+                -0.5,
+                '<i>x</i>'
+            ], {
+                fontSize: 14, fixed: true, highlight: false, anchorX: 'right'
+            });
+
+            board.create('text', [
+                0.3,
+                function() { return board.getBoundingBox()[1] - 0.3; },
+                '<i>y</i>'
+            ], {
+                fontSize: 14, fixed: true, highlight: false
+            });
+
+            /* ── Reference curve: f(x) = 1/x — dashed, primary color ──── */
+            board.create('functiongraph', [
+                function(x) { return 1 / x; },
+                0.01, 8
+            ], {
+                strokeColor: '#222222',
+                strokeWidth: 1.5,
+                dash: 3,
+                fixed: true,
+                highlight: false
+            });
+            board.create('functiongraph', [
+                function(x) { return 1 / x; },
+                -8, -0.01
+            ], {
+                strokeColor: '#222222',
+                strokeWidth: 1.5,
+                dash: 3,
+                fixed: true,
+                highlight: false
+            });
+
+            /* ── Dynamic curve: g(x) = a/x — solid, secondary color ───── */
+            var gPos = board.create('functiongraph', [
+                function(x) { return aVal / x; },
+                0.01, 8
+            ], {
+                strokeColor: '#2563EB',
+                strokeWidth: 2.2,
+                fixed: true
+            });
+
+            var gNeg = board.create('functiongraph', [
+                function(x) { return aVal / x; },
+                -8, -0.01
+            ], {
+                strokeColor: '#2563EB',
+                strokeWidth: 2.2,
+                fixed: true
+            });
+
+            /* ── On-board function labels ───────────────────────────────── */
+            board.create('text', [4.8, 0.8, 'f(x) = \\frac{1}{x}'], {
+                useKatex: true,
+                fontSize: 12,
+                color: '#222222',
+                fixed: true,
+                highlight: false
+            });
+
+            board.create('text', [
+                function() {
+                    if (aVal >= 0) return 2.5;
+                    return -7;
+                },
+                function() {
+                    if (aVal === 0) return 0.5;
+                    if (aVal > 0) {
+                        var yAtX3 = aVal / 2.5;
+                        return Math.min(yAtX3 + 0.6, 5);
+                    }
+                    var yAtXn7 = aVal / (-7);
+                    return Math.min(yAtXn7 + 0.6, 5);
+                },
+                'g(x)'
+            ], {
+                useKatex: true,
+                fontSize: 12,
+                color: '#2563EB',
+                fixed: true,
+                highlight: false
+            });
+
+            /* ── Panel elements ─────────────────────────────────────────── */
+            var sliderEl = document.getElementById('slider-a');
+            var sliderValueEl = document.getElementById('slider-a-value');
+            var eqRefEl = document.getElementById('eq-ref');
+            var eqGeneralEl = document.getElementById('eq-general');
+            var eqDynamicEl = document.getElementById('eq-dynamic');
+            var warningEl = document.getElementById('warning-msg');
+
+            /* Static equations — render once */
+            katex.render('f(x) = \\dfrac{1}{x}', eqRefEl, { displayMode: false, throwOnError: false });
+            katex.render('g(x) = \\dfrac{a}{x}', eqGeneralEl, { displayMode: false, throwOnError: false });
+
+            function formatA(val) {
+                var absA = Math.abs(val);
+                if (absA === Math.round(absA)) {
+                    return (val < 0 ? '-' : '') + Math.round(absA).toString();
+                }
+                return (val < 0 ? '-' : '') + absA.toFixed(1);
+            }
+
+            function updatePanel() {
+                /* Slider readout */
+                var displayVal = (aVal < 0 ? '\u2212' : '') + Math.abs(aVal).toFixed(1);
+                sliderValueEl.textContent = 'a = ' + displayVal;
+
+                /* Dynamic equation */
+                var aStr = formatA(aVal);
+                var eqLatex = 'g(x) = \\dfrac{\\color{#2563EB}{' + aStr + '}}{x}';
+                katex.render(eqLatex, eqDynamicEl, { displayMode: false, throwOnError: false });
+
+                /* Warning */
+                warningEl.style.display = (aVal === 0) ? 'block' : 'none';
+            }
+
+            /* ── Slider listener ────────────────────────────────────────── */
+            sliderEl.addEventListener('input', function() {
+                aVal = parseFloat(this.value);
+                if (Math.abs(aVal) < 0.05) { aVal = 0; }
+                updatePanel();
+                board.update();
+            });
+
+            /* ── Initial render ─────────────────────────────────────────── */
+            updatePanel();
+        });
+    </script>
+</body>
+</html>
