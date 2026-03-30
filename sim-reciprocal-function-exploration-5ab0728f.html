@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph of f(x) = 1/x</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0; padding: 16px; background: transparent;
+        }
+        .container { max-width: 700px; margin: 0; }
+        .sim-layout { display: flex; gap: 12px; }
+        .left-panel {
+            width: 165px; flex-shrink: 0; background: white;
+            border-radius: 8px; padding: 14px;
+            display: flex; flex-direction: column; gap: 18px;
+        }
+        .slider-group { display: flex; flex-direction: column; gap: 6px; }
+        .slider-label {
+            font-size: 14px; font-weight: 600;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .slider-input {
+            width: 100%; margin: 0; cursor: pointer;
+            -webkit-appearance: none; appearance: none;
+            height: 6px; border-radius: 3px; outline: none;
+        }
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 16px; height: 16px; border-radius: 50%; cursor: pointer;
+        }
+        .slider-blue { background: #bfdbfe; }
+        .slider-blue::-webkit-slider-thumb { background: #2563EB; }
+        .slider-blue::-moz-range-thumb { background: #2563EB; border: none; width: 16px; height: 16px; border-radius: 50%; }
+        .slider-green { background: #a7f3d0; }
+        .slider-green::-webkit-slider-thumb { background: #059669; }
+        .slider-green::-moz-range-thumb { background: #059669; border: none; width: 16px; height: 16px; border-radius: 50%; }
+        .readout {
+            font-size: 13px; min-height: 22px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .func-label {
+            text-align: center; padding-top: 4px;
+            border-top: 1px solid #e5e7eb; margin-top: auto;
+        }
+        .board-wrapper {
+            flex: 1; background: white; border-radius: 8px; padding: 10px;
+        }
+        #board { width: 100%; height: 450px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <!-- Slider: Point P (Quadrant I) -->
+                <div class="slider-group">
+                    <div class="slider-label" style="color: #2563EB;">
+                        <span>Point <i>P</i></span>
+                        <span id="xp-val">x = 2.00</span>
+                    </div>
+                    <input type="range" id="slider-xp" class="slider-input slider-blue"
+                           min="-100" max="100" step="1" value="20">
+                    <div class="readout" id="readout-p" style="color: #2563EB;"></div>
+                </div>
+
+                <!-- Slider: Point Q (Quadrant III) -->
+                <div class="slider-group">
+                    <div class="slider-label" style="color: #059669;">
+                        <span>Point <i>Q</i></span>
+                        <span id="xq-val">x = &minus;2.00</span>
+                    </div>
+                    <input type="range" id="slider-xq" class="slider-input slider-green"
+                           min="-100" max="100" step="1" value="-20">
+                    <div class="readout" id="readout-q" style="color: #059669;"></div>
+                </div>
+
+                <!-- Function label -->
+                <div class="func-label" id="func-label"></div>
+            </div>
+
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var checkKatex = setInterval(function() {
+                if (typeof katex !== 'undefined') {
+                    clearInterval(checkKatex);
+                    initSim();
+                }
+            }, 50);
+        });
+
+        function initSim() {
+            katex.render('f(x) = \\dfrac{1}{x}', document.getElementById('func-label'), {
+                displayMode: false, throwOnError: false
+            });
+
+            function sliderToX(s) {
+                if (s === 0) return 0.01;
+                var sign = s > 0 ? 1 : -1;
+                return sign * 0.005 * s * s;
+            }
+
+            function xToSlider(x) {
+                if (x === 0) return 0;
+                var sign = x > 0 ? 1 : -1;
+                return sign * Math.round(Math.sqrt(Math.abs(x) / 0.005));
+            }
+
+            var INIT_SP = 20;
+            var INIT_SQ = -20;
+            var xP = sliderToX(INIT_SP);
+            var xQ = sliderToX(INIT_SQ);
+
+            var DEFAULT_HALF = 8;
+            var PADDING_FACTOR = 1.4;
+
+            var ZOOM_LEVELS = [
+                { half: 8,   tick: 2 },
+                { half: 14,  tick: 2 },
+                { half: 22,  tick: 5 },
+                { half: 35,  tick: 5 },
+                { half: 55,  tick: 10 },
+                { half: 80,  tick: 10 },
+                { half: 120, tick: 20 }
+            ];
+
+            var currentHalf = DEFAULT_HALF;
+            var currentTick = 2;
+
+            var board = JXG.JSXGraph.initBoard('board', {
+                boundingbox: [-DEFAULT_HALF, DEFAULT_HALF, DEFAULT_HALF, -DEFAULT_HALF],
+                axis: true,
+                showNavigation: false,
+                showCopyright: false,
+                keepAspectRatio: true,
+                pan: { enabled: false },
+                zoom: { enabled: false },
+                defaultAxes: {
+                    x: {
+                        strokeColor: '#444444', strokeWidth: 1.2,
+                        lastArrow: { type: 2, size: 6 },
+                        ticks: {
+                            strokeColor: '#444444',
+                            label: { fontSize: 11 },
+                            minorTicks: 0,
+                            ticksDistance: 2
+                        }
+                    },
+                    y: {
+                        strokeColor: '#444444', strokeWidth: 1.2,
+                        lastArrow: { type: 2, size: 6 },
+                        ticks: {
+                            strokeColor: '#444444',
+                            label: { fontSize: 11 },
+                            minorTicks: 0,
+                            ticksDistance: 2
+                        }
+                    }
+                },
+                grid: {
+                    strokeColor: '#D1D5DB',
+                    strokeWidth: 0.4
+                }
+            });
+
+            function updateBoundingBox() {
+                var absYP = Math.abs(1 / xP);
+                var absYQ = Math.abs(1 / xQ);
+                var absXP = Math.abs(xP);
+                var absXQ = Math.abs(xQ);
+
+                var maxExtent = Math.max(absYP, absYQ, absXP, absXQ);
+                var needed = Math.max(DEFAULT_HALF, maxExtent * PADDING_FACTOR);
+
+                var level = ZOOM_LEVELS[ZOOM_LEVELS.length - 1];
+                for (var i = 0; i < ZOOM_LEVELS.length; i++) {
+                    if (ZOOM_LEVELS[i].half >= needed) {
+                        level = ZOOM_LEVELS[i];
+                        break;
+                    }
+                }
+
+                if (level.half !== currentHalf) {
+                    currentHalf = level.half;
+                    currentTick = level.tick;
+                    board.setBoundingBox([-currentHalf, currentHalf, currentHalf, -currentHalf]);
+
+                    if (board.defaultAxes && board.defaultAxes.x) {
+                        board.defaultAxes.x.ticks[0].setAttribute({ ticksDistance: currentTick });
+                    }
+                    if (board.defaultAxes && board.defaultAxes.y) {
+                        board.defaultAxes.y.ticks[0].setAttribute({ ticksDistance: currentTick });
+                    }
+                }
+            }
+
+            board.create('text', [
+                function() { return currentHalf * 0.94; },
+                function() { return -currentHalf * 0.06; },
+                '<i>x</i>'
+            ], { fontSize: 14, fixed: true, highlight: false });
+
+            board.create('text', [
+                function() { return currentHalf * 0.04; },
+                function() { return currentHalf * 0.94; },
+                '<i>y</i>'
+            ], { fontSize: 14, fixed: true, highlight: false });
+
+            board.create('segment', [
+                [0, function() { return -currentHalf * 0.97; }],
+                [0, function() { return currentHalf * 0.97; }]
+            ], {
+                strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+            board.create('segment', [
+                [function() { return -currentHalf * 0.97; }, 0],
+                [function() { return currentHalf * 0.97; }, 0]
+            ], {
+                strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+
+            board.create('text', [
+                function() { return currentHalf * 0.05; },
+                function() { return currentHalf * 0.85; },
+                'x = 0'
+            ], {
+                fontSize: 12, color: '#0EA5E9', fixed: true, highlight: false,
+                useKatex: true, anchorX: 'left'
+            });
+            board.create('text', [
+                function() { return -currentHalf * 0.92; },
+                function() { return currentHalf * 0.06; },
+                'y = 0'
+            ], {
+                fontSize: 12, color: '#0EA5E9', fixed: true, highlight: false,
+                useKatex: true, anchorX: 'left'
+            });
+
+            board.create('functiongraph', [
+                function(x) { return 1 / x; }, 0.001, 500
+            ], {
+                strokeColor: '#222222', strokeWidth: 1.8,
+                fixed: true, highlight: false
+            });
+            board.create('functiongraph', [
+                function(x) { return 1 / x; }, -500, -0.001
+            ], {
+                strokeColor: '#222222', strokeWidth: 1.8,
+                fixed: true, highlight: false
+            });
+
+            board.create('text', [
+                function() { return currentHalf * 0.55; },
+                function() { return currentHalf * 0.32; },
+                'f(x) = \\frac{1}{x}'
+            ], {
+                fontSize: 13, color: '#222222', fixed: true, highlight: false,
+                useKatex: true
+            });
+
+            board.create('segment', [
+                [function() { return xP; }, function() { return 1 / xP; }],
+                [function() { return xP; }, 0]
+            ], {
+                strokeColor: '#2563EB', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+            board.create('segment', [
+                [function() { return xP; }, function() { return 1 / xP; }],
+                [0, function() { return 1 / xP; }]
+            ], {
+                strokeColor: '#2563EB', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+
+            board.create('segment', [
+                [function() { return xQ; }, function() { return 1 / xQ; }],
+                [function() { return xQ; }, 0]
+            ], {
+                strokeColor: '#059669', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+            board.create('segment', [
+                [function() { return xQ; }, function() { return 1 / xQ; }],
+                [0, function() { return 1 / xQ; }]
+            ], {
+                strokeColor: '#059669', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+
+            board.create('point', [
+                function() { return xP; },
+                function() { return 1 / xP; }
+            ], {
+                name: '', size: 5, color: '#2563EB',
+                fixed: true, highlight: false, showInfobox: false
+            });
+
+            board.create('point', [
+                function() { return xQ; },
+                function() { return 1 / xQ; }
+            ], {
+                name: '', size: 5, color: '#059669',
+                fixed: true, highlight: false, showInfobox: false
+            });
+
+            function fmtY(y) {
+                var a = Math.abs(y);
+                if (a >= 1000) return y.toFixed(0);
+                if (a >= 100) return y.toFixed(0);
+                if (a >= 10) return y.toFixed(1);
+                if (a >= 1) return y.toFixed(2);
+                if (a >= 0.01) return y.toFixed(3);
+                return y.toFixed(4);
+            }
+
+            function fmtX(x) {
+                var a = Math.abs(x);
+                if (a >= 100) return x.toFixed(0);
+                if (a >= 10) return x.toFixed(1);
+                if (a >= 1) return x.toFixed(2);
+                if (a >= 0.1) return x.toFixed(2);
+                return x.toFixed(3);
+            }
+
+            function sc(base) {
+                return base * (currentHalf / DEFAULT_HALF);
+            }
+
+            board.create('text', [
+                function() {
+                    var dx = Math.abs(xP) < 1 ? sc(0.5) : sc(0.35);
+                    return xP + dx;
+                },
+                function() {
+                    var yv = 1 / xP;
+                    if (yv > currentHalf * 0.6) return yv - sc(0.5);
+                    if (yv < currentHalf * 0.08) return yv + sc(0.5);
+                    return yv + sc(0.4);
+                },
+                function() {
+                    var yv = 1 / xP;
+                    return 'P(' + fmtX(xP) + ', ' + fmtY(yv) + ')';
+                }
+            ], {
+                fontSize: 12, color: '#2563EB', fixed: true, highlight: false,
+                anchorX: 'left', cssStyle: 'font-weight:600'
+            });
+
+            board.create('text', [
+                function() {
+                    var dx = Math.abs(xQ) < 1 ? sc(0.5) : sc(0.35);
+                    return xQ - dx;
+                },
+                function() {
+                    var yv = 1 / xQ;
+                    if (yv < -currentHalf * 0.6) return yv + sc(0.5);
+                    if (yv > -currentHalf * 0.08) return yv - sc(0.5);
+                    return yv - sc(0.4);
+                },
+                function() {
+                    var yv = 1 / xQ;
+                    return 'Q(' + fmtX(xQ) + ', ' + fmtY(yv) + ')';
+                }
+            ], {
+                fontSize: 12, color: '#059669', fixed: true, highlight: false,
+                anchorX: 'right', cssStyle: 'font-weight:600'
+            });
+
+            function formatCoord(x) {
+                var y = 1 / x;
+                return '\\left(' + fmtX(x) + ',\\,' + fmtY(y) + '\\right)';
+            }
+
+            function updatePanel() {
+                document.getElementById('xp-val').textContent = 'x = ' + fmtX(xP);
+                document.getElementById('xq-val').textContent = 'x = ' + fmtX(xQ);
+
+                katex.render(
+                    'P' + formatCoord(xP),
+                    document.getElementById('readout-p'),
+                    { displayMode: false, throwOnError: false }
+                );
+                katex.render(
+                    'Q' + formatCoord(xQ),
+                    document.getElementById('readout-q'),
+                    { displayMode: false, throwOnError: false }
+                );
+            }
+
+            document.getElementById('slider-xp').addEventListener('input', function() {
+                var s = parseInt(this.value);
+                if (s < 1) {
+                    s = 1;
+                    this.value = 1;
+                }
+                xP = sliderToX(s);
+                updateBoundingBox();
+                board.update();
+                updatePanel();
+            });
+
+            document.getElementById('slider-xq').addEventListener('input', function() {
+                var s = parseInt(this.value);
+                if (s > -1) {
+                    s = -1;
+                    this.value = -1;
+                }
+                xQ = sliderToX(s);
+                updateBoundingBox();
+                board.update();
+                updatePanel();
+            });
+
+            updateBoundingBox();
+            updatePanel();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph of f(x) = 1/x</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0; padding: 16px; background: transparent;
+        }
+        .container { max-width: 700px; margin: 0; }
+        .sim-layout { display: flex; gap: 12px; }
+        .left-panel {
+            width: 190px; flex-shrink: 0; background: white;
+            border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 18px;
+        }
+        .slider-group { display: flex; flex-direction: column; gap: 6px; }
+        .slider-label {
+            font-size: 14px; font-weight: 600;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .slider-input {
+            width: 100%; margin: 0; cursor: pointer;
+            -webkit-appearance: none; appearance: none;
+            height: 6px; border-radius: 3px; outline: none;
+        }
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 16px; height: 16px; border-radius: 50%; cursor: pointer;
+        }
+        .slider-blue { background: #bfdbfe; }
+        .slider-blue::-webkit-slider-thumb { background: #2563EB; }
+        .slider-blue::-moz-range-thumb { background: #2563EB; border: none; width: 16px; height: 16px; border-radius: 50%; }
+        .slider-green { background: #a7f3d0; }
+        .slider-green::-webkit-slider-thumb { background: #059669; }
+        .slider-green::-moz-range-thumb { background: #059669; border: none; width: 16px; height: 16px; border-radius: 50%; }
+        .readout {
+            font-size: 14px; min-height: 22px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .func-label {
+            text-align: center; padding-top: 4px;
+            border-top: 1px solid #e5e7eb; margin-top: auto;
+        }
+        .board-wrapper {
+            flex: 1; background: white; border-radius: 8px; padding: 10px;
+        }
+        #board { width: 100%; height: 450px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <!-- Slider: Point P (Quadrant I) -->
+                <div class="slider-group">
+                    <div class="slider-label" style="color: #2563EB;">
+                        <span>Point <i>P</i></span>
+                        <span id="xp-val">2.0</span>
+                    </div>
+                    <input type="range" id="slider-xp" class="slider-input slider-blue"
+                           min="0.2" max="8" step="0.1" value="2">
+                    <div class="readout" id="readout-p" style="color: #2563EB;"></div>
+                </div>
+
+                <!-- Slider: Point Q (Quadrant III) -->
+                <div class="slider-group">
+                    <div class="slider-label" style="color: #059669;">
+                        <span>Point <i>Q</i></span>
+                        <span id="xq-val">−2.0</span>
+                    </div>
+                    <input type="range" id="slider-xq" class="slider-input slider-green"
+                           min="-8" max="-0.2" step="0.1" value="-2">
+                    <div class="readout" id="readout-q" style="color: #059669;"></div>
+                </div>
+
+                <!-- Function label -->
+                <div class="func-label" id="func-label"></div>
+            </div>
+
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var checkKatex = setInterval(function() {
+                if (typeof katex !== 'undefined') {
+                    clearInterval(checkKatex);
+                    initSim();
+                }
+            }, 50);
+        });
+
+        function initSim() {
+            // Static function label in panel
+            katex.render('f(x) = \\dfrac{1}{x}', document.getElementById('func-label'), {
+                displayMode: false, throwOnError: false
+            });
+
+            // State variables
+            var xP = 2.0;
+            var xQ = -2.0;
+
+            // Board setup
+            var board = JXG.JSXGraph.initBoard('board', {
+                boundingbox: [-8, 8, 8, -8],
+                axis: true,
+                showNavigation: false,
+                showCopyright: false,
+                keepAspectRatio: true,
+                pan: { enabled: false },
+                zoom: { enabled: false },
+                defaultAxes: {
+                    x: {
+                        strokeColor: '#444444', strokeWidth: 1.2,
+                        lastArrow: { type: 2, size: 6 },
+                        ticks: {
+                            strokeColor: '#444444',
+                            label: { fontSize: 11 },
+                            minorTicks: 0,
+                            ticksDistance: 2
+                        }
+                    },
+                    y: {
+                        strokeColor: '#444444', strokeWidth: 1.2,
+                        lastArrow: { type: 2, size: 6 },
+                        ticks: {
+                            strokeColor: '#444444',
+                            label: { fontSize: 11 },
+                            minorTicks: 0,
+                            ticksDistance: 2
+                        }
+                    }
+                },
+                grid: {
+                    strokeColor: '#D1D5DB',
+                    strokeWidth: 0.4
+                }
+            });
+
+            // Axis labels
+            board.create('text', [7.5, -0.45, '<i>x</i>'], {
+                fontSize: 14, fixed: true, highlight: false
+            });
+            board.create('text', [0.3, 7.5, '<i>y</i>'], {
+                fontSize: 14, fixed: true, highlight: false
+            });
+
+            // Asymptotes
+            board.create('line', [[0, -8], [0, 8]], {
+                strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+            board.create('line', [[-8, 0], [8, 0]], {
+                strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+
+            // Asymptote labels
+            board.create('text', [0.35, -7.3, 'x = 0'], {
+                fontSize: 12, color: '#0EA5E9', fixed: true, highlight: false,
+                useKatex: true
+            });
+            board.create('text', [5.5, 0.45, 'y = 0'], {
+                fontSize: 12, color: '#0EA5E9', fixed: true, highlight: false,
+                useKatex: true
+            });
+
+            // Curve: f(x) = 1/x — positive branch
+            board.create('functiongraph', [
+                function(x) { return 1 / x; }, 0.01, 8
+            ], {
+                strokeColor: '#222222', strokeWidth: 1.8,
+                fixed: true, highlight: false
+            });
+            // Curve: f(x) = 1/x — negative branch
+            board.create('functiongraph', [
+                function(x) { return 1 / x; }, -8, -0.01
+            ], {
+                strokeColor: '#222222', strokeWidth: 1.8,
+                fixed: true, highlight: false
+            });
+
+            // Function label on board
+            board.create('text', [4.2, 2.2, 'f(x) = \\frac{1}{x}'], {
+                fontSize: 13, color: '#222222', fixed: true, highlight: false,
+                useKatex: true
+            });
+
+            // Reference lines: Point P (blue, Q-I)
+            board.create('segment', [
+                [function() { return xP; }, function() { return 1 / xP; }],
+                [function() { return xP; }, 0]
+            ], {
+                strokeColor: '#2563EB', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+            board.create('segment', [
+                [function() { return xP; }, function() { return 1 / xP; }],
+                [0, function() { return 1 / xP; }]
+            ], {
+                strokeColor: '#2563EB', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+
+            // Reference lines: Point Q (green, Q-III)
+            board.create('segment', [
+                [function() { return xQ; }, function() { return 1 / xQ; }],
+                [function() { return xQ; }, 0]
+            ], {
+                strokeColor: '#059669', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+            board.create('segment', [
+                [function() { return xQ; }, function() { return 1 / xQ; }],
+                [0, function() { return 1 / xQ; }]
+            ], {
+                strokeColor: '#059669', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+
+            // Points on curve
+            board.create('point', [
+                function() { return xP; },
+                function() { return 1 / xP; }
+            ], {
+                name: 'P', size: 5, color: '#2563EB',
+                fixed: true, highlight: false, showInfobox: false,
+                label: {
+                    fontSize: 14, color: '#2563EB', fontStyle: 'italic',
+                    offset: [10, 10]
+                }
+            });
+
+            board.create('point', [
+                function() { return xQ; },
+                function() { return 1 / xQ; }
+            ], {
+                name: 'Q', size: 5, color: '#059669',
+                fixed: true, highlight: false, showInfobox: false,
+                label: {
+                    fontSize: 14, color: '#059669', fontStyle: 'italic',
+                    offset: [-18, -10]
+                }
+            });
+
+            // Coordinate labels on board (plain text for performance)
+            board.create('text', [
+                function() { return xP + 0.35; },
+                function() { return 1 / xP - 0.45; },
+                function() {
+                    var yv = 1 / xP;
+                    return '(' + xP.toFixed(1) + ', ' + yv.toFixed(2) + ')';
+                }
+            ], {
+                fontSize: 12, color: '#2563EB', fixed: true, highlight: false
+            });
+
+            board.create('text', [
+                function() { return xQ - 0.35; },
+                function() { return 1 / xQ + 0.45; },
+                function() {
+                    var yv = 1 / xQ;
+                    return '(' + xQ.toFixed(1) + ', ' + yv.toFixed(2) + ')';
+                }
+            ], {
+                fontSize: 12, color: '#059669', fixed: true, highlight: false,
+                anchorX: 'right'
+            });
+
+            // Panel readout update
+            function formatCoord(x) {
+                var y = 1 / x;
+                var yStr = Math.abs(y) >= 100 ? y.toFixed(0) :
+                           Math.abs(y) >= 10 ? y.toFixed(1) : y.toFixed(2);
+                return '\\left(' + x.toFixed(1) + ',\\,' + yStr + '\\right)';
+            }
+
+            function updatePanel() {
+                document.getElementById('xp-val').textContent = xP.toFixed(1);
+                document.getElementById('xq-val').textContent = xQ.toFixed(1);
+
+                katex.render(
+                    'P = ' + formatCoord(xP),
+                    document.getElementById('readout-p'),
+                    { displayMode: false, throwOnError: false }
+                );
+                katex.render(
+                    'Q = ' + formatCoord(xQ),
+                    document.getElementById('readout-q'),
+                    { displayMode: false, throwOnError: false }
+                );
+            }
+
+            // Slider listeners
+            document.getElementById('slider-xp').addEventListener('input', function() {
+                xP = parseFloat(this.value);
+                board.update();
+                updatePanel();
+            });
+
+            document.getElementById('slider-xq').addEventListener('input', function() {
+                xQ = parseFloat(this.value);
+                board.update();
+                updatePanel();
+            });
+
+            // Initial render
+            updatePanel();
+        }
+    </script>
+</body>
+</html>
