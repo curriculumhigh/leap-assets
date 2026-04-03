@@ -70,7 +70,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // then load CDN deps and render async
         init.events.trigger("ready");
 
+        // Wire Learnosity's "Check Answer" button to validate current active step
         var self = this;
+        init.events.on("validate", function () { self.validateCurrentStep(); });
+
         loadDeps().then(function () {
             self.MQ = MathQuill.getInterface(2);
             self.render();
@@ -700,6 +703,34 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         }
 
         self.events.trigger("changed", self.getResponse());
+    };
+
+    // ── Learnosity "Check Answer" handler ──
+    Question.prototype.validateCurrentStep = function () {
+        var self = this;
+        var sections = self.question.sections || [];
+
+        for (var i = 0; i < sections.length; i++) {
+            var sec = sections[i];
+            if (sec.type === "text") continue;
+            if (self.completedSections[sec.id]) continue;
+
+            // This is the first uncompleted section
+            if (sec.type === "equation-table") {
+                // Find first uncompleted input row
+                for (var ri = 0; ri < sec.rows.length; ri++) {
+                    var row = sec.rows[ri];
+                    if (!row.inputs || row.inputs.length === 0) continue;
+                    if (self.completedRows[sec.id] && self.completedRows[sec.id][ri]) continue;
+                    self.checkRowAnswer(sec, ri);
+                    return;
+                }
+            } else if (sec.type === "text-with-input") {
+                self.checkSectionAnswer(sec);
+                return;
+            }
+            return;
+        }
     };
 
     // ── Response ──
