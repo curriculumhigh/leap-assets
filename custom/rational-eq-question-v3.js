@@ -1239,38 +1239,37 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         });
 
         // Add numbered badges to inputs (teacher view)
-        // Container numbering: all inputs in same equation row share one number
-        var containerNum = 0;
+        var inputNum = 0;
         sections.forEach(function (sec) {
             if (sec.type === "equation-table") {
                 sec.rows.forEach(function (row, ri) {
                     if (!row.inputs || row.inputs.length === 0) return;
-                    containerNum++;
                     row.inputs.forEach(function (inp, ii) {
+                        inputNum++;
                         var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii;
                         var slot = document.getElementById(slotId);
                         if (slot) {
                             $(slot).addClass("req-input-numbered");
-                            $(slot).prepend($('<span class="req-num-badge"></span>').text(containerNum));
+                            $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
                         }
                     });
                 });
             } else if (sec.type === "text-with-input") {
                 sec.inputs.forEach(function (inp, ii) {
-                    containerNum++;
+                    inputNum++;
                     if (inp.type === "dropdown") {
                         var ddId = self.uid + "-dd-" + sec.id + "-" + ii;
                         var dd = document.getElementById(ddId);
                         if (dd) {
                             var $wrap = $(dd).wrap('<span class="req-input-numbered"></span>').parent();
-                            $wrap.prepend($('<span class="req-num-badge"></span>').text(containerNum));
+                            $wrap.prepend($('<span class="req-num-badge"></span>').text(inputNum));
                         }
                     } else {
                         var slotId = self.uid + "-mq-" + sec.id + "-" + ii;
                         var slot = document.getElementById(slotId);
                         if (slot) {
                             $(slot).addClass("req-input-numbered");
-                            $(slot).prepend($('<span class="req-num-badge"></span>').text(containerNum));
+                            $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
                         }
                     }
                 });
@@ -1322,115 +1321,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         return s;
     };
 
-    /**
-     * Build the correct-answer expression for an equation-table row.
-     * Uses response-container logic from Learnosity publishing guidelines:
-     *
-     * - htmlTemplate: always show full expression (inputs have nesting context)
-     * - template with both sides having responses: show full equation
-     * - template with one side having responses + math context: show response side with context
-     * - template with one side having responses, standalone: show just the raw answer(s)
-     */
-    Question.prototype.buildRowExpression = function (row) {
-        var self = this;
-
-        // Helper: fill all placeholders in a string
-        function fillTemplate(tmpl, inputs) {
-            var result = tmpl;
-            (inputs || []).forEach(function (inp, ii) {
-                result = result.replace("{{" + ii + "}}", self.nerdamerToDisplayLatex(inp.answer));
-            });
-            return result;
-        }
-
-        if (row.htmlTemplate) {
-            // Reconstruct LaTeX from structured parts with answers filled in.
-            // htmlTemplate always has nesting context (sup/sub), so show full expression.
-            var latex = "";
-            row.htmlTemplate.forEach(function (part) {
-                var answer = "";
-                if (part.inputIdx !== undefined && row.inputs && row.inputs[part.inputIdx]) {
-                    answer = self.nerdamerToDisplayLatex(row.inputs[part.inputIdx].answer);
-                }
-
-                if (part.sup && part.inputIdx !== undefined) {
-                    latex += part.text + "^{";
-                    if (part.supPrefix) latex += part.supPrefix;
-                    latex += answer;
-                    if (part.supSuffix) latex += part.supSuffix;
-                    latex += "}";
-                } else if (part.sub && part.inputIdx !== undefined) {
-                    latex += part.text + "_{";
-                    if (part.subPrefix) latex += part.subPrefix;
-                    latex += answer;
-                    if (part.subSuffix) latex += part.subSuffix;
-                    latex += "}";
-                } else if (part.inputIdx !== undefined) {
-                    latex += part.text + answer;
-                } else {
-                    latex += part.text;
-                }
-            });
-            return latex;
-        }
-
-        if (row.template) {
-            var tmpl = row.template;
-
-            // Find the first top-level relational operator (=, \leq, \geq, \neq, etc.)
-            // Check multi-char operators first to avoid matching '=' inside '\leq'
-            var relOps = ["\\leq", "\\geq", "\\le", "\\ge", "\\neq", "="];
-            var splitOp = null;
-            var splitIdx = -1;
-
-            for (var r = 0; r < relOps.length; r++) {
-                var op = relOps[r];
-                var idx = tmpl.indexOf(op);
-                if (idx >= 0) {
-                    splitOp = op;
-                    splitIdx = idx;
-                    break;
-                }
-            }
-
-            if (splitIdx < 0) {
-                // No relational operator — show full expression
-                return fillTemplate(tmpl, row.inputs);
-            }
-
-            var lhs = tmpl.substring(0, splitIdx).trim();
-            var rhs = tmpl.substring(splitIdx + splitOp.length).trim();
-            var lhsHasResp = lhs.indexOf("{{") >= 0;
-            var rhsHasResp = rhs.indexOf("{{") >= 0;
-
-            if (lhsHasResp && rhsHasResp) {
-                // Both sides have responses — show full equation (validated as whole)
-                return fillTemplate(tmpl, row.inputs);
-            }
-
-            // One side has responses — extract the response side
-            var respSide = lhsHasResp ? lhs : rhs;
-
-            // Check if there's math context around the placeholders
-            var stripped = respSide.replace(/\{\{\d+\}\}/g, "").trim();
-
-            if (stripped) {
-                // Has math context (parentheses, operators, functions, etc.)
-                // Show the response side with context, answers filled in
-                return fillTemplate(respSide, row.inputs);
-            } else {
-                // Standalone placeholder(s) — show just the raw answer value(s)
-                var answers = [];
-                (row.inputs || []).forEach(function (inp) {
-                    answers.push(self.nerdamerToDisplayLatex(inp.answer));
-                });
-                return answers.join(",\\;");
-            }
-        }
-
-        return "";
-    };
-
     Question.prototype.renderCorrectAnswersPanel = function () {
         var self = this;
         var sections = self.question.sections || [];
@@ -1441,24 +1331,24 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         sections.forEach(function (sec) {
             if (sec.type === "equation-table") {
-                // One container per row — full expression with answers filled in
                 sec.rows.forEach(function (row) {
                     if (!row.inputs || row.inputs.length === 0) return;
-                    num++;
-                    var expression = self.buildRowExpression(row);
-                    var $box = $('<div class="req-ca-box"></div>');
-                    $box.append($('<span class="req-num-badge"></span>').text(num));
-                    var $val = $('<span></span>');
-                    try {
-                        $val.html(katex.renderToString(expression, { throwOnError: false }));
-                    } catch (e) {
-                        $val.text(expression);
-                    }
-                    $box.append($val);
-                    $grid.append($box);
+                    row.inputs.forEach(function (inp) {
+                        num++;
+                        var displayLatex = self.nerdamerToDisplayLatex(inp.answer);
+                        var $box = $('<div class="req-ca-box"></div>');
+                        $box.append($('<span class="req-num-badge"></span>').text(num));
+                        var $val = $('<span></span>');
+                        try {
+                            $val.html(katex.renderToString(displayLatex, { throwOnError: false }));
+                        } catch (e) {
+                            $val.text(inp.answer);
+                        }
+                        $box.append($val);
+                        $grid.append($box);
+                    });
                 });
             } else if (sec.type === "text-with-input") {
-                // One container per input (independently validated)
                 sec.inputs.forEach(function (inp) {
                     num++;
                     var $box = $('<div class="req-ca-box"></div>');
