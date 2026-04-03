@@ -87,9 +87,11 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         var $w = $('<div class="req-widget" style="position:relative;"></div>');
 
-        // Render stimulus ourselves with KaTeX (using question_stimulus to avoid
-        // Learnosity's raw auto-rendering of the standard `stimulus` field)
-        var stim = q.question_stimulus || q.stimulus || "";
+        // Hide Learnosity's raw stimulus rendering (it doesn't process LaTeX),
+        // then render it ourselves with KaTeX
+        this.$el.find(".lrn_stimulus").hide();
+
+        var stim = q.stimulus || "";
         if (stim) {
             $w.append($('<p style="font-size:15px;line-height:1.7;margin:0 0 14px;"></p>').html(stim));
         }
