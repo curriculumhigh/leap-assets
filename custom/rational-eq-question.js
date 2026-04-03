@@ -144,12 +144,14 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             $w.append($hint);
         }
 
-        // Final "Check Answer" button — validates overall completion
+        // Learnosity Check Answer button (needed for activity player navigation)
         var $caWrap = $('<div class="req-check-answer" id="' + self.uid + '-ca"></div>');
-        var $caBtn = $('<button class="req-ca-btn">Check Answer</button>');
+        if (self.lrnUtils && self.lrnUtils.renderComponent) {
+            self.lrnUtils.renderComponent("CheckAnswerButton", $caWrap[0]);
+        }
+        // Feedback label (shown by validate handler)
         var $caFb = $('<span class="req-ca-feedback" id="' + self.uid + '-ca-fb"></span>');
-        $caBtn.on("click", function () { self.validateCurrentStep(); });
-        $caWrap.append($caBtn).append($caFb);
+        $caWrap.append($caFb);
         $w.append($caWrap);
 
         // Keypad
@@ -719,9 +721,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         self.events.trigger("changed", self.getResponse());
     };
 
-    // ── Final "Check Answer" handler ──
+    // ── Check Answer handler (fired by Learnosity's validate event) ──
     Question.prototype.validateCurrentStep = function () {
         var self = this;
+        console.log("[rational-eq] validate event fired");
         var resp = self.getResponse();
         if (!resp || !resp.value) return;
         var parts = resp.value.split("/");
@@ -729,18 +732,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var total = parseInt(parts[1]) || 1;
         var allDone = completed >= total;
 
-        // Update response for Scorer
+        // Ensure response is current for Scorer
         self.events.trigger("changed", resp);
 
-        // Show feedback
+        // Show visible feedback
         var $fb = $("#" + self.uid + "-ca-fb");
         if (allDone) {
             $fb.attr("class", "req-ca-feedback correct").text("Correct — all steps complete!");
-            $("#" + self.uid + "-ca .req-ca-btn").prop("disabled", true);
-            // Signal Learnosity that validation is complete
-            if (self.facade && self.facade.isValid && self.facade.isValid()) {
-                self.events.trigger("validated", resp);
-            }
         } else {
             $fb.attr("class", "req-ca-feedback incomplete")
                .text("Complete all steps first (" + completed + "/" + total + ")");
