@@ -1,0 +1,180 @@
+/* Rational Equation — Learnosity Custom Question Styles */
+
+/* ── Scaffold wrapper ── */
+.req-scaffold-block {
+    border-left: 3px solid #1565C0;
+    padding-left: 16px;
+    margin: 4px 0 16px;
+}
+.req-scaffold-block p { font-size: 15px; line-height: 1.7; margin: 0 0 10px; }
+
+/* ── Equation table ── */
+.req-eq-table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+
+.req-eq-table td {
+    padding: 6px 12px 6px 0;
+    vertical-align: baseline;
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.req-eq-table .req-annotation {
+    padding: 6px 12px;
+    vertical-align: baseline;
+    color: #dc2626;
+    font-size: 14px;
+    font-style: italic;
+}
+
+.req-eq-table .req-fb-cell {
+    width: 28px;
+    padding: 6px 4px;
+    text-align: center;
+    vertical-align: baseline;
+}
+
+/* ── Row states ── */
+.req-eq-row.locked { display: none; }
+.req-eq-row.active td { opacity: 1; }
+.req-eq-row.completed td { opacity: 1; }
+.req-eq-row.completed .req-annotation { color: #e8a0a0; }
+
+/* ── Section states ── */
+.req-section-locked { display: none !important; }
+
+/* ── Text-with-input flex layout (content + tick cell) ── */
+.req-twi-flex { display: flex; align-items: flex-start; gap: 8px; }
+
+/* ── MathQuill inputs ── */
+.req-widget .mq-editable-field {
+    border: 2px solid #c5cae9;
+    border-radius: 6px;
+    padding: 4px 8px;
+    background: #fafcff;
+    font-size: 15px;
+    min-width: 60px;
+}
+
+.req-widget .mq-editable-field.mq-focused {
+    border-color: #1565C0;
+    background: #fff;
+    box-shadow: 0 0 0 2px rgba(21, 101, 192, 0.12);
+}
+
+.req-widget .mq-editable-field.correct {
+    border-color: #2E7D32;
+    background: #f1f8e9;
+}
+
+.req-widget .mq-editable-field.incorrect {
+    border-color: #c62828;
+    background: #fff5f5;
+}
+
+/* ── Dropdown inputs (DN) ── */
+.req-dropdown {
+    display: inline-block;
+    padding: 4px 28px 4px 10px;
+    font-size: 14px;
+    font-family: inherit;
+    border: 2px solid #c5cae9;
+    border-radius: 6px;
+    background: #fafcff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' fill='none' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 8px center;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    vertical-align: middle;
+    min-width: 80px;
+}
+
+.req-dropdown:focus {
+    border-color: #1565C0;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(21, 101, 192, 0.12);
+}
+
+.req-dropdown.correct {
+    border-color: #2E7D32;
+    background-color: #f1f8e9;
+}
+
+.req-dropdown.incorrect {
+    border-color: #c62828;
+    background-color: #fff5f5;
+}
+
+/* ── Check button ── */
+.req-check-btn {
+    display: inline-block;
+    padding: 7px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    background: #1565C0;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.req-check-btn:hover:not(:disabled) { background: #0d47a1; }
+.req-check-btn:disabled { background: #bbb; cursor: default; }
+
+/* ── Actions row ── */
+.req-actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+
+/* ── Feedback pill ── */
+.req-fb { font-size: 13px; border-radius: 6px; padding: 4px 10px; display: none; }
+.req-fb.correct { display: inline-block; background: #e8f5e9; color: #2E7D32; }
+.req-fb.wrong { display: inline-block; background: #ffebee; color: #c62828; }
+
+/* ── Done banner ── */
+.req-done {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 8px;
+    background: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    font-size: 14px;
+    color: #2E7D32;
+    font-weight: 600;
+    text-align: center;
+    display: none;
+}
+
+/* ── Hint ── */
+.req-hint-btn {
+    background: none; border: 1px dashed #999; border-radius: 6px;
+    padding: 4px 12px; font-size: 12px; color: #666; cursor: pointer;
+}
+.req-hint-btn:hover { border-color: #1565C0; color: #1565C0; }
+
+.req-hint-box {
+    display: none; margin-top: 6px; padding: 8px 12px;
+    background: #fff8e1; border: 1px solid #ffe082; border-radius: 6px;
+    font-size: 13px; line-height: 1.5; color: #5d4037;
+}
+.req-hint-box.visible { display: block; }
+
+/* ── Symbol keypad ── */
+.req-keypad {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #fff; border-top: 1px solid #e0e0e0;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+    display: none; flex-wrap: wrap; justify-content: center;
+    padding: 8px 12px; gap: 4px; z-index: 1000;
+}
+.req-keypad.visible { display: flex; }
+
+.req-keypad-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 36px; height: 36px; padding: 0 8px;
+    border: 1px solid #e0e0e0; border-radius: 6px;
+    background: #fafafa; cursor: pointer; font-size: 14px;
+    transition: background 0.1s;
+}
+.req-keypad-btn:hover { background: #e5e7eb; }
+.req-keypad-btn:active { background: #d1d5db; }
+.req-keypad-btn .katex { font-size: 16px; }
+
+.req-keypad-sep { width: 1px; height: 28px; background: #e0e0e0; align-self: center; margin: 0 4px; }
