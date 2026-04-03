@@ -1323,25 +1323,29 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     };
 
     /**
-     * Build the full LaTeX expression for an equation-table row
-     * with all answer values filled into the template/htmlTemplate.
-     * One expression per row = one "response container".
+     * Build the correct-answer expression for an equation-table row.
+     * Uses response-container logic from Learnosity publishing guidelines:
+     *
+     * - htmlTemplate: always show full expression (inputs have nesting context)
+     * - template with both sides having responses: show full equation
+     * - template with one side having responses + math context: show response side with context
+     * - template with one side having responses, standalone: show just the raw answer(s)
      */
     Question.prototype.buildRowExpression = function (row) {
         var self = this;
 
-        if (row.template) {
-            // Replace {{N}} placeholders with LaTeX-rendered answers
-            var expr = row.template;
-            (row.inputs || []).forEach(function (inp, ii) {
-                var answerLatex = self.nerdamerToDisplayLatex(inp.answer);
-                expr = expr.replace("{{" + ii + "}}", answerLatex);
+        // Helper: fill all placeholders in a string
+        function fillTemplate(tmpl, inputs) {
+            var result = tmpl;
+            (inputs || []).forEach(function (inp, ii) {
+                result = result.replace("{{" + ii + "}}", self.nerdamerToDisplayLatex(inp.answer));
             });
-            return expr;
+            return result;
         }
 
         if (row.htmlTemplate) {
-            // Reconstruct LaTeX from structured parts with answers
+            // Reconstruct LaTeX from structured parts with answers filled in.
+            // htmlTemplate always has nesting context (sup/sub), so show full expression.
             var latex = "";
             row.htmlTemplate.forEach(function (part) {
                 var answer = "";
@@ -1368,6 +1372,60 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 }
             });
             return latex;
+        }
+
+        if (row.template) {
+            var tmpl = row.template;
+
+            // Find the first top-level relational operator (=, \leq, \geq, \neq, etc.)
+            // Check multi-char operators first to avoid matching '=' inside '\leq'
+            var relOps = ["\\leq", "\\geq", "\\le", "\\ge", "\\neq", "="];
+            var splitOp = null;
+            var splitIdx = -1;
+
+            for (var r = 0; r < relOps.length; r++) {
+                var op = relOps[r];
+                var idx = tmpl.indexOf(op);
+                if (idx >= 0) {
+                    splitOp = op;
+                    splitIdx = idx;
+                    break;
+                }
+            }
+
+            if (splitIdx < 0) {
+                // No relational operator — show full expression
+                return fillTemplate(tmpl, row.inputs);
+            }
+
+            var lhs = tmpl.substring(0, splitIdx).trim();
+            var rhs = tmpl.substring(splitIdx + splitOp.length).trim();
+            var lhsHasResp = lhs.indexOf("{{") >= 0;
+            var rhsHasResp = rhs.indexOf("{{") >= 0;
+
+            if (lhsHasResp && rhsHasResp) {
+                // Both sides have responses — show full equation (validated as whole)
+                return fillTemplate(tmpl, row.inputs);
+            }
+
+            // One side has responses — extract the response side
+            var respSide = lhsHasResp ? lhs : rhs;
+
+            // Check if there's math context around the placeholders
+            var stripped = respSide.replace(/\{\{\d+\}\}/g, "").trim();
+
+            if (stripped) {
+                // Has math context (parentheses, operators, functions, etc.)
+                // Show the response side with context, answers filled in
+                return fillTemplate(respSide, row.inputs);
+            } else {
+                // Standalone placeholder(s) — show just the raw answer value(s)
+                var answers = [];
+                (row.inputs || []).forEach(function (inp) {
+                    answers.push(self.nerdamerToDisplayLatex(inp.answer));
+                });
+                return answers.join(",\\;");
+            }
         }
 
         return "";
