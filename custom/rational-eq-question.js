@@ -32,29 +32,18 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         $("<link>", { rel: "stylesheet", href: url }).appendTo("head");
     }
 
-    function loadScript(url) {
-        return $.Deferred(function (dfd) {
-            if ($('script[src="' + url + '"]').length) { dfd.resolve(); return; }
-            var s = document.createElement("script");
-            s.src = url;
-            s.onload = function () { dfd.resolve(); };
-            s.onerror = function () { dfd.reject(); };
-            document.head.appendChild(s);
-        }).promise();
-    }
-
     function loadDeps() {
         loadCSS(CDN.katexCSS);
         loadCSS(CDN.mqCSS);
-        // Load scripts sequentially where order matters
-        return loadScript(CDN.katexJS)
-            .then(function () { return loadScript(CDN.katexAuto); })
-            .then(function () { return loadScript(CDN.mqJS); })
-            .then(function () { return loadScript(CDN.nerdCore); })
-            .then(function () { return loadScript(CDN.nerdAlg); })
-            .then(function () { return loadScript(CDN.nerdCalc); })
-            .then(function () { return loadScript(CDN.nerdSolve); })
-            .then(function () { return loadScript(CDN.nerdExtra); });
+        // Load scripts sequentially using $.getScript (matches scaffold POC pattern)
+        return $.getScript(CDN.katexJS)
+            .then(function () { return $.getScript(CDN.katexAuto); })
+            .then(function () { return $.getScript(CDN.mqJS); })
+            .then(function () { return $.getScript(CDN.nerdCore); })
+            .then(function () { return $.getScript(CDN.nerdAlg); })
+            .then(function () { return $.getScript(CDN.nerdCalc); })
+            .then(function () { return $.getScript(CDN.nerdSolve); })
+            .then(function () { return $.getScript(CDN.nerdExtra); });
     }
 
     // ═════════════════════════════════════════════════
