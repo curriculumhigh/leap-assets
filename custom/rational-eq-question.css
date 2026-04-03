@@ -156,25 +156,31 @@
 }
 .req-hint-box.visible { display: block; }
 
-/* ── Symbol keypad ── */
+/* ── Symbol keypad (floating grid) ── */
 .req-keypad {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: #fff; border-top: 1px solid #e0e0e0;
-    box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
-    display: none; flex-wrap: wrap; justify-content: center;
-    padding: 8px 12px; gap: 4px; z-index: 1000;
+    position: absolute;
+    display: none;
+    grid-template-columns: repeat(5, 36px);
+    gap: 4px;
+    padding: 8px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    z-index: 1000;
+    max-width: 220px;
 }
-.req-keypad.visible { display: flex; }
+.req-keypad.visible { display: grid; }
 
 .req-keypad-btn {
     display: inline-flex; align-items: center; justify-content: center;
-    min-width: 36px; height: 36px; padding: 0 8px;
+    width: 36px; height: 36px;
     border: 1px solid #e0e0e0; border-radius: 6px;
     background: #fafafa; cursor: pointer; font-size: 14px;
-    transition: background 0.1s;
+    transition: background 0.1s; padding: 0;
 }
 .req-keypad-btn:hover { background: #e5e7eb; }
 .req-keypad-btn:active { background: #d1d5db; }
 .req-keypad-btn .katex { font-size: 16px; }
 
-.req-keypad-sep { width: 1px; height: 28px; background: #e0e0e0; align-self: center; margin: 0 4px; }
+.req-keypad-sep { display: none; }

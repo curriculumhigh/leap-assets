@@ -81,10 +81,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var q = this.question;
         var self = this;
 
-        var $w = $('<div class="req-widget"></div>');
+        var $w = $('<div class="req-widget" style="position:relative;"></div>');
 
-        // Stimulus
-        $w.append($('<p style="font-size:15px;line-height:1.7;margin:0 0 14px;"></p>').html(q.stimulus));
+        // Stimulus is rendered by Learnosity from the `stimulus` field — don't duplicate it here
 
         // Sections — grouped by `group` field into scaffold-block wrappers
         var sections = q.sections || [];
@@ -141,6 +140,14 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         this.$el.empty().append($w);
         self.renderKaTeX($w[0]);
+
+        // Hide keypad when clicking outside MQ fields and keypad
+        $(document).on("mousedown." + self.uid, function (ev) {
+            var $t = $(ev.target);
+            if ($t.closest(".req-keypad, .mq-editable-field, .req-mq-slot").length) return;
+            $("#" + self.uid + "-keypad").removeClass("visible");
+            self.focusedMQField = null;
+        });
 
         // Unlock first section
         self.unlockSection(0);
@@ -737,13 +744,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             { label: "\\times", cmd: "\\times", type: "cmd" },
             { label: "\\div", cmd: "\\div", type: "cmd" },
             { label: "=", cmd: "=", type: "write" },
-            { type: "sep" },
             { label: "(\\,)", cmd: "(", type: "write", extra: ")" },
             { label: ",", cmd: ",", type: "write" },
-            { type: "sep" },
             { label: "x^{\\square}", cmd: "^", type: "cmd" },
             { label: "\\dfrac{\\square}{\\square}", cmd: "/", type: "cmd" },
-            { type: "sep" },
             { label: "x", cmd: "x", type: "write" }
         ];
 
@@ -776,7 +780,22 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var self = this;
         $(slot).on("focusin", function () {
             self.focusedMQField = field;
-            $("#" + self.uid + "-keypad").addClass("visible");
+            var $keypad = $("#" + self.uid + "-keypad");
+            $keypad.addClass("visible");
+
+            // Position keypad below the focused field
+            var $slot = $(slot);
+            var widgetOff = self.$el.find(".req-widget").offset();
+            var slotOff = $slot.offset();
+            if (widgetOff && slotOff) {
+                var top = slotOff.top - widgetOff.top + $slot.outerHeight() + 6;
+                var left = slotOff.left - widgetOff.left;
+                // Keep within widget bounds (max ~700px to leave margin within 766px)
+                var keypadW = $keypad.outerWidth() || 280;
+                var maxLeft = 700 - keypadW;
+                if (left > maxLeft) left = Math.max(0, maxLeft);
+                $keypad.css({ top: top + "px", left: left + "px" });
+            }
         });
     };
 
