@@ -505,8 +505,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     var badgeInputId = self.uid + '-inp-' + si + '-' + sj + '-' + sk;
                     var $inp = $("#" + badgeInputId);
                     if ($inp.length) {
-                        $inp.addClass("sq-input-numbered");
-                        $inp.before($('<span class="sq-num-badge"></span>').text(inputNum));
+                        var $wrap = $inp.wrap('<span class="sq-input-badge-wrap"></span>').parent();
+                        $wrap.prepend($('<span class="sq-num-badge"></span>').text(inputNum));
                     }
                 }
             }
