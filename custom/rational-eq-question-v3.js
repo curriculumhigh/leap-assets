@@ -69,6 +69,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         this.facade = init.getFacade ? init.getFacade() : null;
         this.state = init.state || "initial";
 
+        console.log("[rational-eq-v3] init.state:", init.state, "| effective state:", this.state);
+        console.log("[rational-eq-v3] init.response:", JSON.stringify(init.response));
+        console.log("[rational-eq-v3] init keys:", Object.keys(init));
+
         // Internal state
         this.MQ = null;
         this.mqFields = {};
