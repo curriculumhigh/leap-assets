@@ -66,6 +66,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         this.focusedMQField = null;
         this.uid = "req-" + Math.random().toString(36).slice(2, 8);
 
+        // Fire ready immediately so Learnosity doesn't time out,
+        // then load CDN deps and render async
+        init.events.trigger("ready");
+
         var self = this;
         loadDeps().then(function () {
             self.MQ = MathQuill.getInterface(2);
