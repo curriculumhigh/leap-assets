@@ -74,29 +74,45 @@
 }
 
 /* ── Superscript MQ inputs (smaller for exponents) ── */
-.req-mq-sup .mq-editable-field {
-    font-size: 11px;
-    padding: 1px 4px;
-    min-width: 30px;
-    min-height: 0;
-    line-height: 1.2;
+.req-widget .req-mq-sup .mq-editable-field,
+.req-widget .req-mq-sup .mq-editable-field.mq-focused {
+    font-size: 11px !important;
+    padding: 1px 3px !important;
+    min-width: 24px !important;
+    min-height: 0 !important;
+    max-height: 22px;
+    line-height: 1.1;
+    vertical-align: middle;
 }
-.req-mq-sup .mq-editable-field .mq-root-block {
-    font-size: 11px;
-    padding: 0;
+.req-widget .req-mq-sup .mq-editable-field .mq-root-block {
+    font-size: 11px !important;
+    padding: 0 !important;
+    min-height: 0;
+}
+.req-widget .req-mq-sup .mq-editable-field.correct,
+.req-widget .req-mq-sup .mq-editable-field.incorrect {
+    padding: 0px 2px !important;
 }
 
 /* ── Subscript MQ inputs (smaller for log bases, etc.) ── */
-.req-mq-sub .mq-editable-field {
-    font-size: 11px;
-    padding: 1px 4px;
-    min-width: 20px;
-    min-height: 0;
-    line-height: 1.2;
+.req-widget .req-mq-sub .mq-editable-field,
+.req-widget .req-mq-sub .mq-editable-field.mq-focused {
+    font-size: 11px !important;
+    padding: 1px 3px !important;
+    min-width: 20px !important;
+    min-height: 0 !important;
+    max-height: 22px;
+    line-height: 1.1;
+    vertical-align: middle;
 }
-.req-mq-sub .mq-editable-field .mq-root-block {
-    font-size: 11px;
-    padding: 0;
+.req-widget .req-mq-sub .mq-editable-field .mq-root-block {
+    font-size: 11px !important;
+    padding: 0 !important;
+    min-height: 0;
+}
+.req-widget .req-mq-sub .mq-editable-field.correct,
+.req-widget .req-mq-sub .mq-editable-field.incorrect {
+    padding: 0px 2px !important;
 }
 
 /* ── Dropdown inputs (DN — Learnosity-native box style) ── */

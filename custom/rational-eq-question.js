@@ -400,7 +400,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     var $base = $("<span></span>").css("vertical-align", "middle").html("$" + part.text + "$");
                     $wrapper.append($base);
 
-                    var $sup = $("<sup></sup>").css({ position: "relative", top: "-0.6em" });
+                    var $sup = $("<sup></sup>").css({ position: "relative", top: "-0.8em", fontSize: "0.7em" });
                     if (part.supPrefix) {
                         var $pre = $("<span></span>").css("font-size", "13px");
                         $pre.html(part.supPrefix.indexOf("\\") >= 0 ? "$" + part.supPrefix + "$" : part.supPrefix);
