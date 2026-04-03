@@ -144,15 +144,11 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             $w.append($hint);
         }
 
-        // Learnosity Check Answer button (needed for activity player navigation)
-        var $caWrap = $('<div class="req-check-answer" id="' + self.uid + '-ca"></div>');
-        if (self.lrnUtils && self.lrnUtils.renderComponent) {
-            self.lrnUtils.renderComponent("CheckAnswerButton", $caWrap[0]);
-        }
-        // Feedback label (shown by validate handler)
+        // Feedback label for Learnosity's item-level "Check Answers" button.
+        // That button is rendered by the Items API (outside the widget) and fires
+        // the validate event — our handler shows feedback here.
         var $caFb = $('<span class="req-ca-feedback" id="' + self.uid + '-ca-fb"></span>');
-        $caWrap.append($caFb);
-        $w.append($caWrap);
+        $w.append($caFb);
 
         // Keypad
         self.buildKeypad($w);
