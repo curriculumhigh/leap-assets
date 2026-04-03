@@ -69,6 +69,18 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         this.facade = init.getFacade ? init.getFacade() : null;
         this.state = init.state || "initial";
 
+        // Debug: log parent DOM classes to distinguish teacher vs student
+        (function () {
+            var el = init.$el[0], chain = [];
+            while (el && el !== document.body) {
+                var id = el.id ? "#" + el.id : "";
+                var cls = el.className ? "." + String(el.className).trim().replace(/\s+/g, ".") : "";
+                if (id || cls) chain.push(el.tagName.toLowerCase() + id + cls);
+                el = el.parentElement;
+            }
+            console.log("[rational-eq-v3] state:", init.state, "| DOM chain:", chain.join(" > "));
+        })();
+
         // Internal state
         this.MQ = null;
         this.mqFields = {};
