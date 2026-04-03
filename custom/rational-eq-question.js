@@ -44,6 +44,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     function loadDeps() {
         loadCSS(CDN.katexCSS);
         loadCSS(CDN.mqCSS);
+        // MathQuill requires window.jQuery — expose the AMD-provided $ globally
+        if (!window.jQuery) window.jQuery = $;
         return loadScript(CDN.katexJS, function () { return window.katex; })
             .then(function () { return loadScript(CDN.katexAuto, function () { return window.renderMathInElement; }); })
             .then(function () { return loadScript(CDN.mqJS, function () { return window.MathQuill; }); })
