@@ -415,6 +415,25 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     }
                     $wrapper.append($sup);
 
+                } else if (part.sub !== undefined && part.inputIdx !== undefined) {
+                    var $baseSub = $("<span></span>").css("vertical-align", "middle").html("$" + part.text + "$");
+                    $wrapper.append($baseSub);
+
+                    var $sub = $("<sub></sub>").css({ position: "relative", top: "0.3em" });
+                    if (part.subPrefix) {
+                        var $preSub = $("<span></span>").css("font-size", "13px");
+                        $preSub.html(part.subPrefix.indexOf("\\") >= 0 ? "$" + part.subPrefix + "$" : part.subPrefix);
+                        $sub.append($preSub);
+                    }
+                    var $mqSpanSub = $('<span class="mq-slot req-mq-sub" id="' + self.uid + '-mq-' + secId + '-' + rowIdx + '-' + part.inputIdx + '" style="display:inline-block;min-width:30px;"></span>');
+                    $sub.append($mqSpanSub);
+                    if (part.subSuffix) {
+                        var $sufSub = $("<span></span>").css("font-size", "13px");
+                        $sufSub.html(part.subSuffix.indexOf("\\") >= 0 ? "$" + part.subSuffix + "$" : part.subSuffix);
+                        $sub.append($sufSub);
+                    }
+                    $wrapper.append($sub);
+
                 } else if (part.inputIdx !== undefined) {
                     if (part.text) {
                         $wrapper.append($("<span></span>").css("vertical-align", "middle").html("$" + part.text + "$"));
