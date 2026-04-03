@@ -69,10 +69,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         this.facade = init.getFacade ? init.getFacade() : null;
         this.state = init.state || "initial";
 
-        console.log("[rational-eq-v3] init.state:", init.state, "| effective state:", this.state);
-        console.log("[rational-eq-v3] init.response:", JSON.stringify(init.response));
-        console.log("[rational-eq-v3] init keys:", Object.keys(init));
-
         // Internal state
         this.MQ = null;
         this.mqFields = {};
@@ -180,13 +176,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         });
 
         // Branch based on state
-        if (self.state === "review") {
+        // "resume" and "review" both render read-only with all sections revealed
+        // and correct answers panel (teacher view gets "resume" from LEAP)
+        if (self.state === "review" || self.state === "resume") {
             // Delay to ensure MQ fields are initialized
             setTimeout(function () { self.applyReviewMode(); }, 200);
-        } else if (self.state === "resume") {
-            setTimeout(function () { self.restoreFromResponse(self.response); }, 200);
         } else {
-            // Initial mode
+            // Initial mode — interactive student flow
             self.unlockSection(0);
         }
     };
