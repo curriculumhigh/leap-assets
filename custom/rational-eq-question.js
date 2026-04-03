@@ -32,18 +32,26 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         $("<link>", { rel: "stylesheet", href: url }).appendTo("head");
     }
 
+    function loadScript(url, check) {
+        if (check && check()) {
+            return $.Deferred().resolve().promise();
+        }
+        return $.getScript(url).fail(function (jqxhr, settings, exception) {
+            console.error("[rational-eq] Failed to load: " + url, exception);
+        });
+    }
+
     function loadDeps() {
         loadCSS(CDN.katexCSS);
         loadCSS(CDN.mqCSS);
-        // Load scripts sequentially using $.getScript (matches scaffold POC pattern)
-        return $.getScript(CDN.katexJS)
-            .then(function () { return $.getScript(CDN.katexAuto); })
-            .then(function () { return $.getScript(CDN.mqJS); })
-            .then(function () { return $.getScript(CDN.nerdCore); })
-            .then(function () { return $.getScript(CDN.nerdAlg); })
-            .then(function () { return $.getScript(CDN.nerdCalc); })
-            .then(function () { return $.getScript(CDN.nerdSolve); })
-            .then(function () { return $.getScript(CDN.nerdExtra); });
+        return loadScript(CDN.katexJS, function () { return window.katex; })
+            .then(function () { return loadScript(CDN.katexAuto, function () { return window.renderMathInElement; }); })
+            .then(function () { return loadScript(CDN.mqJS, function () { return window.MathQuill; }); })
+            .then(function () { return loadScript(CDN.nerdCore, function () { return window.nerdamer; }); })
+            .then(function () { return loadScript(CDN.nerdAlg); })
+            .then(function () { return loadScript(CDN.nerdCalc); })
+            .then(function () { return loadScript(CDN.nerdSolve); })
+            .then(function () { return loadScript(CDN.nerdExtra); });
     }
 
     // ═════════════════════════════════════════════════
@@ -78,6 +86,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         loadDeps().then(function () {
             self.MQ = MathQuill.getInterface(2);
             self.render();
+        }).fail(function (err) {
+            console.error("[rational-eq] loadDeps failed:", err);
+            $(self.$el).html('<p style="color:red;">Failed to load dependencies. Check console.</p>');
         });
     }
 
