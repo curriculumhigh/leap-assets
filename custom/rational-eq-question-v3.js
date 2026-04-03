@@ -793,7 +793,14 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                         var key = sec.id + "-" + ri + "-" + ii;
                         var field = self.mqFields[key];
                         if (field) {
-                            inputs[key] = { latex: field.latex(), correct: rowCompleted };
+                            var latex = field.latex();
+                            // Per-input correctness: if row completed, all correct;
+                            // otherwise validate each input individually
+                            var correct = rowCompleted;
+                            if (!correct && latex) {
+                                try { correct = self.validateInput(latex, inp); } catch (e) { correct = false; }
+                            }
+                            inputs[key] = { latex: latex, correct: correct };
                         }
                     });
                 });
@@ -803,11 +810,18 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     var key = sec.id + "-" + ii;
                     if (inp.type === "dropdown") {
                         var select = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
-                        inputs[key] = { value: select ? select.value : "", correct: secCompleted };
+                        var val = select ? select.value : "";
+                        var correct = secCompleted || (val && val === inp.answer);
+                        inputs[key] = { value: val, correct: correct };
                     } else {
                         var field = self.mqFields[key];
                         if (field) {
-                            inputs[key] = { latex: field.latex(), correct: secCompleted };
+                            var latex = field.latex();
+                            var correct2 = secCompleted;
+                            if (!correct2 && latex) {
+                                try { correct2 = self.validateInput(latex, inp); } catch (e) { correct2 = false; }
+                            }
+                            inputs[key] = { latex: latex, correct: correct2 };
                         }
                     }
                 });
