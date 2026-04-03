@@ -73,6 +73,19 @@
     background: #fde8d8;
 }
 
+/* ── Superscript MQ inputs (smaller for exponents) ── */
+.req-mq-sup .mq-editable-field {
+    font-size: 11px;
+    padding: 1px 4px;
+    min-width: 30px;
+    min-height: 0;
+    line-height: 1.2;
+}
+.req-mq-sup .mq-editable-field .mq-root-block {
+    font-size: 11px;
+    padding: 0;
+}
+
 /* ── Dropdown inputs (DN — Learnosity-native box style) ── */
 .req-dropdown {
     display: inline-block;

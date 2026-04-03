@@ -400,13 +400,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     var $base = $("<span></span>").css("vertical-align", "middle").html("$" + part.text + "$");
                     $wrapper.append($base);
 
-                    var $sup = $("<sup></sup>").css({ position: "relative", top: "-4px" });
+                    var $sup = $("<sup></sup>").css({ position: "relative", top: "-0.6em" });
                     if (part.supPrefix) {
                         var $pre = $("<span></span>").css("font-size", "13px");
                         $pre.html(part.supPrefix.indexOf("\\") >= 0 ? "$" + part.supPrefix + "$" : part.supPrefix);
                         $sup.append($pre);
                     }
-                    var $mqSpan = $('<span class="mq-slot" id="' + self.uid + '-mq-' + secId + '-' + rowIdx + '-' + part.inputIdx + '" style="display:inline-block;min-width:50px;"></span>');
+                    var $mqSpan = $('<span class="mq-slot req-mq-sup" id="' + self.uid + '-mq-' + secId + '-' + rowIdx + '-' + part.inputIdx + '" style="display:inline-block;min-width:40px;"></span>');
                     $sup.append($mqSpan);
                     if (part.supSuffix) {
                         var $suf = $("<span></span>").css("font-size", "13px");
