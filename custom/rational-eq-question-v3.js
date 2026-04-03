@@ -69,11 +69,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         this.facade = init.getFacade ? init.getFacade() : null;
         this.state = init.state || "initial";
 
-        // Debug: capture state info for diagnosis
-        this._debugInfo = "state=" + init.state
-            + " | keys=" + Object.keys(init).join(",")
-            + " | url=" + (window.location.href || "?").substring(0, 120)
-            + " | referrer=" + (document.referrer || "?").substring(0, 80);
+        // Detect teacher mode from LEAP URL
+        this.isTeacher = (window.location.href || "").indexOf("worksheet-teacher") >= 0;
 
         // Internal state
         this.MQ = null;
@@ -181,23 +178,20 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             self.focusedMQField = null;
         });
 
-        // Debug banner (temporary — visible in DOM since console.log can't escape Learnosity iframe)
-        $w.prepend($('<div class="req-debug" style="font-size:10px;color:#999;background:#f5f5f5;padding:2px 6px;border-radius:3px;margin-bottom:4px;"></div>').text(self._debugInfo || "no debug"));
-
-        // Branch based on state
-        if (self.state === "review") {
-            // Explicit review mode (Learnosity review state)
-            setTimeout(function () { self.applyReviewMode(); }, 200);
+        // Branch based on state and role
+        if (self.state === "review" || self.isTeacher) {
+            // Teacher / review: reveal everything read-only with correct answers
+            setTimeout(function () {
+                self.applyReviewMode();
+                self.renderCorrectAnswersPanel();
+            }, 200);
         } else if (self.state === "resume") {
-            // Resume: restore progress and continue interactively
+            // Student resume: restore progress and continue interactively
             setTimeout(function () { self.restoreFromResponse(self.response); }, 200);
         } else {
-            // Initial mode — interactive student flow
+            // Student initial: interactive flow
             self.unlockSection(0);
         }
-
-        // Always render correct answers panel at bottom (useful for teacher + completed students)
-        setTimeout(function () { self.renderCorrectAnswersPanel(); }, 250);
     };
 
     // ── KaTeX rendering ──
