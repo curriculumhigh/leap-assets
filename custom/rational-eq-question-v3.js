@@ -69,17 +69,11 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         this.facade = init.getFacade ? init.getFacade() : null;
         this.state = init.state || "initial";
 
-        // Debug: log parent DOM classes to distinguish teacher vs student
-        (function () {
-            var el = init.$el[0], chain = [];
-            while (el && el !== document.body) {
-                var id = el.id ? "#" + el.id : "";
-                var cls = el.className ? "." + String(el.className).trim().replace(/\s+/g, ".") : "";
-                if (id || cls) chain.push(el.tagName.toLowerCase() + id + cls);
-                el = el.parentElement;
-            }
-            console.log("[rational-eq-v3] state:", init.state, "| DOM chain:", chain.join(" > "));
-        })();
+        // Debug: capture state info for diagnosis
+        this._debugInfo = "state=" + init.state
+            + " | keys=" + Object.keys(init).join(",")
+            + " | url=" + (window.location.href || "?").substring(0, 120)
+            + " | referrer=" + (document.referrer || "?").substring(0, 80);
 
         // Internal state
         this.MQ = null;
@@ -187,16 +181,23 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             self.focusedMQField = null;
         });
 
+        // Debug banner (temporary — visible in DOM since console.log can't escape Learnosity iframe)
+        $w.prepend($('<div class="req-debug" style="font-size:10px;color:#999;background:#f5f5f5;padding:2px 6px;border-radius:3px;margin-bottom:4px;"></div>').text(self._debugInfo || "no debug"));
+
         // Branch based on state
-        // "resume" and "review" both render read-only with all sections revealed
-        // and correct answers panel (teacher view gets "resume" from LEAP)
-        if (self.state === "review" || self.state === "resume") {
-            // Delay to ensure MQ fields are initialized
+        if (self.state === "review") {
+            // Explicit review mode (Learnosity review state)
             setTimeout(function () { self.applyReviewMode(); }, 200);
+        } else if (self.state === "resume") {
+            // Resume: restore progress and continue interactively
+            setTimeout(function () { self.restoreFromResponse(self.response); }, 200);
         } else {
             // Initial mode — interactive student flow
             self.unlockSection(0);
         }
+
+        // Always render correct answers panel at bottom (useful for teacher + completed students)
+        setTimeout(function () { self.renderCorrectAnswersPanel(); }, 250);
     };
 
     // ── KaTeX rendering ──
@@ -887,22 +888,22 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var savedInputs = response.inputs || {};
         var savedCompletedSections = response.completedSections || {};
         var savedCompletedRows = response.completedRows || {};
-        var savedUnlockedRows = response.unlockedRows || {};
 
-        // Restore internal state
+        // Restore completed state
         self.completedSections = $.extend({}, savedCompletedSections);
         for (var sid in savedCompletedRows) {
-            self.completedRows[sid] = $.extend({}, savedCompletedRows[sid]);
-        }
-        for (var sid2 in savedUnlockedRows) {
-            self.unlockedRows[sid2] = $.extend({}, savedUnlockedRows[sid2]);
+            if (!self.completedRows[sid]) self.completedRows[sid] = {};
+            for (var r in savedCompletedRows[sid]) {
+                if (savedCompletedRows[sid][r]) self.completedRows[sid][r] = true;
+            }
         }
 
         // Populate fields from saved inputs
         self.populateFieldsFromSaved(savedInputs);
 
-        // Apply visual state
-        self.applyVisualState();
+        // Replay the unlock cascade: walk sections, fast-forward through completed ones,
+        // then stop at the first incomplete section (interactive from there)
+        self.replayUnlockCascade();
     };
 
     Question.prototype.populateFieldsFromSaved = function (savedInputs) {
@@ -926,6 +927,105 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 }
             }
         }
+    };
+
+    /**
+     * Replay the unlock cascade using saved completedSections/completedRows.
+     * Walks sections in order: for each completed section, unlock it and mark done;
+     * for each completed equation-table, unlock completed rows and the next input row;
+     * stops at the first incomplete section and activates it for continued work.
+     */
+    Question.prototype.replayUnlockCascade = function () {
+        var self = this;
+        var sections = self.question.sections || [];
+
+        for (var si = 0; si < sections.length; si++) {
+            var sec = sections[si];
+
+            // Unlock group wrapper if this is the first section in the group
+            if (sec.group && self.groupFirstIndex[sec.group] === si) {
+                $("#" + self.uid + "-group-" + sec.group).removeClass("req-section-locked");
+            }
+
+            // Unlock the section itself
+            $("#" + self.uid + "-sec-" + sec.id).removeClass("req-section-locked");
+
+            if (sec.type === "text") {
+                // Text sections auto-complete
+                self.completedSections[sec.id] = true;
+                continue;
+            }
+
+            if (sec.type === "equation-table") {
+                if (!self.unlockedRows[sec.id]) self.unlockedRows[sec.id] = {};
+                if (!self.completedRows[sec.id]) self.completedRows[sec.id] = {};
+
+                var tableFullyCompleted = true;
+                for (var ri = 0; ri < sec.rows.length; ri++) {
+                    var row = sec.rows[ri];
+                    if (!row.inputs || row.inputs.length === 0) {
+                        // Display-only row: auto-unlock and complete
+                        self.unlockedRows[sec.id][ri] = true;
+                        self.completedRows[sec.id][ri] = true;
+                        continue;
+                    }
+
+                    if (self.completedRows[sec.id][ri]) {
+                        // Already completed: unlock, show checkmark, disable
+                        self.unlockedRows[sec.id][ri] = true;
+                        var $fb = $("#" + self.uid + "-fb-" + sec.id + "-" + ri);
+                        $fb.html('<span style="color:#3a9447;font-size:16px;">&#10003;</span>');
+                        row.inputs.forEach(function (inp, ii) {
+                            var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii);
+                            if (slot) { slot.style.pointerEvents = "none"; $(slot).addClass("correct"); }
+                        });
+                        $("#" + self.uid + "-rowbtn-" + sec.id + "-" + ri).hide();
+                    } else {
+                        // First incomplete input row: unlock it (active) and stop
+                        self.unlockedRows[sec.id][ri] = true;
+                        tableFullyCompleted = false;
+                        break;
+                    }
+                }
+
+                self.updateRowStates(sec);
+
+                if (tableFullyCompleted) {
+                    self.completedSections[sec.id] = true;
+                    continue; // Move to next section
+                } else {
+                    // Table not fully completed — stop cascade here
+                    self.events.trigger("changed", self.getResponse());
+                    return;
+                }
+            }
+
+            if (sec.type === "text-with-input") {
+                if (self.completedSections[sec.id]) {
+                    // Completed: show tick, disable inputs
+                    $("#" + self.uid + "-actions-" + sec.id).hide();
+                    $("#" + self.uid + "-tick-" + sec.id).css("visibility", "visible");
+                    sec.inputs.forEach(function (inp, ii) {
+                        if (inp.type === "dropdown") {
+                            var select = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
+                            if (select) select.disabled = true;
+                        } else {
+                            var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ii);
+                            if (slot) { slot.style.pointerEvents = "none"; $(slot).addClass("correct"); }
+                        }
+                    });
+                    continue; // Move to next section
+                } else {
+                    // Not completed — stop cascade here (student continues from this point)
+                    self.events.trigger("changed", self.getResponse());
+                    return;
+                }
+            }
+        }
+
+        // If we get here, all sections are complete
+        $("#" + self.uid + "-done").show();
+        self.events.trigger("changed", self.getResponse());
     };
 
     Question.prototype.applyVisualState = function () {
@@ -1159,8 +1259,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             $("#" + self.uid + "-done").show();
         }
 
-        // Render correct answers panel
-        self.renderCorrectAnswersPanel();
+        // Correct answers panel is rendered by render() for all modes
     };
 
     /**
