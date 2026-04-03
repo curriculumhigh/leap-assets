@@ -87,10 +87,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         var $w = $('<div class="req-widget" style="position:relative;"></div>');
 
-        // Hide Learnosity's raw stimulus rendering (it doesn't process LaTeX),
-        // then render it ourselves with KaTeX
-        this.$el.find(".lrn_stimulus").hide();
+        // Hide Learnosity's raw stimulus rendering (it doesn't process LaTeX).
+        // The .lrn_stimulus div is outside $el, in a parent wrapper.
+        self.$el.closest(".lrn_widget, .lrn-question, .lrn_response_wrapper")
+            .parent().find(".lrn_stimulus").hide();
 
+        // Render stimulus ourselves with KaTeX
         var stim = q.stimulus || "";
         if (stim) {
             $w.append($('<p style="font-size:15px;line-height:1.7;margin:0 0 14px;"></p>').html(stim));
@@ -146,11 +148,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             $w.append($hint);
         }
 
-        // Feedback label for Learnosity's item-level "Check Answers" button.
-        // That button is rendered by the Items API (outside the widget) and fires
-        // the validate event — our handler shows feedback here.
+        // Check Answer button (bottom-right, matching Learnosity's native style)
+        var $caWrap = $('<div class="req-check-answer-row" id="' + self.uid + '-ca"></div>');
         var $caFb = $('<span class="req-ca-feedback" id="' + self.uid + '-ca-fb"></span>');
-        $w.append($caFb);
+        var $caBtn = $('<button class="req-ca-btn" type="button">Check Answer</button>');
+        $caBtn.on("click", function () { self.validateCurrentStep(); });
+        $caWrap.append($caFb).append($caBtn);
+        $w.append($caWrap);
 
         // Keypad
         self.buildKeypad($w);
