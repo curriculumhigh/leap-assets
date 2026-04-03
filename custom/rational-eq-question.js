@@ -86,7 +86,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         var $w = $('<div class="req-widget" style="position:relative;"></div>');
 
-        // Stimulus is rendered by Learnosity from the `stimulus` field — don't duplicate it here
+        // Render stimulus ourselves with KaTeX (using question_stimulus to avoid
+        // Learnosity's raw auto-rendering of the standard `stimulus` field)
+        var stim = q.question_stimulus || q.stimulus || "";
+        if (stim) {
+            $w.append($('<p style="font-size:15px;line-height:1.7;margin:0 0 14px;"></p>').html(stim));
+        }
 
         // Sections — grouped by `group` field into scaffold-block wrappers
         var sections = q.sections || [];
