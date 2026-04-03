@@ -1238,10 +1238,47 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             }
         });
 
+        // Add numbered badges to inputs (teacher view)
+        var inputNum = 0;
+        sections.forEach(function (sec) {
+            if (sec.type === "equation-table") {
+                sec.rows.forEach(function (row, ri) {
+                    if (!row.inputs || row.inputs.length === 0) return;
+                    row.inputs.forEach(function (inp, ii) {
+                        inputNum++;
+                        var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii;
+                        var slot = document.getElementById(slotId);
+                        if (slot) {
+                            $(slot).addClass("req-input-numbered");
+                            $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                        }
+                    });
+                });
+            } else if (sec.type === "text-with-input") {
+                sec.inputs.forEach(function (inp, ii) {
+                    inputNum++;
+                    if (inp.type === "dropdown") {
+                        var ddId = self.uid + "-dd-" + sec.id + "-" + ii;
+                        var dd = document.getElementById(ddId);
+                        if (dd) {
+                            var $wrap = $(dd).wrap('<span class="req-input-numbered"></span>').parent();
+                            $wrap.prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                        }
+                    } else {
+                        var slotId = self.uid + "-mq-" + sec.id + "-" + ii;
+                        var slot = document.getElementById(slotId);
+                        if (slot) {
+                            $(slot).addClass("req-input-numbered");
+                            $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                        }
+                    }
+                });
+            }
+        });
+
         // Hide all Check buttons and keypad
         self.$el.find(".req-check-btn").hide();
         self.$el.find(".req-actions").each(function () {
-            // Keep actions div visible for tick alignment, but hide buttons
             $(this).find(".req-check-btn").hide();
         });
         $("#" + self.uid + "-keypad").remove();
@@ -1259,8 +1296,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         if (allDone) {
             $("#" + self.uid + "-done").show();
         }
-
-        // Correct answers panel is rendered by render() for all modes
     };
 
     /**
@@ -1302,7 +1337,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                         num++;
                         var displayLatex = self.nerdamerToDisplayLatex(inp.answer);
                         var $box = $('<div class="req-ca-box"></div>');
-                        $box.append($('<span class="req-ca-num"></span>').text(num));
+                        $box.append($('<span class="req-num-badge"></span>').text(num));
                         var $val = $('<span></span>');
                         try {
                             $val.html(katex.renderToString(displayLatex, { throwOnError: false }));
@@ -1317,7 +1352,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 sec.inputs.forEach(function (inp) {
                     num++;
                     var $box = $('<div class="req-ca-box"></div>');
-                    $box.append($('<span class="req-ca-num"></span>').text(num));
+                    $box.append($('<span class="req-num-badge"></span>').text(num));
                     var $val = $('<span></span>');
                     if (inp.type === "dropdown") {
                         $val.text(inp.answer);
