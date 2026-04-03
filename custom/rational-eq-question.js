@@ -706,31 +706,19 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     };
 
     // ── Learnosity "Check Answer" handler ──
+    // Validates completion: returns true only when all steps are done (score = max).
+    // The Scorer independently computes the score from the response.
+    // Learnosity uses the Scorer result to decide if the student can advance.
     Question.prototype.validateCurrentStep = function () {
-        var self = this;
-        var sections = self.question.sections || [];
+        var resp = this.getResponse();
+        if (!resp || !resp.value) return;
+        var parts = resp.value.split("/");
+        var completed = parseInt(parts[0]) || 0;
+        var total = parseInt(parts[1]) || 1;
 
-        for (var i = 0; i < sections.length; i++) {
-            var sec = sections[i];
-            if (sec.type === "text") continue;
-            if (self.completedSections[sec.id]) continue;
-
-            // This is the first uncompleted section
-            if (sec.type === "equation-table") {
-                // Find first uncompleted input row
-                for (var ri = 0; ri < sec.rows.length; ri++) {
-                    var row = sec.rows[ri];
-                    if (!row.inputs || row.inputs.length === 0) continue;
-                    if (self.completedRows[sec.id] && self.completedRows[sec.id][ri]) continue;
-                    self.checkRowAnswer(sec, ri);
-                    return;
-                }
-            } else if (sec.type === "text-with-input") {
-                self.checkSectionAnswer(sec);
-                return;
-            }
-            return;
-        }
+        // Learnosity's facade handles the correct/incorrect UI and progression
+        // based on the Scorer. We just ensure the response is current.
+        this.events.trigger("changed", resp);
     };
 
     // ── Response ──
