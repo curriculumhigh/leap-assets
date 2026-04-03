@@ -1169,30 +1169,23 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Populate fields from saved response
         self.populateFieldsFromSaved(savedInputs);
 
-        // Mark each input correct/incorrect and show feedback
+        // Mark each input correct/incorrect — only if it has content
         for (var key in savedInputs) {
             var saved = savedInputs[key];
             var isCorrect = !!saved.correct;
 
             if (saved.value !== undefined) {
-                // Dropdown
+                // Dropdown — only style if a value was selected
+                if (!saved.value) continue;
                 var ddId = self.uid + "-dd-" + key;
                 var select = document.getElementById(ddId);
                 if (select) {
                     $(select).addClass(isCorrect ? "correct" : "incorrect");
                 }
             } else if (saved.latex !== undefined) {
-                // MQ field — find the slot element
-                // Key could be "secId-ri-ii" (table) or "secId-ii" (text-with-input)
-                var parts = key.split("-");
-                var slotId;
-                if (parts.length >= 3) {
-                    // Could be table row (secId might contain hyphens)
-                    // Try to find the element by iterating possible splits
-                    slotId = self.uid + "-mq-" + key;
-                } else {
-                    slotId = self.uid + "-mq-" + key;
-                }
+                // MQ field — only style if student typed something
+                if (!saved.latex) continue;
+                var slotId = self.uid + "-mq-" + key;
                 var slot = document.getElementById(slotId);
                 if (slot) {
                     $(slot).addClass(isCorrect ? "correct" : "incorrect");
