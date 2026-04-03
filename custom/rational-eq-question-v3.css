@@ -1,0 +1,299 @@
+/* Rational Equation — Learnosity Custom Question Styles v3 */
+
+/* ── Scaffold wrapper ── */
+.req-scaffold-block {
+    border-left: 3px solid #1565C0;
+    padding-left: 16px;
+    margin: 4px 0 16px;
+}
+.req-scaffold-block p { font-size: 15px; line-height: 1.7; margin: 0 0 10px; }
+
+/* ── Equation table ── */
+.req-eq-table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+
+.req-eq-table td {
+    padding: 6px 12px 6px 0;
+    vertical-align: baseline;
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.req-eq-table .req-annotation {
+    padding: 6px 12px;
+    vertical-align: baseline;
+    color: #dc2626;
+    font-size: 14px;
+    font-style: italic;
+}
+
+.req-eq-table .req-fb-cell {
+    width: 28px;
+    padding: 6px 4px;
+    text-align: center;
+    vertical-align: baseline;
+}
+
+/* ── Row states ── */
+.req-eq-row.locked { display: none; }
+.req-eq-row.active td { opacity: 1; }
+.req-eq-row.completed td { opacity: 1; }
+.req-eq-row.completed .req-annotation { color: #e8a0a0; }
+
+/* ── Section states ── */
+.req-section-locked { display: none !important; }
+
+/* ── Text-with-input flex layout (content + tick cell) ── */
+.req-twi-flex { display: flex; align-items: flex-start; gap: 8px; }
+
+/* ── MathQuill inputs (Learnosity-native box style) ── */
+.req-widget .mq-editable-field {
+    border: 1px solid #999;
+    border-radius: 2px;
+    padding: 4px 8px;
+    background: #fff;
+    font-size: 15px;
+    min-width: 60px;
+}
+
+.req-widget .mq-editable-field.mq-focused {
+    border-color: #555;
+    background: #fff;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+.req-widget .mq-editable-field.correct {
+    border-color: #3a9447;
+    border-width: 2px;
+    background: #e8f5e9;
+}
+
+.req-widget .mq-editable-field.incorrect {
+    border-color: #e8883a;
+    border-width: 2px;
+    background: #fde8d8;
+}
+
+/* ── Superscript MQ inputs (smaller for exponents) ── */
+.req-widget .req-mq-sup .mq-editable-field,
+.req-widget .req-mq-sup .mq-editable-field.mq-focused {
+    font-size: 11px !important;
+    padding: 1px 3px !important;
+    min-width: 24px !important;
+    min-height: 0 !important;
+    max-height: 22px;
+    line-height: 1.1;
+    vertical-align: middle;
+}
+.req-widget .req-mq-sup .mq-editable-field .mq-root-block {
+    font-size: 11px !important;
+    padding: 0 !important;
+    min-height: 0;
+}
+.req-widget .req-mq-sup .mq-editable-field.correct,
+.req-widget .req-mq-sup .mq-editable-field.incorrect {
+    padding: 0px 2px !important;
+}
+
+/* ── Subscript MQ inputs (smaller for log bases, etc.) ── */
+.req-widget .req-mq-sub .mq-editable-field,
+.req-widget .req-mq-sub .mq-editable-field.mq-focused {
+    font-size: 11px !important;
+    padding: 1px 3px !important;
+    min-width: 20px !important;
+    min-height: 0 !important;
+    max-height: 22px;
+    line-height: 1.1;
+    vertical-align: middle;
+}
+.req-widget .req-mq-sub .mq-editable-field .mq-root-block {
+    font-size: 11px !important;
+    padding: 0 !important;
+    min-height: 0;
+}
+.req-widget .req-mq-sub .mq-editable-field.correct,
+.req-widget .req-mq-sub .mq-editable-field.incorrect {
+    padding: 0px 2px !important;
+}
+
+/* ── Dropdown inputs (DN — Learnosity-native box style) ── */
+.req-dropdown {
+    display: inline-block;
+    padding: 6px 32px 6px 12px;
+    font-size: 15px;
+    font-family: inherit;
+    border: 1px solid #999;
+    border-radius: 2px;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23555' fill='none' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 10px center;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    vertical-align: middle;
+    min-width: 120px;
+}
+
+.req-dropdown:focus {
+    border-color: #555;
+    outline: none;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+.req-dropdown.correct {
+    border-color: #3a9447;
+    border-width: 2px;
+    background-color: #e8f5e9;
+}
+
+.req-dropdown.incorrect {
+    border-color: #e8883a;
+    border-width: 2px;
+    background-color: #fde8d8;
+}
+
+/* ── Check button ── */
+.req-check-btn {
+    display: inline-block;
+    padding: 7px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    background: #1565C0;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.req-check-btn:hover:not(:disabled) { background: #0d47a1; }
+.req-check-btn:disabled { background: #bbb; cursor: default; }
+
+/* ── Actions row ── */
+.req-actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+
+/* ── Feedback pill ── */
+.req-fb { font-size: 13px; border-radius: 6px; padding: 4px 10px; display: none; }
+.req-fb.correct { display: inline-block; background: #e8f5e9; color: #3a9447; }
+.req-fb.wrong { display: inline-block; background: #fde8d8; color: #e8883a; }
+
+/* ── Done banner ── */
+.req-done {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 8px;
+    background: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    font-size: 14px;
+    color: #3a9447;
+    font-weight: 600;
+    text-align: center;
+    display: none;
+}
+
+/* ── Hint ── */
+.req-hint-btn {
+    background: none; border: 1px dashed #999; border-radius: 6px;
+    padding: 4px 12px; font-size: 12px; color: #666; cursor: pointer;
+}
+.req-hint-btn:hover { border-color: #1565C0; color: #1565C0; }
+
+.req-hint-box {
+    display: none; margin-top: 6px; padding: 8px 12px;
+    background: #fff8e1; border: 1px solid #ffe082; border-radius: 6px;
+    font-size: 13px; line-height: 1.5; color: #5d4037;
+}
+.req-hint-box.visible { display: block; }
+
+/* ── Final Check Answer (bottom-right, matching Learnosity native style) ── */
+.req-check-answer-row {
+    margin-top: 20px; display: flex; align-items: center;
+    justify-content: flex-end; gap: 12px;
+}
+.req-ca-btn {
+    background: #fff; color: #333; border: 2px solid #333; border-radius: 4px;
+    padding: 8px 20px; font-size: 15px; font-weight: 600; cursor: pointer;
+    transition: background 0.15s;
+}
+.req-ca-btn:hover { background: #f5f5f5; }
+.req-ca-btn:disabled { opacity: 0.5; cursor: default; }
+.req-ca-feedback { font-size: 13px; font-weight: 500; }
+.req-ca-feedback.correct { color: #3a9447; }
+.req-ca-feedback.incomplete { color: #e65100; }
+
+/* ── Symbol keypad (floating grid) ── */
+.req-keypad {
+    position: absolute;
+    display: none;
+    grid-template-columns: repeat(5, 36px);
+    gap: 4px;
+    padding: 8px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    z-index: 1000;
+    max-width: 220px;
+}
+.req-keypad.visible { display: grid; }
+
+.req-keypad-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px;
+    border: 1px solid #e0e0e0; border-radius: 6px;
+    background: #fafafa; cursor: pointer; font-size: 14px;
+    transition: background 0.1s; padding: 0;
+}
+.req-keypad-btn:hover { background: #e5e7eb; }
+.req-keypad-btn:active { background: #d1d5db; }
+.req-keypad-btn .katex { font-size: 16px; }
+
+.req-keypad-sep { display: none; }
+
+/* ── Correct Answers panel (review mode) ── */
+.req-correct-answers {
+    margin-top: 24px;
+    padding: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background: #fafafa;
+}
+.req-ca-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 12px;
+}
+.req-ca-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.req-ca-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+}
+.req-ca-num {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #1565C0;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ── Review mode: disabled state ── */
+.req-widget.req-review-mode .mq-editable-field {
+    pointer-events: none;
+    cursor: default;
+}
+.req-widget.req-review-mode .req-dropdown {
+    pointer-events: none;
+    cursor: default;
+}
