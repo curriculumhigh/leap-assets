@@ -45,62 +45,66 @@
 /* ── Text-with-input flex layout (content + tick cell) ── */
 .req-twi-flex { display: flex; align-items: flex-start; gap: 8px; }
 
-/* ── MathQuill inputs ── */
+/* ── MathQuill inputs (Learnosity-native box style) ── */
 .req-widget .mq-editable-field {
-    border: 2px solid #c5cae9;
-    border-radius: 6px;
+    border: 1px solid #999;
+    border-radius: 2px;
     padding: 4px 8px;
-    background: #fafcff;
+    background: #fff;
     font-size: 15px;
     min-width: 60px;
 }
 
 .req-widget .mq-editable-field.mq-focused {
-    border-color: #1565C0;
+    border-color: #555;
     background: #fff;
-    box-shadow: 0 0 0 2px rgba(21, 101, 192, 0.12);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
 }
 
 .req-widget .mq-editable-field.correct {
-    border-color: #2E7D32;
-    background: #f1f8e9;
+    border-color: #3a9447;
+    border-width: 2px;
+    background: #e8f5e9;
 }
 
 .req-widget .mq-editable-field.incorrect {
-    border-color: #c62828;
-    background: #fff5f5;
+    border-color: #e8883a;
+    border-width: 2px;
+    background: #fde8d8;
 }
 
-/* ── Dropdown inputs (DN) ── */
+/* ── Dropdown inputs (DN — Learnosity-native box style) ── */
 .req-dropdown {
     display: inline-block;
-    padding: 4px 28px 4px 10px;
-    font-size: 14px;
+    padding: 6px 32px 6px 12px;
+    font-size: 15px;
     font-family: inherit;
-    border: 2px solid #c5cae9;
-    border-radius: 6px;
-    background: #fafcff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' fill='none' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 8px center;
+    border: 1px solid #999;
+    border-radius: 2px;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23555' fill='none' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 10px center;
     appearance: none;
     -webkit-appearance: none;
     cursor: pointer;
     vertical-align: middle;
-    min-width: 80px;
+    min-width: 120px;
 }
 
 .req-dropdown:focus {
-    border-color: #1565C0;
+    border-color: #555;
     outline: none;
-    box-shadow: 0 0 0 2px rgba(21, 101, 192, 0.12);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
 }
 
 .req-dropdown.correct {
-    border-color: #2E7D32;
-    background-color: #f1f8e9;
+    border-color: #3a9447;
+    border-width: 2px;
+    background-color: #e8f5e9;
 }
 
 .req-dropdown.incorrect {
-    border-color: #c62828;
-    background-color: #fff5f5;
+    border-color: #e8883a;
+    border-width: 2px;
+    background-color: #fde8d8;
 }
 
 /* ── Check button ── */
@@ -125,8 +129,8 @@
 
 /* ── Feedback pill ── */
 .req-fb { font-size: 13px; border-radius: 6px; padding: 4px 10px; display: none; }
-.req-fb.correct { display: inline-block; background: #e8f5e9; color: #2E7D32; }
-.req-fb.wrong { display: inline-block; background: #ffebee; color: #c62828; }
+.req-fb.correct { display: inline-block; background: #e8f5e9; color: #3a9447; }
+.req-fb.wrong { display: inline-block; background: #fde8d8; color: #e8883a; }
 
 /* ── Done banner ── */
 .req-done {
@@ -136,7 +140,7 @@
     background: #e8f5e9;
     border: 1px solid #a5d6a7;
     font-size: 14px;
-    color: #2E7D32;
+    color: #3a9447;
     font-weight: 600;
     text-align: center;
     display: none;
@@ -169,7 +173,7 @@
 .req-ca-btn:hover { background: #f5f5f5; }
 .req-ca-btn:disabled { opacity: 0.5; cursor: default; }
 .req-ca-feedback { font-size: 13px; font-weight: 500; }
-.req-ca-feedback.correct { color: #2E7D32; }
+.req-ca-feedback.correct { color: #3a9447; }
 .req-ca-feedback.incomplete { color: #e65100; }
 
 /* ── Symbol keypad (floating grid) ── */

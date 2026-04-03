@@ -371,7 +371,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         // Right: tick cell (like equation table fb-cell, on the right edge)
         var $tick = $('<div id="' + self.uid + '-tick-' + sec.id + '" style="width:28px;text-align:center;padding-top:6px;visibility:hidden;"></div>');
-        $tick.html('<span style="color:#2E7D32;font-size:16px;">&#10003;</span>');
+        $tick.html('<span style="color:#3a9447;font-size:16px;">&#10003;</span>');
         $wrapper.append($tick);
 
         self.renderKaTeX($wrapper[0]);
@@ -638,8 +638,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Tick in feedback cell
         var $fb = $("#" + self.uid + "-fb-" + sec.id + "-" + rowIdx);
         $fb.html(allCorrect
-            ? '<span style="color:#2E7D32;font-size:16px;">&#10003;</span>'
-            : '<span style="color:#c62828;font-size:16px;">&#10007;</span>');
+            ? '<span style="color:#3a9447;font-size:16px;">&#10003;</span>'
+            : '<span style="color:#e8883a;font-size:16px;">&#10007;</span>');
 
         if (allCorrect) {
             self.completedRows[sec.id][rowIdx] = true;
