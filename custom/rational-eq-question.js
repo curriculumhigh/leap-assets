@@ -55,6 +55,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         this.question = init.question;
         this.response = init.response;
         this.events = init.events;
+        this.lrnUtils = lrnUtils;
         this.facade = init.getFacade ? init.getFacade() : null;
 
         // Internal state
@@ -70,7 +71,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // then load CDN deps and render async
         init.events.trigger("ready");
 
-        // Wire Learnosity's "Check Answer" button to validate current active step
+        // Wire Learnosity's "Check Answer" button validate event
         var self = this;
         init.events.on("validate", function () { self.validateCurrentStep(); });
 
@@ -141,6 +142,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             $btn.on("click", function () { $box.toggleClass("visible"); });
             $hint.append($btn).append($box);
             $w.append($hint);
+        }
+
+        // Learnosity Check Answer button
+        if (self.lrnUtils && self.lrnUtils.renderComponent) {
+            var $checkWrap = $('<div class="req-check-answer"></div>');
+            $w.append($checkWrap);
+            self.lrnUtils.renderComponent("CheckAnswerButton", $checkWrap[0]);
         }
 
         // Keypad
