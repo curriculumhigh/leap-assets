@@ -161,14 +161,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             $w.append($hint);
         }
 
-        // Check Answer button (bottom-right, matching Learnosity's native style)
-        var $caWrap = $('<div class="req-check-answer-row" id="' + self.uid + '-ca"></div>');
-        var $caFb = $('<span class="req-ca-feedback" id="' + self.uid + '-ca-fb"></span>');
-        var $caBtn = $('<button class="req-ca-btn" type="button">Check Answer</button>');
-        $caBtn.on("click", function () { self.validateCurrentStep(); });
-        $caWrap.append($caFb).append($caBtn);
-        $w.append($caWrap);
-
         // Keypad
         self.buildKeypad($w);
 
@@ -739,25 +731,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     // ── Check Answer handler (fired by Learnosity's validate event) ──
     Question.prototype.validateCurrentStep = function () {
         var self = this;
-        console.log("[rational-eq] validate event fired");
         var resp = self.getResponse();
         if (!resp || !resp.value) return;
-        var parts = resp.value.split("/");
-        var completed = parseInt(parts[0]) || 0;
-        var total = parseInt(parts[1]) || 1;
-        var allDone = completed >= total;
-
         // Ensure response is current for Scorer
         self.events.trigger("changed", resp);
-
-        // Show visible feedback
-        var $fb = $("#" + self.uid + "-ca-fb");
-        if (allDone) {
-            $fb.attr("class", "req-ca-feedback correct").text("Correct — all steps complete!");
-        } else {
-            $fb.attr("class", "req-ca-feedback incomplete")
-               .text("Complete all steps first (" + completed + "/" + total + ")");
-        }
     };
 
     // ── Response ──
