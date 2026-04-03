@@ -156,6 +156,18 @@
 }
 .req-hint-box.visible { display: block; }
 
+/* ── Final Check Answer ── */
+.req-check-answer { margin-top: 16px; display: flex; align-items: center; gap: 12px; }
+.req-ca-btn {
+    background: #1565C0; color: #fff; border: none; border-radius: 6px;
+    padding: 8px 20px; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.req-ca-btn:hover { background: #1256a8; }
+.req-ca-btn:disabled { background: #9e9e9e; cursor: default; }
+.req-ca-feedback { font-size: 13px; font-weight: 500; }
+.req-ca-feedback.correct { color: #2E7D32; }
+.req-ca-feedback.incomplete { color: #e65100; }
+
 /* ── Symbol keypad (floating grid) ── */
 .req-keypad {
     position: absolute;

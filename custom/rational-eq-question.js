@@ -144,12 +144,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             $w.append($hint);
         }
 
-        // Learnosity Check Answer button
-        if (self.lrnUtils && self.lrnUtils.renderComponent) {
-            var $checkWrap = $('<div class="req-check-answer"></div>');
-            $w.append($checkWrap);
-            self.lrnUtils.renderComponent("CheckAnswerButton", $checkWrap[0]);
-        }
+        // Final "Check Answer" button — validates overall completion
+        var $caWrap = $('<div class="req-check-answer" id="' + self.uid + '-ca"></div>');
+        var $caBtn = $('<button class="req-ca-btn">Check Answer</button>');
+        var $caFb = $('<span class="req-ca-feedback" id="' + self.uid + '-ca-fb"></span>');
+        $caBtn.on("click", function () { self.validateCurrentStep(); });
+        $caWrap.append($caBtn).append($caFb);
+        $w.append($caWrap);
 
         // Keypad
         self.buildKeypad($w);
@@ -718,20 +719,32 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         self.events.trigger("changed", self.getResponse());
     };
 
-    // ── Learnosity "Check Answer" handler ──
-    // Validates completion: returns true only when all steps are done (score = max).
-    // The Scorer independently computes the score from the response.
-    // Learnosity uses the Scorer result to decide if the student can advance.
+    // ── Final "Check Answer" handler ──
     Question.prototype.validateCurrentStep = function () {
-        var resp = this.getResponse();
+        var self = this;
+        var resp = self.getResponse();
         if (!resp || !resp.value) return;
         var parts = resp.value.split("/");
         var completed = parseInt(parts[0]) || 0;
         var total = parseInt(parts[1]) || 1;
+        var allDone = completed >= total;
 
-        // Learnosity's facade handles the correct/incorrect UI and progression
-        // based on the Scorer. We just ensure the response is current.
-        this.events.trigger("changed", resp);
+        // Update response for Scorer
+        self.events.trigger("changed", resp);
+
+        // Show feedback
+        var $fb = $("#" + self.uid + "-ca-fb");
+        if (allDone) {
+            $fb.attr("class", "req-ca-feedback correct").text("Correct — all steps complete!");
+            $("#" + self.uid + "-ca .req-ca-btn").prop("disabled", true);
+            // Signal Learnosity that validation is complete
+            if (self.facade && self.facade.isValid && self.facade.isValid()) {
+                self.events.trigger("validated", resp);
+            }
+        } else {
+            $fb.attr("class", "req-ca-feedback incomplete")
+               .text("Complete all steps first (" + completed + "/" + total + ")");
+        }
     };
 
     // ── Response ──
