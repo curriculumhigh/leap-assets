@@ -1344,22 +1344,62 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
      * Convert a nerdamer expression string to display LaTeX.
      * Basic conversion for common patterns.
      */
+    /**
+     * Convert a nerdamer expression string to clean display LaTeX.
+     * Produces e.g. "3(2x-1)" not "3 \cdot (2 \cdot x - 1)".
+     * Only uses \cdot if the original answer string literally contains "\cdot".
+     */
     Question.prototype.nerdamerToDisplayLatex = function (expr) {
         if (!expr) return "";
         var s = expr;
+
         // Handle set values like "3,-2"
         if (s.indexOf(",") >= 0) {
-            return s.split(",").map(function (p) { return p.trim(); }).join(",\\;");
+            var self = this;
+            return s.split(",").map(function (p) {
+                return self.nerdamerToDisplayLatex(p.trim());
+            }).join(",\\;");
         }
-        try {
-            // Use nerdamer to convert to LaTeX if available
-            if (window.nerdamer) {
-                return nerdamer(s).toTeX();
-            }
-        } catch (e) {}
-        // Fallback: basic replacements
-        s = s.replace(/\*/g, " \\cdot ");
+
+        // If the answer already contains LaTeX commands, return as-is
+        if (s.indexOf("\\") >= 0) return s;
+
+        // Convert nerdamer expression to clean LaTeX:
+        // 1. Fractions: a/b → \frac{a}{b} (only top-level slash)
+        if (/^[^()]+\/[^()]+$/.test(s) && s.indexOf("log") < 0) {
+            var slashIdx = s.indexOf("/");
+            var num = s.substring(0, slashIdx).trim();
+            var den = s.substring(slashIdx + 1).trim();
+            return "\\frac{" + num + "}{" + den + "}";
+        }
+
+        // For compound fractions like log(25)/(4*log(2)), use nerdamer
+        if (s.indexOf("/") >= 0) {
+            try {
+                if (window.nerdamer) {
+                    var tex = nerdamer(s).toTeX();
+                    // Clean up cdots from nerdamer output
+                    tex = tex.replace(/\\cdot\s*/g, "");
+                    return tex;
+                }
+            } catch (e) {}
+        }
+
+        // 2. Remove * between number and parenthesis: 3*(2*x-1) → 3(2x-1)
+        //    Remove * between number and variable: 6*x → 6x
+        //    Remove * between variable and parenthesis
+        //    Keep * only if it would be ambiguous (two variables side by side)
+        s = s.replace(/\*\(/g, "(");           // n*( → n(
+        s = s.replace(/\)\*/g, ")");           // )*n → )n
+        s = s.replace(/(\d)\*([a-zA-Z])/g, "$1$2");  // 6*x → 6x
+        s = s.replace(/([a-zA-Z])\*(\d)/g, "$1 \\cdot $2"); // x*3 → x · 3 (rare, keep explicit)
+        s = s.replace(/([a-zA-Z])\*([a-zA-Z])/g, "$1$2");   // a*b → ab
+
+        // 3. Exponents: ^(...) → ^{...}
+        s = s.replace(/\^\(([^()]+)\)/g, "^{$1}");
         s = s.replace(/\^(\d+)/g, "^{$1}");
+        s = s.replace(/\^([a-zA-Z])/g, "^{$1}");
+
         return s;
     };
 
