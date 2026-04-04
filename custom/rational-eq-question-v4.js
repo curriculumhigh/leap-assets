@@ -1363,20 +1363,41 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         return s;
     };
 
+    /**
+     * Render (or re-render) the Correct Answers panel.
+     * Static version used by review mode — shows all answers.
+     */
     Question.prototype.renderCorrectAnswersPanel = function () {
+        this._renderCorrectAnswersPanelDynamic({}, {});
+    };
+
+    /**
+     * v4: Dynamic Correct Answers panel.
+     * Skips inputs whose row/section is already completed by the student.
+     * Hides the entire panel when all inputs are completed.
+     */
+    Question.prototype._renderCorrectAnswersPanelDynamic = function (completedRows, completedSections) {
         var self = this;
         var sections = self.question.sections || [];
+
+        // Remove existing panel
+        self.$el.find(".req-correct-answers").remove();
+
         var $panel = $('<div class="req-correct-answers"></div>');
-        var $title = $('<p class="req-ca-title">Correct Answers</p>');
+        var $title = $('<p class="req-ca-title">Correct Answers:</p>');
         var $grid = $('<div class="req-ca-grid"></div>');
         var num = 0;
+        var shown = 0;
 
         sections.forEach(function (sec) {
             if (sec.type === "equation-table") {
-                sec.rows.forEach(function (row) {
+                sec.rows.forEach(function (row, ri) {
                     if (!row.inputs || row.inputs.length === 0) return;
+                    var rowDone = !!(completedRows[sec.id] && completedRows[sec.id][ri]);
                     row.inputs.forEach(function (inp) {
                         num++;
+                        if (rowDone) return; // skip completed
+                        shown++;
                         var displayLatex = self.nerdamerToDisplayLatex(inp.answer);
                         var $box = $('<div class="req-ca-box"></div>');
                         $box.append($('<span class="req-num-badge"></span>').text(num));
@@ -1391,8 +1412,11 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     });
                 });
             } else if (sec.type === "text-with-input") {
+                var secDone = !!completedSections[sec.id];
                 sec.inputs.forEach(function (inp) {
                     num++;
+                    if (secDone) return; // skip completed
+                    shown++;
                     var $box = $('<div class="req-ca-box"></div>');
                     $box.append($('<span class="req-num-badge"></span>').text(num));
                     var $val = $('<span></span>');
@@ -1412,7 +1436,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             }
         });
 
-        if (num > 0) {
+        // Only show panel if there are remaining unanswered inputs
+        if (shown > 0) {
             $panel.append($title).append($grid);
             self.$el.find(".req-widget").append($panel);
         }
@@ -1520,6 +1545,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         // Apply initial step states (first step active, rest grayed)
         self._updateTeacherStepStates({}, {});
+
+        // Show correct answers panel (all answers initially)
+        self._renderCorrectAnswersPanelDynamic({}, {});
     };
 
     /**
@@ -1724,6 +1752,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         // Update per-step visual states (grayed / active / completed)
         self._updateTeacherStepStates(savedCompletedRows, savedCompletedSections);
+
+        // Update correct answers panel — remove completed inputs
+        self._renderCorrectAnswersPanelDynamic(savedCompletedRows, savedCompletedSections);
     };
 
     // ═════════════════════════════════════════════════
