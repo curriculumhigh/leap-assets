@@ -222,7 +222,7 @@
 .req-keypad {
     position: absolute;
     display: none;
-    grid-template-columns: repeat(5, 36px);
+    grid-template-columns: repeat(5, auto);
     gap: 4px;
     padding: 8px;
     background: #fff;
@@ -230,16 +230,15 @@
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.12);
     z-index: 1000;
-    max-width: 220px;
 }
 .req-keypad.visible { display: grid; }
 
 .req-keypad-btn {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 36px; height: 36px;
+    min-width: 36px; height: 36px;
     border: 1px solid #e0e0e0; border-radius: 6px;
     background: #fafafa; cursor: pointer; font-size: 14px;
-    transition: background 0.1s; padding: 0;
+    transition: background 0.1s; padding: 0 6px;
 }
 .req-keypad-btn:hover { background: #e5e7eb; }
 .req-keypad-btn:active { background: #d1d5db; }

@@ -2277,6 +2277,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             { label: "x^{\\square}", cmd: "^", type: "cmd" },
             { label: "\\dfrac{\\square}{\\square}", cmd: "/", type: "cmd" },
             { label: "\\sqrt{\\square}", cmd: "\\sqrt", type: "cmd" },
+            { label: "\\ln", cmd: "\\ln", type: "cmd" },
+            { label: "\\log", cmd: "\\log", type: "cmd" },
+            { label: "\\log_{\\square}", cmd: "\\log_", type: "cmd" },
             { label: "i", cmd: "i", type: "write" },
             { label: "x", cmd: "x", type: "write" }
         ];
