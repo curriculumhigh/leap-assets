@@ -1392,7 +1392,24 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var row = sec.rows[rowIdx];
         var allCorrect = true;
 
-        if (row.validation === "equivEquation" && row.inputs.length === 2) {
+        if (row.container) {
+            // ── v5: Container validation — multiple boxes validated as one expression ──
+            var boxValues = [];
+            for (var bi = 0; bi < row.inputs.length; bi++) {
+                var field = self.mqFields[sec.id + "-" + rowIdx + "-" + bi];
+                if (!field) { allCorrect = false; break; }
+                boxValues.push(field.latex());
+            }
+            if (boxValues.length === row.inputs.length) {
+                allCorrect = self.validateContainer(row.container, boxValues);
+            }
+            // Style all boxes in the container as a unit
+            for (var ci = 0; ci < row.inputs.length; ci++) {
+                var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + rowIdx + "-" + ci);
+                if (slot) { $(slot).removeClass("correct incorrect").addClass(allCorrect ? "correct" : "incorrect"); }
+            }
+        } else if (row.validation === "equivEquation" && row.inputs.length === 2) {
+            // Legacy equivEquation (backward compat with pre-v5 question data)
             var fieldL = self.mqFields[sec.id + "-" + rowIdx + "-0"];
             var fieldR = self.mqFields[sec.id + "-" + rowIdx + "-1"];
             if (!fieldL || !fieldR) return;
