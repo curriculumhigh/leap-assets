@@ -73,8 +73,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         this.isTeacher = href.indexOf("worksheet-teacher") >= 0
             || href.indexOf("/classroom") >= 0
             || href.indexOf("teacher") >= 0;
-        console.log("[rational-eq-v4] URL:", window.location.href,
-            "| isTeacher:", this.isTeacher, "| state:", this.state);
 
         // Internal state
         this.MQ = null;
