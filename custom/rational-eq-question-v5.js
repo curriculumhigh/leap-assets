@@ -1403,11 +1403,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             if (boxValues.length === row.inputs.length) {
                 allCorrect = self.validateContainer(row.container, boxValues);
             }
-            // Style all boxes in the container as a unit
-            for (var ci = 0; ci < row.inputs.length; ci++) {
-                var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + rowIdx + "-" + ci);
-                if (slot) { $(slot).removeClass("correct incorrect").addClass(allCorrect ? "correct" : "incorrect"); }
-            }
+            // Container: don't color individual boxes — show result at row level only
+            var $containerRow = $("#" + self.uid + "-row-" + sec.id + "-" + rowIdx);
+            $containerRow.removeClass("req-container-correct req-container-incorrect")
+                .addClass(allCorrect ? "req-container-correct" : "req-container-incorrect");
         } else if (row.validation === "equivEquation" && row.inputs.length === 2) {
             // Legacy equivEquation (backward compat with pre-v5 question data)
             var fieldL = self.mqFields[sec.id + "-" + rowIdx + "-0"];
@@ -2038,14 +2037,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 sec.rows.forEach(function (row, ri) {
                     if (!row.inputs || row.inputs.length === 0) return;
                     if (row.container) {
-                        // Container: one badge for the whole group, on the first box
+                        // Container: one badge on the expression cell, not on any box
                         inputNum++;
-                        var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-0";
-                        var slot = document.getElementById(slotId);
-                        if (slot) {
-                            $(slot).addClass("req-input-numbered");
-                            $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
-                        }
+                        var $row = $("#" + self.uid + "-row-" + sec.id + "-" + ri);
+                        var $exprCell = $row.find("td:first");
+                        $exprCell.addClass("req-container-numbered");
+                        $exprCell.prepend($('<span class="req-num-badge req-container-badge"></span>').text(inputNum));
                     } else {
                         row.inputs.forEach(function (inp, ii) {
                             inputNum++;
@@ -2339,14 +2336,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 sec.rows.forEach(function (row, ri) {
                     if (!row.inputs || row.inputs.length === 0) return;
                     if (row.container) {
-                        // Container: one badge for the whole group, on the first box
+                        // Container: one badge on the expression cell, not on any box
                         inputNum++;
-                        var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-0";
-                        var slot = document.getElementById(slotId);
-                        if (slot) {
-                            $(slot).addClass("req-input-numbered");
-                            $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
-                        }
+                        var $row = $("#" + self.uid + "-row-" + sec.id + "-" + ri);
+                        var $exprCell = $row.find("td:first");
+                        $exprCell.addClass("req-container-numbered");
+                        $exprCell.prepend($('<span class="req-num-badge req-container-badge"></span>').text(inputNum));
                     } else {
                         row.inputs.forEach(function (inp, ii) {
                             inputNum++;
