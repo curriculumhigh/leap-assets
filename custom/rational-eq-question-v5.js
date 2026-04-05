@@ -1249,10 +1249,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             self.renderKaTeX($container[0]);
 
         } else {
-            // For container rows, wrap all template content in a visual grouping span
+            // For container rows on teacher side, wrap content in a visual grouping span
             var $target = $wrapper;
-            if (row.container) {
-                var $cWrap = $('<span class="req-container-wrap"></span>');
+            if (row.container && self.isTeacher) {
+                var $cWrap = $('<span class="req-container-wrap" id="' + self.uid + '-cwrap-' + secId + '-' + rowIdx + '"></span>');
                 $wrapper.append($cWrap);
                 $target = $cWrap;
             }
@@ -1411,10 +1411,18 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             if (boxValues.length === row.inputs.length) {
                 allCorrect = self.validateContainer(row.container, boxValues);
             }
-            // Container: don't color individual boxes — show result at row level only
-            var $containerRow = $("#" + self.uid + "-row-" + sec.id + "-" + rowIdx);
-            $containerRow.removeClass("req-container-correct req-container-incorrect")
-                .addClass(allCorrect ? "req-container-correct" : "req-container-incorrect");
+            if (self.isTeacher) {
+                // Teacher: color the container wrap border, not individual boxes
+                var $cWrap = $("#" + self.uid + "-cwrap-" + sec.id + "-" + rowIdx);
+                $cWrap.removeClass("req-cwrap-correct req-cwrap-incorrect")
+                    .addClass(allCorrect ? "req-cwrap-correct" : "req-cwrap-incorrect");
+            } else {
+                // Student: color all boxes in the container as a unit
+                for (var ci = 0; ci < row.inputs.length; ci++) {
+                    var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + rowIdx + "-" + ci);
+                    if (slot) { $(slot).removeClass("correct incorrect").addClass(allCorrect ? "correct" : "incorrect"); }
+                }
+            }
         } else if (row.validation === "equivEquation" && row.inputs.length === 2) {
             // Legacy equivEquation (backward compat with pre-v5 question data)
             var fieldL = self.mqFields[sec.id + "-" + rowIdx + "-0"];

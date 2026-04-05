@@ -382,10 +382,12 @@
     background: #fff;
 }
 
-/* Validation states on the container wrap */
-.req-container-correct .req-container-wrap {
-    border-color: #3a9447;
+/* Validation states on the container wrap (teacher side) */
+.req-cwrap-correct {
+    border-color: #3a9447 !important;
+    border-width: 2px !important;
 }
-.req-container-incorrect .req-container-wrap {
-    border-color: #e8883a;
+.req-cwrap-incorrect {
+    border-color: #e8883a !important;
+    border-width: 2px !important;
 }
