@@ -346,7 +346,18 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         while (i < len) {
             var ch = expr.charAt(i);
 
-            if (ch === "(") {
+            if (ch === "*" && depth === 0) {
+                // Explicit multiplication — split here
+                if (current.trim()) factors.push(current.trim());
+                current = "";
+                i++;
+            } else if (ch === "(" && depth === 0 && current.trim() && !current.trim().match(/[+\-*/(^]$/)) {
+                // Implicit multiplication at depth 0: "2(x+3)" or ")(x+3)"
+                // Split before opening the paren group
+                factors.push(current.trim());
+                current = "";
+                // Don't advance i — let the "(" be picked up next iteration
+            } else if (ch === "(") {
                 depth++;
                 current += ch;
                 i++;
@@ -354,17 +365,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 depth--;
                 current += ch;
                 i++;
-            } else if (ch === "*" && depth === 0) {
-                // Top-level multiplication — split here
-                if (current.trim()) factors.push(current.trim());
-                current = "";
-                i++;
-            } else if (depth === 0 && ch === "(" && current.trim() && !current.trim().match(/[+\-*/]$/)) {
-                // Implicit multiplication: "2(x+3)" or ")(x+3)"
-                // But only if current doesn't end with an operator
-                if (current.trim()) factors.push(current.trim());
-                current = "";
-                // Don't advance i — let the "(" be picked up next iteration
             } else {
                 current += ch;
                 i++;
