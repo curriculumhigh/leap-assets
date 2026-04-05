@@ -325,9 +325,295 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     };
 
     Question.prototype.validateInput = function (studentLatex, inputSpec) {
+        // Legacy method routing (backward compat with v1-v4 question data)
         if (inputSpec.method === "setEquiv") return this.checkSetEquiv(studentLatex, inputSpec.answer);
         if (inputSpec.method === "factorFull") return this.checkFactorFull(studentLatex, inputSpec);
-        return this.checkEquivSymbolic(studentLatex, inputSpec.answer);
+
+        // ── v5: Unified validation with constraints ──
+        var method = inputSpec.method || "equivSymbolic";
+        var constraints = inputSpec.constraints || {};
+        var studentNerd = this.latexToNerdamer(studentLatex);
+        if (!studentNerd.trim()) return false;
+
+        // Step 1: Check form constraints BEFORE equivalence
+        if (constraints.form || constraints.lowestTerms || constraints.decimalPlaces !== undefined) {
+            var formOk = this.checkFormConstraints(studentLatex, studentNerd, constraints);
+            if (!formOk) return false;
+        }
+
+        // Step 2: Check excluded forms (equiLiteral match against each)
+        if (constraints.exclude) {
+            for (var ei = 0; ei < constraints.exclude.length; ei++) {
+                if (this.checkEquiLiteral(studentLatex, constraints.exclude[ei])) return false;
+            }
+        }
+
+        // Step 3: Equivalence check
+        if (method === "equiLiteral") {
+            return this.checkEquiLiteral(studentLatex, inputSpec.answer);
+        }
+
+        // equivSymbolic (default)
+        var equivOk;
+        if (constraints.ordered === false) {
+            equivOk = this.checkSetEquiv(studentLatex, inputSpec.answer);
+        } else {
+            equivOk = this.checkEquivSymbolic(studentLatex, inputSpec.answer);
+        }
+        if (!equivOk) return false;
+
+        // Step 4: Post-equivalence constraints
+        if (constraints.fullyFactored) {
+            return this.checkFactorFull(studentLatex, {
+                answer: inputSpec.answer,
+                field: constraints.fullyFactored
+            });
+        }
+
+        return true;
+    };
+
+    // ═══════════════════════════════════════════════════
+    // v5: FORM CONSTRAINTS
+    // ═══════════════════════════════════════════════════
+
+    /**
+     * Check that the student's answer satisfies form constraints.
+     * Called BEFORE equivalence — rejects correct values in wrong form.
+     */
+    Question.prototype.checkFormConstraints = function (studentLatex, studentNerd, constraints) {
+        var form = constraints.form;
+
+        if (form === "decimal") {
+            // Must look like a decimal number (digits, optional decimal point, optional sign)
+            var cleaned = studentLatex.replace(/\\[,;:!]/g, "").replace(/\s/g, "").replace(/^[{]|[}]$/g, "");
+            if (!/^-?\d+(\.\d+)?$/.test(cleaned)) return false;
+            if (constraints.decimalPlaces !== undefined) {
+                var dotIdx = cleaned.indexOf(".");
+                if (dotIdx === -1) return constraints.decimalPlaces === 0;
+                var places = cleaned.length - dotIdx - 1;
+                return places === constraints.decimalPlaces;
+            }
+            return true;
+        }
+
+        if (form === "fraction") {
+            // Must contain a fraction (via \frac or /)
+            var hasFrac = /\\d?frac\{/.test(studentLatex) || /\//.test(studentLatex.replace(/\\[a-z]+/g, ""));
+            if (!hasFrac) return false;
+            if (constraints.lowestTerms) {
+                return this.checkLowestTerms(studentNerd, studentLatex);
+            }
+            return true;
+        }
+
+        if (form === "interval") {
+            // Must be interval notation: [a,b], (a,b), [a,b), (a,b], or unions thereof
+            var cleaned2 = studentLatex.replace(/\\[,;:!]/g, "").replace(/\s/g, "");
+            if (!/[\[\(].*,.*[\]\)]/.test(cleaned2)) return false;
+            return true;
+        }
+
+        // lowestTerms without form:"fraction" — still check if it's a fraction in lowest terms
+        if (constraints.lowestTerms) {
+            return this.checkLowestTerms(studentNerd, studentLatex);
+        }
+
+        return true;
+    };
+
+    /**
+     * Check if a fraction is in lowest terms.
+     * Works on raw LaTeX to avoid nerdamer auto-simplifying (2/4 → 1/2).
+     * Falls back to nerdamer for symbolic fractions.
+     */
+    Question.prototype.checkLowestTerms = function (nerdExpr, studentLatex) {
+        // First try to extract from LaTeX \frac{num}{den}
+        if (studentLatex) {
+            var fracMatch = studentLatex.match(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/);
+            if (fracMatch) {
+                try {
+                    var numVal = parseFloat(nerdamer(this.latexToNerdamer(fracMatch[1])).evaluate().text("decimals"));
+                    var denVal = parseFloat(nerdamer(this.latexToNerdamer(fracMatch[2])).evaluate().text("decimals"));
+                    numVal = Math.abs(Math.round(numVal));
+                    denVal = Math.abs(Math.round(denVal));
+                    if (denVal === 0) return false;
+                    return this._gcd(numVal, denVal) === 1;
+                } catch (e) {}
+            }
+        }
+        // Fallback: try nerdamer numerator/denominator
+        try {
+            var num = nerdamer("numerator(" + nerdExpr + ")");
+            var den = nerdamer("denominator(" + nerdExpr + ")");
+            var nv = Math.abs(Math.round(parseFloat(num.evaluate().text("decimals"))));
+            var dv = Math.abs(Math.round(parseFloat(den.evaluate().text("decimals"))));
+            if (dv === 0) return false;
+            return this._gcd(nv, dv) === 1;
+        } catch (e) { return true; }
+    };
+
+    /** Greatest common divisor. */
+    Question.prototype._gcd = function (a, b) {
+        a = Math.abs(a); b = Math.abs(b);
+        while (b) { var t = b; b = a % b; a = t; }
+        return a;
+    };
+
+    // ═══════════════════════════════════════════════════
+    // v5: EQUILITERAL — exact form match
+    // ═══════════════════════════════════════════════════
+
+    /**
+     * Check if student's LaTeX matches the expected form exactly.
+     * Normalizes whitespace and common LaTeX formatting differences.
+     */
+    Question.prototype.checkEquiLiteral = function (studentLatex, expected) {
+        var normalize = function (s) {
+            s = s.replace(/\\left/g, "").replace(/\\right/g, "");
+            s = s.replace(/\s+/g, "");
+            s = s.replace(/\{(\w)\}/g, "$1"); // {x} → x for single chars
+            return s.trim().toLowerCase();
+        };
+        return normalize(studentLatex) === normalize(expected);
+    };
+
+    // ═══════════════════════════════════════════════════
+    // v5: CONTAINER VALIDATION
+    // ═══════════════════════════════════════════════════
+
+    /**
+     * Validate a response container — multiple boxes assembled into one expression.
+     *
+     * @param {object} container — { assembleTemplate, answer, method, constraints }
+     * @param {string[]} boxValues — array of student LaTeX values from each box
+     * @returns {boolean} whether the assembled expression is valid
+     */
+    Question.prototype.validateContainer = function (container, boxValues) {
+        // Step 1: Assemble student expression from template
+        var assembled = container.assembleTemplate;
+        for (var i = 0; i < boxValues.length; i++) {
+            var nerd = this.latexToNerdamer(boxValues[i]);
+            assembled = assembled.replace("{{" + i + "}}", "(" + nerd + ")");
+        }
+
+        // Step 2: Detect equation/inequality in assembled expression
+        var relMatch = assembled.match(/^(.+?)(=|<=|>=|<|>)(.+)$/);
+        if (relMatch) {
+            return this.validateContainerRelation(assembled, container, relMatch);
+        }
+
+        // Step 3: Plain expression — validate via inputSpec-style
+        var syntheticSpec = {
+            answer: container.answer,
+            method: container.method || "equivSymbolic",
+            constraints: container.constraints || {}
+        };
+
+        // For container validation, student input is already in nerdamer form
+        return this.validateInputNerdamer(assembled, syntheticSpec);
+    };
+
+    /**
+     * Validate a container that assembles into an equation/inequality.
+     * e.g. "{{0}} = {{1}}" with answer "(x-2) = (2*x-1)"
+     */
+    Question.prototype.validateContainerRelation = function (assembled, container, relMatch) {
+        var studentLHS = relMatch[1].trim();
+        var sign = relMatch[2];
+        var studentRHS = relMatch[3].trim();
+
+        // Parse expected equation the same way
+        var expectedMatch = container.answer.match(/^(.+?)(=|<=|>=|<|>)(.+)$/);
+        if (!expectedMatch) return false;
+
+        var expectedLHS = expectedMatch[1].trim();
+        var expectedRHS = expectedMatch[3].trim();
+        var expectedSign = expectedMatch[2];
+
+        try {
+            // Student: LHS - RHS, Expected: LHS - RHS
+            var studentDiff = "(" + studentLHS + ")-(" + studentRHS + ")";
+            var expectedDiff = "(" + expectedLHS + ")-(" + expectedRHS + ")";
+
+            // Check if the two equations are equivalent:
+            // studentDiff = k * expectedDiff for some nonzero constant k
+            var directDiff = nerdamer("simplify(" + studentDiff + "-(" + expectedDiff + "))");
+            if (directDiff.toString() === "0") {
+                // Same orientation, same sign works
+                return sign === expectedSign;
+            }
+
+            // Check if student swapped sides: studentDiff = -expectedDiff
+            var swapDiff = nerdamer("simplify(" + studentDiff + "+(" + expectedDiff + "))");
+            if (swapDiff.toString() === "0") {
+                // Sides swapped — flip inequality sign if needed
+                if (sign === "=") return expectedSign === "=";
+                var flipMap = { "<": ">", ">": "<", "<=": ">=", ">=": "<=" };
+                return sign === (flipMap[expectedSign] || expectedSign);
+            }
+
+            // Check proportional: studentDiff / expectedDiff = constant
+            var ratio = nerdamer("simplify((" + studentDiff + ")/(" + expectedDiff + "))");
+            if (ratio.variables().length === 0) {
+                var ratioVal = parseFloat(ratio.text("decimals"));
+                if (Math.abs(ratioVal) < 1e-9) return false;
+                if (sign === "=" && expectedSign === "=") return true;
+                // For inequalities: positive ratio preserves direction, negative flips
+                if (ratioVal > 0) return sign === expectedSign;
+                var flipMap2 = { "<": ">", ">": "<", "<=": ">=", ">=": "<=" };
+                return sign === (flipMap2[expectedSign] || expectedSign);
+            }
+
+            return false;
+        } catch (e) { return false; }
+    };
+
+    /**
+     * Like validateInput but takes nerdamer-form expression directly (not LaTeX).
+     * Used by container validation where assembly is already in nerdamer form.
+     */
+    Question.prototype.validateInputNerdamer = function (studentNerd, inputSpec) {
+        var method = inputSpec.method || "equivSymbolic";
+        var constraints = inputSpec.constraints || {};
+
+        if (!studentNerd.trim()) return false;
+
+        // Exclude check (excluded answers are in nerdamer form for containers)
+        if (constraints.exclude) {
+            for (var ei = 0; ei < constraints.exclude.length; ei++) {
+                if (this._equivNerdamer(studentNerd, constraints.exclude[ei])) return false;
+            }
+        }
+
+        // Equivalence
+        var equivOk;
+        if (method === "equiLiteral") {
+            // For containers, equiLiteral compares nerdamer forms directly
+            return studentNerd.replace(/\s/g, "") === inputSpec.answer.replace(/\s/g, "");
+        }
+
+        if (constraints.ordered === false) {
+            // Split by comma, permutation match
+            var studentParts = studentNerd.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+            var expectedParts = inputSpec.answer.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+            equivOk = this._permutationMatchNerdamer(studentParts, expectedParts);
+        } else {
+            equivOk = this._equivNerdamer(studentNerd, inputSpec.answer);
+        }
+        if (!equivOk) return false;
+
+        // Post-equivalence constraints
+        if (constraints.fullyFactored) {
+            var factors = this.parseFactors(studentNerd);
+            if (factors.length === 0) return false;
+            for (var fi = 0; fi < factors.length; fi++) {
+                try { if (nerdamer(factors[fi]).variables().length === 0) continue; } catch (e) {}
+                if (!this.isIrreducible(factors[fi], constraints.fullyFactored)) return false;
+            }
+        }
+
+        return true;
     };
 
     // ═══════════════════════════════════════════════════
