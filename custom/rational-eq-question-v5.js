@@ -2037,15 +2037,26 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             if (sec.type === "equation-table") {
                 sec.rows.forEach(function (row, ri) {
                     if (!row.inputs || row.inputs.length === 0) return;
-                    row.inputs.forEach(function (inp, ii) {
+                    if (row.container) {
+                        // Container: one badge for the whole group, on the first box
                         inputNum++;
-                        var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii;
+                        var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-0";
                         var slot = document.getElementById(slotId);
                         if (slot) {
                             $(slot).addClass("req-input-numbered");
                             $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
                         }
-                    });
+                    } else {
+                        row.inputs.forEach(function (inp, ii) {
+                            inputNum++;
+                            var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii;
+                            var slot = document.getElementById(slotId);
+                            if (slot) {
+                                $(slot).addClass("req-input-numbered");
+                                $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                            }
+                        });
+                    }
                 });
             } else if (sec.type === "text-with-input") {
                 sec.inputs.forEach(function (inp, ii) {
@@ -2185,22 +2196,47 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 sec.rows.forEach(function (row, ri) {
                     if (!row.inputs || row.inputs.length === 0) return;
                     var rowDone = !!(completedRows[sec.id] && completedRows[sec.id][ri]);
-                    row.inputs.forEach(function (inp) {
+                    if (row.container) {
+                        // Container: one box showing assembled answer
                         num++;
-                        if (rowDone) return; // skip completed
-                        shown++;
-                        var displayLatex = self.nerdamerToDisplayLatex(inp.answer);
-                        var $box = $('<div class="req-ca-box"></div>');
-                        $box.append($('<span class="req-num-badge"></span>').text(num));
-                        var $val = $('<span></span>');
-                        try {
-                            $val.html(katex.renderToString(displayLatex, { throwOnError: false }));
-                        } catch (e) {
-                            $val.text(inp.answer);
+                        if (!rowDone) {
+                            shown++;
+                            // Build display LaTeX from template + individual answers
+                            var tpl = row.template || "{{0}}";
+                            var displayParts = tpl;
+                            row.inputs.forEach(function (inp, ii) {
+                                var dispLtx = self.nerdamerToDisplayLatex(inp.answer);
+                                displayParts = displayParts.replace("{{" + ii + "}}", dispLtx);
+                            });
+                            var $box = $('<div class="req-ca-box"></div>');
+                            $box.append($('<span class="req-num-badge"></span>').text(num));
+                            var $val = $('<span></span>');
+                            try {
+                                $val.html(katex.renderToString(displayParts, { throwOnError: false }));
+                            } catch (e) {
+                                $val.text(displayParts);
+                            }
+                            $box.append($val);
+                            $grid.append($box);
                         }
-                        $box.append($val);
-                        $grid.append($box);
-                    });
+                    } else {
+                        row.inputs.forEach(function (inp) {
+                            num++;
+                            if (rowDone) return; // skip completed
+                            shown++;
+                            var displayLatex = self.nerdamerToDisplayLatex(inp.answer);
+                            var $box = $('<div class="req-ca-box"></div>');
+                            $box.append($('<span class="req-num-badge"></span>').text(num));
+                            var $val = $('<span></span>');
+                            try {
+                                $val.html(katex.renderToString(displayLatex, { throwOnError: false }));
+                            } catch (e) {
+                                $val.text(inp.answer);
+                            }
+                            $box.append($val);
+                            $grid.append($box);
+                        });
+                    }
                 });
             } else if (sec.type === "text-with-input") {
                 var secDone = !!completedSections[sec.id];
@@ -2302,15 +2338,26 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             if (sec.type === "equation-table") {
                 sec.rows.forEach(function (row, ri) {
                     if (!row.inputs || row.inputs.length === 0) return;
-                    row.inputs.forEach(function (inp, ii) {
+                    if (row.container) {
+                        // Container: one badge for the whole group, on the first box
                         inputNum++;
-                        var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii;
+                        var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-0";
                         var slot = document.getElementById(slotId);
                         if (slot) {
                             $(slot).addClass("req-input-numbered");
                             $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
                         }
-                    });
+                    } else {
+                        row.inputs.forEach(function (inp, ii) {
+                            inputNum++;
+                            var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii;
+                            var slot = document.getElementById(slotId);
+                            if (slot) {
+                                $(slot).addClass("req-input-numbered");
+                                $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                            }
+                        });
+                    }
                 });
             } else if (sec.type === "text-with-input") {
                 sec.inputs.forEach(function (inp, ii) {
