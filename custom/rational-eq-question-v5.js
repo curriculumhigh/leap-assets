@@ -2734,17 +2734,33 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
             var $slot = $(slot);
             var widgetOff = self.$el.find(".req-widget").offset();
-            var slotOff = $slot.offset();
-            if (widgetOff && slotOff) {
-                var keypadW = $keypad.outerWidth() || 220;
-                // Always position below the input — never above, so completed steps stay visible
-                var top = slotOff.top - widgetOff.top + $slot.outerHeight() + 6;
-                var left = slotOff.left - widgetOff.left;
+            if (!widgetOff) return;
 
-                var maxLeft = 700 - keypadW;
-                if (left > maxLeft) left = Math.max(0, maxLeft);
-                $keypad.css({ top: top + "px", left: left + "px" });
-            }
+            // Find the rightmost MQ slot in the same row (tr or twi section)
+            var $row = $slot.closest("tr, .req-twi-flex");
+            var rightmostRight = 0;
+            var rightmostBottom = 0;
+            $row.find(".mq-slot").each(function () {
+                var off = $(this).offset();
+                if (off) {
+                    var r = off.left + $(this).outerWidth();
+                    if (r > rightmostRight) {
+                        rightmostRight = r;
+                        rightmostBottom = off.top + $(this).outerHeight();
+                    }
+                }
+            });
+
+            // Position diagonally below-right of the rightmost box
+            var top = rightmostBottom - widgetOff.top + 6;
+            var left = rightmostRight - widgetOff.left + 12;
+
+            // Clamp to widget bounds
+            var keypadW = $keypad.outerWidth() || 220;
+            var widgetW = self.$el.find(".req-widget").outerWidth() || 700;
+            if (left + keypadW > widgetW) left = Math.max(0, widgetW - keypadW - 8);
+
+            $keypad.css({ top: top + "px", left: left + "px" });
         });
     };
 
