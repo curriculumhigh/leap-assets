@@ -289,7 +289,14 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             var studentExpr = this.latexToNerdamer(studentLatex);
             if (!studentExpr.trim()) return false;
             var diff = nerdamer("simplify((" + studentExpr + ")-(" + expectedNerdamer + "))");
-            return diff.toString() === "0";
+            if (diff.toString() === "0") return true;
+            // Numeric fallback: if no variables remain, evaluate and compare
+            // Handles cases like log(100)/log(10) vs 2 where nerdamer has float rounding
+            if (diff.variables().length === 0) {
+                var numVal = parseFloat(diff.text("decimals"));
+                return Math.abs(numVal) < 1e-9;
+            }
+            return false;
         } catch (e) { return false; }
     };
 
