@@ -1,0 +1,2349 @@
+/**
+ * Rational Equation — Learnosity Custom Question v5
+ *
+ * v5 additions over v4:
+ *  - factorFull validation: checks student's factored expression is fully factored
+ *    over a specified field (integers, reals, or complex)
+ *  - Permutation matching: factors can appear in any order across grouped inputs
+ *  - Syntactic factor parser for single-box factored expressions
+ *  - Irreducibility checker per field
+ *
+ * Inherited from v4:
+ *  - Real-time sync, teacher live view, per-step visibility, debounced events
+ *
+ * Custom type: "rational_equation"
+ */
+LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
+    "use strict";
+
+    // ── CDN URLs ──
+    var CDN = {
+        katexCSS:  "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css",
+        katexJS:   "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js",
+        katexAuto: "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js",
+        mqCSS:     "https://unpkg.com/mathquill@0.10.1/build/mathquill.css",
+        mqJS:      "https://unpkg.com/mathquill@0.10.1/build/mathquill.js",
+        nerdCore:  "https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/nerdamer.core.js",
+        nerdAlg:   "https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Algebra.js",
+        nerdCalc:  "https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Calculus.js",
+        nerdSolve: "https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Solve.js",
+        nerdExtra: "https://cdn.jsdelivr.net/npm/nerdamer@1.1.13/Extra.js"
+    };
+
+    // ── Helpers: load external scripts/styles ──
+    function loadCSS(url) {
+        if ($('link[href="' + url + '"]').length) return;
+        $("<link>", { rel: "stylesheet", href: url }).appendTo("head");
+    }
+
+    function loadScript(url, check) {
+        if (check && check()) {
+            return $.Deferred().resolve().promise();
+        }
+        return $.getScript(url).fail(function (jqxhr, settings, exception) {
+            console.error("[rational-eq-v5] Failed to load: " + url, exception);
+        });
+    }
+
+    function loadDeps() {
+        loadCSS(CDN.katexCSS);
+        loadCSS(CDN.mqCSS);
+        if (!window.jQuery) window.jQuery = $;
+        return loadScript(CDN.katexJS, function () { return window.katex; })
+            .then(function () { return loadScript(CDN.katexAuto, function () { return window.renderMathInElement; }); })
+            .then(function () { return loadScript(CDN.mqJS, function () { return window.MathQuill; }); })
+            .then(function () { return loadScript(CDN.nerdCore, function () { return window.nerdamer; }); })
+            .then(function () { return loadScript(CDN.nerdAlg); })
+            .then(function () { return loadScript(CDN.nerdCalc); })
+            .then(function () { return loadScript(CDN.nerdSolve); })
+            .then(function () { return loadScript(CDN.nerdExtra); });
+    }
+
+    // ═════════════════════════════════════════════════
+    // QUESTION CLASS
+    // ═════════════════════════════════════════════════
+
+    function Question(init, lrnUtils) {
+        this.$el = init.$el;
+        this.question = init.question;
+        this.response = init.response;
+        this.events = init.events;
+        this.lrnUtils = lrnUtils;
+        this.facade = init.getFacade ? init.getFacade() : null;
+        this.state = init.state || "initial";
+
+        // Detect teacher mode from LEAP URL
+        var href = (window.location.href || "").toLowerCase();
+        this.isTeacher = href.indexOf("worksheet-teacher") >= 0
+            || href.indexOf("/classroom") >= 0
+            || href.indexOf("teacher") >= 0;
+
+        // Internal state
+        this.MQ = null;
+        this.mqFields = {};
+        this.completedSections = {};
+        this.completedRows = {};
+        this.unlockedRows = {};
+        this.focusedMQField = null;
+        this.uid = "req-" + Math.random().toString(36).slice(2, 8);
+        this._disabled = false;
+        this._changedTimer = null;
+
+        // Fire ready immediately so Learnosity doesn't time out
+        init.events.trigger("ready");
+
+        // Wire Learnosity's "Check Answer" button validate event
+        var self = this;
+        init.events.on("validate", function () { self.validateCurrentStep(); });
+
+        loadDeps().then(function () {
+            self.MQ = MathQuill.getInterface(2);
+            self.render();
+        }).fail(function (err) {
+            console.error("[rational-eq-v5] loadDeps failed:", err);
+            $(self.$el).html('<p style="color:red;">Failed to load dependencies. Check console.</p>');
+        });
+    }
+
+    Question.prototype.render = function () {
+        var q = this.question;
+        var self = this;
+
+        var $w = $('<div class="req-widget" style="position:relative;"></div>');
+
+        // Hide Learnosity's raw stimulus rendering
+        self.$el.closest(".lrn_widget, .lrn-question, .lrn_response_wrapper")
+            .parent().find(".lrn_stimulus").hide();
+
+        // Render stimulus with KaTeX
+        var stim = q.stimulus || "";
+        if (stim) {
+            $w.append($('<p style="font-size:15px;line-height:1.7;margin:0 0 14px;"></p>').html(stim));
+        }
+
+        // Sections — grouped by `group` field into scaffold-block wrappers
+        var sections = q.sections || [];
+        var currentGroup = null;
+        var $currentGroupDiv = null;
+        self.groupFirstIndex = {};
+
+        sections.forEach(function (sec, si) {
+            var $sec;
+            if (sec.type === "text") {
+                $sec = self.buildTextSection(sec);
+            } else if (sec.type === "equation-table") {
+                $sec = self.buildEquationTableSection(sec);
+            } else if (sec.type === "text-with-input") {
+                $sec = self.buildTextWithInputSection(sec);
+            }
+            if (!$sec) return;
+
+            if (sec.group) {
+                if (sec.group !== currentGroup) {
+                    currentGroup = sec.group;
+                    $currentGroupDiv = $('<div class="req-scaffold-block" id="' + self.uid + '-group-' + sec.group + '"></div>');
+                    self.groupFirstIndex[sec.group] = si;
+                    if (si > 0) $currentGroupDiv.addClass("req-section-locked");
+                    $w.append($currentGroupDiv);
+                }
+                if (si !== self.groupFirstIndex[sec.group]) {
+                    $sec.addClass("req-section-locked");
+                }
+                $currentGroupDiv.append($sec);
+            } else {
+                currentGroup = null;
+                $currentGroupDiv = null;
+                if (si > 0) $sec.addClass("req-section-locked");
+                $w.append($sec);
+            }
+        });
+
+        // Done banner
+        $w.append($('<div class="req-done" id="' + self.uid + '-done">All steps complete!</div>'));
+
+        // Hint
+        if (q.hint) {
+            var $hint = $('<div style="margin-top:12px"></div>');
+            var $btn = $('<button class="req-hint-btn">Show Hint</button>');
+            var $box = $('<div class="req-hint-box"></div>').html(q.hint);
+            $btn.on("click", function () { $box.toggleClass("visible"); });
+            $hint.append($btn).append($box);
+            $w.append($hint);
+        }
+
+        // Keypad
+        self.buildKeypad($w);
+
+        this.$el.empty().append($w);
+        self.renderKaTeX($w[0]);
+
+        // Hide keypad when clicking outside MQ fields and keypad
+        $(document).on("mousedown." + self.uid, function (ev) {
+            var $t = $(ev.target);
+            if ($t.closest(".req-keypad, .mq-editable-field, .req-mq-slot").length) return;
+            $("#" + self.uid + "-keypad").removeClass("visible");
+            self.focusedMQField = null;
+        });
+
+        // Branch based on state and role
+        if (self.isTeacher) {
+            // v4: Teacher live view — grayed out, real-time updates, step progress
+            setTimeout(function () {
+                self._applyTeacherLiveMode();
+                // If there's already a saved response, populate from it
+                if (self.response && self.response.inputs) {
+                    self._updateTeacherFromResponse(self.response);
+                }
+            }, 200);
+
+            // Listen for response updates from student via multiple mechanisms:
+            // 1. Facade "changed" event
+            if (self.facade && self.facade.on) {
+                self.facade.on("changed", function () {
+                    var resp = self.facade.getResponse();
+                    if (resp) self._updateTeacherFromResponse(resp);
+                });
+            }
+            // 2. Learnosity events "changed" (fired by student side)
+            self.events.on("changed", function (resp) {
+                if (resp) self._updateTeacherFromResponse(resp);
+            });
+            // 3. Poll for response changes (fallback for sync delays)
+            self._pollInterval = setInterval(function () {
+                try {
+                    var resp = self.facade ? self.facade.getResponse() : null;
+                    if (resp && resp.inputs) self._updateTeacherFromResponse(resp);
+                } catch (e) {}
+            }, 2000);
+        } else if (self.state === "review") {
+            // Pure review mode (non-teacher): static read-only with correct answers
+            setTimeout(function () {
+                self.applyReviewMode();
+                self.renderCorrectAnswersPanel();
+            }, 200);
+        } else if (self.state === "resume") {
+            // Student resume: restore progress and continue interactively
+            setTimeout(function () { self.restoreFromResponse(self.response); }, 200);
+        } else {
+            // Student initial: interactive flow
+            self.unlockSection(0);
+        }
+    };
+
+    // ── v4: Debounced "changed" event to sync student input in real time ──
+    Question.prototype._fireChanged = function () {
+        var self = this;
+        if (self._changedTimer) clearTimeout(self._changedTimer);
+        self._changedTimer = setTimeout(function () {
+            self.events.trigger("changed", self.getResponse());
+        }, 150);
+    };
+
+    // ── KaTeX rendering ──
+    Question.prototype.renderKaTeX = function (el) {
+        if (typeof renderMathInElement !== "function") return;
+        renderMathInElement(el, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            throwOnError: false
+        });
+    };
+
+    // ── Validation utilities ──
+    Question.prototype.latexToNerdamer = function (latex) {
+        var s = latex.trim();
+        s = s.replace(/\\left/g, "").replace(/\\right/g, "");
+        while (s.match(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/)) {
+            s = s.replace(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/g, "(($1)/($2))");
+        }
+        s = s.replace(/\\cdot/g, "*");
+        s = s.replace(/\\times/g, "*");
+        s = s.replace(/\\div/g, "/");
+        s = s.replace(/\\[,;:!]/g, "");
+        s = s.replace(/\\ln\b/g, "log");
+        s = s.replace(/\\log_\{([^{}]+)\}\s*\(([^()]+)\)/g, "(log($2)/log($1))");
+        s = s.replace(/\\log_\{([^{}]+)\}\s*([a-zA-Z0-9])/g, "(log($2)/log($1))");
+        s = s.replace(/\\log\b/g, "log");
+        s = s.replace(/\^{([^{}]+)}/g, "^($1)");
+        s = s.replace(/_\{([^{}]+)\}/g, "_($1)");
+        s = s.replace(/(\d)([a-zA-Z])/g, "$1*$2");
+        s = s.replace(/\\sqrt\{([^{}]+)\}/g, "sqrt($1)");
+        s = s.replace(/\\sqrt\s*([a-zA-Z0-9])/g, "sqrt($1)");
+        s = s.replace(/\\(?!pi|e|sqrt|ln|log|sin|cos|tan|infty)/g, "");
+        return s;
+    };
+
+    Question.prototype.checkEquivSymbolic = function (studentLatex, expectedNerdamer) {
+        try {
+            var studentExpr = this.latexToNerdamer(studentLatex);
+            if (!studentExpr.trim()) return false;
+            var diff = nerdamer("simplify((" + studentExpr + ")-(" + expectedNerdamer + "))");
+            return diff.toString() === "0";
+        } catch (e) { return false; }
+    };
+
+    Question.prototype.checkSetEquiv = function (studentLatex, expectedStr) {
+        try {
+            var self = this;
+            var studentStr = self.latexToNerdamer(studentLatex);
+            var studentParts = studentStr.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+            var expectedParts = expectedStr.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+            if (studentParts.length !== expectedParts.length) return false;
+
+            var matched = {};
+            for (var ei = 0; ei < expectedParts.length; ei++) {
+                var found = false;
+                for (var si = 0; si < studentParts.length; si++) {
+                    if (matched[si]) continue;
+                    try {
+                        var diff = nerdamer("simplify((" + studentParts[si] + ")-(" + expectedParts[ei] + "))");
+                        if (diff.toString() === "0") { matched[si] = true; found = true; break; }
+                    } catch (e2) {}
+                }
+                if (!found) return false;
+            }
+            return true;
+        } catch (e) { return false; }
+    };
+
+    Question.prototype.validateInput = function (studentLatex, inputSpec) {
+        if (inputSpec.method === "setEquiv") return this.checkSetEquiv(studentLatex, inputSpec.answer);
+        if (inputSpec.method === "factorFull") return this.checkFactorFull(studentLatex, inputSpec);
+        return this.checkEquivSymbolic(studentLatex, inputSpec.answer);
+    };
+
+    // ═══════════════════════════════════════════════════
+    // v5: FACTORING VALIDATION — fully factored over ℤ/ℝ/ℂ
+    // ═══════════════════════════════════════════════════
+
+    /**
+     * Parse a nerdamer-syntax expression into its top-level multiplicative factors.
+     * E.g. "2*(x+2)*(x+3)" → ["2", "x+2", "x+3"]
+     *       "(x-2)^2*(x+1)" → ["x-2", "x-2", "x+1"]  (exponents expanded)
+     *       "-3*(x+1)" → ["-3", "x+1"]
+     *
+     * Works on the ASCII string (post latexToNerdamer conversion).
+     */
+    Question.prototype.parseFactors = function (expr) {
+        expr = expr.trim();
+        if (!expr) return [];
+
+        // Normalize: remove outer parens if they wrap the whole expression
+        while (expr.charAt(0) === "(" && this._findMatchingParen(expr, 0) === expr.length - 1) {
+            expr = expr.substring(1, expr.length - 1).trim();
+        }
+
+        var factors = [];
+        var i = 0;
+        var len = expr.length;
+        var current = "";
+        var depth = 0;
+
+        while (i < len) {
+            var ch = expr.charAt(i);
+
+            if (ch === "(") {
+                depth++;
+                current += ch;
+                i++;
+            } else if (ch === ")") {
+                depth--;
+                current += ch;
+                i++;
+            } else if (ch === "*" && depth === 0) {
+                // Top-level multiplication — split here
+                if (current.trim()) factors.push(current.trim());
+                current = "";
+                i++;
+            } else if (depth === 0 && ch === "(" && current.trim() && !current.trim().match(/[+\-*/]$/)) {
+                // Implicit multiplication: "2(x+3)" or ")(x+3)"
+                // But only if current doesn't end with an operator
+                if (current.trim()) factors.push(current.trim());
+                current = "";
+                // Don't advance i — let the "(" be picked up next iteration
+            } else {
+                current += ch;
+                i++;
+            }
+        }
+        if (current.trim()) factors.push(current.trim());
+
+        // Expand exponents: "x+2" with ^2 → two copies
+        var expanded = [];
+        for (var fi = 0; fi < factors.length; fi++) {
+            var f = factors[fi];
+            var expMatch = f.match(/^(.+)\^(\(?\d+\)?)$/);
+            if (expMatch) {
+                var base = expMatch[1];
+                var exp = parseInt(expMatch[2].replace(/[()]/g, ""));
+                // Strip outer parens from base
+                if (base.charAt(0) === "(" && this._findMatchingParen(base, 0) === base.length - 1) {
+                    base = base.substring(1, base.length - 1);
+                }
+                for (var k = 0; k < exp; k++) expanded.push(base);
+            } else {
+                // Strip outer parens from individual factor
+                if (f.charAt(0) === "(" && this._findMatchingParen(f, 0) === f.length - 1) {
+                    f = f.substring(1, f.length - 1);
+                }
+                expanded.push(f);
+            }
+        }
+
+        return expanded;
+    };
+
+    /** Find the index of the closing paren matching the open paren at position pos. */
+    Question.prototype._findMatchingParen = function (str, pos) {
+        var depth = 0;
+        for (var i = pos; i < str.length; i++) {
+            if (str.charAt(i) === "(") depth++;
+            else if (str.charAt(i) === ")") { depth--; if (depth === 0) return i; }
+        }
+        return -1;
+    };
+
+    /**
+     * Get the degree of a polynomial expression in variable x.
+     * Uses nerdamer to expand and check.
+     */
+    Question.prototype._polyDegree = function (expr, variable) {
+        variable = variable || "x";
+        try {
+            var expanded = nerdamer("expand(" + expr + ")").toString();
+            // Find highest power of the variable
+            var degree = 0;
+            // Check for x^n patterns
+            var re = new RegExp(variable + "\\^\\(?(\\d+)\\)?", "g");
+            var m;
+            while ((m = re.exec(expanded)) !== null) {
+                var d = parseInt(m[1]);
+                if (d > degree) degree = d;
+            }
+            // Check for bare x (degree 1)
+            if (degree === 0) {
+                var reVar = new RegExp("[^a-zA-Z]" + variable + "(?![a-zA-Z0-9^])|^" + variable + "(?![a-zA-Z0-9^])");
+                if (reVar.test(expanded)) degree = 1;
+            }
+            return degree;
+        } catch (e) { return -1; }
+    };
+
+    /**
+     * Extract polynomial coefficients [a, b, c] for ax^2+bx+c.
+     * Uses evaluation at three points: f(0)=c, then solve for a and b.
+     * Returns null if not a quadratic polynomial.
+     */
+    Question.prototype._quadCoeffs = function (expr, variable) {
+        variable = variable || "x";
+        try {
+            var f0 = parseFloat(nerdamer(expr, { x: 0 }).evaluate().toString());
+            var f1 = parseFloat(nerdamer(expr, { x: 1 }).evaluate().toString());
+            var fm1 = parseFloat(nerdamer(expr, { x: -1 }).evaluate().toString());
+            // For ax^2+bx+c: c=f(0), a=(f(1)+f(-1))/2-c, b=f(1)-a-c
+            var c = f0;
+            var a = (f1 + fm1) / 2 - c;
+            var b = f1 - a - c;
+            if (isNaN(a) || isNaN(b) || isNaN(c)) return null;
+            return { a: a, b: b, c: c };
+        } catch (e) { return null; }
+    };
+
+    /**
+     * Check if a factor is irreducible over the specified field.
+     * @param {string} factor — nerdamer expression string
+     * @param {string} field — "integers", "reals", or "complex"
+     * @returns {boolean} true if irreducible
+     */
+    Question.prototype.isIrreducible = function (factor, field) {
+        var degree = this._polyDegree(factor);
+
+        // Constants and linear factors are always irreducible
+        if (degree <= 1) return true;
+
+        if (field === "complex") {
+            // Over ℂ: only linear factors are irreducible
+            return false;
+        }
+
+        if (field === "reals") {
+            // Over ℝ: irreducible if linear, or quadratic with negative discriminant
+            if (degree === 2) {
+                var coeffs = this._quadCoeffs(factor);
+                if (!coeffs) return false;
+                var disc = coeffs.b * coeffs.b - 4 * coeffs.a * coeffs.c;
+                return disc < 0;
+            }
+            // Degree 3+: always reducible over ℝ (has at least one real root)
+            return false;
+        }
+
+        // field === "integers" (factoring over ℤ, i.e. rational coefficients)
+        if (degree === 2) {
+            var coeffs2 = this._quadCoeffs(factor);
+            if (!coeffs2) return false;
+            var disc2 = coeffs2.b * coeffs2.b - 4 * coeffs2.a * coeffs2.c;
+            // Irreducible over ℤ if discriminant is not a perfect square
+            if (disc2 < 0) return true;
+            var sqrtDisc = Math.sqrt(disc2);
+            return Math.abs(sqrtDisc - Math.round(sqrtDisc)) > 1e-9;
+        }
+
+        if (degree === 3) {
+            // Use rational root theorem: try ±(factors of constant)/(factors of leading coeff)
+            try {
+                // Extract leading coeff (a3) and constant (c3) via evaluation
+                // For ax^3+bx^2+cx+d: d=f(0), and a3 via finite differences
+                var f0_3 = parseFloat(nerdamer(factor, { x: 0 }).evaluate().toString());
+                var f1_3 = parseFloat(nerdamer(factor, { x: 1 }).evaluate().toString());
+                var fm1_3 = parseFloat(nerdamer(factor, { x: -1 }).evaluate().toString());
+                var f2_3 = parseFloat(nerdamer(factor, { x: 2 }).evaluate().toString());
+                // a3 = (f(2) - 3*f(1) + 3*f(-1) - f(-2)) ... simpler: use f(2)-3f(1)+3f(0)-f(-1) / 6?
+                // Actually for ax^3+bx^2+cx+d: a3 = (f(2)-2f(1)+2f(-1)-f(-2))/12
+                // Simpler: a3 = (f(2) - 3*f(1) + 3*f(0) - fm1_3) is not right.
+                // Use: third finite difference / 6: Δ³f(0)/6 where Δf(n)=f(n+1)-f(n)
+                var fm2_3 = parseFloat(nerdamer(factor, { x: -2 }).evaluate().toString());
+                var a3 = Math.round((f2_3 - 3*f1_3 + 3*f0_3 - fm1_3) / 6);
+                var c3 = Math.round(f0_3);
+                if (c3 === 0) return false; // x=0 is a root
+                var candidates = this._rationalRootCandidates(Math.round(a3), Math.round(c3));
+                for (var ci = 0; ci < candidates.length; ci++) {
+                    try {
+                        var val = nerdamer(factor, { x: candidates[ci] }).evaluate().toString();
+                        if (Math.abs(parseFloat(val)) < 1e-9) return false; // has a rational root
+                    } catch (e) {}
+                }
+                return true;
+            } catch (e) { return false; }
+        }
+
+        // Degree 4+: attempt nerdamer's factor() and see if it splits
+        try {
+            var factored = nerdamer("factor(" + factor + ")").toString();
+            // If factor() returns something with *, it split — not irreducible
+            // But we need to check at top level only
+            var subFactors = this.parseFactors(factored);
+            // Filter out pure numeric factors
+            var nonConst = subFactors.filter(function (f) {
+                try { return nerdamer(f).variables().length > 0; } catch (e) { return true; }
+            });
+            return nonConst.length <= 1;
+        } catch (e) { return false; }
+    };
+
+    /** Generate rational root candidates ±(factors of c)/(factors of a). */
+    Question.prototype._rationalRootCandidates = function (a, c) {
+        a = Math.abs(a) || 1;
+        c = Math.abs(c) || 1;
+        var aFactors = this._intFactors(a);
+        var cFactors = this._intFactors(c);
+        var candidates = {};
+        for (var i = 0; i < cFactors.length; i++) {
+            for (var j = 0; j < aFactors.length; j++) {
+                var r = cFactors[i] / aFactors[j];
+                candidates[r] = true;
+                candidates[-r] = true;
+            }
+        }
+        return Object.keys(candidates).map(Number);
+    };
+
+    /** Integer factors of n. */
+    Question.prototype._intFactors = function (n) {
+        n = Math.abs(Math.round(n));
+        if (n === 0) return [1];
+        var result = [];
+        for (var i = 1; i <= n; i++) {
+            if (n % i === 0) result.push(i);
+        }
+        return result;
+    };
+
+    /**
+     * Permutation-match two arrays of factor strings using symbolic equivalence.
+     * Returns true if every expected factor is matched by exactly one student factor.
+     */
+    Question.prototype._permutationMatch = function (studentFactors, expectedFactors) {
+        if (studentFactors.length !== expectedFactors.length) return false;
+        var matched = {};
+        for (var ei = 0; ei < expectedFactors.length; ei++) {
+            var found = false;
+            for (var si = 0; si < studentFactors.length; si++) {
+                if (matched[si]) continue;
+                if (this.checkEquivSymbolic(studentFactors[si], expectedFactors[ei])) {
+                    // Note: checkEquivSymbolic expects (latex, nerdamer) but student factors
+                    // are already in nerdamer form. Call nerdamer comparison directly.
+                    matched[si] = true;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) return false;
+        }
+        return true;
+    };
+
+    /** Direct nerdamer symbolic equivalence (both args in nerdamer syntax). */
+    Question.prototype._equivNerdamer = function (a, b) {
+        try {
+            var diff = nerdamer("simplify((" + a + ")-(" + b + "))");
+            return diff.toString() === "0";
+        } catch (e) { return false; }
+    };
+
+    /**
+     * Check factorFull: student's expression is fully factored over the specified field
+     * and its factors match the expected factors (in any order).
+     *
+     * @param {string} studentLatex — raw LaTeX from MathQuill
+     * @param {object} inputSpec — { answer: "2*(x+2)*(x+3)", method: "factorFull", field: "integers" }
+     */
+    Question.prototype.checkFactorFull = function (studentLatex, inputSpec) {
+        try {
+            var studentNerd = this.latexToNerdamer(studentLatex);
+            if (!studentNerd.trim()) return false;
+
+            var field = inputSpec.field || "integers";
+            var expectedNerd = inputSpec.answer;
+
+            // Step 1: Check that the expanded forms are equal (correct algebraic value)
+            var studentExp = nerdamer("expand(" + studentNerd + ")").toString();
+            var expectedExp = nerdamer("expand(" + expectedNerd + ")").toString();
+            var diff = nerdamer("simplify((" + studentExp + ")-(" + expectedExp + "))");
+            if (diff.toString() !== "0") return false;
+
+            // Step 2: Parse student expression into factors
+            var studentFactors = this.parseFactors(studentNerd);
+            if (studentFactors.length === 0) return false;
+
+            // Step 3: Check each factor is irreducible over the specified field
+            for (var i = 0; i < studentFactors.length; i++) {
+                var f = studentFactors[i];
+                // Skip pure numeric constants (they're always "irreducible")
+                try {
+                    if (nerdamer(f).variables().length === 0) continue;
+                } catch (e) {}
+                if (!this.isIrreducible(f, field)) return false;
+            }
+
+            // Step 4: Permutation-match against expected factors
+            var expectedFactors = this.parseFactors(expectedNerd);
+            return this._permutationMatchNerdamer(studentFactors, expectedFactors);
+        } catch (e) {
+            return false;
+        }
+    };
+
+    /**
+     * Permutation-match factors where both arrays are in nerdamer syntax.
+     */
+    Question.prototype._permutationMatchNerdamer = function (studentFactors, expectedFactors) {
+        if (studentFactors.length !== expectedFactors.length) return false;
+        var self = this;
+        var matched = {};
+        for (var ei = 0; ei < expectedFactors.length; ei++) {
+            var found = false;
+            for (var si = 0; si < studentFactors.length; si++) {
+                if (matched[si]) continue;
+                if (self._equivNerdamer(studentFactors[si], expectedFactors[ei])) {
+                    matched[si] = true;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) return false;
+        }
+        return true;
+    };
+
+    /**
+     * Grouped factorFull validation: multiple input boxes that together form
+     * a factored expression. Factors can be entered in any order.
+     *
+     * Called when inputSpec has a "group" field. Collects all inputs in the group,
+     * does permutation matching, and returns per-input correctness.
+     *
+     * @param {object} sec — section object
+     * @param {object} row — row object containing inputs with group field
+     * @returns {boolean[]} array of correct/incorrect per input
+     */
+    Question.prototype.checkFactorFullGrouped = function (sec, row) {
+        var self = this;
+        var groupId = null;
+        var groupInputs = [];  // { idx, latex, expected, field }
+
+        // Collect all inputs in this row that share the same factorFull group
+        row.inputs.forEach(function (inp, ii) {
+            if (inp.method === "factorFull" && inp.group) {
+                if (!groupId) groupId = inp.group;
+                if (inp.group === groupId) {
+                    var field = self.mqFields[sec.id + "-" + row.id + "-" + ii];
+                    var latex = field ? field.latex() : "";
+                    groupInputs.push({
+                        idx: ii,
+                        nerdamer: self.latexToNerdamer(latex),
+                        expected: inp.answer,
+                        field: inp.field || "integers"
+                    });
+                }
+            }
+        });
+
+        if (groupInputs.length === 0) return [];
+
+        // Collect student and expected factor strings
+        var studentFactors = groupInputs.map(function (g) { return g.nerdamer; });
+        var expectedFactors = groupInputs.map(function (g) { return g.expected; });
+        var field = groupInputs[0].field;
+
+        // Check product equivalence first
+        var studentProduct = studentFactors.join("*");
+        var expectedProduct = expectedFactors.join("*");
+        try {
+            var diff = nerdamer("simplify(expand(" + studentProduct + ")-expand(" + expectedProduct + "))");
+            if (diff.toString() !== "0") {
+                // Product doesn't match — all wrong
+                return groupInputs.map(function () { return false; });
+            }
+        } catch (e) {
+            return groupInputs.map(function () { return false; });
+        }
+
+        // Check each student factor is irreducible
+        for (var i = 0; i < studentFactors.length; i++) {
+            try {
+                if (nerdamer(studentFactors[i]).variables().length === 0) continue;
+            } catch (e) {}
+            if (!self.isIrreducible(studentFactors[i], field)) {
+                return groupInputs.map(function () { return false; });
+            }
+        }
+
+        // Permutation match: find which student factor matches which expected factor
+        var results = groupInputs.map(function () { return false; });
+        var matchedStudent = {};
+        for (var ei = 0; ei < expectedFactors.length; ei++) {
+            for (var si = 0; si < studentFactors.length; si++) {
+                if (matchedStudent[si]) continue;
+                if (self._equivNerdamer(studentFactors[si], expectedFactors[ei])) {
+                    matchedStudent[si] = true;
+                    results[si] = true;
+                    break;
+                }
+            }
+        }
+
+        return results;
+    };
+
+    // ── Section builders ──
+    Question.prototype.buildTextSection = function (sec) {
+        var $div = $('<div id="' + this.uid + '-sec-' + sec.id + '"></div>');
+        $div.append($("<p></p>").html(sec.content));
+        return $div;
+    };
+
+    Question.prototype.buildEquationTableSection = function (sec) {
+        var self = this;
+        var $wrapper = $('<div id="' + self.uid + '-sec-' + sec.id + '"></div>');
+
+        var $table = $('<table class="req-eq-table"><tbody></tbody></table>');
+        var $tbody = $table.find("tbody");
+
+        self.completedRows[sec.id] = {};
+        self.unlockedRows[sec.id] = {};
+
+        sec.rows.forEach(function (row, ri) {
+            var $tr = $('<tr class="req-eq-row locked" id="' + self.uid + '-row-' + sec.id + '-' + ri + '"></tr>');
+
+            // Expression cell
+            var $tdExpr = $("<td></td>");
+            if (row.inputs && row.inputs.length > 0) {
+                self.buildTemplateExpression($tdExpr, row, sec.id, ri);
+            } else {
+                $tdExpr.html("$" + row.expression + "$");
+            }
+            $tr.append($tdExpr);
+
+            // Annotation cell
+            $tr.append($('<td class="req-annotation"></td>').text(row.annotation));
+
+            // Feedback cell
+            $tr.append($('<td class="req-fb-cell" id="' + self.uid + '-fb-' + sec.id + '-' + ri + '"></td>'));
+
+            $tbody.append($tr);
+
+            // Button row
+            if (row.inputs && row.inputs.length > 0) {
+                var $trBtn = $('<tr class="req-eq-row locked" id="' + self.uid + '-rowbtn-' + sec.id + '-' + ri + '"></tr>');
+                var $tdE = $("<td colspan='3'></td>");
+                var $actions = $('<div class="req-actions"></div>');
+
+                var $btn = $('<button class="req-check-btn">Check</button>');
+                (function (secRef, rowIdx) {
+                    $btn.on("click", function () { self.checkRowAnswer(secRef, rowIdx); });
+                })(sec, ri);
+                $actions.append($btn);
+
+                var $fb = $('<span class="req-fb" id="' + self.uid + '-fbpill-' + sec.id + '-' + ri + '"></span>');
+                $actions.append($fb);
+
+                $tdE.append($actions);
+                $trBtn.append($tdE);
+                $tbody.append($trBtn);
+            }
+        });
+
+        $wrapper.append($table);
+        return $wrapper;
+    };
+
+    Question.prototype.buildTextWithInputSection = function (sec) {
+        var self = this;
+        var $wrapper = $('<div class="req-twi-flex" id="' + self.uid + '-sec-' + sec.id + '"></div>');
+
+        // Left: content area
+        var $content = $('<div style="flex:1"></div>');
+
+        var parts = sec.template.split(/(\{\{\d+\}\})/);
+        var $p = $("<p style='font-size:15px;line-height:1.7;margin:0 0 10px;'></p>");
+
+        parts.forEach(function (part) {
+            var match = part.match(/\{\{(\d+)\}\}/);
+            if (match) {
+                var inputIdx = parseInt(match[1]);
+                var inp = sec.inputs[inputIdx];
+
+                if (inp && inp.type === "dropdown") {
+                    var $select = $('<select class="req-dropdown" id="' + self.uid + '-dd-' + sec.id + '-' + inputIdx + '"></select>');
+                    $select.append($('<option value="" disabled selected>Select\u2026</option>'));
+                    inp.options.forEach(function (opt) {
+                        $select.append($("<option></option>").val(opt).text(opt));
+                    });
+                    // v4: fire changed on dropdown selection
+                    $select.on("change", function () { self._fireChanged(); });
+                    $p.append($select);
+                } else {
+                    var $mqSpan = $('<span class="mq-slot" id="' + self.uid + '-mq-' + sec.id + '-' + inputIdx + '" style="display:inline-block;min-width:70px;vertical-align:middle;"></span>');
+                    $p.append($mqSpan);
+                }
+            } else if (part.trim()) {
+                $p.append($("<span></span>").html(part));
+            }
+        });
+
+        $content.append($p);
+
+        // Actions row
+        var $actions = $('<div class="req-actions" id="' + self.uid + '-actions-' + sec.id + '"></div>');
+        var $btn = $('<button class="req-check-btn">Check</button>');
+        (function (secRef) {
+            $btn.on("click", function () { self.checkSectionAnswer(secRef); });
+        })(sec);
+        $actions.append($btn);
+        $actions.append($('<span class="req-fb" id="' + self.uid + '-fbpill-' + sec.id + '"></span>'));
+        $content.append($actions);
+
+        $wrapper.append($content);
+
+        // Right: tick cell
+        var $tick = $('<div id="' + self.uid + '-tick-' + sec.id + '" style="width:28px;text-align:center;padding-top:6px;visibility:hidden;"></div>');
+        $tick.html('<span style="color:#3a9447;font-size:16px;">&#10003;</span>');
+        $wrapper.append($tick);
+
+        self.renderKaTeX($wrapper[0]);
+
+        // Init MathQuill fields
+        requestAnimationFrame(function () {
+            sec.inputs.forEach(function (inp, inputIdx) {
+                if (inp.type === "dropdown") return;
+                var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + inputIdx);
+                if (slot) {
+                    var field = self.MQ.MathField(slot, {
+                        spaceBehavesLikeTab: true,
+                        handlers: {
+                            enter: function () { self.checkSectionAnswer(sec); },
+                            edit: function () { self._fireChanged(); }
+                        }
+                    });
+                    self.mqFields[sec.id + "-" + inputIdx] = field;
+                    self.setupKeypadForField(field, slot);
+                }
+            });
+        });
+
+        return $wrapper;
+    };
+
+    // ── Template expression builder (equation table rows) ──
+    Question.prototype.buildTemplateExpression = function ($container, row, secId, rowIdx) {
+        var self = this;
+        var $wrapper = $('<span style="font-size:16px"></span>');
+
+        if (row.htmlTemplate) {
+            row.htmlTemplate.forEach(function (part) {
+                if (part.sup !== undefined && part.inputIdx !== undefined) {
+                    var $base = $("<span></span>").css("vertical-align", "middle").html("$" + part.text + "$");
+                    $wrapper.append($base);
+
+                    var $sup = $("<sup></sup>").css({ position: "relative", top: "-0.8em", fontSize: "0.7em" });
+                    if (part.supPrefix) {
+                        var $pre = $("<span></span>").css("font-size", "13px");
+                        $pre.html(part.supPrefix.indexOf("\\") >= 0 ? "$" + part.supPrefix + "$" : part.supPrefix);
+                        $sup.append($pre);
+                    }
+                    var $mqSpan = $('<span class="mq-slot req-mq-sup" id="' + self.uid + '-mq-' + secId + '-' + rowIdx + '-' + part.inputIdx + '" style="display:inline-block;min-width:40px;"></span>');
+                    $sup.append($mqSpan);
+                    if (part.supSuffix) {
+                        var $suf = $("<span></span>").css("font-size", "13px");
+                        $suf.html(part.supSuffix.indexOf("\\") >= 0 ? "$" + part.supSuffix + "$" : part.supSuffix);
+                        $sup.append($suf);
+                    }
+                    $wrapper.append($sup);
+
+                } else if (part.sub !== undefined && part.inputIdx !== undefined) {
+                    var $baseSub = $("<span></span>").css("vertical-align", "middle").html("$" + part.text + "$");
+                    $wrapper.append($baseSub);
+
+                    var $sub = $("<sub></sub>").css({ position: "relative", top: "0.3em" });
+                    if (part.subPrefix) {
+                        var $preSub = $("<span></span>").css("font-size", "13px");
+                        $preSub.html(part.subPrefix.indexOf("\\") >= 0 ? "$" + part.subPrefix + "$" : part.subPrefix);
+                        $sub.append($preSub);
+                    }
+                    var $mqSpanSub = $('<span class="mq-slot req-mq-sub" id="' + self.uid + '-mq-' + secId + '-' + rowIdx + '-' + part.inputIdx + '" style="display:inline-block;min-width:30px;"></span>');
+                    $sub.append($mqSpanSub);
+                    if (part.subSuffix) {
+                        var $sufSub = $("<span></span>").css("font-size", "13px");
+                        $sufSub.html(part.subSuffix.indexOf("\\") >= 0 ? "$" + part.subSuffix + "$" : part.subSuffix);
+                        $sub.append($sufSub);
+                    }
+                    $wrapper.append($sub);
+
+                } else if (part.inputIdx !== undefined) {
+                    if (part.text) {
+                        $wrapper.append($("<span></span>").css("vertical-align", "middle").html("$" + part.text + "$"));
+                    }
+                    if (part.prefix) {
+                        $wrapper.append($("<span></span>").css("vertical-align", "middle").text(part.prefix));
+                    }
+                    var $mqSpan2 = $('<span class="mq-slot" id="' + self.uid + '-mq-' + secId + '-' + rowIdx + '-' + part.inputIdx + '" style="display:inline-block;min-width:60px;vertical-align:middle;"></span>');
+                    $wrapper.append($mqSpan2);
+                    if (part.suffix) {
+                        var $suf2 = $("<span></span>").css("vertical-align", "middle");
+                        $suf2.html(part.suffix.indexOf("\\") >= 0 ? "$" + part.suffix + "$" : part.suffix);
+                        $wrapper.append($suf2);
+                    }
+
+                } else {
+                    var hasLatex = part.text.indexOf("\\") >= 0 || part.text.indexOf("^") >= 0 || part.text.indexOf("_") >= 0;
+                    $wrapper.append($("<span></span>").css("vertical-align", "middle").html(hasLatex ? "$" + part.text + "$" : part.text));
+                }
+            });
+
+            $container.append($wrapper);
+            self.renderKaTeX($container[0]);
+
+        } else {
+            var parts = row.template.split(/(\{\{\d+\}\})/);
+            parts.forEach(function (part) {
+                var match = part.match(/\{\{(\d+)\}\}/);
+                if (match) {
+                    var inputIdx = parseInt(match[1]);
+                    var $mqSpan3 = $('<span class="mq-slot" id="' + self.uid + '-mq-' + secId + '-' + rowIdx + '-' + inputIdx + '" style="display:inline-block;min-width:60px;vertical-align:middle;"></span>');
+                    $wrapper.append($mqSpan3);
+                } else if (part.trim()) {
+                    $wrapper.append($("<span></span>").css("vertical-align", "middle").html("$" + part + "$"));
+                }
+            });
+
+            $container.append($wrapper);
+            self.renderKaTeX($container[0]);
+        }
+
+        // Init MathQuill fields for this row
+        requestAnimationFrame(function () {
+            row.inputs.forEach(function (inp, inputIdx) {
+                var slot = document.getElementById(self.uid + "-mq-" + secId + "-" + rowIdx + "-" + inputIdx);
+                if (slot) {
+                    var field = self.MQ.MathField(slot, {
+                        spaceBehavesLikeTab: true,
+                        handlers: {
+                            enter: function () {
+                                var sec = self.findSectionById(secId);
+                                if (sec) self.checkRowAnswer(sec, rowIdx);
+                            },
+                            edit: function () { self._fireChanged(); }
+                        }
+                    });
+                    self.mqFields[secId + "-" + rowIdx + "-" + inputIdx] = field;
+                    self.setupKeypadForField(field, slot);
+                }
+            });
+        });
+    };
+
+    // ── Section unlocking ──
+    Question.prototype.findSectionById = function (secId) {
+        var sections = this.question.sections || [];
+        for (var i = 0; i < sections.length; i++) {
+            if (sections[i].id === secId) return sections[i];
+        }
+        return null;
+    };
+
+    Question.prototype.getSectionIndex = function (secId) {
+        var sections = this.question.sections || [];
+        for (var i = 0; i < sections.length; i++) {
+            if (sections[i].id === secId) return i;
+        }
+        return -1;
+    };
+
+    Question.prototype.unlockSection = function (idx) {
+        var self = this;
+        var sections = self.question.sections || [];
+        if (idx >= sections.length) {
+            // All done
+            $("#" + self.uid + "-done").show();
+            self.events.trigger("changed", self.getResponse());
+            return;
+        }
+
+        var sec = sections[idx];
+
+        // If this section starts a new group, unlock the group wrapper
+        if (sec.group && self.groupFirstIndex[sec.group] === idx) {
+            $("#" + self.uid + "-group-" + sec.group).removeClass("req-section-locked");
+        }
+
+        // Unlock the section itself
+        var $el = $("#" + self.uid + "-sec-" + sec.id);
+        $el.removeClass("req-section-locked");
+
+        if (sec.type === "text") {
+            self.completedSections[sec.id] = true;
+            requestAnimationFrame(function () { self.unlockSection(idx + 1); });
+        } else if (sec.type === "equation-table") {
+            self.initTableRows(sec);
+        } else if (sec.type === "text-with-input") {
+            requestAnimationFrame(function () {
+                var hasOnlyDropdowns = true;
+                for (var i = 0; i < sec.inputs.length; i++) {
+                    if (sec.inputs[i].type !== "dropdown") { hasOnlyDropdowns = false; break; }
+                }
+                if (hasOnlyDropdowns) {
+                    var dd = document.getElementById(self.uid + "-dd-" + sec.id + "-0");
+                    if (dd) dd.focus();
+                }
+            });
+        }
+    };
+
+    Question.prototype.initTableRows = function (sec) {
+        var self = this;
+        if (!self.unlockedRows[sec.id]) self.unlockedRows[sec.id] = {};
+        if (!self.completedRows[sec.id]) self.completedRows[sec.id] = {};
+
+        for (var ri = 0; ri < sec.rows.length; ri++) {
+            var row = sec.rows[ri];
+            if (!row.inputs || row.inputs.length === 0) {
+                self.unlockedRows[sec.id][ri] = true;
+                self.completedRows[sec.id][ri] = true;
+            } else {
+                self.unlockedRows[sec.id][ri] = true;
+                break;
+            }
+        }
+        self.updateRowStates(sec);
+    };
+
+    Question.prototype.updateRowStates = function (sec) {
+        var self = this;
+        sec.rows.forEach(function (row, ri) {
+            var $tr = $("#" + self.uid + "-row-" + sec.id + "-" + ri);
+            var $trBtn = $("#" + self.uid + "-rowbtn-" + sec.id + "-" + ri);
+            if (!$tr.length) return;
+
+            $tr.removeClass("locked active completed");
+            $trBtn.removeClass("locked active completed");
+
+            if (self.completedRows[sec.id] && self.completedRows[sec.id][ri]) {
+                $tr.addClass("completed");
+                $trBtn.addClass("completed");
+            } else if (self.unlockedRows[sec.id] && self.unlockedRows[sec.id][ri]) {
+                $tr.addClass("active");
+                $trBtn.addClass("active");
+            } else {
+                $tr.addClass("locked");
+                $trBtn.addClass("locked");
+            }
+        });
+    };
+
+    // ── Row validation (equation table) ──
+    Question.prototype.checkRowAnswer = function (sec, rowIdx) {
+        var self = this;
+        if (self._disabled) return;
+        var row = sec.rows[rowIdx];
+        var allCorrect = true;
+
+        if (row.validation === "equivEquation" && row.inputs.length === 2) {
+            var fieldL = self.mqFields[sec.id + "-" + rowIdx + "-0"];
+            var fieldR = self.mqFields[sec.id + "-" + rowIdx + "-1"];
+            if (!fieldL || !fieldR) return;
+
+            var sL = self.latexToNerdamer(fieldL.latex());
+            var sR = self.latexToNerdamer(fieldR.latex());
+            try {
+                if (!sL.trim() || !sR.trim()) { allCorrect = false; }
+                else {
+                    var sDiff = "((" + sL + ")-(" + sR + "))";
+                    var eDiff = "((" + row.inputs[0].answer + ")-(" + row.inputs[1].answer + "))";
+                    var direct = nerdamer("simplify(" + sDiff + " - " + eDiff + ")");
+                    if (direct.toString() !== "0") {
+                        var ratio = nerdamer("simplify(" + sDiff + " / " + eDiff + ")");
+                        allCorrect = ratio.toString() !== "0" && ratio.variables().length === 0;
+                        if (!allCorrect) {
+                            var ratio2 = nerdamer("simplify(expand(" + sDiff + ") / expand(" + eDiff + "))");
+                            allCorrect = ratio2.variables().length === 0 && ratio2.toString() !== "0";
+                        }
+                    }
+                }
+            } catch (e) { allCorrect = false; }
+
+            [0, 1].forEach(function (ii) {
+                var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + rowIdx + "-" + ii);
+                if (slot) { $(slot).removeClass("correct incorrect").addClass(allCorrect ? "correct" : "incorrect"); }
+            });
+        } else {
+            row.inputs.forEach(function (inp, ii) {
+                var field = self.mqFields[sec.id + "-" + rowIdx + "-" + ii];
+                if (!field) return;
+                var correct = self.validateInput(field.latex(), inp);
+
+                var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + rowIdx + "-" + ii);
+                if (slot) { $(slot).removeClass("correct incorrect").addClass(correct ? "correct" : "incorrect"); }
+
+                if (!correct) allCorrect = false;
+            });
+        }
+
+        // Feedback pill
+        var $fbPill = $("#" + self.uid + "-fbpill-" + sec.id + "-" + rowIdx);
+        $fbPill.attr("class", "req-fb " + (allCorrect ? "correct" : "wrong")).text(allCorrect ? "Correct!" : "Try again");
+
+        // Tick in feedback cell
+        var $fb = $("#" + self.uid + "-fb-" + sec.id + "-" + rowIdx);
+        $fb.html(allCorrect
+            ? '<span style="color:#3a9447;font-size:16px;">&#10003;</span>'
+            : '<span style="color:#e8883a;font-size:16px;">&#10007;</span>');
+
+        if (allCorrect) {
+            self.completedRows[sec.id][rowIdx] = true;
+
+            // Disable inputs
+            row.inputs.forEach(function (inp, ii) {
+                var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + rowIdx + "-" + ii);
+                if (slot) slot.style.pointerEvents = "none";
+            });
+
+            // Hide button row
+            $("#" + self.uid + "-rowbtn-" + sec.id + "-" + rowIdx).hide();
+
+            // Unlock next row or complete section
+            var nextRow = rowIdx + 1;
+            if (nextRow < sec.rows.length) {
+                var ri = nextRow;
+                while (ri < sec.rows.length) {
+                    var r = sec.rows[ri];
+                    if (!r.inputs || r.inputs.length === 0) {
+                        self.unlockedRows[sec.id][ri] = true;
+                        self.completedRows[sec.id][ri] = true;
+                        ri++;
+                    } else {
+                        self.unlockedRows[sec.id][ri] = true;
+                        break;
+                    }
+                }
+                self.updateRowStates(sec);
+                requestAnimationFrame(function () {
+                    for (var r = nextRow; r < sec.rows.length; r++) {
+                        var f = self.mqFields[sec.id + "-" + r + "-0"];
+                        if (f) { f.focus(); break; }
+                    }
+                });
+            } else {
+                self.completedSections[sec.id] = true;
+                var secIdx = self.getSectionIndex(sec.id);
+                self.unlockSection(secIdx + 1);
+            }
+        }
+
+        self.updateRowStates(sec);
+        self.events.trigger("changed", self.getResponse());
+    };
+
+    // ── Section validation (text-with-input) ──
+    Question.prototype.checkSectionAnswer = function (sec) {
+        var self = this;
+        if (self._disabled) return;
+        var allCorrect = true;
+
+        sec.inputs.forEach(function (inp, ii) {
+            if (inp.type === "dropdown") {
+                var select = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
+                if (!select) return;
+                var correct = select.value === inp.answer;
+                $(select).removeClass("correct incorrect").addClass(correct ? "correct" : "incorrect");
+                if (!correct) allCorrect = false;
+            } else {
+                var field = self.mqFields[sec.id + "-" + ii];
+                if (!field) return;
+                var correct2 = self.validateInput(field.latex(), inp);
+                var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ii);
+                if (slot) { $(slot).removeClass("correct incorrect").addClass(correct2 ? "correct" : "incorrect"); }
+                if (!correct2) allCorrect = false;
+            }
+        });
+
+        var $fbPill = $("#" + self.uid + "-fbpill-" + sec.id);
+        $fbPill.attr("class", "req-fb " + (allCorrect ? "correct" : "wrong")).text(allCorrect ? "Correct!" : "Try again");
+
+        if (allCorrect) {
+            self.completedSections[sec.id] = true;
+
+            // Hide actions, show tick on right edge
+            $("#" + self.uid + "-actions-" + sec.id).hide();
+            $("#" + self.uid + "-tick-" + sec.id).css("visibility", "visible");
+
+            // Disable inputs
+            sec.inputs.forEach(function (inp, ii) {
+                if (inp.type === "dropdown") {
+                    var select = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
+                    if (select) select.disabled = true;
+                } else {
+                    var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ii);
+                    if (slot) slot.style.pointerEvents = "none";
+                }
+            });
+
+            var secIdx = self.getSectionIndex(sec.id);
+            self.unlockSection(secIdx + 1);
+        }
+
+        self.events.trigger("changed", self.getResponse());
+    };
+
+    // ── Check Answer handler (fired by Learnosity's validate event) ──
+    Question.prototype.validateCurrentStep = function () {
+        var self = this;
+        var resp = self.getResponse();
+        if (!resp || !resp.value) return;
+        self.events.trigger("changed", resp);
+    };
+
+    // ═════════════════════════════════════════════════
+    // v3: RICH RESPONSE
+    // ═════════════════════════════════════════════════
+
+    /**
+     * Collect all current input values across all sections.
+     * Returns { "secId-rowIdx-inputIdx": { latex, correct }, "secId-inputIdx": { value, correct }, ... }
+     */
+    Question.prototype.collectAllInputValues = function () {
+        var self = this;
+        var sections = self.question.sections || [];
+        var inputs = {};
+
+        sections.forEach(function (sec) {
+            if (sec.type === "equation-table") {
+                sec.rows.forEach(function (row, ri) {
+                    if (!row.inputs || row.inputs.length === 0) return;
+                    var rowCompleted = !!(self.completedRows[sec.id] && self.completedRows[sec.id][ri]);
+                    row.inputs.forEach(function (inp, ii) {
+                        var key = sec.id + "-" + ri + "-" + ii;
+                        var field = self.mqFields[key];
+                        if (field) {
+                            var latex = field.latex();
+                            // Per-input correctness: if row completed, all correct;
+                            // otherwise validate each input individually
+                            var correct = rowCompleted;
+                            if (!correct && latex) {
+                                try { correct = self.validateInput(latex, inp); } catch (e) { correct = false; }
+                            }
+                            inputs[key] = { latex: latex, correct: correct };
+                        }
+                    });
+                });
+            } else if (sec.type === "text-with-input") {
+                var secCompleted = !!self.completedSections[sec.id];
+                sec.inputs.forEach(function (inp, ii) {
+                    var key = sec.id + "-" + ii;
+                    if (inp.type === "dropdown") {
+                        var select = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
+                        var val = select ? select.value : "";
+                        var correct = secCompleted || (val && val === inp.answer);
+                        inputs[key] = { value: val, correct: correct };
+                    } else {
+                        var field = self.mqFields[key];
+                        if (field) {
+                            var latex = field.latex();
+                            var correct2 = secCompleted;
+                            if (!correct2 && latex) {
+                                try { correct2 = self.validateInput(latex, inp); } catch (e) { correct2 = false; }
+                            }
+                            inputs[key] = { latex: latex, correct: correct2 };
+                        }
+                    }
+                });
+            }
+        });
+
+        return inputs;
+    };
+
+    Question.prototype.getResponse = function () {
+        var self = this;
+        var sections = self.question.sections || [];
+        var totalSteps = 0;
+        var completedSteps = 0;
+
+        sections.forEach(function (sec) {
+            if (sec.type === "text") return;
+            if (sec.type === "equation-table") {
+                sec.rows.forEach(function (row) {
+                    if (row.inputs && row.inputs.length > 0) {
+                        totalSteps++;
+                        if (self.completedRows[sec.id] && self.completedRows[sec.id][sec.rows.indexOf(row)]) {
+                            completedSteps++;
+                        }
+                    }
+                });
+            } else {
+                totalSteps++;
+                if (self.completedSections[sec.id]) completedSteps++;
+            }
+        });
+
+        // Serialize completedRows/unlockedRows to plain objects with string keys
+        var serCompleted = {};
+        var serUnlocked = {};
+        for (var sid in self.completedRows) {
+            serCompleted[sid] = {};
+            for (var r in self.completedRows[sid]) {
+                if (self.completedRows[sid][r]) serCompleted[sid][r] = true;
+            }
+        }
+        for (var sid2 in self.unlockedRows) {
+            serUnlocked[sid2] = {};
+            for (var r2 in self.unlockedRows[sid2]) {
+                if (self.unlockedRows[sid2][r2]) serUnlocked[sid2][r2] = true;
+            }
+        }
+
+        return {
+            value: completedSteps + "/" + totalSteps,
+            type: "object",
+            apiVersion: "v4",
+            inputs: self.collectAllInputValues(),
+            completedSections: $.extend({}, self.completedSections),
+            completedRows: serCompleted,
+            unlockedRows: serUnlocked
+        };
+    };
+
+    // ═════════════════════════════════════════════════
+    // v3: RESUME MODE
+    // ═════════════════════════════════════════════════
+
+    Question.prototype.restoreFromResponse = function (response) {
+        var self = this;
+        if (!response || !response.inputs) {
+            // No saved state — fall back to initial mode
+            self.unlockSection(0);
+            return;
+        }
+
+        var savedInputs = response.inputs || {};
+        var savedCompletedSections = response.completedSections || {};
+        var savedCompletedRows = response.completedRows || {};
+
+        // Restore completed state
+        self.completedSections = $.extend({}, savedCompletedSections);
+        for (var sid in savedCompletedRows) {
+            if (!self.completedRows[sid]) self.completedRows[sid] = {};
+            for (var r in savedCompletedRows[sid]) {
+                if (savedCompletedRows[sid][r]) self.completedRows[sid][r] = true;
+            }
+        }
+
+        // Populate fields from saved inputs
+        self.populateFieldsFromSaved(savedInputs);
+
+        // Replay the unlock cascade: walk sections, fast-forward through completed ones,
+        // then stop at the first incomplete section (interactive from there)
+        self.replayUnlockCascade();
+    };
+
+    Question.prototype.populateFieldsFromSaved = function (savedInputs) {
+        var self = this;
+        for (var key in savedInputs) {
+            var saved = savedInputs[key];
+            if (saved.value !== undefined) {
+                // Dropdown
+                var parts = key.split("-");
+                // key format: "secId-inputIdx" — find the dropdown element
+                var ddId = self.uid + "-dd-" + key;
+                var select = document.getElementById(ddId);
+                if (select && saved.value) {
+                    select.value = saved.value;
+                }
+            } else if (saved.latex !== undefined) {
+                // MQ field
+                var field = self.mqFields[key];
+                if (field && saved.latex) {
+                    field.latex(saved.latex);
+                }
+            }
+        }
+    };
+
+    /**
+     * Replay the unlock cascade using saved completedSections/completedRows.
+     * Walks sections in order: for each completed section, unlock it and mark done;
+     * for each completed equation-table, unlock completed rows and the next input row;
+     * stops at the first incomplete section and activates it for continued work.
+     */
+    Question.prototype.replayUnlockCascade = function () {
+        var self = this;
+        var sections = self.question.sections || [];
+
+        for (var si = 0; si < sections.length; si++) {
+            var sec = sections[si];
+
+            // Unlock group wrapper if this is the first section in the group
+            if (sec.group && self.groupFirstIndex[sec.group] === si) {
+                $("#" + self.uid + "-group-" + sec.group).removeClass("req-section-locked");
+            }
+
+            // Unlock the section itself
+            $("#" + self.uid + "-sec-" + sec.id).removeClass("req-section-locked");
+
+            if (sec.type === "text") {
+                // Text sections auto-complete
+                self.completedSections[sec.id] = true;
+                continue;
+            }
+
+            if (sec.type === "equation-table") {
+                if (!self.unlockedRows[sec.id]) self.unlockedRows[sec.id] = {};
+                if (!self.completedRows[sec.id]) self.completedRows[sec.id] = {};
+
+                var tableFullyCompleted = true;
+                for (var ri = 0; ri < sec.rows.length; ri++) {
+                    var row = sec.rows[ri];
+                    if (!row.inputs || row.inputs.length === 0) {
+                        // Display-only row: auto-unlock and complete
+                        self.unlockedRows[sec.id][ri] = true;
+                        self.completedRows[sec.id][ri] = true;
+                        continue;
+                    }
+
+                    if (self.completedRows[sec.id][ri]) {
+                        // Already completed: unlock, show checkmark, disable
+                        self.unlockedRows[sec.id][ri] = true;
+                        var $fb = $("#" + self.uid + "-fb-" + sec.id + "-" + ri);
+                        $fb.html('<span style="color:#3a9447;font-size:16px;">&#10003;</span>');
+                        row.inputs.forEach(function (inp, ii) {
+                            var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii);
+                            if (slot) { slot.style.pointerEvents = "none"; $(slot).addClass("correct"); }
+                        });
+                        $("#" + self.uid + "-rowbtn-" + sec.id + "-" + ri).hide();
+                    } else {
+                        // First incomplete input row: unlock it (active) and stop
+                        self.unlockedRows[sec.id][ri] = true;
+                        tableFullyCompleted = false;
+                        break;
+                    }
+                }
+
+                self.updateRowStates(sec);
+
+                if (tableFullyCompleted) {
+                    self.completedSections[sec.id] = true;
+                    continue; // Move to next section
+                } else {
+                    // Table not fully completed — stop cascade here
+                    self.events.trigger("changed", self.getResponse());
+                    return;
+                }
+            }
+
+            if (sec.type === "text-with-input") {
+                if (self.completedSections[sec.id]) {
+                    // Completed: show tick, disable inputs
+                    $("#" + self.uid + "-actions-" + sec.id).hide();
+                    $("#" + self.uid + "-tick-" + sec.id).css("visibility", "visible");
+                    sec.inputs.forEach(function (inp, ii) {
+                        if (inp.type === "dropdown") {
+                            var select = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
+                            if (select) select.disabled = true;
+                        } else {
+                            var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ii);
+                            if (slot) { slot.style.pointerEvents = "none"; $(slot).addClass("correct"); }
+                        }
+                    });
+                    continue; // Move to next section
+                } else {
+                    // Not completed — stop cascade here (student continues from this point)
+                    self.events.trigger("changed", self.getResponse());
+                    return;
+                }
+            }
+        }
+
+        // If we get here, all sections are complete
+        $("#" + self.uid + "-done").show();
+        self.events.trigger("changed", self.getResponse());
+    };
+
+    Question.prototype.applyVisualState = function () {
+        var self = this;
+        var sections = self.question.sections || [];
+        var nextIncompleteIdx = -1;
+
+        sections.forEach(function (sec, si) {
+            // Unlock group wrapper if needed
+            if (sec.group && self.groupFirstIndex[sec.group] === si) {
+                var groupHasUnlocked = false;
+                // Check if any section in this group is unlocked
+                for (var j = si; j < sections.length && sections[j].group === sec.group; j++) {
+                    var sjId = sections[j].id;
+                    if (self.completedSections[sjId] ||
+                        (self.unlockedRows[sjId] && Object.keys(self.unlockedRows[sjId]).length > 0)) {
+                        groupHasUnlocked = true;
+                        break;
+                    }
+                    if (sections[j].type === "text") {
+                        groupHasUnlocked = true;
+                        break;
+                    }
+                }
+                if (groupHasUnlocked) {
+                    $("#" + self.uid + "-group-" + sec.group).removeClass("req-section-locked");
+                }
+            }
+
+            var isCompleted = false;
+
+            if (sec.type === "text") {
+                if (self.completedSections[sec.id]) {
+                    $("#" + self.uid + "-sec-" + sec.id).removeClass("req-section-locked");
+                    isCompleted = true;
+                }
+            } else if (sec.type === "equation-table") {
+                var hasAnyUnlocked = self.unlockedRows[sec.id] && Object.keys(self.unlockedRows[sec.id]).length > 0;
+                if (hasAnyUnlocked || self.completedSections[sec.id]) {
+                    $("#" + self.uid + "-sec-" + sec.id).removeClass("req-section-locked");
+                }
+
+                // Apply row states
+                if (self.completedRows[sec.id]) {
+                    sec.rows.forEach(function (row, ri) {
+                        if (self.completedRows[sec.id][ri]) {
+                            // Show checkmark, disable inputs, hide check button
+                            var $fb = $("#" + self.uid + "-fb-" + sec.id + "-" + ri);
+                            $fb.html('<span style="color:#3a9447;font-size:16px;">&#10003;</span>');
+                            if (row.inputs && row.inputs.length > 0) {
+                                row.inputs.forEach(function (inp, ii) {
+                                    var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii);
+                                    if (slot) {
+                                        slot.style.pointerEvents = "none";
+                                        $(slot).addClass("correct");
+                                    }
+                                });
+                                $("#" + self.uid + "-rowbtn-" + sec.id + "-" + ri).hide();
+                            }
+                        }
+                    });
+                }
+
+                self.updateRowStates(sec);
+                isCompleted = !!self.completedSections[sec.id];
+
+            } else if (sec.type === "text-with-input") {
+                if (self.completedSections[sec.id]) {
+                    $("#" + self.uid + "-sec-" + sec.id).removeClass("req-section-locked");
+                    // Hide actions, show tick, disable inputs
+                    $("#" + self.uid + "-actions-" + sec.id).hide();
+                    $("#" + self.uid + "-tick-" + sec.id).css("visibility", "visible");
+                    sec.inputs.forEach(function (inp, ii) {
+                        if (inp.type === "dropdown") {
+                            var select = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
+                            if (select) select.disabled = true;
+                        } else {
+                            var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ii);
+                            if (slot) {
+                                slot.style.pointerEvents = "none";
+                                $(slot).addClass("correct");
+                            }
+                        }
+                    });
+                    isCompleted = true;
+                } else {
+                    // Check if it has been unlocked (previous section was completed)
+                    var prevCompleted = (si === 0);
+                    if (!prevCompleted && si > 0) {
+                        var prevSec = sections[si - 1];
+                        prevCompleted = !!self.completedSections[prevSec.id];
+                    }
+                    if (prevCompleted) {
+                        $("#" + self.uid + "-sec-" + sec.id).removeClass("req-section-locked");
+                    }
+                }
+            }
+
+            // Track next incomplete section for focus
+            if (!isCompleted && nextIncompleteIdx === -1 && sec.type !== "text") {
+                nextIncompleteIdx = si;
+            }
+        });
+
+        // Check if all done
+        var allDone = true;
+        sections.forEach(function (sec) {
+            if (sec.type === "text") return;
+            if (!self.completedSections[sec.id]) allDone = false;
+        });
+        if (allDone) {
+            $("#" + self.uid + "-done").show();
+        }
+
+        self.events.trigger("changed", self.getResponse());
+    };
+
+    // ═════════════════════════════════════════════════
+    // v3: REVIEW MODE
+    // ═════════════════════════════════════════════════
+
+    Question.prototype.applyReviewMode = function () {
+        var self = this;
+        var sections = self.question.sections || [];
+        var savedInputs = (self.response && self.response.inputs) ? self.response.inputs : {};
+        var savedCompletedRows = (self.response && self.response.completedRows) ? self.response.completedRows : {};
+        var savedCompletedSections = (self.response && self.response.completedSections) ? self.response.completedSections : {};
+
+        // Add review mode class
+        self.$el.find(".req-widget").addClass("req-review-mode");
+
+        // Unlock ALL sections and groups
+        self.$el.find(".req-section-locked").removeClass("req-section-locked");
+
+        // Unlock all rows
+        sections.forEach(function (sec) {
+            if (sec.type === "equation-table") {
+                sec.rows.forEach(function (row, ri) {
+                    var $tr = $("#" + self.uid + "-row-" + sec.id + "-" + ri);
+                    var $trBtn = $("#" + self.uid + "-rowbtn-" + sec.id + "-" + ri);
+                    $tr.removeClass("locked").addClass("completed");
+                    $trBtn.removeClass("locked").addClass("completed");
+                });
+            }
+        });
+
+        // Populate fields from saved response
+        self.populateFieldsFromSaved(savedInputs);
+
+        // Mark each input correct/incorrect — only if it has content
+        for (var key in savedInputs) {
+            var saved = savedInputs[key];
+            var isCorrect = !!saved.correct;
+
+            if (saved.value !== undefined) {
+                // Dropdown — only style if a value was selected
+                if (!saved.value) continue;
+                var ddId = self.uid + "-dd-" + key;
+                var select = document.getElementById(ddId);
+                if (select) {
+                    $(select).addClass(isCorrect ? "correct" : "incorrect");
+                }
+            } else if (saved.latex !== undefined) {
+                // MQ field — only style if student typed something
+                if (!saved.latex) continue;
+                var slotId = self.uid + "-mq-" + key;
+                var slot = document.getElementById(slotId);
+                if (slot) {
+                    $(slot).addClass(isCorrect ? "correct" : "incorrect");
+                }
+            }
+        }
+
+        // Show feedback ticks/crosses for equation table rows
+        sections.forEach(function (sec) {
+            if (sec.type === "equation-table") {
+                sec.rows.forEach(function (row, ri) {
+                    if (!row.inputs || row.inputs.length === 0) return;
+                    var rowCompleted = !!(savedCompletedRows[sec.id] && savedCompletedRows[sec.id][ri]);
+                    var $fb = $("#" + self.uid + "-fb-" + sec.id + "-" + ri);
+                    if (rowCompleted) {
+                        $fb.html('<span style="color:#3a9447;font-size:16px;">&#10003;</span>');
+                    } else {
+                        // Show cross for incomplete rows that have input
+                        var hasInput = false;
+                        row.inputs.forEach(function (inp, ii) {
+                            var savedKey = sec.id + "-" + ri + "-" + ii;
+                            if (savedInputs[savedKey] && (savedInputs[savedKey].latex || savedInputs[savedKey].value)) {
+                                hasInput = true;
+                            }
+                        });
+                        if (hasInput) {
+                            $fb.html('<span style="color:#e8883a;font-size:16px;">&#10007;</span>');
+                        }
+                    }
+                });
+            } else if (sec.type === "text-with-input") {
+                var secCompleted = !!savedCompletedSections[sec.id];
+                if (secCompleted) {
+                    $("#" + self.uid + "-tick-" + sec.id).css("visibility", "visible");
+                }
+            }
+        });
+
+        // Add numbered badges to inputs (teacher view)
+        var inputNum = 0;
+        sections.forEach(function (sec) {
+            if (sec.type === "equation-table") {
+                sec.rows.forEach(function (row, ri) {
+                    if (!row.inputs || row.inputs.length === 0) return;
+                    row.inputs.forEach(function (inp, ii) {
+                        inputNum++;
+                        var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii;
+                        var slot = document.getElementById(slotId);
+                        if (slot) {
+                            $(slot).addClass("req-input-numbered");
+                            $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                        }
+                    });
+                });
+            } else if (sec.type === "text-with-input") {
+                sec.inputs.forEach(function (inp, ii) {
+                    inputNum++;
+                    if (inp.type === "dropdown") {
+                        var ddId = self.uid + "-dd-" + sec.id + "-" + ii;
+                        var dd = document.getElementById(ddId);
+                        if (dd) {
+                            var $wrap = $(dd).wrap('<span class="req-input-numbered"></span>').parent();
+                            $wrap.prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                        }
+                    } else {
+                        var slotId = self.uid + "-mq-" + sec.id + "-" + ii;
+                        var slot = document.getElementById(slotId);
+                        if (slot) {
+                            $(slot).addClass("req-input-numbered");
+                            $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                        }
+                    }
+                });
+            }
+        });
+
+        // Hide all Check buttons and keypad
+        self.$el.find(".req-check-btn").hide();
+        self.$el.find(".req-actions").each(function () {
+            $(this).find(".req-check-btn").hide();
+        });
+        $("#" + self.uid + "-keypad").remove();
+        self.$el.find(".req-hint-btn").hide();
+
+        // Hide button rows for equation tables
+        self.$el.find("[id^='" + self.uid + "-rowbtn-']").hide();
+
+        // Show done banner if all complete
+        var allDone = true;
+        sections.forEach(function (sec) {
+            if (sec.type === "text") return;
+            if (!savedCompletedSections[sec.id]) allDone = false;
+        });
+        if (allDone) {
+            $("#" + self.uid + "-done").show();
+        }
+    };
+
+    /**
+     * Convert a nerdamer expression string to display LaTeX.
+     * Basic conversion for common patterns.
+     */
+    /**
+     * Convert a nerdamer expression string to clean display LaTeX.
+     * Produces e.g. "3(2x-1)" not "3 \cdot (2 \cdot x - 1)".
+     * Only uses \cdot if the original answer string literally contains "\cdot".
+     */
+    Question.prototype.nerdamerToDisplayLatex = function (expr) {
+        if (!expr) return "";
+        var s = expr;
+
+        // Handle set values like "3,-2"
+        if (s.indexOf(",") >= 0) {
+            var self = this;
+            return s.split(",").map(function (p) {
+                return self.nerdamerToDisplayLatex(p.trim());
+            }).join(",\\;");
+        }
+
+        // If the answer already contains LaTeX commands, return as-is
+        if (s.indexOf("\\") >= 0) return s;
+
+        // Convert nerdamer expression to clean LaTeX:
+        // 1. Fractions: a/b → \frac{a}{b} (only top-level slash)
+        if (/^[^()]+\/[^()]+$/.test(s) && s.indexOf("log") < 0) {
+            var slashIdx = s.indexOf("/");
+            var num = s.substring(0, slashIdx).trim();
+            var den = s.substring(slashIdx + 1).trim();
+            return "\\frac{" + num + "}{" + den + "}";
+        }
+
+        // For compound fractions like log(25)/(4*log(2)), use nerdamer
+        if (s.indexOf("/") >= 0) {
+            try {
+                if (window.nerdamer) {
+                    var tex = nerdamer(s).toTeX();
+                    // Clean up cdots from nerdamer output
+                    tex = tex.replace(/\\cdot\s*/g, "");
+                    return tex;
+                }
+            } catch (e) {}
+        }
+
+        // 2. Remove * between number and parenthesis: 3*(2*x-1) → 3(2x-1)
+        //    Remove * between number and variable: 6*x → 6x
+        //    Remove * between variable and parenthesis
+        //    Keep * only if it would be ambiguous (two variables side by side)
+        s = s.replace(/\*\(/g, "(");           // n*( → n(
+        s = s.replace(/\)\*/g, ")");           // )*n → )n
+        s = s.replace(/(\d)\*([a-zA-Z])/g, "$1$2");  // 6*x → 6x
+        s = s.replace(/([a-zA-Z])\*(\d)/g, "$1 \\cdot $2"); // x*3 → x · 3 (rare, keep explicit)
+        s = s.replace(/([a-zA-Z])\*([a-zA-Z])/g, "$1$2");   // a*b → ab
+
+        // 3. Exponents: ^(...) → ^{...}
+        s = s.replace(/\^\(([^()]+)\)/g, "^{$1}");
+        s = s.replace(/\^(\d+)/g, "^{$1}");
+        s = s.replace(/\^([a-zA-Z])/g, "^{$1}");
+
+        return s;
+    };
+
+    /**
+     * Render (or re-render) the Correct Answers panel.
+     * Static version used by review mode — shows all answers.
+     */
+    Question.prototype.renderCorrectAnswersPanel = function () {
+        this._renderCorrectAnswersPanelDynamic({}, {});
+    };
+
+    /**
+     * v4: Dynamic Correct Answers panel.
+     * Skips inputs whose row/section is already completed by the student.
+     * Hides the entire panel when all inputs are completed.
+     */
+    Question.prototype._renderCorrectAnswersPanelDynamic = function (completedRows, completedSections) {
+        var self = this;
+        var sections = self.question.sections || [];
+
+        // Remove existing panel
+        self.$el.find(".req-correct-answers").remove();
+
+        var $panel = $('<div class="req-correct-answers"></div>');
+        var $title = $('<p class="req-ca-title">Correct Answers:</p>');
+        var $grid = $('<div class="req-ca-grid"></div>');
+        var num = 0;
+        var shown = 0;
+
+        sections.forEach(function (sec) {
+            if (sec.type === "equation-table") {
+                sec.rows.forEach(function (row, ri) {
+                    if (!row.inputs || row.inputs.length === 0) return;
+                    var rowDone = !!(completedRows[sec.id] && completedRows[sec.id][ri]);
+                    row.inputs.forEach(function (inp) {
+                        num++;
+                        if (rowDone) return; // skip completed
+                        shown++;
+                        var displayLatex = self.nerdamerToDisplayLatex(inp.answer);
+                        var $box = $('<div class="req-ca-box"></div>');
+                        $box.append($('<span class="req-num-badge"></span>').text(num));
+                        var $val = $('<span></span>');
+                        try {
+                            $val.html(katex.renderToString(displayLatex, { throwOnError: false }));
+                        } catch (e) {
+                            $val.text(inp.answer);
+                        }
+                        $box.append($val);
+                        $grid.append($box);
+                    });
+                });
+            } else if (sec.type === "text-with-input") {
+                var secDone = !!completedSections[sec.id];
+                sec.inputs.forEach(function (inp) {
+                    num++;
+                    if (secDone) return; // skip completed
+                    shown++;
+                    var $box = $('<div class="req-ca-box"></div>');
+                    $box.append($('<span class="req-num-badge"></span>').text(num));
+                    var $val = $('<span></span>');
+                    if (inp.type === "dropdown") {
+                        $val.text(inp.answer);
+                    } else {
+                        var displayLatex = self.nerdamerToDisplayLatex(inp.answer);
+                        try {
+                            $val.html(katex.renderToString(displayLatex, { throwOnError: false }));
+                        } catch (e) {
+                            $val.text(inp.answer);
+                        }
+                    }
+                    $box.append($val);
+                    $grid.append($box);
+                });
+            }
+        });
+
+        // Only show panel if there are remaining unanswered inputs
+        if (shown > 0) {
+            $panel.append($title).append($grid);
+            self.$el.find(".req-widget").append($panel);
+        }
+    };
+
+    // ═════════════════════════════════════════════════
+    // v4: TEACHER LIVE MODE
+    // ═════════════════════════════════════════════════
+
+    /**
+     * Set up the teacher live view: reveal all sections grayed out,
+     * disable all interactivity. Per-step visibility is managed by
+     * _updateTeacherStepStates() which is called on every response update.
+     */
+    Question.prototype._applyTeacherLiveMode = function () {
+        var self = this;
+        var sections = self.question.sections || [];
+
+        // Add teacher-live class
+        self.$el.find(".req-widget").addClass("req-teacher-live");
+
+        // Unlock ALL sections and groups so teacher can see everything
+        self.$el.find(".req-section-locked").removeClass("req-section-locked");
+
+        // Unlock all equation table rows (make visible)
+        sections.forEach(function (sec) {
+            if (sec.type === "equation-table") {
+                if (!self.unlockedRows[sec.id]) self.unlockedRows[sec.id] = {};
+                if (!self.completedRows[sec.id]) self.completedRows[sec.id] = {};
+                sec.rows.forEach(function (row, ri) {
+                    self.unlockedRows[sec.id][ri] = true;
+                    var $tr = $("#" + self.uid + "-row-" + sec.id + "-" + ri);
+                    var $trBtn = $("#" + self.uid + "-rowbtn-" + sec.id + "-" + ri);
+                    $tr.removeClass("locked").addClass("active");
+                    $trBtn.removeClass("locked");
+                });
+            }
+        });
+
+        // Hide ALL Check buttons, hint buttons, keypad
+        self.$el.find(".req-check-btn").hide();
+        self.$el.find("[id^='" + self.uid + "-rowbtn-']").hide();
+        $("#" + self.uid + "-keypad").remove();
+        self.$el.find(".req-hint-btn").hide();
+        $("#" + self.uid + "-done").hide();
+
+        // Disable all MQ fields and dropdowns
+        for (var key in self.mqFields) {
+            var slot = self.mqFields[key].el();
+            if (slot) slot.style.pointerEvents = "none";
+        }
+        self.$el.find(".req-dropdown").prop("disabled", true);
+
+        // Mark everything as grayed initially — individual rows/sections get
+        // .req-tl-grayed (future), .req-tl-active (current), or .req-tl-completed (done)
+        sections.forEach(function (sec) {
+            if (sec.type === "equation-table") {
+                sec.rows.forEach(function (row, ri) {
+                    $("#" + self.uid + "-row-" + sec.id + "-" + ri).addClass("req-tl-grayed");
+                });
+            } else if (sec.type === "text-with-input") {
+                $("#" + self.uid + "-sec-" + sec.id).addClass("req-tl-grayed");
+            } else if (sec.type === "text") {
+                $("#" + self.uid + "-sec-" + sec.id).addClass("req-tl-grayed");
+            }
+        });
+
+        // Add numbered badges to inputs
+        var inputNum = 0;
+        sections.forEach(function (sec) {
+            if (sec.type === "equation-table") {
+                sec.rows.forEach(function (row, ri) {
+                    if (!row.inputs || row.inputs.length === 0) return;
+                    row.inputs.forEach(function (inp, ii) {
+                        inputNum++;
+                        var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii;
+                        var slot = document.getElementById(slotId);
+                        if (slot) {
+                            $(slot).addClass("req-input-numbered");
+                            $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                        }
+                    });
+                });
+            } else if (sec.type === "text-with-input") {
+                sec.inputs.forEach(function (inp, ii) {
+                    inputNum++;
+                    if (inp.type === "dropdown") {
+                        var ddId = self.uid + "-dd-" + sec.id + "-" + ii;
+                        var dd = document.getElementById(ddId);
+                        if (dd) {
+                            var $wrap = $(dd).wrap('<span class="req-input-numbered"></span>').parent();
+                            $wrap.prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                        }
+                    } else {
+                        var slotId = self.uid + "-mq-" + sec.id + "-" + ii;
+                        var slot = document.getElementById(slotId);
+                        if (slot) {
+                            $(slot).addClass("req-input-numbered");
+                            $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                        }
+                    }
+                });
+            }
+        });
+
+        // Apply initial step states (first step active, rest grayed)
+        self._updateTeacherStepStates({}, {});
+
+        // Show correct answers panel (all answers initially)
+        self._renderCorrectAnswersPanelDynamic({}, {});
+    };
+
+    /**
+     * v4: Update per-step visual states on the teacher side.
+     *
+     * Three states per step:
+     *  - req-tl-completed: student finished this step → same styling as student's completed
+     *  - req-tl-active: student is currently working here → light gray background highlight
+     *  - req-tl-grayed: student hasn't reached here yet → grayed out
+     */
+    Question.prototype._updateTeacherStepStates = function (completedRows, completedSections) {
+        var self = this;
+        var sections = self.question.sections || [];
+        var foundActive = false;
+        var allDone = true;
+
+        sections.forEach(function (sec) {
+            if (sec.type === "text") {
+                // Text sections follow: completed if previous section is completed,
+                // or if they precede the first active step (they auto-complete on student side)
+                var $secEl = $("#" + self.uid + "-sec-" + sec.id);
+                $secEl.removeClass("req-tl-grayed req-tl-active req-tl-completed");
+                if (foundActive) {
+                    $secEl.addClass("req-tl-grayed");
+                } else {
+                    $secEl.addClass("req-tl-completed");
+                }
+                return;
+            }
+
+            if (sec.type === "equation-table") {
+                var secCompleted = !!completedSections[sec.id];
+                sec.rows.forEach(function (row, ri) {
+                    var $tr = $("#" + self.uid + "-row-" + sec.id + "-" + ri);
+                    $tr.removeClass("req-tl-grayed req-tl-active req-tl-completed");
+
+                    if (!row.inputs || row.inputs.length === 0) {
+                        // Display-only row: follows same pattern as text
+                        if (foundActive) {
+                            $tr.addClass("req-tl-grayed");
+                        } else {
+                            $tr.addClass("req-tl-completed");
+                        }
+                        return;
+                    }
+
+                    var rowDone = !!(completedRows[sec.id] && completedRows[sec.id][ri]);
+                    if (rowDone) {
+                        $tr.addClass("req-tl-completed");
+                    } else if (!foundActive) {
+                        // First incomplete input row = active step
+                        $tr.addClass("req-tl-active");
+                        foundActive = true;
+                        allDone = false;
+                    } else {
+                        $tr.addClass("req-tl-grayed");
+                        allDone = false;
+                    }
+                });
+
+            } else if (sec.type === "text-with-input") {
+                var $secEl = $("#" + self.uid + "-sec-" + sec.id);
+                $secEl.removeClass("req-tl-grayed req-tl-active req-tl-completed");
+
+                if (completedSections[sec.id]) {
+                    $secEl.addClass("req-tl-completed");
+                } else if (!foundActive) {
+                    $secEl.addClass("req-tl-active");
+                    foundActive = true;
+                    allDone = false;
+                } else {
+                    $secEl.addClass("req-tl-grayed");
+                    allDone = false;
+                }
+            }
+        });
+
+        // Show done banner if all complete
+        if (allDone && !foundActive) {
+            // Check there's at least one completable step
+            var hasSteps = false;
+            sections.forEach(function (s) { if (s.type !== "text") hasSteps = true; });
+            if (hasSteps) {
+                var totalCompleted = true;
+                sections.forEach(function (s) {
+                    if (s.type === "text") return;
+                    if (!completedSections[s.id]) totalCompleted = false;
+                });
+                if (totalCompleted) {
+                    $("#" + self.uid + "-done").show();
+                }
+            }
+        }
+    };
+
+    /**
+     * v4: Update teacher view in real time from student's response.
+     * Populates fields, shows correctness markers, updates step progress.
+     */
+    Question.prototype._updateTeacherFromResponse = function (response) {
+        var self = this;
+        if (!response) return;
+
+        var savedInputs = response.inputs || {};
+        var savedCompletedRows = response.completedRows || {};
+        var savedCompletedSections = response.completedSections || {};
+        var sections = self.question.sections || [];
+
+        // Restore completed state for progress calculation
+        self.completedSections = $.extend({}, savedCompletedSections);
+        for (var sid in savedCompletedRows) {
+            if (!self.completedRows[sid]) self.completedRows[sid] = {};
+            for (var r in savedCompletedRows[sid]) {
+                if (savedCompletedRows[sid][r]) self.completedRows[sid][r] = true;
+            }
+        }
+
+        // Populate fields and mark correctness
+        for (var key in savedInputs) {
+            var saved = savedInputs[key];
+
+            if (saved.value !== undefined) {
+                // Dropdown
+                var ddId = self.uid + "-dd-" + key;
+                var select = document.getElementById(ddId);
+                if (select && saved.value) {
+                    select.value = saved.value;
+                    $(select).removeClass("correct incorrect");
+                    if (saved.correct) {
+                        $(select).addClass("correct");
+                    } else if (saved.value) {
+                        $(select).addClass("incorrect");
+                    }
+                }
+            } else if (saved.latex !== undefined) {
+                // MQ field
+                var field = self.mqFields[key];
+                if (field) {
+                    // Only update if value differs to avoid cursor jumping
+                    if (field.latex() !== saved.latex) {
+                        field.latex(saved.latex);
+                    }
+                }
+                // Apply correctness styling to the slot element
+                var slotId = self.uid + "-mq-" + key;
+                var slot = document.getElementById(slotId);
+                if (slot) {
+                    $(slot).removeClass("correct incorrect");
+                    if (saved.latex) {
+                        $(slot).addClass(saved.correct ? "correct" : "incorrect");
+                    }
+                }
+            }
+        }
+
+        // Update feedback ticks/crosses for equation table rows
+        sections.forEach(function (sec) {
+            if (sec.type === "equation-table") {
+                sec.rows.forEach(function (row, ri) {
+                    if (!row.inputs || row.inputs.length === 0) return;
+                    var rowCompleted = !!(savedCompletedRows[sec.id] && savedCompletedRows[sec.id][ri]);
+                    var $fb = $("#" + self.uid + "-fb-" + sec.id + "-" + ri);
+                    if (rowCompleted) {
+                        $fb.html('<span style="color:#3a9447;font-size:16px;">&#10003;</span>');
+                    } else {
+                        // Check if any input has content
+                        var hasInput = false;
+                        row.inputs.forEach(function (inp, ii) {
+                            var savedKey = sec.id + "-" + ri + "-" + ii;
+                            if (savedInputs[savedKey] && (savedInputs[savedKey].latex || savedInputs[savedKey].value)) {
+                                hasInput = true;
+                            }
+                        });
+                        if (hasInput) {
+                            // Show cross for active wrong answers
+                            var anyWrong = false;
+                            row.inputs.forEach(function (inp, ii) {
+                                var savedKey = sec.id + "-" + ri + "-" + ii;
+                                if (savedInputs[savedKey] && savedInputs[savedKey].latex && !savedInputs[savedKey].correct) {
+                                    anyWrong = true;
+                                }
+                            });
+                            if (anyWrong) {
+                                $fb.html('<span style="color:#e8883a;font-size:16px;">&#10007;</span>');
+                            } else {
+                                $fb.html('<span style="color:#3a9447;font-size:16px;">&#10003;</span>');
+                            }
+                        } else {
+                            $fb.html("");
+                        }
+                    }
+                });
+            } else if (sec.type === "text-with-input") {
+                var secCompleted = !!savedCompletedSections[sec.id];
+                if (secCompleted) {
+                    $("#" + self.uid + "-tick-" + sec.id).css("visibility", "visible");
+                } else {
+                    $("#" + self.uid + "-tick-" + sec.id).css("visibility", "hidden");
+                }
+            }
+        });
+
+        // Update per-step visual states (grayed / active / completed)
+        self._updateTeacherStepStates(savedCompletedRows, savedCompletedSections);
+
+        // Update correct answers panel — remove completed inputs
+        self._renderCorrectAnswersPanelDynamic(savedCompletedRows, savedCompletedSections);
+    };
+
+    // ═════════════════════════════════════════════════
+    // v3: ENABLE / DISABLE
+    // ═════════════════════════════════════════════════
+
+    Question.prototype.enable = function () {
+        this._disabled = false;
+        this.$el.find(".req-widget").removeClass("req-review-mode");
+        this.$el.find(".req-check-btn").prop("disabled", false);
+    };
+
+    Question.prototype.disable = function () {
+        this._disabled = true;
+        this.$el.find(".req-widget").addClass("req-review-mode");
+        this.$el.find(".req-check-btn").prop("disabled", true);
+    };
+
+    // ── Symbol keypad ──
+    Question.prototype.buildKeypad = function ($container) {
+        var self = this;
+        var $keypad = $('<div class="req-keypad" id="' + self.uid + '-keypad"></div>');
+
+        var keys = [
+            { label: "+", cmd: "+", type: "write" },
+            { label: "-", cmd: "-", type: "write" },
+            { label: "\\times", cmd: "\\times", type: "cmd" },
+            { label: "\\div", cmd: "\\div", type: "cmd" },
+            { label: "=", cmd: "=", type: "write" },
+            { label: "(\\,)", cmd: "(", type: "write", extra: ")" },
+            { label: ",", cmd: ",", type: "write" },
+            { label: "x^{\\square}", cmd: "^", type: "cmd" },
+            { label: "\\dfrac{\\square}{\\square}", cmd: "/", type: "cmd" },
+            { label: "x", cmd: "x", type: "write" }
+        ];
+
+        keys.forEach(function (k) {
+            if (k.type === "sep") {
+                $keypad.append($('<div class="req-keypad-sep"></div>'));
+                return;
+            }
+            var $btn = $('<button class="req-keypad-btn"></button>');
+            try {
+                $btn.html(katex.renderToString(k.label, { throwOnError: false }));
+            } catch (e) { $btn.text(k.label); }
+
+            $btn.on("mousedown", function (ev) {
+                ev.preventDefault();
+                if (!self.focusedMQField) return;
+                if (k.type === "cmd") self.focusedMQField.cmd(k.cmd);
+                else self.focusedMQField.write(k.cmd);
+                if (k.extra) self.focusedMQField.write(k.extra);
+                self.focusedMQField.focus();
+            });
+
+            $keypad.append($btn);
+        });
+
+        $container.append($keypad);
+    };
+
+    Question.prototype.setupKeypadForField = function (field, slot) {
+        var self = this;
+        $(slot).on("focusin", function () {
+            self.focusedMQField = field;
+            var $keypad = $("#" + self.uid + "-keypad");
+            $keypad.addClass("visible");
+
+            var $slot = $(slot);
+            var widgetOff = self.$el.find(".req-widget").offset();
+            var slotOff = $slot.offset();
+            if (widgetOff && slotOff) {
+                var keypadH = $keypad.outerHeight() || 90;
+                var keypadW = $keypad.outerWidth() || 220;
+                var topBelow = slotOff.top - widgetOff.top + $slot.outerHeight() + 6;
+                var topAbove = slotOff.top - widgetOff.top - keypadH - 6;
+                var left = slotOff.left - widgetOff.left;
+
+                var widgetH = self.$el.find(".req-widget").outerHeight() || 600;
+                var top = (topBelow + keypadH > widgetH && topAbove >= 0) ? topAbove : topBelow;
+
+                var maxLeft = 700 - keypadW;
+                if (left > maxLeft) left = Math.max(0, maxLeft);
+                $keypad.css({ top: top + "px", left: left + "px" });
+            }
+        });
+    };
+
+    // ═════════════════════════════════════════════════
+    // SCORER CLASS (inline, for client-side)
+    // ═════════════════════════════════════════════════
+
+    function Scorer(question, response) {
+        this.question = question;
+        this.response = response;
+    }
+
+    Scorer.prototype.isValid = function () {
+        return this.response && this.response.value;
+    };
+
+    Scorer.prototype.score = function () {
+        var val = this.response ? this.response.value : null;
+        if (!val) return 0;
+        if (typeof val === "object") val = val.progress || "0/1";
+        var parts = val.split("/");
+        var completed = parseInt(parts[0]) || 0;
+        var total = parseInt(parts[1]) || 1;
+        if (completed >= total) return this.maxScore();
+        return Math.round((completed / total) * this.maxScore());
+    };
+
+    Scorer.prototype.maxScore = function () {
+        return this.question.score || 1;
+    };
+
+    return { Question: Question, Scorer: Scorer };
+});
