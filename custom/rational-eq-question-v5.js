@@ -264,10 +264,17 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         s = s.replace(/\\times/g, "*");
         s = s.replace(/\\div/g, "/");
         s = s.replace(/\\[,;:!]/g, "");
+        // \ln with parens or space+arg → nerdamer's log (natural log)
+        s = s.replace(/\\ln\s*\(([^()]+)\)/g, "log($1)");
+        s = s.replace(/\\ln\s+([a-zA-Z0-9])/g, "log($1)");
         s = s.replace(/\\ln\b/g, "log");
+        // \log with subscript → change of base: \log_{b}(x) → log(x)/log(b)
         s = s.replace(/\\log_\{([^{}]+)\}\s*\(([^()]+)\)/g, "(log($2)/log($1))");
         s = s.replace(/\\log_\{([^{}]+)\}\s*([a-zA-Z0-9])/g, "(log($2)/log($1))");
-        s = s.replace(/\\log\b/g, "log");
+        // Bare \log (no subscript) means base-10: \log(x) → log(x)/log(10)
+        s = s.replace(/\\log\s*\(([^()]+)\)/g, "(log($1)/log(10))");
+        s = s.replace(/\\log\s+([a-zA-Z0-9])/g, "(log($1)/log(10))");
+        s = s.replace(/\\log\b/g, "log"); // fallback — shouldn't normally reach here
         s = s.replace(/\^{([^{}]+)}/g, "^($1)");
         s = s.replace(/_\{([^{}]+)\}/g, "_($1)");
         s = s.replace(/(\d)([a-zA-Z])/g, "$1*$2");
