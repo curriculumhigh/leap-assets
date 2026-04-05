@@ -2737,15 +2737,17 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             var widgetOff = $widget.offset();
             if (!widgetOff) return;
 
-            // Find the row (tr or twi section) and position at its right end
+            // Find the expression cell (first td in row, or the twi content area)
             var $row = $slot.closest("tr, .req-twi-flex");
-            var rowOff = $row.offset();
-            var rowRight = rowOff ? rowOff.left + $row.outerWidth() : 0;
-            var rowBottom = rowOff ? rowOff.top + $row.outerHeight() : 0;
+            var $exprCell = $row.find("td:first");
+            if (!$exprCell.length) $exprCell = $row; // fallback for twi sections
+            var cellOff = $exprCell.offset();
+            var cellRight = cellOff ? cellOff.left + $exprCell.outerWidth() : 0;
+            var cellBottom = cellOff ? cellOff.top + $exprCell.outerHeight() : 0;
 
-            // Diagonally below-right of the row's right end
-            var top = rowBottom - widgetOff.top + 4;
-            var left = rowRight - widgetOff.left - 8;
+            // Diagonally below-right of the expression's right edge
+            var top = cellBottom - widgetOff.top + 4;
+            var left = cellRight - widgetOff.left + 8;
 
             // Clamp so keypad stays within widget
             var keypadW = $keypad.outerWidth() || 220;
