@@ -2736,14 +2736,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             var widgetOff = self.$el.find(".req-widget").offset();
             var slotOff = $slot.offset();
             if (widgetOff && slotOff) {
-                var keypadH = $keypad.outerHeight() || 90;
                 var keypadW = $keypad.outerWidth() || 220;
-                var topBelow = slotOff.top - widgetOff.top + $slot.outerHeight() + 6;
-                var topAbove = slotOff.top - widgetOff.top - keypadH - 6;
+                // Always position below the input — never above, so completed steps stay visible
+                var top = slotOff.top - widgetOff.top + $slot.outerHeight() + 6;
                 var left = slotOff.left - widgetOff.left;
-
-                var widgetH = self.$el.find(".req-widget").outerHeight() || 600;
-                var top = (topBelow + keypadH > widgetH && topAbove >= 0) ? topAbove : topBelow;
 
                 var maxLeft = 700 - keypadW;
                 if (left > maxLeft) left = Math.max(0, maxLeft);
