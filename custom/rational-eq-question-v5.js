@@ -2733,31 +2733,23 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             $keypad.addClass("visible");
 
             var $slot = $(slot);
-            var widgetOff = self.$el.find(".req-widget").offset();
+            var $widget = self.$el.find(".req-widget");
+            var widgetOff = $widget.offset();
             if (!widgetOff) return;
 
-            // Find the rightmost MQ slot in the same row (tr or twi section)
+            // Find the row (tr or twi section) and position at its right end
             var $row = $slot.closest("tr, .req-twi-flex");
-            var rightmostRight = 0;
-            var rightmostBottom = 0;
-            $row.find(".mq-slot").each(function () {
-                var off = $(this).offset();
-                if (off) {
-                    var r = off.left + $(this).outerWidth();
-                    if (r > rightmostRight) {
-                        rightmostRight = r;
-                        rightmostBottom = off.top + $(this).outerHeight();
-                    }
-                }
-            });
+            var rowOff = $row.offset();
+            var rowRight = rowOff ? rowOff.left + $row.outerWidth() : 0;
+            var rowBottom = rowOff ? rowOff.top + $row.outerHeight() : 0;
 
-            // Position diagonally below-right of the rightmost box
-            var top = rightmostBottom - widgetOff.top + 6;
-            var left = rightmostRight - widgetOff.left + 12;
+            // Diagonally below-right of the row's right end
+            var top = rowBottom - widgetOff.top + 4;
+            var left = rowRight - widgetOff.left - 8;
 
-            // Clamp to widget bounds
+            // Clamp so keypad stays within widget
             var keypadW = $keypad.outerWidth() || 220;
-            var widgetW = self.$el.find(".req-widget").outerWidth() || 700;
+            var widgetW = $widget.outerWidth() || 700;
             if (left + keypadW > widgetW) left = Math.max(0, widgetW - keypadW - 8);
 
             $keypad.css({ top: top + "px", left: left + "px" });
