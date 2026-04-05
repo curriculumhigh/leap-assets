@@ -1416,6 +1416,11 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 var $cWrap = $("#" + self.uid + "-cwrap-" + sec.id + "-" + rowIdx);
                 $cWrap.removeClass("req-cwrap-correct req-cwrap-incorrect")
                     .addClass(allCorrect ? "req-cwrap-correct" : "req-cwrap-incorrect");
+                // Container-level tick/cross (inside the wrap, after the last box)
+                $cWrap.find(".req-cwrap-tick").remove();
+                $cWrap.append(allCorrect
+                    ? '<span class="req-cwrap-tick" style="color:#3a9447;font-size:14px;margin-left:6px;vertical-align:middle;">&#10003;</span>'
+                    : '<span class="req-cwrap-tick" style="color:#e8883a;font-size:14px;margin-left:6px;vertical-align:middle;">&#10007;</span>');
             } else {
                 // Student: color all boxes in the container as a unit
                 for (var ci = 0; ci < row.inputs.length; ci++) {
@@ -2514,6 +2519,20 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             }
         }
 
+        // Build a set of keys that belong to container rows (skip per-box coloring)
+        var containerKeys = {};
+        sections.forEach(function (sec) {
+            if (sec.type === "equation-table") {
+                sec.rows.forEach(function (row, ri) {
+                    if (row.container && row.inputs) {
+                        row.inputs.forEach(function (inp, ii) {
+                            containerKeys[sec.id + "-" + ri + "-" + ii] = true;
+                        });
+                    }
+                });
+            }
+        });
+
         // Populate fields and mark correctness
         for (var key in savedInputs) {
             var saved = savedInputs[key];
@@ -2540,13 +2559,15 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                         field.latex(saved.latex);
                     }
                 }
-                // Apply correctness styling to the slot element
-                var slotId = self.uid + "-mq-" + key;
-                var slot = document.getElementById(slotId);
-                if (slot) {
-                    $(slot).removeClass("correct incorrect");
-                    if (saved.latex) {
-                        $(slot).addClass(saved.correct ? "correct" : "incorrect");
+                // Apply correctness styling — skip for container boxes (teacher shows wrap border instead)
+                if (!containerKeys[key]) {
+                    var slotId = self.uid + "-mq-" + key;
+                    var slot = document.getElementById(slotId);
+                    if (slot) {
+                        $(slot).removeClass("correct incorrect");
+                        if (saved.latex) {
+                            $(slot).addClass(saved.correct ? "correct" : "incorrect");
+                        }
                     }
                 }
             }
@@ -2561,6 +2582,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     var $fb = $("#" + self.uid + "-fb-" + sec.id + "-" + ri);
                     if (rowCompleted) {
                         $fb.html('<span style="color:#3a9447;font-size:16px;">&#10003;</span>');
+                        // Container wrap: green border + tick
+                        if (row.container) {
+                            var $cw = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ri);
+                            $cw.removeClass("req-cwrap-incorrect").addClass("req-cwrap-correct");
+                            $cw.find(".req-cwrap-tick").remove();
+                            $cw.append('<span class="req-cwrap-tick" style="color:#3a9447;font-size:14px;margin-left:6px;vertical-align:middle;">&#10003;</span>');
+                        }
                     } else {
                         // Check if any input has content
                         var hasInput = false;
@@ -2581,11 +2609,30 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                             });
                             if (anyWrong) {
                                 $fb.html('<span style="color:#e8883a;font-size:16px;">&#10007;</span>');
+                                // Container wrap: orange border + cross
+                                if (row.container) {
+                                    var $cw2 = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ri);
+                                    $cw2.removeClass("req-cwrap-correct").addClass("req-cwrap-incorrect");
+                                    $cw2.find(".req-cwrap-tick").remove();
+                                    $cw2.append('<span class="req-cwrap-tick" style="color:#e8883a;font-size:14px;margin-left:6px;vertical-align:middle;">&#10007;</span>');
+                                }
                             } else {
                                 $fb.html('<span style="color:#3a9447;font-size:16px;">&#10003;</span>');
+                                if (row.container) {
+                                    var $cw3 = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ri);
+                                    $cw3.removeClass("req-cwrap-incorrect").addClass("req-cwrap-correct");
+                                    $cw3.find(".req-cwrap-tick").remove();
+                                    $cw3.append('<span class="req-cwrap-tick" style="color:#3a9447;font-size:14px;margin-left:6px;vertical-align:middle;">&#10003;</span>');
+                                }
                             }
                         } else {
                             $fb.html("");
+                            // Container wrap: reset
+                            if (row.container) {
+                                var $cw4 = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ri);
+                                $cw4.removeClass("req-cwrap-correct req-cwrap-incorrect");
+                                $cw4.find(".req-cwrap-tick").remove();
+                            }
                         }
                     }
                 });
