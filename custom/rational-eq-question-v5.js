@@ -2589,8 +2589,36 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                             $cw.find(".req-cwrap-tick").remove();
                             $cw.append('<span class="req-cwrap-tick" style="color:#3a9447;font-size:14px;margin-left:6px;vertical-align:middle;">&#10003;</span>');
                         }
+                    } else if (row.container) {
+                        // Container: run live validation on synced input values
+                        var boxLatex = [];
+                        var allFilled = true;
+                        row.inputs.forEach(function (inp, ii) {
+                            var savedKey = sec.id + "-" + ri + "-" + ii;
+                            var sv = savedInputs[savedKey];
+                            if (sv && sv.latex) {
+                                boxLatex.push(sv.latex);
+                            } else {
+                                allFilled = false;
+                            }
+                        });
+                        var $cw = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ri);
+                        $cw.find(".req-cwrap-tick").remove();
+                        $cw.removeClass("req-cwrap-correct req-cwrap-incorrect");
+                        if (allFilled) {
+                            var containerOk = self.validateContainer(row.container, boxLatex);
+                            $fb.html(containerOk
+                                ? '<span style="color:#3a9447;font-size:16px;">&#10003;</span>'
+                                : '<span style="color:#e8883a;font-size:16px;">&#10007;</span>');
+                            $cw.addClass(containerOk ? "req-cwrap-correct" : "req-cwrap-incorrect");
+                            $cw.append(containerOk
+                                ? '<span class="req-cwrap-tick" style="color:#3a9447;font-size:14px;margin-left:6px;vertical-align:middle;">&#10003;</span>'
+                                : '<span class="req-cwrap-tick" style="color:#e8883a;font-size:14px;margin-left:6px;vertical-align:middle;">&#10007;</span>');
+                        } else {
+                            $fb.html("");
+                        }
                     } else {
-                        // Check if any input has content
+                        // Non-container: use per-input saved.correct flags
                         var hasInput = false;
                         row.inputs.forEach(function (inp, ii) {
                             var savedKey = sec.id + "-" + ri + "-" + ii;
@@ -2599,7 +2627,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                             }
                         });
                         if (hasInput) {
-                            // Show cross for active wrong answers
                             var anyWrong = false;
                             row.inputs.forEach(function (inp, ii) {
                                 var savedKey = sec.id + "-" + ri + "-" + ii;
@@ -2609,30 +2636,11 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                             });
                             if (anyWrong) {
                                 $fb.html('<span style="color:#e8883a;font-size:16px;">&#10007;</span>');
-                                // Container wrap: orange border + cross
-                                if (row.container) {
-                                    var $cw2 = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ri);
-                                    $cw2.removeClass("req-cwrap-correct").addClass("req-cwrap-incorrect");
-                                    $cw2.find(".req-cwrap-tick").remove();
-                                    $cw2.append('<span class="req-cwrap-tick" style="color:#e8883a;font-size:14px;margin-left:6px;vertical-align:middle;">&#10007;</span>');
-                                }
                             } else {
                                 $fb.html('<span style="color:#3a9447;font-size:16px;">&#10003;</span>');
-                                if (row.container) {
-                                    var $cw3 = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ri);
-                                    $cw3.removeClass("req-cwrap-incorrect").addClass("req-cwrap-correct");
-                                    $cw3.find(".req-cwrap-tick").remove();
-                                    $cw3.append('<span class="req-cwrap-tick" style="color:#3a9447;font-size:14px;margin-left:6px;vertical-align:middle;">&#10003;</span>');
-                                }
                             }
                         } else {
                             $fb.html("");
-                            // Container wrap: reset
-                            if (row.container) {
-                                var $cw4 = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ri);
-                                $cw4.removeClass("req-cwrap-correct req-cwrap-incorrect");
-                                $cw4.find(".req-cwrap-tick").remove();
-                            }
                         }
                     }
                 });
