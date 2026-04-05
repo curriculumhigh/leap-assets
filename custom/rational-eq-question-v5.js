@@ -1249,15 +1249,23 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             self.renderKaTeX($container[0]);
 
         } else {
+            // For container rows, wrap all template content in a visual grouping span
+            var $target = $wrapper;
+            if (row.container) {
+                var $cWrap = $('<span class="req-container-wrap"></span>');
+                $wrapper.append($cWrap);
+                $target = $cWrap;
+            }
+
             var parts = row.template.split(/(\{\{\d+\}\})/);
             parts.forEach(function (part) {
                 var match = part.match(/\{\{(\d+)\}\}/);
                 if (match) {
                     var inputIdx = parseInt(match[1]);
                     var $mqSpan3 = $('<span class="mq-slot" id="' + self.uid + '-mq-' + secId + '-' + rowIdx + '-' + inputIdx + '" style="display:inline-block;min-width:60px;vertical-align:middle;"></span>');
-                    $wrapper.append($mqSpan3);
+                    $target.append($mqSpan3);
                 } else if (part.trim()) {
-                    $wrapper.append($("<span></span>").css("vertical-align", "middle").html("$" + part + "$"));
+                    $target.append($("<span></span>").css("vertical-align", "middle").html("$" + part + "$"));
                 }
             });
 

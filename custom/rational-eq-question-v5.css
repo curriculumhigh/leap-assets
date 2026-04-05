@@ -361,7 +361,7 @@
     transition: opacity 0.3s ease;
 }
 
-/* ── Container badge: positioned top-left of expression cell ── */
+/* ── Container: visual grouping for multi-box response containers ── */
 .req-container-numbered {
     position: relative;
     padding-left: 18px !important;
@@ -371,4 +371,21 @@
     top: 4px;
     left: -2px;
     z-index: 2;
+}
+
+/* Container outline — groups boxes visually, distinct from active step bg */
+.req-container-wrap {
+    display: inline-block;
+    border: 1.5px solid #bdbdbd;
+    border-radius: 5px;
+    padding: 4px 8px;
+    background: #fff;
+}
+
+/* Validation states on the container wrap */
+.req-container-correct .req-container-wrap {
+    border-color: #3a9447;
+}
+.req-container-incorrect .req-container-wrap {
+    border-color: #e8883a;
 }
