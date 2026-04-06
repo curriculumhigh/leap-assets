@@ -161,15 +161,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Done banner
         $w.append($('<div class="req-done" id="' + self.uid + '-done">All steps complete!</div>'));
 
-        // Hint
-        if (q.hint) {
-            var $hint = $('<div style="margin-top:12px"></div>');
-            var $btn = $('<button class="req-hint-btn">Show Hint</button>');
-            var $box = $('<div class="req-hint-box"></div>').html(q.hint);
-            $btn.on("click", function () { $box.toggleClass("visible"); });
-            $hint.append($btn).append($box);
-            $w.append($hint);
-        }
+        // Global hint (legacy — per-step hints are now inline)
 
         // Keypad
         self.buildKeypad($w);
@@ -1093,6 +1085,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 $actions.append($fb);
 
                 $tdE.append($actions);
+
+                // Per-step hint (shown on failed Check, hidden on success)
+                if (row.hint) {
+                    var $hintBox = $('<div class="req-hint-box" id="' + self.uid + '-hint-' + sec.id + '-' + ri + '"></div>').html(row.hint);
+                    $tdE.append($hintBox);
+                }
+
                 $trBtn.append($tdE);
                 $tbody.append($trBtn);
             }
@@ -1147,6 +1146,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         $actions.append($btn);
         $actions.append($('<span class="req-fb" id="' + self.uid + '-fbpill-' + sec.id + '"></span>'));
         $content.append($actions);
+
+        // Per-step hint (shown on failed Check, hidden on success)
+        if (sec.hint) {
+            var $hintBox = $('<div class="req-hint-box" id="' + self.uid + '-hint-' + sec.id + '"></div>').html(sec.hint);
+            $content.append($hintBox);
+        }
 
         $wrapper.append($content);
 
@@ -1474,6 +1479,16 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var $fbPill = $("#" + self.uid + "-fbpill-" + sec.id + "-" + rowIdx);
         $fbPill.attr("class", "req-fb " + (allCorrect ? "correct" : "wrong")).text(allCorrect ? "Correct!" : "Try again");
 
+        // Per-step hint: show on failure, hide on success
+        var $hintBox = $("#" + self.uid + "-hint-" + sec.id + "-" + rowIdx);
+        if ($hintBox.length) {
+            if (allCorrect) {
+                $hintBox.removeClass("visible");
+            } else {
+                $hintBox.addClass("visible");
+            }
+        }
+
         // Tick in feedback cell
         var $fb = $("#" + self.uid + "-fb-" + sec.id + "-" + rowIdx);
         $fb.html(allCorrect
@@ -1550,6 +1565,16 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         var $fbPill = $("#" + self.uid + "-fbpill-" + sec.id);
         $fbPill.attr("class", "req-fb " + (allCorrect ? "correct" : "wrong")).text(allCorrect ? "Correct!" : "Try again");
+
+        // Per-step hint: show on failure, hide on success
+        var $hintBox = $("#" + self.uid + "-hint-" + sec.id);
+        if ($hintBox.length) {
+            if (allCorrect) {
+                $hintBox.removeClass("visible");
+            } else {
+                $hintBox.addClass("visible");
+            }
+        }
 
         if (allCorrect) {
             self.completedSections[sec.id] = true;
