@@ -317,7 +317,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     };
 
     Question.prototype.validateInput = function (studentLatex, inputSpec) {
-        // Legacy method routing (backward compat with v1-v4 question data)
+        // LEGACY — DO NOT USE in new items or new versions of existing items.
+        // setEquiv  → use equivSymbolic + constraints: { ordered: false }
+        // factorFull → use equivSymbolic + constraints: { fullyFactored: "R" }
+        // Kept only for backward compat with v1-v4 published question data.
         if (inputSpec.method === "setEquiv") return this.checkSetEquiv(studentLatex, inputSpec.answer);
         if (inputSpec.method === "factorFull") return this.checkFactorFull(studentLatex, inputSpec);
 
