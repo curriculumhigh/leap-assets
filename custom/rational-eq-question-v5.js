@@ -1235,8 +1235,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
             // Step 1: In math zones, replace \dfrac{num with {{N}}}{den with {{M}}} with a fracPH marker
             var marked = tpl.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function (mathBlock) {
-                // Replace fractions containing {{N}} with placeholder
-                mathBlock = mathBlock.replace(/\\d?frac\{((?:[^{}]|\{[^{}]*\})*)\}\{((?:[^{}]|\{[^{}]*\})*)\}/g, function (fm, num, den) {
+                // Replace fractions containing {{N}} with placeholder.
+                // {{N}} double braces confuse brace-matching, so use safe tokens.
+                var safe = mathBlock.replace(/\{\{(\d+)\}\}/g, "REQINPUT$1REQEND");
+                safe = safe.replace(/\\d?frac\{([^{}]*)\}\{([^{}]*)\}/g, function (fm, num, den) {
+                    num = num.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
+                    den = den.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
                     if (/\{\{\d+\}\}/.test(num) || /\{\{\d+\}\}/.test(den)) {
                         var fid = "frac" + fracCounter++;
                         fracParts[fid] = { num: num, den: den };
@@ -1244,11 +1248,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     }
                     return fm; // leave fractions without inputs alone
                 });
-                // Replace remaining {{N}} in math zones with \htmlId markers
-                mathBlock = mathBlock.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+                // Restore any remaining safe tokens and replace {{N}} with \htmlId markers
+                safe = safe.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
+                safe = safe.replace(/\{\{(\d+)\}\}/g, function (m, n) {
                     return "\\htmlId{" + prefix + n + "}{\\boxed{\\phantom{xxx}}}";
                 });
-                return mathBlock;
+                return safe;
             });
             // Replace remaining {{N}} (in prose) with HTML placeholder spans
             marked = marked.replace(/\{\{(\d+)\}\}/g, function (m, n) {
@@ -1454,7 +1459,16 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             // KaTeX fraction layout uses fixed positioning that doesn't reflow
             // when placeholders are swapped for MQ fields, so we build the
             // fraction structure in HTML instead.
-            var fracMatch = tpl.match(/^(.*?)\\d?frac\{((?:[^{}]|\{[^{}]*\})*)\}\{((?:[^{}]|\{[^{}]*\})*)\}(.*)$/);
+            // {{N}} contains double braces that confuse brace-matching regexes,
+            // so we temporarily replace them with a brace-free token.
+            var tplSafe = tpl.replace(/\{\{(\d+)\}\}/g, "REQINPUT$1REQEND");
+            var fracMatch = tplSafe.match(/^(.*?)\\d?frac\{([^{}]*)\}\{([^{}]*)\}(.*)$/);
+            if (fracMatch) {
+                // Restore {{N}} tokens in captured groups
+                for (var fi = 1; fi <= 4; fi++) {
+                    fracMatch[fi] = fracMatch[fi].replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
+                }
+            }
             var hasFracInputs = fracMatch && (/\{\{\d+\}\}/.test(fracMatch[2]) || /\{\{\d+\}\}/.test(fracMatch[3]));
 
             // Check if splitting would produce broken LaTeX fragments
