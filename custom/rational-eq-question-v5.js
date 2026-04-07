@@ -121,10 +121,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             $w.append($('<p style="font-size:15px;line-height:1.7;margin:0 0 14px;"></p>').html(stim));
         }
 
-        // Sections — grouped by `group` field into scaffold-block wrappers
+        // Sections — wrapped in scaffold-block (blue left bar) per STEP.
+        // A new step starts at: the first section of a group, or any text section within a group.
         var sections = q.sections || [];
         var currentGroup = null;
-        var $currentGroupDiv = null;
+        var $currentStepDiv = null;
+        var stepCounter = 0;
         self.groupFirstIndex = {};
 
         sections.forEach(function (sec, si) {
@@ -139,25 +141,33 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             if (!$sec) return;
 
             if (sec.group) {
-                if (sec.group !== currentGroup) {
+                var isNewGroup = sec.group !== currentGroup;
+                if (isNewGroup) {
                     currentGroup = sec.group;
-                    $currentGroupDiv = $('<div class="req-scaffold-block" id="' + self.uid + '-group-' + sec.group + '"></div>');
                     self.groupFirstIndex[sec.group] = si;
-                    if (si > 0) $currentGroupDiv.addClass("req-section-locked");
-                    $w.append($currentGroupDiv);
                 }
-                // Step separator: text sections within a group (not the first section)
-                // mark step boundaries — CSS adds a top border via .req-step-start
-                if (sec.type === "text" && si !== self.groupFirstIndex[sec.group]) {
-                    $sec.addClass("req-step-start");
+
+                // Start a new step block on: new group, or text section within a group
+                var isNewStep = isNewGroup || sec.type === "text";
+                if (isNewStep) {
+                    stepCounter++;
+                    $currentStepDiv = $('<div class="req-scaffold-block" id="' + self.uid + '-step-' + stepCounter + '"></div>');
+                    // Also tag with group ID for unlock logic
+                    $currentStepDiv.attr("data-group", sec.group);
+                    if (si > 0) $currentStepDiv.addClass("req-section-locked");
+                    $w.append($currentStepDiv);
                 }
-                if (si !== self.groupFirstIndex[sec.group]) {
+
+                if (si !== self.groupFirstIndex[sec.group] && !isNewStep) {
+                    $sec.addClass("req-section-locked");
+                } else if (isNewStep && si !== self.groupFirstIndex[sec.group]) {
+                    // The text section that starts a new step within a group is locked
                     $sec.addClass("req-section-locked");
                 }
-                $currentGroupDiv.append($sec);
+                $currentStepDiv.append($sec);
             } else {
                 currentGroup = null;
-                $currentGroupDiv = null;
+                $currentStepDiv = null;
                 if (si > 0) $sec.addClass("req-section-locked");
                 $w.append($sec);
             }
@@ -1606,13 +1616,11 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         var sec = sections[idx];
 
-        // If this section starts a new group, unlock the group wrapper
-        if (sec.group && self.groupFirstIndex[sec.group] === idx) {
-            $("#" + self.uid + "-group-" + sec.group).removeClass("req-section-locked");
-        }
+        // Unlock the section's parent step wrapper (scaffold block) if locked
+        var $el = $("#" + self.uid + "-sec-" + sec.id);
+        $el.closest(".req-scaffold-block.req-section-locked").removeClass("req-section-locked");
 
         // Unlock the section itself
-        var $el = $("#" + self.uid + "-sec-" + sec.id);
         $el.removeClass("req-section-locked");
 
         if (sec.type === "text") {
@@ -2065,13 +2073,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         for (var si = 0; si < sections.length; si++) {
             var sec = sections[si];
 
-            // Unlock group wrapper if this is the first section in the group
-            if (sec.group && self.groupFirstIndex[sec.group] === si) {
-                $("#" + self.uid + "-group-" + sec.group).removeClass("req-section-locked");
-            }
+            // Unlock the section's parent step wrapper
+            var $secEl = $("#" + self.uid + "-sec-" + sec.id);
+            $secEl.closest(".req-scaffold-block.req-section-locked").removeClass("req-section-locked");
 
             // Unlock the section itself
-            $("#" + self.uid + "-sec-" + sec.id).removeClass("req-section-locked");
+            $secEl.removeClass("req-section-locked");
 
             if (sec.type === "text") {
                 // Text sections auto-complete
@@ -2174,7 +2181,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     }
                 }
                 if (groupHasUnlocked) {
-                    $("#" + self.uid + "-group-" + sec.group).removeClass("req-section-locked");
+                    // Unlock step wrapper containing this section
+                    var $sEl = $("#" + self.uid + "-sec-" + sec.id);
+                    $sEl.closest(".req-scaffold-block.req-section-locked").removeClass("req-section-locked");
                 }
             }
 
@@ -2182,7 +2191,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
             if (sec.type === "text") {
                 if (self.completedSections[sec.id]) {
-                    $("#" + self.uid + "-sec-" + sec.id).removeClass("req-section-locked");
+                    var $sEl2 = $("#" + self.uid + "-sec-" + sec.id);
+                    $sEl2.closest(".req-scaffold-block.req-section-locked").removeClass("req-section-locked");
+                    $sEl2.removeClass("req-section-locked");
                     isCompleted = true;
                 }
             } else if (sec.type === "equation-table") {
