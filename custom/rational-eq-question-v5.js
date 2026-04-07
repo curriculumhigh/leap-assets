@@ -331,7 +331,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     Question.prototype._replaceMarkers = function (root, prefix, inputs, mkId) {
         var self = this;
         inputs.forEach(function (inp, idx) {
-            var phEl = document.getElementById(prefix + idx);
+            var phEl = root.querySelector('[id="' + prefix + idx + '"]') || document.getElementById(prefix + idx);
             if (!phEl) return;
 
             var replacement;
