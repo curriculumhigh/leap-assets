@@ -146,6 +146,11 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     if (si > 0) $currentGroupDiv.addClass("req-section-locked");
                     $w.append($currentGroupDiv);
                 }
+                // Step separator: text sections within a group (not the first section)
+                // mark step boundaries — CSS adds a top border via .req-step-start
+                if (sec.type === "text" && si !== self.groupFirstIndex[sec.group]) {
+                    $sec.addClass("req-step-start");
+                }
                 if (si !== self.groupFirstIndex[sec.group]) {
                     $sec.addClass("req-section-locked");
                 }
@@ -248,7 +253,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
     // ── Auto-detect math in DN option text and render with KaTeX ──
     Question.prototype._renderDNOption = function (text) {
-        var hasMath = /\\[a-zA-Z]|[_^{}\d=+*/()<>≤≥≠]|\b[a-zA-Z]\b/.test(text);
+        var hasMath = /\\[a-zA-Z]|[_^{}\d=+*/()<>≤≥≠]/.test(text) || /^[a-zA-Z]$/.test(text.trim());
         if (!hasMath) return null; // caller should use plain text
         var latex = text.replace(/^\$+|\$+$/g, '');
         // Convert a/b to \frac{a}{b}
