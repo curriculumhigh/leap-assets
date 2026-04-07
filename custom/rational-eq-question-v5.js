@@ -1194,7 +1194,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 var $tdE = $("<td colspan='3'></td>");
                 var $actions = $('<div class="req-actions"></div>');
 
-                var $btn = $('<button class="req-check-btn">Check</button>');
+                var $btn = $('<button class="req-check-btn">Next</button>');
                 (function (secRef, rowIdx) {
                     $btn.on("click", function () { self.checkRowAnswer(secRef, rowIdx); });
                 })(sec, ri);
@@ -1343,28 +1343,33 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         $content.append($p);
 
-        // Actions row
-        var $actions = $('<div class="req-actions" id="' + self.uid + '-actions-' + sec.id + '"></div>');
-        var $btn = $('<button class="req-check-btn">Check</button>');
-        (function (secRef) {
-            $btn.on("click", function () { self.checkSectionAnswer(secRef); });
-        })(sec);
-        $actions.append($btn);
-        $actions.append($('<span class="req-fb" id="' + self.uid + '-fbpill-' + sec.id + '"></span>'));
-        $content.append($actions);
+        // Actions row — only if there are actual inputs to check
+        var hasInputs = sec.inputs && sec.inputs.length > 0;
+        if (hasInputs) {
+            var $actions = $('<div class="req-actions" id="' + self.uid + '-actions-' + sec.id + '"></div>');
+            var $btn = $('<button class="req-check-btn">Next</button>');
+            (function (secRef) {
+                $btn.on("click", function () { self.checkSectionAnswer(secRef); });
+            })(sec);
+            $actions.append($btn);
+            $actions.append($('<span class="req-fb" id="' + self.uid + '-fbpill-' + sec.id + '"></span>'));
+            $content.append($actions);
 
-        // Per-step hint (shown on failed Check, hidden on success)
-        if (sec.hint) {
-            var $hintBox = $('<div class="req-hint-box" id="' + self.uid + '-hint-' + sec.id + '"></div>').html(sec.hint);
-            $content.append($hintBox);
+            // Per-step hint (shown on failed Next, hidden on success)
+            if (sec.hint) {
+                var $hintBox = $('<div class="req-hint-box" id="' + self.uid + '-hint-' + sec.id + '"></div>').html(sec.hint);
+                $content.append($hintBox);
+            }
         }
 
         $wrapper.append($content);
 
-        // Right: tick cell
-        var $tick = $('<div id="' + self.uid + '-tick-' + sec.id + '" style="width:28px;text-align:center;padding-top:6px;visibility:hidden;"></div>');
-        $tick.html('<span style="color:#3a9447;font-size:16px;">&#10003;</span>');
-        $wrapper.append($tick);
+        // Right: tick cell (only for sections with inputs)
+        if (hasInputs) {
+            var $tick = $('<div id="' + self.uid + '-tick-' + sec.id + '" style="width:28px;text-align:center;padding-top:6px;visibility:hidden;"></div>');
+            $tick.html('<span style="color:#3a9447;font-size:16px;">&#10003;</span>');
+            $wrapper.append($tick);
+        }
 
         self.renderKaTeX($wrapper[0]);
 
@@ -1623,7 +1628,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Unlock the section itself
         $el.removeClass("req-section-locked");
 
-        if (sec.type === "text") {
+        // TWI with no inputs behaves like a text section — auto-complete
+        var isTWINoInputs = sec.type === "text-with-input" && (!sec.inputs || sec.inputs.length === 0);
+
+        if (sec.type === "text" || isTWINoInputs) {
             self.completedSections[sec.id] = true;
             requestAnimationFrame(function () { self.unlockSection(idx + 1); });
         } else if (sec.type === "equation-table") {
