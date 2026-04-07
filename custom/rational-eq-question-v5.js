@@ -245,6 +245,65 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         });
     };
 
+    // ── Marker-based template helpers ──
+    // For templates where {{N}} appears inside LaTeX structures like \dfrac{}{},
+    // we can't split-and-wrap. Instead we replace {{N}} with text markers,
+    // render the whole thing as one KaTeX expression, then swap markers for
+    // MathQuill input fields (or dropdowns).
+
+    // Strip <<>> container delimiters (visual hints for the editor, not renderer)
+    Question.prototype._stripContainerDelims = function (tpl) {
+        return tpl.replace(/<<|>>/g, "");
+    };
+
+    // Replace {{N}} with unique text markers in a LaTeX string
+    Question.prototype._insertMarkers = function (latex, prefix) {
+        return latex.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+            return "\\text{" + prefix + n + prefix + "}";
+        });
+    };
+
+    // Walk a DOM tree, find rendered marker text nodes, replace each with
+    // the appropriate input element (MQ span or dropdown <select>).
+    // Returns nothing; mutates the DOM in place.
+    Question.prototype._replaceMarkers = function (root, prefix, inputs, mkId) {
+        var self = this;
+        inputs.forEach(function (inp, idx) {
+            var marker = prefix + idx + prefix;
+            var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+            while (walker.nextNode()) {
+                var node = walker.currentNode;
+                var pos = node.textContent.indexOf(marker);
+                if (pos < 0) continue;
+
+                var parent = node.parentNode;
+                var before = node.textContent.substring(0, pos);
+                var after  = node.textContent.substring(pos + marker.length);
+
+                // Build replacement element
+                var el;
+                if (inp && inp.type === "dropdown") {
+                    var $select = $('<select class="req-dropdown" id="' + mkId(idx, "dd") + '"></select>');
+                    $select.append($('<option value="" disabled selected>Select\u2026</option>'));
+                    (inp.options || []).forEach(function (opt) {
+                        $select.append($("<option></option>").val(opt).text(opt));
+                    });
+                    $select.on("change", function () { self._fireChanged(); });
+                    el = $select[0];
+                } else {
+                    el = $('<span class="mq-slot" id="' + mkId(idx, "mq") + '" style="display:inline-block;min-width:60px;vertical-align:middle;"></span>')[0];
+                }
+
+                // Replace text node with [before text] [element] [after text]
+                if (before) parent.insertBefore(document.createTextNode(before), node);
+                parent.insertBefore(el, node);
+                if (after) parent.insertBefore(document.createTextNode(after), node);
+                parent.removeChild(node);
+                break; // marker found and replaced
+            }
+        });
+    };
+
     // ── Validation utilities ──
     Question.prototype.latexToNerdamer = function (latex) {
         var s = latex.trim();
@@ -1111,32 +1170,86 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Left: content area
         var $content = $('<div style="flex:1"></div>');
 
-        var parts = sec.template.split(/(\{\{\d+\}\})/);
+        var tpl = self._stripContainerDelims(sec.template || "");
         var $p = $("<p style='font-size:15px;line-height:1.7;margin:0 0 10px;'></p>");
 
-        parts.forEach(function (part) {
-            var match = part.match(/\{\{(\d+)\}\}/);
-            if (match) {
-                var inputIdx = parseInt(match[1]);
-                var inp = sec.inputs[inputIdx];
+        // Check if any {{N}} sits inside a $...$ or $$...$$ math zone.
+        // If so, use marker-based rendering so KaTeX sees complete LaTeX.
+        var hasMathInputs = false;
+        var mathRe = /\$\$[\s\S]*?\$\$|\$[^$]*?\$/g;
+        var mm;
+        while ((mm = mathRe.exec(tpl)) !== null) {
+            if (/\{\{\d+\}\}/.test(mm[0])) { hasMathInputs = true; break; }
+        }
 
+        if (hasMathInputs) {
+            // Marker approach: replace {{N}} inside math zones with \text{MARKER},
+            // and {{N}} in prose with HTML placeholder spans.
+            var prefix = "REQPH" + sec.id.replace(/[^a-zA-Z0-9]/g, "") + "X";
+
+            // Replace {{N}} inside $...$ / $$...$$ with LaTeX markers
+            var marked = tpl.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function (mathBlock) {
+                return mathBlock.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+                    return "\\text{" + prefix + n + prefix + "}";
+                });
+            });
+            // Replace remaining {{N}} (in prose) with HTML placeholder spans
+            marked = marked.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+                return '<span data-req-ph="' + prefix + n + prefix + '"></span>';
+            });
+
+            $p.html(marked);
+            self.renderKaTeX($p[0]);
+
+            // Replace KaTeX-rendered text markers with input elements
+            var mkId = function (idx, kind) {
+                return self.uid + "-" + kind + "-" + sec.id + "-" + idx;
+            };
+            self._replaceMarkers($p[0], prefix, sec.inputs, mkId);
+
+            // Replace HTML placeholder spans with input elements
+            sec.inputs.forEach(function (inp, idx) {
+                var $ph = $p.find('[data-req-ph="' + prefix + idx + prefix + '"]');
+                if (!$ph.length) return;
                 if (inp && inp.type === "dropdown") {
-                    var $select = $('<select class="req-dropdown" id="' + self.uid + '-dd-' + sec.id + '-' + inputIdx + '"></select>');
-                    $select.append($('<option value="" disabled selected>Select\u2026</option>'));
-                    inp.options.forEach(function (opt) {
-                        $select.append($("<option></option>").val(opt).text(opt));
+                    var $sel = $('<select class="req-dropdown" id="' + mkId(idx, "dd") + '"></select>');
+                    $sel.append($('<option value="" disabled selected>Select\u2026</option>'));
+                    (inp.options || []).forEach(function (opt) {
+                        $sel.append($("<option></option>").val(opt).text(opt));
                     });
-                    // v4: fire changed on dropdown selection
-                    $select.on("change", function () { self._fireChanged(); });
-                    $p.append($select);
+                    $sel.on("change", function () { self._fireChanged(); });
+                    $ph.replaceWith($sel);
                 } else {
-                    var $mqSpan = $('<span class="mq-slot" id="' + self.uid + '-mq-' + sec.id + '-' + inputIdx + '" style="display:inline-block;min-width:70px;vertical-align:middle;"></span>');
-                    $p.append($mqSpan);
+                    var $mqS = $('<span class="mq-slot" id="' + mkId(idx, "mq") + '" style="display:inline-block;min-width:70px;vertical-align:middle;"></span>');
+                    $ph.replaceWith($mqS);
                 }
-            } else if (part.trim()) {
-                $p.append($("<span></span>").html(part));
-            }
-        });
+            });
+        } else {
+            // Simple split — no {{N}} inside math zones
+            var parts = tpl.split(/(\{\{\d+\}\})/);
+            parts.forEach(function (part) {
+                var match = part.match(/\{\{(\d+)\}\}/);
+                if (match) {
+                    var inputIdx = parseInt(match[1]);
+                    var inp = sec.inputs[inputIdx];
+
+                    if (inp && inp.type === "dropdown") {
+                        var $select = $('<select class="req-dropdown" id="' + self.uid + '-dd-' + sec.id + '-' + inputIdx + '"></select>');
+                        $select.append($('<option value="" disabled selected>Select\u2026</option>'));
+                        inp.options.forEach(function (opt) {
+                            $select.append($("<option></option>").val(opt).text(opt));
+                        });
+                        $select.on("change", function () { self._fireChanged(); });
+                        $p.append($select);
+                    } else {
+                        var $mqSpan = $('<span class="mq-slot" id="' + self.uid + '-mq-' + sec.id + '-' + inputIdx + '" style="display:inline-block;min-width:70px;vertical-align:middle;"></span>');
+                        $p.append($mqSpan);
+                    }
+                } else if (part.trim()) {
+                    $p.append($("<span></span>").html(part));
+                }
+            });
+        }
 
         $content.append($p);
 
@@ -1265,20 +1378,42 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 $target = $cWrap;
             }
 
-            var parts = row.template.split(/(\{\{\d+\}\})/);
-            parts.forEach(function (part) {
-                var match = part.match(/\{\{(\d+)\}\}/);
-                if (match) {
-                    var inputIdx = parseInt(match[1]);
-                    var $mqSpan3 = $('<span class="mq-slot" id="' + self.uid + '-mq-' + secId + '-' + rowIdx + '-' + inputIdx + '" style="display:inline-block;min-width:60px;vertical-align:middle;"></span>');
-                    $target.append($mqSpan3);
-                } else if (part.trim()) {
-                    $target.append($("<span></span>").css("vertical-align", "middle").html("$" + part + "$"));
-                }
-            });
+            var tpl = self._stripContainerDelims(row.template || "{{0}}");
 
-            $container.append($wrapper);
-            self.renderKaTeX($container[0]);
+            // Check if splitting would produce broken LaTeX fragments
+            // (e.g. {{N}} inside \dfrac{}{}, \sqrt{}, etc.)
+            var hasComplexLatex = /\\[a-zA-Z]+\{[^}]*\{\{/.test(tpl) || /\}\}[^{]*\}/.test(tpl);
+
+            if (hasComplexLatex) {
+                // Marker approach: render whole template as one KaTeX expression,
+                // then swap marker text nodes for MathQuill input spans.
+                var prefix = "REQEQ" + secId.replace(/[^a-zA-Z0-9]/g, "") + "R" + rowIdx + "X";
+                var marked = self._insertMarkers(tpl, prefix);
+                $target.html("$" + marked + "$");
+                $container.append($wrapper);
+                self.renderKaTeX($container[0]);
+
+                var mkId = function (idx, kind) {
+                    return self.uid + "-" + kind + "-" + secId + "-" + rowIdx + "-" + idx;
+                };
+                self._replaceMarkers($target[0], prefix, row.inputs, mkId);
+            } else {
+                // Simple split — each fragment is valid standalone LaTeX
+                var parts = tpl.split(/(\{\{\d+\}\})/);
+                parts.forEach(function (part) {
+                    var match = part.match(/\{\{(\d+)\}\}/);
+                    if (match) {
+                        var inputIdx = parseInt(match[1]);
+                        var $mqSpan3 = $('<span class="mq-slot" id="' + self.uid + '-mq-' + secId + '-' + rowIdx + '-' + inputIdx + '" style="display:inline-block;min-width:60px;vertical-align:middle;"></span>');
+                        $target.append($mqSpan3);
+                    } else if (part.trim()) {
+                        $target.append($("<span></span>").css("vertical-align", "middle").html("$" + part + "$"));
+                    }
+                });
+
+                $container.append($wrapper);
+                self.renderKaTeX($container[0]);
+            }
         }
 
         // Init MathQuill fields for this row
@@ -2248,7 +2383,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                         if (!rowDone) {
                             shown++;
                             // Build display LaTeX from template + individual answers
-                            var tpl = row.template || "{{0}}";
+                            var tpl = self._stripContainerDelims(row.template || "{{0}}");
                             var displayParts = tpl;
                             row.inputs.forEach(function (inp, ii) {
                                 var dispLtx = self.nerdamerToDisplayLatex(inp.answer);
