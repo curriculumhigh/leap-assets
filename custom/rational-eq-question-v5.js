@@ -257,33 +257,17 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         options.forEach(function (opt) {
             var $item = $('<span class="req-dd-item" data-value="' + opt.replace(/"/g, '&quot;') + '"></span>');
-            // Render with KaTeX if it contains $ delimiters or backslashes
-            if (/[$\\]/.test(opt)) {
-                var html = opt.replace(/\$\$([^$]+)\$\$/g, function (_, m) {
-                    return self.renderKaTeX(m, true);
-                }).replace(/\$([^$]+)\$/g, function (_, m) {
-                    return self.renderKaTeX(m, false);
-                });
-                // If no $ delimiters but has backslash, try rendering as LaTeX directly
-                if (html === opt && /\\/.test(opt)) {
-                    html = self.renderKaTeX(opt, false);
-                }
-                $item.html(html);
+            // Render as LaTeX if it contains backslash commands (no $ needed)
+            if (/\\[a-zA-Z]/.test(opt)) {
+                $item.html(self.renderKaTeX(opt.replace(/^\$+|\$+$/g, ''), false));
             } else {
                 $item.text(opt);
             }
             $item.on("click", function (e) {
                 e.stopPropagation();
                 $wrap.attr("data-value", opt);
-                // Render selected value with KaTeX too
-                if (/[$\\]/.test(opt)) {
-                    var shtml = opt.replace(/\$\$([^$]+)\$\$/g, function (_, m) {
-                        return self.renderKaTeX(m, true);
-                    }).replace(/\$([^$]+)\$/g, function (_, m) {
-                        return self.renderKaTeX(m, false);
-                    });
-                    if (shtml === opt && /\\/.test(opt)) shtml = self.renderKaTeX(opt, false);
-                    $selected.html(shtml);
+                if (/\\[a-zA-Z]/.test(opt)) {
+                    $selected.html(self.renderKaTeX(opt.replace(/^\$+|\$+$/g, ''), false));
                 } else {
                     $selected.text(opt);
                 }
@@ -305,14 +289,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         $wrap[0].getValue = function () { return $wrap.attr("data-value") || ""; };
         $wrap[0].setValue = function (v) {
             $wrap.attr("data-value", v);
-            if (/[$\\]/.test(v)) {
-                var h = v.replace(/\$\$([^$]+)\$\$/g, function (_, m) {
-                    return self.renderKaTeX(m, true);
-                }).replace(/\$([^$]+)\$/g, function (_, m) {
-                    return self.renderKaTeX(m, false);
-                });
-                if (h === v && /\\/.test(v)) h = self.renderKaTeX(v, false);
-                $selected.html(h);
+            if (/\\[a-zA-Z]/.test(v)) {
+                $selected.html(self.renderKaTeX(v.replace(/^\$+|\$+$/g, ''), false));
             } else {
                 $selected.text(v);
             }
@@ -2462,16 +2440,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     $box.append($('<span class="req-num-badge"></span>').text(num));
                     var $val = $('<span></span>');
                     if (inp.type === "dropdown") {
-                        // Render with KaTeX if answer contains LaTeX
                         var ans = inp.answer;
-                        if (/[$\\]/.test(ans)) {
-                            var h = ans.replace(/\$\$([^$]+)\$\$/g, function (_, m) {
-                                return self.renderKaTeX(m, true);
-                            }).replace(/\$([^$]+)\$/g, function (_, m) {
-                                return self.renderKaTeX(m, false);
-                            });
-                            if (h === ans && /\\/.test(ans)) h = self.renderKaTeX(ans, false);
-                            $val.html(h);
+                        if (/\\[a-zA-Z]/.test(ans)) {
+                            $val.html(self.renderKaTeX(ans.replace(/^\$+|\$+$/g, ''), false));
                         } else {
                             $val.text(ans);
                         }
