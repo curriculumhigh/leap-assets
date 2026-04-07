@@ -333,6 +333,38 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         return tpl.replace(/<<|>>/g, "");
     };
 
+    // Convert newlines in text to HTML: detect ordered/unordered lists, remaining \n → <br>
+    Question.prototype._formatTextBlock = function (text) {
+        if (!text || text.indexOf("\n") === -1) return text;
+        var lines = text.split("\n");
+        var out = "";
+        var i = 0;
+        while (i < lines.length) {
+            var olMatch = lines[i].match(/^(\d+)\.\s+(.*)/);
+            var ulMatch = lines[i].match(/^[-*]\s+(.*)/);
+            if (olMatch) {
+                out += "<ol style='margin:6px 0 6px 18px;padding:0;'>";
+                while (i < lines.length && (olMatch = lines[i].match(/^\d+\.\s+(.*)/))) {
+                    out += "<li>" + olMatch[1] + "</li>";
+                    i++;
+                }
+                out += "</ol>";
+            } else if (ulMatch) {
+                out += "<ul style='margin:6px 0 6px 18px;padding:0;'>";
+                while (i < lines.length && (ulMatch = lines[i].match(/^[-*]\s+(.*)/))) {
+                    out += "<li>" + ulMatch[1] + "</li>";
+                    i++;
+                }
+                out += "</ul>";
+            } else {
+                if (i > 0 && lines[i].trim()) out += "<br>";
+                out += lines[i];
+                i++;
+            }
+        }
+        return out;
+    };
+
     // Replace {{N}} with \htmlId placeholder boxes in a LaTeX string.
     // KaTeX renders \htmlId{id}{content} as <span id="id">content</span>,
     // which we can find with getElementById after rendering.
@@ -1154,7 +1186,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     // ── Section builders ──
     Question.prototype.buildTextSection = function (sec) {
         var $div = $('<div id="' + this.uid + '-sec-' + sec.id + '"></div>');
-        $div.append($("<p></p>").html(sec.content));
+        $div.append($("<div></div>").html(this._formatTextBlock(sec.content)));
         return $div;
     };
 
@@ -1228,7 +1260,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var $content = $('<div style="flex:1"></div>');
 
         var tpl = self._stripContainerDelims(sec.template || "");
-        var $p = $("<p style='font-size:15px;line-height:1.7;margin:0 0 10px;'></p>");
+        var $p = $("<div style='font-size:15px;line-height:1.7;margin:0 0 10px;'></div>");
 
         // Check if any {{N}} sits inside a $...$ or $$...$$ math zone.
         // If so, use marker-based rendering so KaTeX sees complete LaTeX.
@@ -1275,7 +1307,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 return '<span id="' + prefix + n + '"></span>';
             });
 
-            $p.html(marked);
+            $p.html(self._formatTextBlock(marked));
             self.renderKaTeX($p[0]);
 
             // Step 2: Replace fraction placeholders with HTML fraction structures
@@ -1336,7 +1368,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                         $p.append($mqSpan);
                     }
                 } else if (part.trim()) {
-                    $p.append($("<span></span>").html(part));
+                    $p.append($("<span></span>").html(self._formatTextBlock(part)));
                 }
             });
         }
