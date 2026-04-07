@@ -241,7 +241,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 { left: "\\(", right: "\\)", display: false },
                 { left: "\\[", right: "\\]", display: true }
             ],
-            throwOnError: false
+            throwOnError: false,
+            trust: true
         });
     };
 
@@ -256,51 +257,36 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         return tpl.replace(/<<|>>/g, "");
     };
 
-    // Replace {{N}} with unique text markers in a LaTeX string
+    // Replace {{N}} with \htmlId placeholder boxes in a LaTeX string.
+    // KaTeX renders \htmlId{id}{content} as <span id="id">content</span>,
+    // which we can find with getElementById after rendering.
     Question.prototype._insertMarkers = function (latex, prefix) {
         return latex.replace(/\{\{(\d+)\}\}/g, function (m, n) {
-            return "\\text{" + prefix + n + prefix + "}";
+            return "\\htmlId{" + prefix + n + "}{\\boxed{\\phantom{xxx}}}";
         });
     };
 
-    // Walk a DOM tree, find rendered marker text nodes, replace each with
-    // the appropriate input element (MQ span or dropdown <select>).
-    // Returns nothing; mutates the DOM in place.
+    // Find rendered placeholder elements by ID and replace with input elements.
     Question.prototype._replaceMarkers = function (root, prefix, inputs, mkId) {
         var self = this;
         inputs.forEach(function (inp, idx) {
-            var marker = prefix + idx + prefix;
-            var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
-            while (walker.nextNode()) {
-                var node = walker.currentNode;
-                var pos = node.textContent.indexOf(marker);
-                if (pos < 0) continue;
+            var phEl = document.getElementById(prefix + idx);
+            if (!phEl) return;
 
-                var parent = node.parentNode;
-                var before = node.textContent.substring(0, pos);
-                var after  = node.textContent.substring(pos + marker.length);
-
-                // Build replacement element
-                var el;
-                if (inp && inp.type === "dropdown") {
-                    var $select = $('<select class="req-dropdown" id="' + mkId(idx, "dd") + '"></select>');
-                    $select.append($('<option value="" disabled selected>Select\u2026</option>'));
-                    (inp.options || []).forEach(function (opt) {
-                        $select.append($("<option></option>").val(opt).text(opt));
-                    });
-                    $select.on("change", function () { self._fireChanged(); });
-                    el = $select[0];
-                } else {
-                    el = $('<span class="mq-slot" id="' + mkId(idx, "mq") + '" style="display:inline-block;min-width:60px;vertical-align:middle;"></span>')[0];
-                }
-
-                // Replace text node with [before text] [element] [after text]
-                if (before) parent.insertBefore(document.createTextNode(before), node);
-                parent.insertBefore(el, node);
-                if (after) parent.insertBefore(document.createTextNode(after), node);
-                parent.removeChild(node);
-                break; // marker found and replaced
+            var replacement;
+            if (inp && inp.type === "dropdown") {
+                var $select = $('<select class="req-dropdown" id="' + mkId(idx, "dd") + '"></select>');
+                $select.append($('<option value="" disabled selected>Select\u2026</option>'));
+                (inp.options || []).forEach(function (opt) {
+                    $select.append($("<option></option>").val(opt).text(opt));
+                });
+                $select.on("change", function () { self._fireChanged(); });
+                replacement = $select[0];
+            } else {
+                replacement = $('<span class="mq-slot" id="' + mkId(idx, "mq") + '" style="display:inline-block;min-width:60px;vertical-align:middle;"></span>')[0];
             }
+
+            phEl.parentNode.replaceChild(replacement, phEl);
         });
     };
 
@@ -1187,43 +1173,25 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             // and {{N}} in prose with HTML placeholder spans.
             var prefix = "REQPH" + sec.id.replace(/[^a-zA-Z0-9]/g, "") + "X";
 
-            // Replace {{N}} inside $...$ / $$...$$ with LaTeX markers
+            // Replace {{N}} inside $...$ / $$...$$ with \htmlId placeholders
             var marked = tpl.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function (mathBlock) {
                 return mathBlock.replace(/\{\{(\d+)\}\}/g, function (m, n) {
-                    return "\\text{" + prefix + n + prefix + "}";
+                    return "\\htmlId{" + prefix + n + "}{\\boxed{\\phantom{xxx}}}";
                 });
             });
             // Replace remaining {{N}} (in prose) with HTML placeholder spans
             marked = marked.replace(/\{\{(\d+)\}\}/g, function (m, n) {
-                return '<span data-req-ph="' + prefix + n + prefix + '"></span>';
+                return '<span id="' + prefix + n + '"></span>';
             });
 
             $p.html(marked);
             self.renderKaTeX($p[0]);
 
-            // Replace KaTeX-rendered text markers with input elements
+            // Replace all placeholders (both KaTeX-rendered \htmlId and HTML spans) with input elements
             var mkId = function (idx, kind) {
                 return self.uid + "-" + kind + "-" + sec.id + "-" + idx;
             };
             self._replaceMarkers($p[0], prefix, sec.inputs, mkId);
-
-            // Replace HTML placeholder spans with input elements
-            sec.inputs.forEach(function (inp, idx) {
-                var $ph = $p.find('[data-req-ph="' + prefix + idx + prefix + '"]');
-                if (!$ph.length) return;
-                if (inp && inp.type === "dropdown") {
-                    var $sel = $('<select class="req-dropdown" id="' + mkId(idx, "dd") + '"></select>');
-                    $sel.append($('<option value="" disabled selected>Select\u2026</option>'));
-                    (inp.options || []).forEach(function (opt) {
-                        $sel.append($("<option></option>").val(opt).text(opt));
-                    });
-                    $sel.on("change", function () { self._fireChanged(); });
-                    $ph.replaceWith($sel);
-                } else {
-                    var $mqS = $('<span class="mq-slot" id="' + mkId(idx, "mq") + '" style="display:inline-block;min-width:70px;vertical-align:middle;"></span>');
-                    $ph.replaceWith($mqS);
-                }
-            });
         } else {
             // Simple split — no {{N}} inside math zones
             var parts = tpl.split(/(\{\{\d+\}\})/);
