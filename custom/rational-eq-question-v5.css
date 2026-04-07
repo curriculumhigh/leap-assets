@@ -300,6 +300,10 @@
 .req-keypad-btn:active { background: #d1d5db; }
 .req-keypad-btn .katex { font-size: 16px; }
 
+/* Display math inside indented blocks should left-align, not center */
+[style*="margin-left"] .katex-display,
+[style*="padding-left"] .katex-display { text-align: left; }
+
 .req-keypad-sep { display: none; }
 
 /* ── Numbered badge (shared by input labels and correct answers panel) ── */
