@@ -246,6 +246,18 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         });
     };
 
+    // ── Auto-detect math in DN option text and render with KaTeX ──
+    Question.prototype._renderDNOption = function (text) {
+        var hasMath = /\\[a-zA-Z]|[_^{}\d=+*/()<>≤≥≠]|\b[a-zA-Z]\b/.test(text);
+        if (!hasMath) return null; // caller should use plain text
+        var latex = text.replace(/^\$+|\$+$/g, '');
+        // Wrap English words (2+ consecutive letters) in \text{}
+        latex = latex.replace(/[a-zA-Z]{2,}(?:\s+[a-zA-Z]{2,})*/g, function (m) {
+            return '\\text{' + m + '}';
+        });
+        return this.renderKaTeX(latex, false);
+    };
+
     // ── Custom dropdown with KaTeX-rendered options ──
     Question.prototype._buildDropdown = function (id, options, onChange) {
         var self = this;
@@ -257,20 +269,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         options.forEach(function (opt) {
             var $item = $('<span class="req-dd-item" data-value="' + opt.replace(/"/g, '&quot;') + '"></span>');
-            // Render as LaTeX if it contains \commands, ^{}, or _{}
-            if (/\\[a-zA-Z]|[_^]\{/.test(opt)) {
-                $item.html(self.renderKaTeX(opt.replace(/^\$+|\$+$/g, ''), false));
-            } else {
-                $item.text(opt);
-            }
+            var rendered = self._renderDNOption(opt);
+            if (rendered) { $item.html(rendered); } else { $item.text(opt); }
             $item.on("click", function (e) {
                 e.stopPropagation();
                 $wrap.attr("data-value", opt);
-                if (/\\[a-zA-Z]|[_^]\{/.test(opt)) {
-                    $selected.html(self.renderKaTeX(opt.replace(/^\$+|\$+$/g, ''), false));
-                } else {
-                    $selected.text(opt);
-                }
+                var rSel = self._renderDNOption(opt);
+                if (rSel) { $selected.html(rSel); } else { $selected.text(opt); }
                 $menu.removeClass("open");
                 if (onChange) onChange();
             });
@@ -289,11 +294,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         $wrap[0].getValue = function () { return $wrap.attr("data-value") || ""; };
         $wrap[0].setValue = function (v) {
             $wrap.attr("data-value", v);
-            if (/\\[a-zA-Z]|[_^]\{/.test(v)) {
-                $selected.html(self.renderKaTeX(v.replace(/^\$+|\$+$/g, ''), false));
-            } else {
-                $selected.text(v);
-            }
+            var r = self._renderDNOption(v);
+            if (r) { $selected.html(r); } else { $selected.text(v); }
         };
         $wrap[0].setDisabled = function (d) { $wrap.toggleClass("req-dd-disabled", d); };
         return $wrap;
@@ -2441,11 +2443,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     var $val = $('<span></span>');
                     if (inp.type === "dropdown") {
                         var ans = inp.answer;
-                        if (/\\[a-zA-Z]|[_^]\{/.test(ans)) {
-                            $val.html(self.renderKaTeX(ans.replace(/^\$+|\$+$/g, ''), false));
-                        } else {
-                            $val.text(ans);
-                        }
+                        var rAns = self._renderDNOption(ans);
+                        if (rAns) { $val.html(rAns); } else { $val.text(ans); }
                     } else {
                         var displayLatex = self.nerdamerToDisplayLatex(inp.answer);
                         try {
