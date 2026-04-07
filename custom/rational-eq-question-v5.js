@@ -257,8 +257,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         options.forEach(function (opt) {
             var $item = $('<span class="req-dd-item" data-value="' + opt.replace(/"/g, '&quot;') + '"></span>');
-            // Render as LaTeX if it contains backslash commands (no $ needed)
-            if (/\\[a-zA-Z]/.test(opt)) {
+            // Render as LaTeX if it contains \commands, ^{}, or _{}
+            if (/\\[a-zA-Z]|[_^]\{/.test(opt)) {
                 $item.html(self.renderKaTeX(opt.replace(/^\$+|\$+$/g, ''), false));
             } else {
                 $item.text(opt);
@@ -266,7 +266,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             $item.on("click", function (e) {
                 e.stopPropagation();
                 $wrap.attr("data-value", opt);
-                if (/\\[a-zA-Z]/.test(opt)) {
+                if (/\\[a-zA-Z]|[_^]\{/.test(opt)) {
                     $selected.html(self.renderKaTeX(opt.replace(/^\$+|\$+$/g, ''), false));
                 } else {
                     $selected.text(opt);
@@ -289,7 +289,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         $wrap[0].getValue = function () { return $wrap.attr("data-value") || ""; };
         $wrap[0].setValue = function (v) {
             $wrap.attr("data-value", v);
-            if (/\\[a-zA-Z]/.test(v)) {
+            if (/\\[a-zA-Z]|[_^]\{/.test(v)) {
                 $selected.html(self.renderKaTeX(v.replace(/^\$+|\$+$/g, ''), false));
             } else {
                 $selected.text(v);
@@ -2441,7 +2441,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     var $val = $('<span></span>');
                     if (inp.type === "dropdown") {
                         var ans = inp.answer;
-                        if (/\\[a-zA-Z]/.test(ans)) {
+                        if (/\\[a-zA-Z]|[_^]\{/.test(ans)) {
                             $val.html(self.renderKaTeX(ans.replace(/^\$+|\$+$/g, ''), false));
                         } else {
                             $val.text(ans);
