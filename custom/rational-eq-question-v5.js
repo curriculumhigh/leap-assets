@@ -260,7 +260,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             return '~\\text{' + m + '}~';
         });
         latex = latex.replace(/^~|~$/g, '').replace(/~~+/g, '~');
-        return this.renderKaTeX(latex, false);
+        try { return katex.renderToString(latex, { throwOnError: false, trust: true }); }
+        catch (e) { return null; }
     };
 
     // ── Custom dropdown with KaTeX-rendered options ──
