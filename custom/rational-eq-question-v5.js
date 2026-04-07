@@ -1353,22 +1353,23 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             self._replaceMarkers($p[0], prefix, sec.inputs, mkId);
         } else {
             // Simple split — no {{N}} inside math zones
-            var parts = tpl.split(/(\{\{\d+\}\})/);
-            parts.forEach(function (part) {
-                var match = part.match(/\{\{(\d+)\}\}/);
-                if (match) {
-                    var inputIdx = parseInt(match[1]);
-                    var inp = sec.inputs[inputIdx];
-
-                    if (inp && inp.type === "dropdown") {
-                        var $dd = self._buildDropdown(self.uid + '-dd-' + sec.id + '-' + inputIdx, inp.options || [], function () { self._fireChanged(); });
-                        $p.append($dd);
-                    } else {
-                        var $mqSpan = $('<span class="mq-slot" id="' + self.uid + '-mq-' + sec.id + '-' + inputIdx + '" style="display:inline-block;min-width:70px;vertical-align:middle;"></span>');
-                        $p.append($mqSpan);
-                    }
-                } else if (part.trim()) {
-                    $p.append($("<span></span>").html(self._formatTextBlock(part)));
+            // Use placeholder spans so HTML structure (e.g. <ul><li>) stays intact
+            var phPrefix = self.uid + "-sph-" + sec.id + "-";
+            var htmlWithPh = self._formatTextBlock(tpl).replace(/\{\{(\d+)\}\}/g, function (m, n) {
+                return '<span id="' + phPrefix + n + '" data-input-idx="' + n + '"></span>';
+            });
+            $p.html(htmlWithPh);
+            self.renderKaTeX($p[0]);
+            $p.find('[data-input-idx]').each(function () {
+                var $ph = $(this);
+                var inputIdx = parseInt($ph.attr('data-input-idx'));
+                var inp = sec.inputs[inputIdx];
+                if (inp && inp.type === "dropdown") {
+                    var $dd = self._buildDropdown(self.uid + '-dd-' + sec.id + '-' + inputIdx, inp.options || [], function () { self._fireChanged(); });
+                    $ph.replaceWith($dd);
+                } else {
+                    var $mqSpan = $('<span class="mq-slot" id="' + self.uid + '-mq-' + sec.id + '-' + inputIdx + '" style="display:inline-block;min-width:70px;vertical-align:middle;"></span>');
+                    $ph.replaceWith($mqSpan);
                 }
             });
         }
