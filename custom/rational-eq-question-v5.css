@@ -68,6 +68,7 @@
 
 /* ── Text-with-input flex layout (content + tick cell) ── */
 .req-twi-flex { display: flex; align-items: flex-start; gap: 8px; }
+.req-twi-flex + .req-twi-flex { margin-top: 14px; }
 
 /* ── MathQuill inputs (Learnosity-native box style) ── */
 .req-widget .mq-editable-field {
