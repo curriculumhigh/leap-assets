@@ -246,6 +246,81 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         });
     };
 
+    // ── Custom dropdown with KaTeX-rendered options ──
+    Question.prototype._buildDropdown = function (id, options, onChange) {
+        var self = this;
+        var $wrap = $('<span class="req-dropdown-wrap" id="' + id + '"></span>');
+        var $selected = $('<span class="req-dd-selected">Select\u2026</span>');
+        var $arrow = $('<span class="req-dd-arrow">\u25BE</span>');
+        var $trigger = $('<span class="req-dd-trigger"></span>').append($selected).append($arrow);
+        var $menu = $('<span class="req-dd-menu"></span>');
+
+        options.forEach(function (opt) {
+            var $item = $('<span class="req-dd-item" data-value="' + opt.replace(/"/g, '&quot;') + '"></span>');
+            // Render with KaTeX if it contains $ delimiters or backslashes
+            if (/[$\\]/.test(opt)) {
+                var html = opt.replace(/\$\$([^$]+)\$\$/g, function (_, m) {
+                    return self.renderKaTeX(m, true);
+                }).replace(/\$([^$]+)\$/g, function (_, m) {
+                    return self.renderKaTeX(m, false);
+                });
+                // If no $ delimiters but has backslash, try rendering as LaTeX directly
+                if (html === opt && /\\/.test(opt)) {
+                    html = self.renderKaTeX(opt, false);
+                }
+                $item.html(html);
+            } else {
+                $item.text(opt);
+            }
+            $item.on("click", function (e) {
+                e.stopPropagation();
+                $wrap.attr("data-value", opt);
+                // Render selected value with KaTeX too
+                if (/[$\\]/.test(opt)) {
+                    var shtml = opt.replace(/\$\$([^$]+)\$\$/g, function (_, m) {
+                        return self.renderKaTeX(m, true);
+                    }).replace(/\$([^$]+)\$/g, function (_, m) {
+                        return self.renderKaTeX(m, false);
+                    });
+                    if (shtml === opt && /\\/.test(opt)) shtml = self.renderKaTeX(opt, false);
+                    $selected.html(shtml);
+                } else {
+                    $selected.text(opt);
+                }
+                $menu.removeClass("open");
+                if (onChange) onChange();
+            });
+            $menu.append($item);
+        });
+
+        $trigger.on("click", function (e) {
+            e.stopPropagation();
+            $(".req-dd-menu.open").not($menu).removeClass("open");
+            $menu.toggleClass("open");
+        });
+        $(document).on("click", function () { $menu.removeClass("open"); });
+
+        $wrap.append($trigger).append($menu);
+        // getValue helper
+        $wrap[0].getValue = function () { return $wrap.attr("data-value") || ""; };
+        $wrap[0].setValue = function (v) {
+            $wrap.attr("data-value", v);
+            if (/[$\\]/.test(v)) {
+                var h = v.replace(/\$\$([^$]+)\$\$/g, function (_, m) {
+                    return self.renderKaTeX(m, true);
+                }).replace(/\$([^$]+)\$/g, function (_, m) {
+                    return self.renderKaTeX(m, false);
+                });
+                if (h === v && /\\/.test(v)) h = self.renderKaTeX(v, false);
+                $selected.html(h);
+            } else {
+                $selected.text(v);
+            }
+        };
+        $wrap[0].setDisabled = function (d) { $wrap.toggleClass("req-dd-disabled", d); };
+        return $wrap;
+    };
+
     // ── Marker-based template helpers ──
     // For templates where {{N}} appears inside LaTeX structures like \dfrac{}{},
     // we can't split-and-wrap. Instead we replace {{N}} with text markers,
@@ -275,13 +350,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
             var replacement;
             if (inp && inp.type === "dropdown") {
-                var $select = $('<select class="req-dropdown" id="' + mkId(idx, "dd") + '"></select>');
-                $select.append($('<option value="" disabled selected>Select\u2026</option>'));
-                (inp.options || []).forEach(function (opt) {
-                    $select.append($("<option></option>").val(opt).text(opt));
-                });
-                $select.on("change", function () { self._fireChanged(); });
-                replacement = $select[0];
+                var $dd = self._buildDropdown(mkId(idx, "dd"), inp.options || [], function () { self._fireChanged(); });
+                replacement = $dd[0];
             } else {
                 replacement = $('<span class="mq-slot" id="' + mkId(idx, "mq") + '" style="display:inline-block;min-width:60px;vertical-align:middle;"></span>')[0];
             }
@@ -1202,13 +1272,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     var inp = sec.inputs[inputIdx];
 
                     if (inp && inp.type === "dropdown") {
-                        var $select = $('<select class="req-dropdown" id="' + self.uid + '-dd-' + sec.id + '-' + inputIdx + '"></select>');
-                        $select.append($('<option value="" disabled selected>Select\u2026</option>'));
-                        inp.options.forEach(function (opt) {
-                            $select.append($("<option></option>").val(opt).text(opt));
-                        });
-                        $select.on("change", function () { self._fireChanged(); });
-                        $p.append($select);
+                        var $dd = self._buildDropdown(self.uid + '-dd-' + sec.id + '-' + inputIdx, inp.options || [], function () { self._fireChanged(); });
+                        $p.append($dd);
                     } else {
                         var $mqSpan = $('<span class="mq-slot" id="' + self.uid + '-mq-' + sec.id + '-' + inputIdx + '" style="display:inline-block;min-width:70px;vertical-align:middle;"></span>');
                         $p.append($mqSpan);
@@ -1654,10 +1719,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         sec.inputs.forEach(function (inp, ii) {
             if (inp.type === "dropdown") {
-                var select = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
-                if (!select) return;
-                var correct = select.value === inp.answer;
-                $(select).removeClass("correct incorrect").addClass(correct ? "correct" : "incorrect");
+                var dd = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
+                if (!dd) return;
+                var correct = dd.getValue() === inp.answer;
+                $(dd).removeClass("correct incorrect").addClass(correct ? "correct" : "incorrect");
                 if (!correct) allCorrect = false;
             } else {
                 var field = self.mqFields[sec.id + "-" + ii];
@@ -1692,8 +1757,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             // Disable inputs
             sec.inputs.forEach(function (inp, ii) {
                 if (inp.type === "dropdown") {
-                    var select = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
-                    if (select) select.disabled = true;
+                    var dd = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
+                    if (dd && dd.setDisabled) dd.setDisabled(true);
                 } else {
                     var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ii);
                     if (slot) slot.style.pointerEvents = "none";
@@ -1753,8 +1818,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 sec.inputs.forEach(function (inp, ii) {
                     var key = sec.id + "-" + ii;
                     if (inp.type === "dropdown") {
-                        var select = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
-                        var val = select ? select.value : "";
+                        var dd = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
+                        var val = dd && dd.getValue ? dd.getValue() : "";
                         var correct = secCompleted || (val && val === inp.answer);
                         inputs[key] = { value: val, correct: correct };
                     } else {
@@ -1959,8 +2024,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     $("#" + self.uid + "-tick-" + sec.id).css("visibility", "visible");
                     sec.inputs.forEach(function (inp, ii) {
                         if (inp.type === "dropdown") {
-                            var select = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
-                            if (select) select.disabled = true;
+                            var dd = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
+                            if (dd && dd.setDisabled) dd.setDisabled(true);
                         } else {
                             var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ii);
                             if (slot) { slot.style.pointerEvents = "none"; $(slot).addClass("correct"); }
@@ -2052,8 +2117,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     $("#" + self.uid + "-tick-" + sec.id).css("visibility", "visible");
                     sec.inputs.forEach(function (inp, ii) {
                         if (inp.type === "dropdown") {
-                            var select = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
-                            if (select) select.disabled = true;
+                            var dd = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
+                            if (dd && dd.setDisabled) dd.setDisabled(true);
                         } else {
                             var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ii);
                             if (slot) {
@@ -2397,7 +2462,19 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     $box.append($('<span class="req-num-badge"></span>').text(num));
                     var $val = $('<span></span>');
                     if (inp.type === "dropdown") {
-                        $val.text(inp.answer);
+                        // Render with KaTeX if answer contains LaTeX
+                        var ans = inp.answer;
+                        if (/[$\\]/.test(ans)) {
+                            var h = ans.replace(/\$\$([^$]+)\$\$/g, function (_, m) {
+                                return self.renderKaTeX(m, true);
+                            }).replace(/\$([^$]+)\$/g, function (_, m) {
+                                return self.renderKaTeX(m, false);
+                            });
+                            if (h === ans && /\\/.test(ans)) h = self.renderKaTeX(ans, false);
+                            $val.html(h);
+                        } else {
+                            $val.text(ans);
+                        }
                     } else {
                         var displayLatex = self.nerdamerToDisplayLatex(inp.answer);
                         try {
@@ -2465,7 +2542,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             var slot = self.mqFields[key].el();
             if (slot) slot.style.pointerEvents = "none";
         }
-        self.$el.find(".req-dropdown").prop("disabled", true);
+        self.$el.find(".req-dropdown-wrap").each(function () { if (this.setDisabled) this.setDisabled(true); });
 
         // Mark everything as grayed initially — individual rows/sections get
         // .req-tl-grayed (future), .req-tl-active (current), or .req-tl-completed (done)

@@ -116,34 +116,65 @@
 }
 
 /* ── Dropdown inputs (DN — Learnosity-native box style) ── */
-.req-dropdown {
+/* Custom dropdown with KaTeX support */
+.req-dropdown-wrap {
     display: inline-block;
-    padding: 6px 32px 6px 12px;
-    font-size: 15px;
-    font-family: inherit;
-    border: 1px solid #999;
-    border-radius: 2px;
-    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23555' fill='none' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 10px center;
-    appearance: none;
-    -webkit-appearance: none;
-    cursor: pointer;
+    position: relative;
     vertical-align: middle;
     min-width: 120px;
 }
-
-.req-dropdown:focus {
-    border-color: #555;
-    outline: none;
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+.req-dd-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border: 1px solid #999;
+    border-radius: 2px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1.6;
+    min-width: 100px;
 }
-
-.req-dropdown.correct {
+.req-dd-trigger:hover { border-color: #555; }
+.req-dd-arrow { font-size: 12px; color: #555; margin-left: auto; }
+.req-dd-selected { flex: 1; }
+.req-dd-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 100;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    padding: 4px 0;
+    min-width: 100%;
+    max-height: 240px;
+    overflow-y: auto;
+}
+.req-dd-menu.open { display: block; }
+.req-dd-item {
+    display: block;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1.6;
+    white-space: nowrap;
+}
+.req-dd-item:hover { background: #f0f4ff; }
+.req-dd-disabled .req-dd-trigger {
+    opacity: 0.6;
+    pointer-events: none;
+    background: #f9f9f9;
+}
+.req-dropdown-wrap.correct .req-dd-trigger {
     border-color: #3a9447;
     border-width: 2px;
     background-color: #e8f5e9;
 }
-
-.req-dropdown.incorrect {
+.req-dropdown-wrap.incorrect .req-dd-trigger {
     border-color: #e8883a;
     border-width: 2px;
     background-color: #fde8d8;
@@ -315,7 +346,7 @@
     pointer-events: none;
     cursor: default;
 }
-.req-widget.req-review-mode .req-dropdown {
+.req-widget.req-review-mode .req-dropdown-wrap .req-dd-trigger {
     pointer-events: none;
     cursor: default;
 }
