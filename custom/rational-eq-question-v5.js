@@ -251,10 +251,15 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var hasMath = /\\[a-zA-Z]|[_^{}\d=+*/()<>≤≥≠]|\b[a-zA-Z]\b/.test(text);
         if (!hasMath) return null; // caller should use plain text
         var latex = text.replace(/^\$+|\$+$/g, '');
-        // Wrap English words (2+ consecutive letters) in \text{}, skip LaTeX command names
-        latex = latex.replace(/(?<!\\)\b([a-zA-Z]{2,}(?:\s+(?!\\)[a-zA-Z]{2,})*)/g, function (m) {
-            return '\\text{' + m + '}';
+        // Convert a/b to \frac{a}{b}
+        latex = latex.replace(/([a-zA-Z0-9]+|\([^)]+\)|\{[^}]+\})\/([a-zA-Z0-9]+|\([^)]+\)|\{[^}]+\})/g, function (_, n, d) {
+            return '\\frac{' + n + '}{' + d + '}';
         });
+        // Wrap English words in \text{} with ~ spacing, skip LaTeX command names
+        latex = latex.replace(/(?<!\\)\b([a-zA-Z]{2,}(?:\s+(?!\\)[a-zA-Z]{2,})*)/g, function (m) {
+            return '~\\text{' + m + '}~';
+        });
+        latex = latex.replace(/^~|~$/g, '').replace(/~~+/g, '~');
         return this.renderKaTeX(latex, false);
     };
 
