@@ -1431,7 +1431,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     // ── Template expression builder (equation table rows) ──
     Question.prototype.buildTemplateExpression = function ($container, row, secId, rowIdx) {
         var self = this;
-        var $wrapper = $('<span style="font-size:16px"></span>');
+        var $wrapper = $('<span></span>');
 
         if (row.htmlTemplate) {
             row.htmlTemplate.forEach(function (part) {
