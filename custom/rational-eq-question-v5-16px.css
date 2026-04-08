@@ -1,0 +1,453 @@
+/* Rational Equation — Learnosity Custom Question Styles v5 */
+
+/* ── Scaffold wrapper (wraps each step — blue left bar) ── */
+.req-scaffold-block {
+    border-left: 3px solid #1565C0;
+    padding-left: 16px;
+    margin: 4px 0 16px;
+}
+.req-scaffold-block p { font-size: 16px; line-height: 1.7; margin: 0 0 10px; }
+
+/* ── HTML fraction (for templates with MQ inputs in numerator/denominator) ── */
+.req-html-frac {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    vertical-align: middle;
+    margin: 0 2px;
+}
+.req-html-frac-num {
+    padding: 2px 4px 3px;
+    border-bottom: 1.2px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+.req-html-frac-den {
+    padding: 3px 4px 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+/* ── Equation table ── */
+.req-eq-table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+
+.req-eq-table td {
+    padding: 6px 12px 6px 0;
+    vertical-align: baseline;
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+.req-eq-table .req-annotation {
+    padding: 6px 12px;
+    vertical-align: baseline;
+    color: #dc2626;
+    font-size: 14px;
+    font-style: italic;
+}
+
+.req-eq-table .req-fb-cell {
+    width: 28px;
+    padding: 6px 4px;
+    text-align: center;
+    vertical-align: baseline;
+}
+
+/* ── Row states ── */
+.req-eq-row.locked { display: none; }
+.req-eq-row.active td { opacity: 1; }
+.req-eq-row.completed td { opacity: 1; }
+.req-eq-row.completed .req-annotation { color: #e8a0a0; }
+
+/* ── Section states ── */
+.req-section-locked { display: none !important; }
+
+/* ── Text-with-input flex layout (content + tick cell) ── */
+.req-twi-flex { display: flex; align-items: flex-start; gap: 8px; }
+.req-twi-flex + .req-twi-flex { margin-top: 14px; }
+
+/* ── MathQuill inputs (Learnosity-native box style) ── */
+.req-widget .mq-editable-field {
+    border: 1px solid #999;
+    border-radius: 2px;
+    padding: 4px 8px;
+    background: #fff;
+    font-size: 16px;
+    min-width: 60px;
+}
+
+.req-widget .mq-editable-field.mq-focused {
+    border-color: #555;
+    background: #fff;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+.req-widget .mq-editable-field.correct {
+    border-color: #3a9447;
+    border-width: 2px;
+    background: #e8f5e9;
+}
+
+.req-widget .mq-editable-field.incorrect {
+    border-color: #e8883a;
+    border-width: 2px;
+    background: #fde8d8;
+}
+
+/* ── Superscript MQ inputs (smaller for exponents) ── */
+.req-widget .req-mq-sup .mq-editable-field,
+.req-widget .req-mq-sup .mq-editable-field.mq-focused {
+    font-size: 11px !important;
+    padding: 1px 3px !important;
+    min-width: 24px !important;
+    min-height: 0 !important;
+    max-height: 22px;
+    line-height: 1.1;
+    vertical-align: middle;
+}
+.req-widget .req-mq-sup .mq-editable-field .mq-root-block {
+    font-size: 11px !important;
+    padding: 0 !important;
+    min-height: 0;
+}
+.req-widget .req-mq-sup .mq-editable-field.correct,
+.req-widget .req-mq-sup .mq-editable-field.incorrect {
+    padding: 0px 2px !important;
+}
+
+/* ── Subscript MQ inputs (smaller for log bases, etc.) ── */
+.req-widget .req-mq-sub .mq-editable-field,
+.req-widget .req-mq-sub .mq-editable-field.mq-focused {
+    font-size: 11px !important;
+    padding: 1px 3px !important;
+    min-width: 20px !important;
+    min-height: 0 !important;
+    max-height: 22px;
+    line-height: 1.1;
+    vertical-align: middle;
+}
+.req-widget .req-mq-sub .mq-editable-field .mq-root-block {
+    font-size: 11px !important;
+    padding: 0 !important;
+    min-height: 0;
+}
+.req-widget .req-mq-sub .mq-editable-field.correct,
+.req-widget .req-mq-sub .mq-editable-field.incorrect {
+    padding: 0px 2px !important;
+}
+
+/* ── Dropdown inputs (DN — Learnosity-native box style) ── */
+/* Custom dropdown with KaTeX support */
+.req-dropdown-wrap {
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+    min-width: 120px;
+}
+.req-dd-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border: 1px solid #999;
+    border-radius: 2px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1.6;
+    min-width: 100px;
+}
+.req-dd-trigger:hover { border-color: #555; }
+.req-dd-arrow { font-size: 12px; color: #555; margin-left: auto; }
+.req-dd-selected { flex: 1; }
+.req-dd-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 100;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    padding: 4px 0;
+    min-width: 100%;
+    max-height: 240px;
+    overflow-y: auto;
+}
+.req-dd-menu.open { display: block; }
+.req-dd-item {
+    display: block;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1.6;
+    white-space: nowrap;
+}
+.req-dd-item:hover { background: #f0f4ff; }
+.req-dd-disabled .req-dd-trigger {
+    opacity: 0.6;
+    pointer-events: none;
+    background: #f9f9f9;
+}
+.req-dropdown-wrap.correct .req-dd-trigger {
+    border-color: #3a9447;
+    border-width: 2px;
+    background-color: #e8f5e9;
+}
+.req-dropdown-wrap.incorrect .req-dd-trigger {
+    border-color: #e8883a;
+    border-width: 2px;
+    background-color: #fde8d8;
+}
+
+/* ── Check button ── */
+.req-check-btn {
+    display: inline-block;
+    padding: 7px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    background: #1565C0;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.req-check-btn:hover:not(:disabled) { background: #0d47a1; }
+.req-check-btn:disabled { background: #bbb; cursor: default; }
+
+/* ── Actions row ── */
+.req-actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+
+/* ── Feedback pill ── */
+.req-fb { font-size: 13px; border-radius: 6px; padding: 4px 10px; display: none; }
+.req-fb.correct { display: inline-block; background: #e8f5e9; color: #3a9447; }
+.req-fb.wrong { display: inline-block; background: #fde8d8; color: #e8883a; }
+
+/* ── Done banner ── */
+.req-done {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 8px;
+    background: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    font-size: 14px;
+    color: #3a9447;
+    font-weight: 600;
+    text-align: center;
+    display: none;
+}
+
+/* ── Hint ── */
+.req-hint-btn {
+    background: none; border: 1px dashed #999; border-radius: 6px;
+    padding: 4px 12px; font-size: 12px; color: #666; cursor: pointer;
+}
+.req-hint-btn:hover { border-color: #1565C0; color: #1565C0; }
+
+.req-hint-box {
+    display: none; margin-top: 6px; padding: 8px 12px;
+    background: #fff8e1; border: 1px solid #ffe082; border-radius: 6px;
+    font-size: 13px; line-height: 1.5; color: #5d4037;
+}
+.req-hint-box.visible { display: block; }
+
+/* ── Final Check Answer (bottom-right, matching Learnosity native style) ── */
+.req-check-answer-row {
+    margin-top: 20px; display: flex; align-items: center;
+    justify-content: flex-end; gap: 12px;
+}
+.req-ca-btn {
+    background: #fff; color: #333; border: 2px solid #333; border-radius: 4px;
+    padding: 8px 20px; font-size: 16px; font-weight: 600; cursor: pointer;
+    transition: background 0.15s;
+}
+.req-ca-btn:hover { background: #f5f5f5; }
+.req-ca-btn:disabled { opacity: 0.5; cursor: default; }
+.req-ca-feedback { font-size: 13px; font-weight: 500; }
+.req-ca-feedback.correct { color: #3a9447; }
+.req-ca-feedback.incomplete { color: #e65100; }
+
+/* ── Symbol keypad (floating grid) ── */
+.req-keypad {
+    position: absolute;
+    display: none;
+    grid-template-columns: repeat(5, auto);
+    gap: 4px;
+    padding: 8px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    z-index: 1000;
+}
+.req-keypad.visible { display: grid; }
+
+.req-keypad-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 36px; height: 36px;
+    border: 1px solid #e0e0e0; border-radius: 6px;
+    background: #fafafa; cursor: pointer; font-size: 14px;
+    transition: background 0.1s; padding: 0 6px;
+}
+.req-keypad-btn:hover { background: #e5e7eb; }
+.req-keypad-btn:active { background: #d1d5db; }
+.req-keypad-btn .katex { font-size: 16px; }
+
+/* Display math inside indented blocks should left-align, not center */
+[style*="margin-left"] .katex-display,
+[style*="padding-left"] .katex-display { text-align: left; }
+
+.req-keypad-sep { display: none; }
+
+/* ── Numbered badge (shared by input labels and correct answers panel) ── */
+.req-num-badge {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #9e9e9e;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+/* ── Input number badge (positioned top-left of input in review mode) ── */
+.req-input-numbered {
+    position: relative;
+    display: inline-block;
+}
+.req-input-numbered > .req-num-badge {
+    position: absolute;
+    top: -7px;
+    left: -5px;
+    z-index: 2;
+}
+
+/* ── Correct Answers panel (review mode) ── */
+.req-correct-answers {
+    margin-top: 28px;
+    padding: 20px 24px;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    background: transparent;
+}
+.req-ca-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 18px;
+}
+.req-ca-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px 12px;
+}
+.req-ca-box {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 14px;
+    min-height: 40px;
+}
+.req-ca-box > .req-num-badge {
+    position: absolute;
+    top: -7px;
+    left: -5px;
+}
+
+/* ── Review mode: disabled state ── */
+.req-widget.req-review-mode .mq-editable-field {
+    pointer-events: none;
+    cursor: default;
+}
+.req-widget.req-review-mode .req-dropdown-wrap .req-dd-trigger {
+    pointer-events: none;
+    cursor: default;
+}
+
+/* ═══════════════════════════════════════════════════
+   v4: TEACHER LIVE MODE — per-step visibility
+   ═══════════════════════════════════════════════════ */
+
+/* Teacher live: disable pointer events on the whole widget */
+.req-widget.req-teacher-live {
+    pointer-events: none;
+    position: relative;
+}
+
+/* ── Grayed state: steps the student hasn't reached yet ── */
+.req-tl-grayed {
+    opacity: 0.35;
+    transition: opacity 0.3s ease, background 0.3s ease;
+}
+
+/* ── Active state: step the student is currently on ── */
+.req-tl-active {
+    opacity: 1;
+    transition: opacity 0.3s ease, background 0.3s ease;
+}
+
+/* Light neutral background for the active row in equation tables */
+.req-widget.req-teacher-live tr.req-tl-active td {
+    background: #f5f5f5;
+}
+
+/* Light neutral background for active text-with-input sections */
+.req-widget.req-teacher-live .req-twi-flex.req-tl-active {
+    background: #f5f5f5;
+    border-radius: 6px;
+    padding: 8px;
+    margin: -4px -8px;
+}
+
+/* ── Completed state: same as student's completed styling ── */
+.req-tl-completed {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+/* ── Container: visual grouping for multi-box response containers ── */
+.req-container-numbered {
+    position: relative;
+    padding-left: 18px !important;
+}
+.req-container-badge {
+    position: absolute;
+    top: 4px;
+    left: -2px;
+    z-index: 2;
+}
+
+/* Container outline — groups boxes visually, distinct from active step bg */
+.req-container-wrap {
+    display: inline-block;
+    border: 1.5px solid #bdbdbd;
+    border-radius: 5px;
+    padding: 4px 8px;
+    background: #fff;
+}
+
+/* Validation states on the container wrap (teacher side) */
+.req-cwrap-correct {
+    border-color: #3a9447 !important;
+    border-width: 2px !important;
+}
+.req-cwrap-incorrect {
+    border-color: #e8883a !important;
+    border-width: 2px !important;
+}
