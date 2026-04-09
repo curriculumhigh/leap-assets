@@ -1508,33 +1508,48 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
             var tpl = self._stripContainerDelims(row.template || "{{0}}");
 
-            // Check for \dfrac or \frac with {{N}} in numerator/denominator.
-            // KaTeX fraction layout uses fixed positioning that doesn't reflow
-            // when placeholders are swapped for MQ fields, so we build the
-            // fraction structure in HTML instead.
-            // {{N}} contains double braces that confuse brace-matching regexes,
-            // so we temporarily replace them with a brace-free token.
-            var tplSafe = tpl.replace(/\{\{(\d+)\}\}/g, "REQINPUT$1REQEND");
-            var fracMatch = tplSafe.match(/^(.*?)\\d?frac\{([^{}]*)\}\{([^{}]*)\}(.*)$/);
-            if (fracMatch) {
-                // Restore {{N}} tokens in captured groups
-                for (var fi = 1; fi <= 4; fi++) {
-                    fracMatch[fi] = fracMatch[fi].replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
-                }
-            }
-            var hasFracInputs = fracMatch && (/\{\{\d+\}\}/.test(fracMatch[2]) || /\{\{\d+\}\}/.test(fracMatch[3]));
+            // ── Multi-fraction approach ──
+            // KaTeX \dfrac uses fixed positioning that doesn't reflow when
+            // placeholders are swapped for MQ fields. We detect ALL fractions
+            // containing {{N}} and replace them with fracPH markers, render
+            // the rest as KaTeX, then swap fracPH markers for HTML fraction
+            // structures with MQ slots.
+            var fracPrefix = "REQEQFRAC" + secId.replace(/[^a-zA-Z0-9]/g, "") + "R" + rowIdx + "F";
+            var fracParts = {};
+            var fracCounter = 0;
 
-            // Check if splitting would produce broken LaTeX fragments
-            // (e.g. {{N}} inside \sqrt{}, etc. — but NOT \dfrac which we handle above)
+            // Step 1: In math zones ($...$), replace \dfrac containing {{N}} with markers
+            var tplSafe = tpl.replace(/\{\{(\d+)\}\}/g, "REQINPUT$1REQEND");
+            var markedTpl = tplSafe.replace(/\\d?frac\{([^{}]*)\}\{([^{}]*)\}/g, function (fm, num, den) {
+                num = num.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
+                den = den.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
+                if (/\{\{\d+\}\}/.test(num) || /\{\{\d+\}\}/.test(den)) {
+                    var fid = "f" + fracCounter++;
+                    fracParts[fid] = { num: num, den: den };
+                    return "\\htmlId{" + fracPrefix + fid + "}{\\boxed{\\phantom{xxxx}}}";
+                }
+                // Restore safe tokens for fractions without inputs
+                fm = fm.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
+                return fm;
+            });
+            // Restore remaining safe tokens
+            markedTpl = markedTpl.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
+
+            var hasFracInputs = fracCounter > 0;
+
+            // Check if remaining template still has {{N}} inside complex LaTeX
             var hasComplexLatex = !hasFracInputs && (/\\[a-zA-Z]+\{[^}]*\{\{/.test(tpl) || /\}\}[^{]*\}/.test(tpl));
 
             if (hasFracInputs) {
-                // HTML fraction: build numerator/denominator as separate rows
-                // so MQ fields have proper flow context
-                var prefix = fracMatch[1].trim();  // e.g. "= "
-                var numTpl = fracMatch[2];          // numerator content
-                var denTpl = fracMatch[3];          // denominator content
-                var suffix = fracMatch[4].trim();   // anything after the fraction
+                // Replace remaining {{N}} (outside fractions) with \htmlId markers
+                var inputPrefix = "REQEQ" + secId.replace(/[^a-zA-Z0-9]/g, "") + "R" + rowIdx + "X";
+                markedTpl = markedTpl.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+                    return "\\htmlId{" + inputPrefix + n + "}{\\boxed{\\phantom{xxx}}}";
+                });
+
+                $target.html("$" + markedTpl + "$");
+                $container.append($wrapper);
+                self.renderKaTeX($container[0]);
 
                 // Helper: render a fraction part using simple-split
                 var buildFracPart = function ($row, partTpl) {
@@ -1543,33 +1558,40 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                         var m = part.match(/\{\{(\d+)\}\}/);
                         if (m) {
                             var ii = parseInt(m[1]);
-                            var $slot = $('<span class="mq-slot" id="' + self.uid + '-mq-' + secId + '-' + rowIdx + '-' + ii + '" style="display:inline-block;min-width:60px;vertical-align:middle;"></span>');
-                            $row.append($slot);
+                            var inp = row.inputs[ii];
+                            if (inp && inp.type === "dropdown") {
+                                var $dd = self._buildDropdown(self.uid + '-dd-' + secId + '-' + rowIdx + '-' + ii, inp.options || [], function () { self._fireChanged(); });
+                                $row.append($dd);
+                            } else {
+                                var $slot = $('<span class="mq-slot" id="' + self.uid + '-mq-' + secId + '-' + rowIdx + '-' + ii + '" style="display:inline-block;min-width:60px;vertical-align:middle;"></span>');
+                                $row.append($slot);
+                            }
                         } else if (part.trim()) {
                             $row.append($("<span></span>").css("vertical-align", "middle").html("$" + part + "$"));
                         }
                     });
                 };
 
-                if (prefix) {
-                    $target.append($("<span></span>").css("vertical-align", "middle").html("$" + prefix + "$"));
-                }
+                // Step 2: Replace fracPH markers with HTML fraction structures
+                Object.keys(fracParts).forEach(function (fid) {
+                    var phEl = $target[0].querySelector('[id="' + fracPrefix + fid + '"]') || document.getElementById(fracPrefix + fid);
+                    if (!phEl) return;
+                    var fp = fracParts[fid];
+                    var $frac = $('<span class="req-html-frac"></span>');
+                    var $num = $('<span class="req-html-frac-num"></span>');
+                    var $den = $('<span class="req-html-frac-den"></span>');
+                    buildFracPart($num, fp.num);
+                    buildFracPart($den, fp.den);
+                    $frac.append($num).append($den);
+                    phEl.parentNode.replaceChild($frac[0], phEl);
+                    self.renderKaTeX($frac[0]);
+                });
 
-                // Build HTML fraction structure
-                var $frac = $('<span class="req-html-frac"></span>');
-                var $num = $('<span class="req-html-frac-num"></span>');
-                var $den = $('<span class="req-html-frac-den"></span>');
-                buildFracPart($num, numTpl);
-                buildFracPart($den, denTpl);
-                $frac.append($num).append($den);
-                $target.append($frac);
-
-                if (suffix) {
-                    $target.append($("<span></span>").css("vertical-align", "middle").html("$" + suffix + "$"));
-                }
-
-                $container.append($wrapper);
-                self.renderKaTeX($container[0]);
+                // Step 3: Replace remaining non-fraction input markers
+                var mkId = function (idx, kind) {
+                    return self.uid + "-" + kind + "-" + secId + "-" + rowIdx + "-" + idx;
+                };
+                self._replaceMarkers($target[0], inputPrefix, row.inputs, mkId);
 
             } else if (hasComplexLatex) {
                 // Marker approach: render whole template as one KaTeX expression,
@@ -1591,8 +1613,14 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     var match = part.match(/\{\{(\d+)\}\}/);
                     if (match) {
                         var inputIdx = parseInt(match[1]);
-                        var $mqSpan3 = $('<span class="mq-slot" id="' + self.uid + '-mq-' + secId + '-' + rowIdx + '-' + inputIdx + '" style="display:inline-block;min-width:60px;vertical-align:middle;"></span>');
-                        $target.append($mqSpan3);
+                        var inp = row.inputs[inputIdx];
+                        if (inp && inp.type === "dropdown") {
+                            var $dd = self._buildDropdown(self.uid + '-dd-' + secId + '-' + rowIdx + '-' + inputIdx, inp.options || [], function () { self._fireChanged(); });
+                            $target.append($dd);
+                        } else {
+                            var $mqSpan3 = $('<span class="mq-slot" id="' + self.uid + '-mq-' + secId + '-' + rowIdx + '-' + inputIdx + '" style="display:inline-block;min-width:60px;vertical-align:middle;"></span>');
+                            $target.append($mqSpan3);
+                        }
                     } else if (part.trim()) {
                         $target.append($("<span></span>").css("vertical-align", "middle").html("$" + part + "$"));
                     }
