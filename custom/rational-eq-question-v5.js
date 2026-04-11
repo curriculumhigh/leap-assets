@@ -1212,10 +1212,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
             // Expression cell
             var $tdExpr = $("<td></td>");
-            if (row.inputs && row.inputs.length > 0) {
+            if (row.content && row.inputs && row.inputs.length > 0) {
+                // Mixed text+math content with {{N}} placeholders — render like a TWI
+                self.buildMixedContentRow($tdExpr, row, sec.id, ri);
+            } else if (row.inputs && row.inputs.length > 0) {
                 self.buildTemplateExpression($tdExpr, row, sec.id, ri);
             } else {
-                $tdExpr.html("$" + row.expression + "$");
+                $tdExpr.html("$" + (row.expression || "") + "$");
             }
             $tr.append($tdExpr);
 
@@ -1435,6 +1438,45 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         });
 
         return $wrapper;
+    };
+
+    // ── Mixed content row builder (text+math with {{N}} placeholders) ──
+    // Used for equation-row content like "$= {{0}}$, $x\neq {{1}}$"
+    Question.prototype.buildMixedContentRow = function ($container, row, secId, rowIdx) {
+        var self = this;
+        var tpl = self._stripContainerDelims(row.content || "");
+        var prefix = "REQMX" + secId.replace(/[^a-zA-Z0-9]/g, "") + "R" + rowIdx + "X";
+
+        // Replace {{N}} inside $...$ math zones with \htmlId markers
+        var marked = tpl.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function (mathBlock) {
+            var safe = mathBlock.replace(/\{\{(\d+)\}\}/g, "REQINPUT$1REQEND");
+            safe = safe.replace(/\\d?frac\{([^{}]*)\}\{([^{}]*)\}/g, function (fm, num, den) {
+                num = num.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
+                den = den.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
+                if (/\{\{\d+\}\}/.test(num) || /\{\{\d+\}\}/.test(den)) {
+                    return "\\htmlId{" + prefix + "frac}{\\boxed{\\phantom{xxxx}}}";
+                }
+                return fm;
+            });
+            safe = safe.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
+            safe = safe.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+                return "\\htmlId{" + prefix + n + "}{\\boxed{\\phantom{xxx}}}";
+            });
+            return safe;
+        });
+        // Replace remaining {{N}} (in prose) with HTML placeholder spans
+        marked = marked.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+            return '<span id="' + prefix + n + '"></span>';
+        });
+
+        $container.html(self._formatTextBlock(marked));
+        self.renderKaTeX($container[0]);
+
+        // Swap placeholder markers for MQ input fields or dropdowns
+        var mkId = function (idx, kind) {
+            return self.uid + "-" + kind + "-" + secId + "-" + rowIdx + "-" + idx;
+        };
+        self._replaceMarkers($container[0], prefix, row.inputs, mkId);
     };
 
     // ── Template expression builder (equation table rows) ──
