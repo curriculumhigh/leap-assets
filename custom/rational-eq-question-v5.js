@@ -1559,7 +1559,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 var proseText = seg.text.replace(/\{\{(\d+)\}\}/g, function (m, n) {
                     return '<span id="' + prefix + n + '"></span>';
                 });
-                $wrapper.append($(proseText));
+                // Use text node for plain text; only parse as HTML if it contains tags
+                if (/</.test(proseText)) {
+                    $wrapper.append($.parseHTML(proseText));
+                } else {
+                    $wrapper.append(document.createTextNode(proseText));
+                }
             }
         });
         $container.empty().append($wrapper);
