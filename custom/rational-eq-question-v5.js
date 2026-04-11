@@ -525,17 +525,34 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         }
 
         // Step 3: Equivalence check
-        if (method === "equiLiteral") {
-            return this.checkEquiLiteral(studentLatex, inputSpec.answer);
-        }
-
-        // equivSymbolic (default)
-        // Default to set-equiv (unordered) for comma-separated answers,
-        // unless explicitly overridden with ordered:true
+        // Comma-separated answers default to unordered unless ordered:true
         var equivOk;
         var isCommaList = inputSpec.answer && inputSpec.answer.indexOf(",") >= 0;
-        if (constraints.ordered === false || (isCommaList && constraints.ordered !== true)) {
-            equivOk = this.checkSetEquiv(studentLatex, inputSpec.answer);
+        if (isCommaList && constraints.ordered !== true) {
+            // Split both into parts, compare using the current method (permutation match)
+            var studentParts = studentLatex.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+            var expectedParts = inputSpec.answer.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+            if (studentParts.length !== expectedParts.length) {
+                equivOk = false;
+            } else {
+                var checkFn = method === "equiLiteral"
+                    ? function (a, b) { return self.checkEquiLiteral(a, b); }
+                    : function (a, b) { return self.checkEquivSymbolic(a, b); };
+                var matched = {};
+                equivOk = true;
+                for (var ei = 0; ei < expectedParts.length; ei++) {
+                    var found = false;
+                    for (var si = 0; si < studentParts.length; si++) {
+                        if (matched[si]) continue;
+                        if (checkFn(studentParts[si], expectedParts[ei])) {
+                            matched[si] = true; found = true; break;
+                        }
+                    }
+                    if (!found) { equivOk = false; break; }
+                }
+            }
+        } else if (method === "equiLiteral") {
+            equivOk = this.checkEquiLiteral(studentLatex, inputSpec.answer);
         } else {
             equivOk = this.checkEquivSymbolic(studentLatex, inputSpec.answer);
         }
