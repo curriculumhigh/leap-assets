@@ -1473,78 +1473,97 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var tpl = self._stripContainerDelims(row.content || "");
         var prefix = "REQMX" + secId.replace(/[^a-zA-Z0-9]/g, "") + "R" + rowIdx + "X";
 
-        // Step 1: Extract fractions with inputs — render as HTML fractions (not KaTeX)
-        var fracParts = {};
-        var fracIdx = 0;
-        var marked = tpl.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function (mathBlock) {
-            var safe = mathBlock.replace(/\{\{(\d+)\}\}/g, "REQINPUT$1REQEND");
-            safe = safe.replace(/\\d?frac\{([^{}]*)\}\{([^{}]*)\}/g, function (fm, num, den) {
-                num = num.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
-                den = den.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
-                var hasInputs = /\{\{\d+\}\}/.test(num) || /\{\{\d+\}\}/.test(den);
-                if (!hasInputs) return fm;
-                // Store fraction parts for HTML rendering; replace with placeholder
-                var fid = "frac" + (fracIdx++);
-                fracParts[fid] = { num: num, den: den };
-                return "\\htmlId{" + prefix + fid + "}{\\boxed{\\phantom{xxxx}}}";
-            });
-            safe = safe.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
-            // Non-fraction inputs inside math: use \htmlId markers
-            safe = safe.replace(/\{\{(\d+)\}\}/g, function (m, n) {
-                return "\\htmlId{" + prefix + n + "}{\\boxed{\\phantom{xxx}}}";
-            });
-            return safe;
-        });
-        // Replace remaining {{N}} (in prose) with HTML placeholder spans
-        marked = marked.replace(/\{\{(\d+)\}\}/g, function (m, n) {
-            return '<span id="' + prefix + n + '"></span>';
-        });
-
-        $container.html(self._formatTextBlock(marked));
-        self.renderKaTeX($container[0]);
-
         var mkId = function (idx, kind) {
             return self.uid + "-" + kind + "-" + secId + "-" + rowIdx + "-" + idx;
         };
 
-        // Step 2: Replace fraction placeholders with HTML fraction structures
-        Object.keys(fracParts).forEach(function (fid) {
-            var phEl = $container[0].querySelector('[id="' + prefix + fid + '"]') || document.getElementById(prefix + fid);
-            if (!phEl) return;
-            var fp = fracParts[fid];
-            var $frac = $('<span class="req-html-frac"></span>');
-            var $num = $('<span class="req-html-frac-num"></span>');
-            var $den = $('<span class="req-html-frac-den"></span>');
+        // Step 1: Split math blocks that contain fractions with inputs — pull fractions
+        // out of KaTeX entirely and render as HTML fractions (avoids KaTeX CSS overlap).
+        // Convert: $= \dfrac{{{0}}}{{{1}}}$  →  $=$ <html-frac> (separate elements)
+        var segments = [];
+        var fracRe = /\\d?frac\{([^{}]*)\}\{([^{}]*)\}/;
 
-            var buildPart = function ($row, partTpl) {
-                var parts = partTpl.split(/(\{\{\d+\}\})/);
-                parts.forEach(function (part) {
-                    var m2 = part.match(/\{\{(\d+)\}\}/);
-                    if (m2) {
-                        var ii = parseInt(m2[1]);
-                        var inp = row.inputs[ii];
-                        if (inp && inp.type === "dropdown") {
-                            var $dd = self._buildDropdown(mkId(ii, "dd"), inp.options || [], function () { self._fireChanged(); });
-                            $row.append($dd);
-                        } else {
-                            var $slot = $('<span class="mq-slot" id="' + mkId(ii, "mq") + '" style="display:inline-block;min-width:60px;vertical-align:middle;"></span>');
-                            $row.append($slot);
-                        }
-                    } else if (part.trim()) {
-                        var $sp = $("<span></span>").css("vertical-align", "middle").html("$" + part + "$");
-                        $row.append($sp);
-                        self.renderKaTeX($sp[0]);
-                    }
-                });
-            };
-
-            buildPart($num, fp.num);
-            buildPart($den, fp.den);
-            $frac.append($num).append($den);
-            phEl.parentNode.replaceChild($frac[0], phEl);
+        tpl.split(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/).forEach(function (chunk) {
+            // Non-math chunk (prose between $...$)
+            if (chunk.charAt(0) !== "$") {
+                if (chunk.trim()) segments.push({ type: "prose", text: chunk });
+                return;
+            }
+            // Math chunk — check if it contains a fraction with inputs
+            var inner = chunk.replace(/^\$\$?|\$\$?$/g, "");
+            var tempInner = inner.replace(/\{\{(\d+)\}\}/g, "REQINPUT$1REQEND");
+            var fm = tempInner.match(/\\d?frac\{([^{}]*)\}\{([^{}]*)\}/);
+            if (fm) {
+                var num = fm[1].replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
+                var den = fm[2].replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
+                if (/\{\{\d+\}\}/.test(num) || /\{\{\d+\}\}/.test(den)) {
+                    // Split: math before frac | frac (HTML) | math after frac
+                    var origInner = inner;
+                    var fracMatch = origInner.match(/\\d?frac\{[^{}]*\}\{[^{}]*\}/);
+                    var fracStart = origInner.indexOf(fracMatch[0]);
+                    var fracEnd = fracStart + fracMatch[0].length;
+                    var before = origInner.substring(0, fracStart).trim();
+                    var after = origInner.substring(fracEnd).trim();
+                    if (before) segments.push({ type: "math", text: "$" + before + "$" });
+                    segments.push({ type: "frac", num: num, den: den });
+                    if (after) segments.push({ type: "math", text: "$" + after + "$" });
+                    return;
+                }
+            }
+            // Math chunk with no fraction inputs — keep as math
+            segments.push({ type: "math", text: chunk });
         });
 
-        // Step 3: Replace remaining non-fraction placeholders with input elements
+        // Step 2: Build DOM from segments
+        var $wrapper = $('<span style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:2px;"></span>');
+        segments.forEach(function (seg) {
+            if (seg.type === "frac") {
+                // HTML fraction with MQ slots
+                var $frac = $('<span class="req-html-frac"></span>');
+                var $num = $('<span class="req-html-frac-num"></span>');
+                var $den = $('<span class="req-html-frac-den"></span>');
+                var buildPart = function ($part, partTpl) {
+                    partTpl.split(/(\{\{\d+\}\})/).forEach(function (p) {
+                        var m2 = p.match(/\{\{(\d+)\}\}/);
+                        if (m2) {
+                            var ii = parseInt(m2[1]);
+                            var inp = row.inputs[ii];
+                            if (inp && inp.type === "dropdown") {
+                                $part.append(self._buildDropdown(mkId(ii, "dd"), inp.options || [], function () { self._fireChanged(); }));
+                            } else {
+                                $part.append($('<span class="mq-slot" id="' + mkId(ii, "mq") + '" style="display:inline-block;min-width:60px;vertical-align:middle;"></span>'));
+                            }
+                        } else if (p.trim()) {
+                            var $sp = $("<span></span>").css("vertical-align", "middle").html("$" + p + "$");
+                            $part.append($sp);
+                            self.renderKaTeX($sp[0]);
+                        }
+                    });
+                };
+                buildPart($num, seg.num);
+                buildPart($den, seg.den);
+                $frac.append($num).append($den);
+                $wrapper.append($frac);
+            } else if (seg.type === "math") {
+                // Math with possible {{N}} inputs — use \htmlId markers
+                var mathText = seg.text;
+                mathText = mathText.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+                    return "\\htmlId{" + prefix + n + "}{\\boxed{\\phantom{xxx}}}";
+                });
+                var $sp = $("<span></span>").html(self._formatTextBlock(mathText));
+                self.renderKaTeX($sp[0]);
+                $wrapper.append($sp);
+            } else {
+                // Prose with possible {{N}} inputs
+                var proseText = seg.text.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+                    return '<span id="' + prefix + n + '"></span>';
+                });
+                $wrapper.append($(proseText));
+            }
+        });
+        $container.empty().append($wrapper);
+
+        // Step 3: Replace non-fraction placeholder markers with MQ/dropdown inputs
         self._replaceMarkers($container[0], prefix, row.inputs, mkId);
 
         // Init MathQuill fields
