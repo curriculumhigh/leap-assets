@@ -288,7 +288,14 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var $trigger = $('<span class="req-dd-trigger"></span>').append($selected).append($arrow);
         var $menu = $('<span class="req-dd-menu"></span>');
 
-        options.forEach(function (opt) {
+        // Shuffle options so the correct answer isn't always in the same position
+        var shuffled = options.slice();
+        for (var si = shuffled.length - 1; si > 0; si--) {
+            var sj = Math.floor(Math.random() * (si + 1));
+            var tmp = shuffled[si]; shuffled[si] = shuffled[sj]; shuffled[sj] = tmp;
+        }
+
+        shuffled.forEach(function (opt) {
             var $item = $('<span class="req-dd-item" data-value="' + opt.replace(/"/g, '&quot;') + '"></span>');
             var rendered = self._renderDNOption(opt);
             if (rendered) { $item.html(rendered); } else { $item.text(opt); }
