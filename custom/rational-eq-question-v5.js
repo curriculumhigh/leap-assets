@@ -1213,7 +1213,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             $tr.append($tdExpr);
 
             // Annotation cell
-            $tr.append($('<td class="req-annotation"></td>').text(row.annotation));
+            var $tdAnn = $('<td class="req-annotation"></td>').text(row.annotation || '');
+            self.renderKaTeX($tdAnn[0]);
+            $tr.append($tdAnn);
 
             // Feedback cell
             $tr.append($('<td class="req-fb-cell" id="' + self.uid + '-fb-' + sec.id + '-' + ri + '"></td>'));
