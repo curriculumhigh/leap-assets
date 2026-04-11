@@ -506,6 +506,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         if (inputSpec.method === "factorFull") return this.checkFactorFull(studentLatex, inputSpec);
 
         // ── v5: Unified validation with constraints ──
+        var self = this;
         var method = inputSpec.method || "equivSymbolic";
         var constraints = inputSpec.constraints || {};
         var studentNerd = this.latexToNerdamer(studentLatex);
