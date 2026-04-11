@@ -1484,6 +1484,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var fracRe = /\\d?frac\{([^{}]*)\}\{([^{}]*)\}/;
 
         tpl.split(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/).forEach(function (chunk) {
+            if (!chunk || !chunk.trim()) return;
             // Non-math chunk (prose between $...$)
             if (chunk.charAt(0) !== "$") {
                 if (chunk.trim()) segments.push({ type: "prose", text: chunk });
@@ -1497,16 +1498,16 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 var num = fm[1].replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
                 var den = fm[2].replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
                 if (/\{\{\d+\}\}/.test(num) || /\{\{\d+\}\}/.test(den)) {
-                    // Split: math before frac | frac (HTML) | math after frac
-                    var origInner = inner;
-                    var fracMatch = origInner.match(/\\d?frac\{[^{}]*\}\{[^{}]*\}/);
-                    var fracStart = origInner.indexOf(fracMatch[0]);
-                    var fracEnd = fracStart + fracMatch[0].length;
-                    var before = origInner.substring(0, fracStart).trim();
-                    var after = origInner.substring(fracEnd).trim();
-                    if (before) segments.push({ type: "math", text: "$" + before + "$" });
+                    // Split using tempInner (where {{N}} are safe tokens that don't break regex)
+                    var fracStart = tempInner.indexOf(fm[0]);
+                    var fracEnd = fracStart + fm[0].length;
+                    var beforeSafe = tempInner.substring(0, fracStart).trim();
+                    var afterSafe = tempInner.substring(fracEnd).trim();
+                    // Restore {{N}} placeholders
+                    var restore = function (s) { return s.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}"); };
+                    if (beforeSafe) segments.push({ type: "math", text: "$" + restore(beforeSafe) + "$" });
                     segments.push({ type: "frac", num: num, den: den });
-                    if (after) segments.push({ type: "math", text: "$" + after + "$" });
+                    if (afterSafe) segments.push({ type: "math", text: "$" + restore(afterSafe) + "$" });
                     return;
                 }
             }
