@@ -1477,6 +1477,28 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             return self.uid + "-" + kind + "-" + secId + "-" + rowIdx + "-" + idx;
         };
         self._replaceMarkers($container[0], prefix, row.inputs, mkId);
+
+        // Init MathQuill fields
+        requestAnimationFrame(function () {
+            row.inputs.forEach(function (inp, inputIdx) {
+                if (inp.type === "dropdown") return;
+                var slot = document.getElementById(self.uid + "-mq-" + secId + "-" + rowIdx + "-" + inputIdx);
+                if (slot) {
+                    var field = self.MQ.MathField(slot, {
+                        spaceBehavesLikeTab: true,
+                        handlers: {
+                            enter: function () {
+                                var sec = self.findSectionById(secId);
+                                if (sec) self.checkRowAnswer(sec, rowIdx);
+                            },
+                            edit: function () { self._fireChanged(); }
+                        }
+                    });
+                    self.mqFields[secId + "-" + rowIdx + "-" + inputIdx] = field;
+                    self.setupKeypadForField(field, slot);
+                }
+            });
+        });
     };
 
     // ── Template expression builder (equation table rows) ──
