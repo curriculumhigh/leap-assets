@@ -1926,8 +1926,50 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var row = sec.rows[rowIdx];
         var allCorrect = true;
 
-        if (row.container) {
-            // ── v5: Container validation — multiple boxes validated as one expression ──
+        if (row.containers && row.containers.length > 0) {
+            // ── v5: Multi-container validation — each container validates a subset of inputs ──
+            // Build a set of input indices that belong to any container
+            var containerInputs = {};
+            row.containers.forEach(function (ctr) {
+                if (!ctr.inputIndices) return;
+                ctr.inputIndices.forEach(function (idx) { containerInputs[idx] = true; });
+            });
+
+            // Validate each container
+            row.containers.forEach(function (ctr) {
+                if (!ctr.inputIndices) return;
+                var boxValues = [];
+                var boxOk = true;
+                ctr.inputIndices.forEach(function (idx) {
+                    var field = self.mqFields[sec.id + "-" + rowIdx + "-" + idx];
+                    if (!field) { boxOk = false; return; }
+                    boxValues.push(field.latex());
+                });
+                if (!boxOk || boxValues.length !== ctr.inputIndices.length) {
+                    allCorrect = false;
+                    return;
+                }
+                var correct = self.validateContainer(ctr, boxValues);
+                if (!correct) allCorrect = false;
+                // Color container boxes
+                ctr.inputIndices.forEach(function (idx) {
+                    var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + rowIdx + "-" + idx);
+                    if (slot) { $(slot).removeClass("correct incorrect").addClass(correct ? "correct" : "incorrect"); }
+                });
+            });
+
+            // Validate individual inputs not in any container
+            row.inputs.forEach(function (inp, ii) {
+                if (containerInputs[ii]) return; // already handled by container
+                var field = self.mqFields[sec.id + "-" + rowIdx + "-" + ii];
+                if (!field) { allCorrect = false; return; }
+                var correct = self.validateInput(field.latex(), inp);
+                var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + rowIdx + "-" + ii);
+                if (slot) { $(slot).removeClass("correct incorrect").addClass(correct ? "correct" : "incorrect"); }
+                if (!correct) allCorrect = false;
+            });
+        } else if (row.container) {
+            // ── Legacy single-container (backward compat) ──
             var boxValues = [];
             for (var bi = 0; bi < row.inputs.length; bi++) {
                 var field = self.mqFields[sec.id + "-" + rowIdx + "-" + bi];
@@ -1938,17 +1980,14 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 allCorrect = self.validateContainer(row.container, boxValues);
             }
             if (self.isTeacher) {
-                // Teacher: color the container wrap border, not individual boxes
                 var $cWrap = $("#" + self.uid + "-cwrap-" + sec.id + "-" + rowIdx);
                 $cWrap.removeClass("req-cwrap-correct req-cwrap-incorrect")
                     .addClass(allCorrect ? "req-cwrap-correct" : "req-cwrap-incorrect");
-                // Container-level tick/cross (inside the wrap, after the last box)
                 $cWrap.find(".req-cwrap-tick").remove();
                 $cWrap.append(allCorrect
                     ? '<span class="req-cwrap-tick" style="color:#3a9447;font-size:14px;margin-left:6px;vertical-align:middle;">&#10003;</span>'
                     : '<span class="req-cwrap-tick" style="color:#e8883a;font-size:14px;margin-left:6px;vertical-align:middle;">&#10007;</span>');
             } else {
-                // Student: color all boxes in the container as a unit
                 for (var ci = 0; ci < row.inputs.length; ci++) {
                     var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + rowIdx + "-" + ci);
                     if (slot) { $(slot).removeClass("correct incorrect").addClass(allCorrect ? "correct" : "incorrect"); }
