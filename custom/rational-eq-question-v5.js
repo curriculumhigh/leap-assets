@@ -428,6 +428,29 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         s = s.replace(/\\sqrt\{([^{}]+)\}/g, "sqrt($1)");
         s = s.replace(/\\sqrt\s*([a-zA-Z0-9])/g, "sqrt($1)");
         s = s.replace(/\\(?!pi|e|sqrt|ln|log|sin|cos|tan|infty)/g, "");
+        // Implicit multiplication between adjacent single-letter variables.
+        // Protect known function names first, then insert * between letters.
+        var funcPH = {};
+        var fIdx = 0;
+        s = s.replace(/\b(sqrt|log|sin|cos|tan|pi|infty)\b/g, function (m) {
+            var ph = "FUNC" + (fIdx++);
+            funcPH[ph] = m;
+            return ph;
+        });
+        // Insert * between adjacent lowercase letters: xy → x*y
+        while (/([a-z])([a-z])/i.test(s)) {
+            s = s.replace(/([a-z])([a-z])/gi, "$1*$2");
+        }
+        // Also: )letter, )digit, )(, digit(, letter(
+        s = s.replace(/\)([a-zA-Z0-9])/g, ")*$1");
+        s = s.replace(/([a-zA-Z0-9])\(/g, "$1*(");
+        s = s.replace(/\)\(/g, ")*(");
+        // Restore function names
+        Object.keys(funcPH).forEach(function (ph) {
+            s = s.replace(new RegExp(ph.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "g"), funcPH[ph]);
+        });
+        // Fix: function names shouldn't have * before ( — e.g. "log*(x)" → "log(x)"
+        s = s.replace(/(sqrt|log|sin|cos|tan)\*\(/g, "$1(");
         return s;
     };
 
