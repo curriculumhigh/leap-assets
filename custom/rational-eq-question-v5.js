@@ -530,8 +530,11 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         }
 
         // equivSymbolic (default)
+        // Default to set-equiv (unordered) for comma-separated answers,
+        // unless explicitly overridden with ordered:true
         var equivOk;
-        if (constraints.ordered === false) {
+        var isCommaList = inputSpec.answer && inputSpec.answer.indexOf(",") >= 0;
+        if (constraints.ordered === false || (isCommaList && constraints.ordered !== true)) {
             equivOk = this.checkSetEquiv(studentLatex, inputSpec.answer);
         } else {
             equivOk = this.checkEquivSymbolic(studentLatex, inputSpec.answer);
