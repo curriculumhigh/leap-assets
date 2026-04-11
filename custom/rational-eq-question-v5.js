@@ -1236,8 +1236,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         sec.rows.forEach(function (row, ri) {
             var $tr = $('<tr class="req-eq-row locked" id="' + self.uid + '-row-' + sec.id + '-' + ri + '"></tr>');
 
-            // Expression cell
-            var $tdExpr = $("<td></td>");
+            // Expression cell — nowrap to keep multi-fraction expressions on one line
+            var $tdExpr = $('<td style="white-space:nowrap"></td>');
             if (row.content && row.inputs && row.inputs.length > 0) {
                 // Mixed text+math content with {{N}} placeholders — render like a TWI
                 self.buildMixedContentRow($tdExpr, row, sec.id, ri);
@@ -1516,7 +1516,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         });
 
         // Step 2: Build DOM from segments
-        var $wrapper = $('<span style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:2px;"></span>');
+        var $wrapper = $('<span style="display:inline-flex;align-items:center;gap:2px;"></span>');
         segments.forEach(function (seg) {
             if (seg.type === "frac") {
                 // HTML fraction with MQ slots
