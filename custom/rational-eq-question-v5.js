@@ -458,8 +458,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         try {
             var studentExpr = this.latexToNerdamer(studentLatex);
             if (!studentExpr.trim()) return false;
-            // expectedAnswer may be LaTeX or nerdamer — convert if it has LaTeX commands
-            var expectedNerdamer = /\\[a-zA-Z]/.test(expectedAnswer) ? this.latexToNerdamer(expectedAnswer) : expectedAnswer;
+            // Always convert expected answer through latexToNerdamer for consistent
+            // implicit multiplication handling (e.g. "xy" → "x*y")
+            var expectedNerdamer = this.latexToNerdamer(expectedAnswer);
             var diff = nerdamer("simplify((" + studentExpr + ")-(" + expectedNerdamer + "))");
             if (diff.toString() === "0") return true;
             // Numeric fallback: if no variables remain, evaluate and compare
