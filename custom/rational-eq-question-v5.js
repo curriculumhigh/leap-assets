@@ -1479,10 +1479,16 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             safe = safe.replace(/\\d?frac\{([^{}]*)\}\{([^{}]*)\}/g, function (fm, num, den) {
                 num = num.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
                 den = den.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
-                if (/\{\{\d+\}\}/.test(num) || /\{\{\d+\}\}/.test(den)) {
-                    return "\\htmlId{" + prefix + "frac}{\\boxed{\\phantom{xxxx}}}";
-                }
-                return fm;
+                var hasInputs = /\{\{\d+\}\}/.test(num) || /\{\{\d+\}\}/.test(den);
+                if (!hasInputs) return fm;
+                // Replace each {{N}} with its own \htmlId marker inside the fraction
+                num = num.replace(/\{\{(\d+)\}\}/g, function (m2, n2) {
+                    return "\\htmlId{" + prefix + n2 + "}{\\boxed{\\phantom{xxx}}}";
+                });
+                den = den.replace(/\{\{(\d+)\}\}/g, function (m2, n2) {
+                    return "\\htmlId{" + prefix + n2 + "}{\\boxed{\\phantom{xxx}}}";
+                });
+                return "\\dfrac{" + num + "}{" + den + "}";
             });
             safe = safe.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}");
             safe = safe.replace(/\{\{(\d+)\}\}/g, function (m, n) {
