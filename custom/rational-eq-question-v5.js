@@ -529,10 +529,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Comma-separated answers default to unordered unless ordered:true
         var equivOk;
         var isCommaList = inputSpec.answer && inputSpec.answer.indexOf(",") >= 0;
+        console.log("[validateInput] studentLatex:", JSON.stringify(studentLatex), "answer:", JSON.stringify(inputSpec.answer), "isCommaList:", isCommaList, "method:", method);
         if (isCommaList && constraints.ordered !== true) {
             // Split both into parts, compare using the current method (permutation match)
             var studentParts = studentLatex.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
             var expectedParts = inputSpec.answer.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+            console.log("[validateInput] studentParts:", JSON.stringify(studentParts), "expectedParts:", JSON.stringify(expectedParts));
             if (studentParts.length !== expectedParts.length) {
                 equivOk = false;
             } else {
@@ -545,7 +547,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     var found = false;
                     for (var si = 0; si < studentParts.length; si++) {
                         if (matched[si]) continue;
-                        if (checkFn(studentParts[si], expectedParts[ei])) {
+                        var partResult = checkFn(studentParts[si], expectedParts[ei]);
+                        console.log("[validateInput] checkFn('" + studentParts[si] + "', '" + expectedParts[ei] + "') =", partResult);
+                        if (partResult) {
                             matched[si] = true; found = true; break;
                         }
                     }
