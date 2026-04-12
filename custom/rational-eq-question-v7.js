@@ -408,18 +408,33 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             phEl.parentNode.replaceChild(replacement, phEl);
         });
 
-        // Fix fraction line visibility: KaTeX renders numerator, frac-line, denominator
-        // as sibling spans in a vlist. The denominator span paints after the frac-line span,
-        // so MQ field backgrounds cover the thin frac-line. Fix by elevating the frac-line's
-        // parent span above the denominator's parent span in the stacking order.
+        // Fix fraction line visibility for fractions containing MQ input fields.
+        // KaTeX computes fraction width from the original placeholder content, but MQ
+        // fields are wider, so the frac-line ends up too short. Also, the denominator
+        // span paints after the frac-line, covering it with MQ white backgrounds.
+        // Fix: elevate frac-line's parent span, extend frac-line width, add gap via
+        // vertical margin on MQ fields in fractions.
         var fracs = root.querySelectorAll('.mfrac');
         for (var i = 0; i < fracs.length; i++) {
             var mfrac = fracs[i];
             if (!mfrac.querySelector('.mq-slot, .mq-editable-field')) continue;
             var fracLine = mfrac.querySelector('.frac-line');
-            if (fracLine && fracLine.parentNode) {
-                fracLine.parentNode.style.position = 'relative';
-                fracLine.parentNode.style.zIndex = '3';
+            if (!fracLine || !fracLine.parentNode) continue;
+
+            // 1. Elevate frac-line parent above denominator parent in stacking order
+            fracLine.parentNode.style.position = 'relative';
+            fracLine.parentNode.style.zIndex = '3';
+            fracLine.parentNode.style.overflow = 'visible';
+
+            // 2. Extend frac-line beyond its computed width (6px on each side)
+            fracLine.style.width = 'calc(100% + 12px)';
+            fracLine.style.marginLeft = '-6px';
+            fracLine.style.borderBottomWidth = '1.2px';
+
+            // 3. Add vertical gap on MQ fields so they don't overlap the frac-line
+            var mqFields = mfrac.querySelectorAll('.mq-slot');
+            for (var j = 0; j < mqFields.length; j++) {
+                mqFields[j].style.margin = '3px 0';
             }
         }
     };

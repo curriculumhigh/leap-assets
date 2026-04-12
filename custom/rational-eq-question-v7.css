@@ -95,7 +95,6 @@
 .req-widget .katex .mfrac .mq-editable-field {
     min-width: 24px;
     padding: 1px 3px;
-    margin: 2px 0;
 }
 
 /* MQ slots inside KaTeX superscripts/subscripts: override inline min-width */
