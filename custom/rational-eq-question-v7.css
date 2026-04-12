@@ -114,10 +114,11 @@
     overflow: visible;
 }
 
-/* KaTeX fraction line must be visible above MQ field backgrounds */
+/* KaTeX fraction line: thicker + elevated for visibility with MQ fields */
 .req-widget .katex .frac-line {
     position: relative;
     z-index: 2;
+    border-bottom-width: 0.08em !important;
 }
 
 /* KaTeX vlist reset row overlaps denominators — pass through pointer events */
