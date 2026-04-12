@@ -2936,16 +2936,18 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             var saved = savedInputs[key];
 
             if (saved.value !== undefined) {
-                // Dropdown
+                // Dropdown (custom req-dropdown-wrap with setValue/getValue)
                 var ddId = self.uid + "-dd-" + key;
-                var select = document.getElementById(ddId);
-                if (select && saved.value) {
-                    select.value = saved.value;
-                    $(select).removeClass("correct incorrect");
+                var ddEl = document.getElementById(ddId);
+                if (ddEl && saved.value) {
+                    if (ddEl.setValue) {
+                        ddEl.setValue(saved.value);
+                    }
+                    $(ddEl).removeClass("correct incorrect");
                     if (saved.correct) {
-                        $(select).addClass("correct");
+                        $(ddEl).addClass("correct");
                     } else if (saved.value) {
-                        $(select).addClass("incorrect");
+                        $(ddEl).addClass("incorrect");
                     }
                 }
             } else if (saved.latex !== undefined) {
