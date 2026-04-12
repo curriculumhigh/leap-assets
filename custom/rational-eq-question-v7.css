@@ -71,7 +71,7 @@
 
 /* ── MathQuill inputs (compact sizing to match Learnosity native) ── */
 .req-widget .mq-slot {
-    min-width: 40px;
+    min-width: 48px;
 }
 .req-widget .mq-editable-field {
     border: 1px solid #999;
@@ -85,7 +85,7 @@
 /* ── v7: KaTeX-context MQ sizing (inputs rendered inside KaTeX layout) ── */
 /* MQ slots inside KaTeX fractions: override inline min-width */
 .req-widget .katex .mfrac .mq-slot {
-    min-width: 24px !important;
+    min-width: 30px !important;
 }
 /* MQ fields inside KaTeX fractions: tighter fit */
 .req-widget .katex .mfrac .mq-editable-field {
