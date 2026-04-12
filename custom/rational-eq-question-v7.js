@@ -275,6 +275,11 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var hasMath = /\\[a-zA-Z]|[_^{}\d=+*/()<>≤≥≠]/.test(text) || /^[a-zA-Z]$/.test(text.trim());
         if (!hasMath) return null; // caller should use plain text
         var latex = text.replace(/^\$+|\$+$/g, '');
+        // If already contains \text{}, it's pre-formatted LaTeX — render directly
+        if (/\\text\{/.test(latex)) {
+            try { return katex.renderToString(latex, { throwOnError: false, trust: true }); }
+            catch (e) { return null; }
+        }
         // Convert a/b to \frac{a}{b}
         latex = latex.replace(/([a-zA-Z0-9]+|\([^)]+\)|\{[^}]+\})\/([a-zA-Z0-9]+|\([^)]+\)|\{[^}]+\})/g, function (_, n, d) {
             return '\\frac{' + n + '}{' + d + '}';
