@@ -1534,97 +1534,136 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // For container rows on teacher side, wrap content in a visual grouping span
         var useContainerWrap = row.container && self.isTeacher && !row.containers;
 
-        // ── Step 1: Parse content into segments ──
+        // ── Step 1: Parse content into segments (recursive, brace-depth aware) ──
         // Split on $...$ and $$...$$ boundaries. For each math segment, extract
         // ALL structures containing {{N}} (fractions, superscripts, subscripts)
         // as HTML sibling segments — never inside KaTeX.
         //
-        // Uses a multi-pass approach:
-        //   Pass 1: Extract all \frac / \dfrac with inputs
-        //   Pass 2: Extract all ^{...} with inputs from remaining math
-        //   Pass 3: Extract all _{...} with inputs from remaining math
-        //   Final:  Convert leftover math-raw segments to math (with $ delimiters)
+        // Uses a character-by-character scanner with brace-depth matching so that
+        // nested structures (e.g., e^{\frac{a}{b}}) are handled correctly.
+        // Structures are extracted recursively: a frac inside a sup produces
+        // { type: "sup", innerSegs: [{ type: "frac", numSegs: [...], denSegs: [...] }] }
         var segments = [];
+
+        /** Find the index of the closing '}' that matches the '{' at openIdx. */
+        var findClosingBrace = function (str, openIdx) {
+            var depth = 1;
+            for (var i = openIdx + 1; i < str.length; i++) {
+                if (str[i] === "{") depth++;
+                else if (str[i] === "}") { depth--; if (depth === 0) return i; }
+            }
+            return -1; // unmatched
+        };
+
+        /** Check if a string (with REQINPUT markers) contains any inputs. */
+        var hasInputs = function (s) { return /REQINPUT\d+REQEND/.test(s); };
+
+        var restore = function (s) { return s.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}"); };
 
         /**
          * Extract all structures with {{N}} inputs from a safe inner string.
-         * Returns an array of segment objects: frac, sup, sub, or math.
+         * Returns an array of segment objects with recursive inner segments.
+         *
+         * Segment types:
+         *   { type: "frac", numSegs: [...], denSegs: [...] }
+         *   { type: "sup", innerSegs: [...] }
+         *   { type: "sub", innerSegs: [...] }
+         *   { type: "math", text: "$...$" }       (no inputs — pure KaTeX)
+         *   { type: "input", idx: N }              (bare input not in a structure)
          */
         var extractStructures = function (safeInner) {
-            var restore = function (s) { return s.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}"); };
+            var result = [];
+            var i = 0;
+            var len = safeInner.length;
+            var rawStart = 0; // start of current "raw" (non-structure) region
 
-            // ── Pass 1: Extract all fractions with inputs ──
-            var pass1 = [];
-            var fracRe = /\\d?frac\{([^{}]*)\}\{([^{}]*)\}/g;
-            var fm, lastEnd = 0, hasFracs = false;
+            var flushRaw = function (end) {
+                if (end <= rawStart) return;
+                var raw = safeInner.substring(rawStart, end).trim();
+                if (!raw) return;
+                result.push({ type: "math", text: "$" + restore(raw) + "$" });
+            };
 
-            while ((fm = fracRe.exec(safeInner)) !== null) {
-                var fNum = restore(fm[1]);
-                var fDen = restore(fm[2]);
-                if (/\{\{\d+\}\}/.test(fNum) || /\{\{\d+\}\}/.test(fDen)) {
-                    hasFracs = true;
-                    var before = safeInner.substring(lastEnd, fm.index).trim();
-                    if (before) pass1.push({ type: "_raw", text: before });
-                    pass1.push({ type: "frac", num: fNum, den: fDen });
-                    lastEnd = fm.index + fm[0].length;
+            while (i < len) {
+                // Check for \frac{ or \dfrac{
+                if (safeInner[i] === "\\" &&
+                    (safeInner.substring(i, i + 6) === "\\frac{" ||
+                     safeInner.substring(i, i + 7) === "\\dfrac{")) {
+                    var cmdLen = safeInner[i + 1] === "d" ? 6 : 5; // "dfrac" or "frac"
+                    var numOpen = i + cmdLen + 1; // index of '{' for numerator
+                    if (numOpen < len && safeInner[numOpen - 1] === "{") {
+                        var numClose = findClosingBrace(safeInner, numOpen - 1);
+                        if (numClose > 0 && numClose + 1 < len && safeInner[numClose + 1] === "{") {
+                            var denOpen = numClose + 1;
+                            var denClose = findClosingBrace(safeInner, denOpen);
+                            if (denClose > 0) {
+                                var numContent = safeInner.substring(numOpen, numClose);
+                                var denContent = safeInner.substring(denOpen + 1, denClose);
+                                // Only extract if at least one part has inputs
+                                if (hasInputs(numContent) || hasInputs(denContent)) {
+                                    flushRaw(i);
+                                    result.push({
+                                        type: "frac",
+                                        numSegs: extractStructures(numContent),
+                                        denSegs: extractStructures(denContent)
+                                    });
+                                    i = denClose + 1;
+                                    rawStart = i;
+                                    continue;
+                                }
+                            }
+                        }
+                    }
                 }
+
+                // Check for ^{ (superscript with braces)
+                if (safeInner[i] === "^" && i + 1 < len && safeInner[i + 1] === "{") {
+                    var supClose = findClosingBrace(safeInner, i + 1);
+                    if (supClose > 0) {
+                        var supContent = safeInner.substring(i + 2, supClose);
+                        if (hasInputs(supContent)) {
+                            flushRaw(i);
+                            result.push({
+                                type: "sup",
+                                innerSegs: extractStructures(supContent)
+                            });
+                            i = supClose + 1;
+                            rawStart = i;
+                            continue;
+                        }
+                    }
+                }
+
+                // Check for _{ (subscript with braces)
+                if (safeInner[i] === "_" && i + 1 < len && safeInner[i + 1] === "{") {
+                    var subClose = findClosingBrace(safeInner, i + 1);
+                    if (subClose > 0) {
+                        var subContent = safeInner.substring(i + 2, subClose);
+                        if (hasInputs(subContent)) {
+                            flushRaw(i);
+                            result.push({
+                                type: "sub",
+                                innerSegs: extractStructures(subContent)
+                            });
+                            i = subClose + 1;
+                            rawStart = i;
+                            continue;
+                        }
+                    }
+                }
+
+                // Skip over brace groups that aren't part of frac/sup/sub
+                if (safeInner[i] === "{") {
+                    var closeIdx = findClosingBrace(safeInner, i);
+                    if (closeIdx > 0) { i = closeIdx + 1; continue; }
+                }
+
+                i++;
             }
-            if (hasFracs) {
-                var tail = safeInner.substring(lastEnd).trim();
-                if (tail) pass1.push({ type: "_raw", text: tail });
-            } else {
-                pass1.push({ type: "_raw", text: safeInner });
-            }
 
-            // ── Pass 2: Extract all superscripts with inputs from _raw segments ──
-            var pass2 = [];
-            pass1.forEach(function (seg) {
-                if (seg.type !== "_raw") { pass2.push(seg); return; }
-                var supRe = /\^\{([^{}]*REQINPUT\d+REQEND[^{}]*)\}/g;
-                var sm, sLast = 0, hasSups = false;
-                while ((sm = supRe.exec(seg.text)) !== null) {
-                    hasSups = true;
-                    var sBefore = seg.text.substring(sLast, sm.index).trim();
-                    if (sBefore) pass2.push({ type: "_raw", text: sBefore });
-                    pass2.push({ type: "sup", content: restore(sm[1]) });
-                    sLast = sm.index + sm[0].length;
-                }
-                if (hasSups) {
-                    var sTail = seg.text.substring(sLast).trim();
-                    if (sTail) pass2.push({ type: "_raw", text: sTail });
-                } else {
-                    pass2.push(seg);
-                }
-            });
-
-            // ── Pass 3: Extract all subscripts with inputs from _raw segments ──
-            var pass3 = [];
-            pass2.forEach(function (seg) {
-                if (seg.type !== "_raw") { pass3.push(seg); return; }
-                var subRe = /_\{([^{}]*REQINPUT\d+REQEND[^{}]*)\}/g;
-                var bm, bLast = 0, hasSubs = false;
-                while ((bm = subRe.exec(seg.text)) !== null) {
-                    hasSubs = true;
-                    var bBefore = seg.text.substring(bLast, bm.index).trim();
-                    if (bBefore) pass3.push({ type: "_raw", text: bBefore });
-                    pass3.push({ type: "sub", content: restore(bm[1]) });
-                    bLast = bm.index + bm[0].length;
-                }
-                if (hasSubs) {
-                    var bTail = seg.text.substring(bLast).trim();
-                    if (bTail) pass3.push({ type: "_raw", text: bTail });
-                } else {
-                    pass3.push(seg);
-                }
-            });
-
-            // ── Final: Convert _raw to math with $ delimiters ──
-            return pass3.map(function (seg) {
-                if (seg.type === "_raw") {
-                    return { type: "math", text: "$" + restore(seg.text) + "$" };
-                }
-                return seg;
-            });
+            // Flush any remaining raw content
+            flushRaw(len);
+            return result;
         };
 
         tpl.split(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/).forEach(function (chunk) {
@@ -1650,7 +1689,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             extracted.forEach(function (seg) { segments.push(seg); });
         });
 
-        // ── Step 2: Build DOM from segments ──
+        // ── Step 2: Build DOM from segments (recursive) ──
         var $wrapper = $('<span style="display:inline-flex;align-items:center;gap:2px;"></span>');
         var $target = $wrapper;
 
@@ -1660,71 +1699,58 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             $target = $cWrap;
         }
 
-        // Helper: build a fraction/superscript/subscript part with MQ slots for {{N}}
-        var buildPart = function ($part, partTpl) {
-            partTpl.split(/(\{\{\d+\}\})/).forEach(function (p) {
-                var m2 = p.match(/\{\{(\d+)\}\}/);
-                if (m2) {
-                    var ii = parseInt(m2[1]);
-                    var inp = row.inputs[ii];
-                    if (inp && inp.type === "dropdown") {
-                        $part.append(self._buildDropdown(mkId(ii, "dd"), inp.options || [], function () { self._fireChanged(); }));
+        /** Recursively build DOM from a segments array. */
+        var buildSegments = function ($parent, segs) {
+            segs.forEach(function (seg) {
+                if (seg.type === "frac") {
+                    var $frac = $('<span class="req-html-frac"></span>');
+                    var $num = $('<span class="req-html-frac-num"></span>');
+                    var $den = $('<span class="req-html-frac-den"></span>');
+                    buildSegments($num, seg.numSegs);
+                    buildSegments($den, seg.denSegs);
+                    $frac.append($num).append($den);
+                    $parent.append($frac);
+
+                } else if (seg.type === "sup") {
+                    var $sup = $('<sup class="req-mq-sup" style="position:relative;top:-0.8em;font-size:0.7em;"></sup>');
+                    buildSegments($sup, seg.innerSegs);
+                    $parent.append($sup);
+
+                } else if (seg.type === "sub") {
+                    var $sub = $('<sub class="req-mq-sub" style="position:relative;top:0.3em;"></sub>');
+                    buildSegments($sub, seg.innerSegs);
+                    $parent.append($sub);
+
+                } else if (seg.type === "math") {
+                    var mathText = seg.text;
+                    if (/\{\{\d+\}\}/.test(mathText)) {
+                        // Math containing bare inputs — use \htmlId markers
+                        mathText = mathText.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+                            return "\\htmlId{" + prefix + n + "}{\\boxed{\\phantom{xxx}}}";
+                        });
+                        var $sp = $("<span></span>").html(self._formatTextBlock(mathText));
+                        self.renderKaTeX($sp[0]);
+                        $parent.append($sp);
                     } else {
-                        $part.append($('<span class="mq-slot" id="' + mkId(ii, "mq") + '" style="display:inline-block;min-width:60px;vertical-align:middle;"></span>'));
+                        var $sp2 = $("<span></span>").css("vertical-align", "middle").html(self._formatTextBlock(mathText));
+                        self.renderKaTeX($sp2[0]);
+                        $parent.append($sp2);
                     }
-                } else if (p.trim()) {
-                    var $sp = $("<span></span>").css("vertical-align", "middle").html("$" + p + "$");
-                    $part.append($sp);
-                    self.renderKaTeX($sp[0]);
+
+                } else if (seg.type === "prose") {
+                    var proseText = seg.text.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+                        return '<span id="' + prefix + n + '"></span>';
+                    });
+                    if (/</.test(proseText)) {
+                        $parent.append($.parseHTML(proseText));
+                    } else {
+                        $parent.append(document.createTextNode(proseText));
+                    }
                 }
             });
         };
 
-        segments.forEach(function (seg) {
-            if (seg.type === "frac") {
-                // HTML fraction — completely outside KaTeX
-                var $frac = $('<span class="req-html-frac"></span>');
-                var $num = $('<span class="req-html-frac-num"></span>');
-                var $den = $('<span class="req-html-frac-den"></span>');
-                buildPart($num, seg.num);
-                buildPart($den, seg.den);
-                $frac.append($num).append($den);
-                $target.append($frac);
-
-            } else if (seg.type === "sup") {
-                // HTML superscript — outside KaTeX
-                var $sup = $('<sup class="req-mq-sup" style="position:relative;top:-0.8em;font-size:0.7em;"></sup>');
-                buildPart($sup, seg.content);
-                $target.append($sup);
-
-            } else if (seg.type === "sub") {
-                // HTML subscript — outside KaTeX
-                var $sub = $('<sub class="req-mq-sub" style="position:relative;top:0.3em;"></sub>');
-                buildPart($sub, seg.content);
-                $target.append($sub);
-
-            } else if (seg.type === "math") {
-                // Math with possible {{N}} inputs — use \htmlId markers
-                var mathText = seg.text;
-                mathText = mathText.replace(/\{\{(\d+)\}\}/g, function (m, n) {
-                    return "\\htmlId{" + prefix + n + "}{\\boxed{\\phantom{xxx}}}";
-                });
-                var $sp = $("<span></span>").html(self._formatTextBlock(mathText));
-                self.renderKaTeX($sp[0]);
-                $target.append($sp);
-
-            } else {
-                // Prose with possible {{N}} inputs
-                var proseText = seg.text.replace(/\{\{(\d+)\}\}/g, function (m, n) {
-                    return '<span id="' + prefix + n + '"></span>';
-                });
-                if (/</.test(proseText)) {
-                    $target.append($.parseHTML(proseText));
-                } else {
-                    $target.append(document.createTextNode(proseText));
-                }
-            }
-        });
+        buildSegments($target, segments);
 
         $container.empty().append($wrapper);
 
