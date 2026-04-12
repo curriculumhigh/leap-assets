@@ -272,8 +272,30 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
     // ── Auto-detect math in DN option text and render with KaTeX ──
     Question.prototype._renderDNOption = function (text) {
-        var hasMath = /\\[a-zA-Z]|[_^{}\d=+*/()<>≤≥≠]/.test(text) || /^[a-zA-Z]$/.test(text.trim());
+        var hasMath = /\\[a-zA-Z]|[_^{}\d=+*/()<>≤≥≠]|\$/.test(text) || /^[a-zA-Z]$/.test(text.trim());
         if (!hasMath) return null; // caller should use plain text
+
+        // If text contains $...$ inline math, split on $ boundaries:
+        // odd segments are math, even segments are prose → wrap prose in \text{}
+        if (/\$[^$]+\$/.test(text)) {
+            var parts = text.split('$');
+            var latex = '';
+            for (var pi = 0; pi < parts.length; pi++) {
+                if (!parts[pi]) continue;
+                if (pi % 2 === 1) {
+                    // Inside $...$ — raw math
+                    latex += parts[pi];
+                } else {
+                    // Prose — wrap in \text{}
+                    var prose = parts[pi].trim();
+                    if (prose) latex += '~\\text{' + prose + '}~';
+                }
+            }
+            latex = latex.replace(/^~|~$/g, '').replace(/~~+/g, '~');
+            try { return katex.renderToString(latex, { throwOnError: false, trust: true }); }
+            catch (e) { return null; }
+        }
+
         var latex = text.replace(/^\$+|\$+$/g, '');
         // If already contains \text{}, it's pre-formatted LaTeX — render directly
         if (/\\text\{/.test(latex)) {
@@ -417,10 +439,23 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 replacement = $('<span class="mq-slot" id="' + mkId(idx, "mq") + '" style="display:inline-block;vertical-align:middle;"></span>')[0];
             }
 
-            phEl.parentNode.replaceChild(replacement, phEl);
+            // If replacing inside a KaTeX span (math zone), the wrapper retains
+            // fixed dimensions from the original placeholder. For dropdowns, pull
+            // them out of the KaTeX wrapper to avoid dead space.
+            var katexParent = phEl.closest ? phEl.closest('.katex-html') : null;
+            if (katexParent && inp && inp.type === "dropdown") {
+                // Move dropdown after the .katex element instead of inside it
+                var katexEl = katexParent.parentNode; // .katex
+                if (katexEl && katexEl.parentNode) {
+                    phEl.parentNode.removeChild(phEl);
+                    katexEl.parentNode.insertBefore(replacement, katexEl.nextSibling);
+                } else {
+                    phEl.parentNode.replaceChild(replacement, phEl);
+                }
+            } else {
+                phEl.parentNode.replaceChild(replacement, phEl);
+            }
         });
-
-        // (fraction line fixes handled by \frac → \dfrac promotion at marker insertion time)
     };
 
     // ── Validation utilities ──
