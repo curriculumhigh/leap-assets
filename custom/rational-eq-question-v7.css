@@ -78,8 +78,12 @@
     border-radius: 2px;
     padding: 2px 4px;
     background: #fff;
-    font-size: 14px;
+    font-size: 16px;
     min-width: 28px;
+}
+/* MQ fields inside KaTeX: inherit KaTeX's computed font size so text matches */
+.req-widget .katex .mq-editable-field {
+    font-size: inherit;
 }
 
 /* ── v7: KaTeX-context MQ sizing (inputs rendered inside KaTeX layout) ── */
@@ -87,11 +91,10 @@
 .req-widget .katex .mfrac .mq-slot {
     min-width: 30px !important;
 }
-/* MQ fields inside KaTeX fractions: tighter fit */
+/* MQ fields inside KaTeX fractions: tighter padding, inherit font size */
 .req-widget .katex .mfrac .mq-editable-field {
     min-width: 24px;
     padding: 1px 3px;
-    font-size: 13px;
     margin: 2px 0;
 }
 
@@ -103,7 +106,6 @@
 .req-widget .katex .msupsub .mq-editable-field {
     min-width: 20px;
     padding: 1px 2px;
-    font-size: 11px;
 }
 
 /* Ensure KaTeX containers don't clip replaced MQ fields */
@@ -126,14 +128,10 @@
 .req-widget .katex .vlist-s { pointer-events: none; }
 .req-widget .katex .pstrut { pointer-events: none; }
 
-/* MQ fields inside KaTeX must be clickable above any overlapping layers */
+/* MQ fields inside KaTeX: clickable above vlist layers, use own font-family */
 .req-widget .katex .mq-editable-field {
     position: relative;
     z-index: 1;
-}
-
-/* MQ fields inside KaTeX should not inherit katex font-family */
-.req-widget .katex .mq-editable-field {
     font-family: inherit;
 }
 
