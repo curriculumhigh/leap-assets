@@ -385,9 +385,16 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     // KaTeX renders \htmlId{id}{content} as <span id="id">content</span>,
     // which we can find with getElementById after rendering.
     Question.prototype._insertMarkers = function (latex, prefix) {
-        return latex.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+        var marked = latex.replace(/\{\{(\d+)\}\}/g, function (m, n) {
             return "\\htmlId{" + prefix + n + "}{\\boxed{\\phantom{xxx}}}";
         });
+        // Promote \frac → \dfrac (display-style) when containing input markers.
+        // \dfrac has more vertical space so the frac-line stays visible between MQ fields.
+        // Regex: match \frac{ only when NOT preceded by 'd' (to avoid corrupting \dfrac).
+        if (marked.indexOf("\\htmlId{") !== -1) {
+            marked = marked.replace(/(^|[^d])\\frac\{/g, "$1\\dfrac{");
+        }
+        return marked;
     };
 
     // Find rendered placeholder elements by ID and replace with input elements.
@@ -408,35 +415,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             phEl.parentNode.replaceChild(replacement, phEl);
         });
 
-        // Fix fraction line visibility for fractions containing MQ input fields.
-        // KaTeX computes fraction width from the original placeholder content, but MQ
-        // fields are wider, so the frac-line ends up too short. Also, the denominator
-        // span paints after the frac-line, covering it with MQ white backgrounds.
-        // Fix: elevate frac-line's parent span, extend frac-line width, add gap via
-        // vertical margin on MQ fields in fractions.
-        var fracs = root.querySelectorAll('.mfrac');
-        for (var i = 0; i < fracs.length; i++) {
-            var mfrac = fracs[i];
-            if (!mfrac.querySelector('.mq-slot, .mq-editable-field')) continue;
-            var fracLine = mfrac.querySelector('.frac-line');
-            if (!fracLine || !fracLine.parentNode) continue;
-
-            // 1. Elevate frac-line parent above denominator parent in stacking order
-            fracLine.parentNode.style.position = 'relative';
-            fracLine.parentNode.style.zIndex = '3';
-            fracLine.parentNode.style.overflow = 'visible';
-
-            // 2. Extend frac-line beyond its computed width (6px on each side)
-            fracLine.style.width = 'calc(100% + 12px)';
-            fracLine.style.marginLeft = '-6px';
-            fracLine.style.borderBottomWidth = '1.2px';
-
-            // 3. Add vertical gap on MQ fields so they don't overlap the frac-line
-            var mqFields = mfrac.querySelectorAll('.mq-slot');
-            for (var j = 0; j < mqFields.length; j++) {
-                mqFields[j].style.margin = '3px 0';
-            }
-        }
+        // (fraction line fixes handled by \frac → \dfrac promotion at marker insertion time)
     };
 
     // ── Validation utilities ──
@@ -1373,9 +1352,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             var prefix = "REQPH" + sec.id.replace(/[^a-zA-Z0-9]/g, "") + "X";
 
             var marked = tpl.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function (mathBlock) {
-                return mathBlock.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+                var b = mathBlock.replace(/\{\{(\d+)\}\}/g, function (m, n) {
                     return "\\htmlId{" + prefix + n + "}{\\boxed{\\phantom{xx}}}";
                 });
+                // Promote \frac → \dfrac (not \dfrac) so frac-line stays visible
+                if (b.indexOf("\\htmlId{") !== -1) b = b.replace(/(^|[^d])\\frac\{/g, "$1\\dfrac{");
+                return b;
             });
             // Replace remaining {{N}} (in prose) with HTML placeholder spans
             marked = marked.replace(/\{\{(\d+)\}\}/g, function (m, n) {
@@ -1524,9 +1506,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         // Inside math zones ($...$, $$...$$): replace {{N}} with \htmlId placeholder boxes
         var marked = tpl.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function (mathBlock) {
-            return mathBlock.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+            var b = mathBlock.replace(/\{\{(\d+)\}\}/g, function (m, n) {
                 return "\\htmlId{" + prefix + n + "}{\\boxed{\\phantom{xx}}}";
             });
+            // Promote \frac → \dfrac (not \dfrac) so frac-line stays visible
+            if (b.indexOf("\\htmlId{") !== -1) b = b.replace(/(^|[^d])\\frac\{/g, "$1\\dfrac{");
+            return b;
         });
         // In prose zones: replace remaining {{N}} with HTML span placeholders
         marked = marked.replace(/\{\{(\d+)\}\}/g, function (m, n) {
