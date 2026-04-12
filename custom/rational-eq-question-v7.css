@@ -247,6 +247,7 @@
     border-width: 2px;
     background-color: #e8f5e9;
 }
+.req-dropdown-wrap.correct .req-dd-arrow { display: none; }
 .req-dropdown-wrap.incorrect .req-dd-trigger {
     border-color: #e8883a;
     border-width: 2px;

@@ -340,6 +340,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 $wrap.attr("data-value", opt);
                 var rSel = self._renderDNOption(opt);
                 if (rSel) { $selected.html(rSel); } else { $selected.text(opt); }
+                $trigger.css('min-width', ''); // shrink to fit selected option
                 $menu.removeClass("open");
                 if (onChange) onChange();
             });
@@ -354,6 +355,25 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         $(document).on("click", function () { $menu.removeClass("open"); });
 
         $wrap.append($trigger).append($menu);
+
+        // Size trigger to the widest option initially, then shrink on selection
+        requestAnimationFrame(function () {
+            var $m = $('<span class="req-dd-item" style="visibility:hidden;position:absolute;white-space:nowrap;font-size:15px;"></span>');
+            $(document.body).append($m);
+            var maxW = 0;
+            options.forEach(function (opt) {
+                var r = self._renderDNOption(opt);
+                if (r) { $m.html(r); } else { $m.text(opt); }
+                var w = $m.outerWidth();
+                if (w > maxW) maxW = w;
+            });
+            $m.remove();
+            if (maxW > 0) {
+                // Add padding for arrow + gap
+                $trigger.css('min-width', (maxW + 32) + 'px');
+            }
+        });
+
         // getValue helper
         $wrap[0].getValue = function () { return $wrap.attr("data-value") || ""; };
         $wrap[0].setValue = function (v) {
