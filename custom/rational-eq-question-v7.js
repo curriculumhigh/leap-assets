@@ -280,7 +280,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             try { return katex.renderToString(latex.trim(), { throwOnError: false, trust: true }); }
             catch (e) { return m; }
         });
-        return '<div class="req-hint-label">Hint:</div>' + rendered;
+        // Single-line: no newlines, no display math, no <br>, no block tags
+        var isMultiline = /\n|<br|<div|<p |<ul|<ol|katex-display/.test(hintText) || /katex-display/.test(rendered);
+        var modeClass = isMultiline ? 'req-hint-multiline' : 'req-hint-inline';
+        return { html: '<span class="req-hint-label">Hint:</span><span class="req-hint-body">' + rendered + '</span>', modeClass: modeClass };
     };
 
     // ── Auto-detect math in DN option text and render with KaTeX ──
@@ -1401,7 +1404,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
                 // Per-step hint (shown on failed Check, hidden on success)
                 if (row.hint) {
-                    var $hintBox = $('<div class="req-hint-box" id="' + self.uid + '-hint-' + sec.id + '-' + ri + '"></div>').html(self._renderHint(row.hint));
+                    var hintResult = self._renderHint(row.hint);
+                    var $hintBox = $('<div class="req-hint-box ' + hintResult.modeClass + '" id="' + self.uid + '-hint-' + sec.id + '-' + ri + '"></div>').html(hintResult.html);
                     $tdE.append($hintBox);
                 }
 
@@ -1501,7 +1505,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
             // Per-step hint (shown on failed Next, hidden on success)
             if (sec.hint) {
-                var $hintBox = $('<div class="req-hint-box" id="' + self.uid + '-hint-' + sec.id + '"></div>').html(self._renderHint(sec.hint));
+                var hintResult = self._renderHint(sec.hint);
+                var $hintBox = $('<div class="req-hint-box ' + hintResult.modeClass + '" id="' + self.uid + '-hint-' + sec.id + '"></div>').html(hintResult.html);
                 $content.append($hintBox);
             }
         }
@@ -2955,15 +2960,20 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     }
 
                     var rowDone = !!(completedRows[sec.id] && completedRows[sec.id][ri]);
+                    // Teacher hint: show for active step only
+                    var $rowHint = $("#" + self.uid + "-hint-" + sec.id + "-" + ri);
                     if (rowDone) {
                         $tr.addClass("req-tl-completed");
+                        $rowHint.removeClass("visible");
                     } else if (!foundActive) {
                         // First incomplete input row = active step
                         $tr.addClass("req-tl-active");
+                        if ($rowHint.length) $rowHint.addClass("visible");
                         foundActive = true;
                         allDone = false;
                     } else {
                         $tr.addClass("req-tl-grayed");
+                        $rowHint.removeClass("visible");
                         allDone = false;
                     }
                 });
@@ -2972,14 +2982,18 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 var $secEl = $("#" + self.uid + "-sec-" + sec.id);
                 $secEl.removeClass("req-tl-grayed req-tl-active req-tl-completed");
 
+                var $secHint = $("#" + self.uid + "-hint-" + sec.id);
                 if (completedSections[sec.id]) {
                     $secEl.addClass("req-tl-completed");
+                    $secHint.removeClass("visible");
                 } else if (!foundActive) {
                     $secEl.addClass("req-tl-active");
+                    if ($secHint.length) $secHint.addClass("visible");
                     foundActive = true;
                     allDone = false;
                 } else {
                     $secEl.addClass("req-tl-grayed");
+                    $secHint.removeClass("visible");
                     allDone = false;
                 }
             }

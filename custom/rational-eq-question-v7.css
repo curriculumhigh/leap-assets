@@ -307,9 +307,18 @@
 }
 .req-hint-box.visible { display: block; }
 .req-hint-label {
-    font-weight: 700; font-style: italic; color: #c0632a;
-    margin-bottom: 4px;
+    font-weight: 700; font-style: normal; color: #c0632a;
+    display: inline;
 }
+.req-hint-body {
+    font-weight: 400; font-style: normal; font-size: 14px;
+    line-height: 1.7; color: #1a2a3a;
+}
+/* Single-line hint: label + body inline; multi-line: label on own line */
+.req-hint-box.req-hint-inline .req-hint-label { display: inline; margin-right: 4px; }
+.req-hint-box.req-hint-inline .req-hint-body { display: inline; }
+.req-hint-box.req-hint-multiline .req-hint-label { display: block; margin-bottom: 4px; }
+.req-hint-box.req-hint-multiline .req-hint-body { display: block; }
 .req-hint-box .katex-display { margin: 0.6em 0; }
 .req-hint-box .katex { font-size: 1em; }
 
