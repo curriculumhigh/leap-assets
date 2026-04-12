@@ -270,6 +270,19 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         });
     };
 
+    // ── Render hint HTML: "Hint:" label + KaTeX math rendering for $...$ blocks ──
+    Question.prototype._renderHint = function (hintText) {
+        // Render $...$ and $$...$$ as KaTeX
+        var rendered = hintText.replace(/\$\$([^$]+)\$\$/g, function (m, latex) {
+            try { return '<div class="katex-display">' + katex.renderToString(latex.trim(), { throwOnError: false, displayMode: true, trust: true }) + '</div>'; }
+            catch (e) { return m; }
+        }).replace(/\$([^$]+)\$/g, function (m, latex) {
+            try { return katex.renderToString(latex.trim(), { throwOnError: false, trust: true }); }
+            catch (e) { return m; }
+        });
+        return '<div class="req-hint-label">Hint:</div>' + rendered;
+    };
+
     // ── Auto-detect math in DN option text and render with KaTeX ──
     Question.prototype._renderDNOption = function (text) {
         var hasMath = /\\[a-zA-Z]|[_^{}\d=+*/()<>≤≥≠]|\$/.test(text) || /^[a-zA-Z]$/.test(text.trim());
@@ -1388,7 +1401,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
                 // Per-step hint (shown on failed Check, hidden on success)
                 if (row.hint) {
-                    var $hintBox = $('<div class="req-hint-box" id="' + self.uid + '-hint-' + sec.id + '-' + ri + '"></div>').html(row.hint);
+                    var $hintBox = $('<div class="req-hint-box" id="' + self.uid + '-hint-' + sec.id + '-' + ri + '"></div>').html(self._renderHint(row.hint));
                     $tdE.append($hintBox);
                 }
 
@@ -1488,7 +1501,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
             // Per-step hint (shown on failed Next, hidden on success)
             if (sec.hint) {
-                var $hintBox = $('<div class="req-hint-box" id="' + self.uid + '-hint-' + sec.id + '"></div>').html(sec.hint);
+                var $hintBox = $('<div class="req-hint-box" id="' + self.uid + '-hint-' + sec.id + '"></div>').html(self._renderHint(sec.hint));
                 $content.append($hintBox);
             }
         }

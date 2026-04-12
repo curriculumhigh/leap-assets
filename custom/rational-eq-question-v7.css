@@ -301,11 +301,17 @@
 .req-hint-btn:hover { border-color: #1565C0; color: #1565C0; }
 
 .req-hint-box {
-    display: none; margin-top: 6px; padding: 8px 12px;
-    background: #fff8e1; border: 1px solid #ffe082; border-radius: 6px;
-    font-size: 13px; line-height: 1.5; color: #5d4037;
+    display: none; margin-top: 10px; padding: 14px 18px;
+    background: #e8f4fd; border: 1px solid #c4dff0; border-radius: 6px;
+    font-size: 14px; line-height: 1.7; color: #1a2a3a;
 }
 .req-hint-box.visible { display: block; }
+.req-hint-label {
+    font-weight: 700; font-style: italic; color: #c0632a;
+    margin-bottom: 4px;
+}
+.req-hint-box .katex-display { margin: 0.6em 0; }
+.req-hint-box .katex { font-size: 1em; }
 
 /* ── Final Check Answer (bottom-right, matching Learnosity native style) ── */
 .req-check-answer-row {
