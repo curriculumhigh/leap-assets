@@ -1556,31 +1556,35 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             var safeInner = inner.replace(/\{\{(\d+)\}\}/g, "REQINPUT$1REQEND");
             var restore = function (s) { return s.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}"); };
 
-            // ── Detect fractions with inputs ──
-            var fracMatch = safeInner.match(/\\d?frac\{([^{}]*)\}\{([^{}]*)\}/);
-            if (fracMatch) {
-                var num = restore(fracMatch[1]);
-                var den = restore(fracMatch[2]);
-                if (/\{\{\d+\}\}/.test(num) || /\{\{\d+\}\}/.test(den)) {
-                    var fracStart = safeInner.indexOf(fracMatch[0]);
-                    var fracEnd = fracStart + fracMatch[0].length;
-                    var beforeSafe = safeInner.substring(0, fracStart).trim();
-                    var afterSafe = safeInner.substring(fracEnd).trim();
-                    if (beforeSafe) segments.push({ type: "math", text: "$" + restore(beforeSafe) + "$" });
-                    segments.push({ type: "frac", num: num, den: den });
-                    if (afterSafe) {
-                        // After-fraction text may contain more structures — wrap as math for now
-                        // Check for additional fractions recursively would be a future enhancement
-                        var afterRestored = restore(afterSafe);
-                        if (/\{\{\d+\}\}/.test(afterRestored)) {
-                            // Has inputs — check for superscript/subscript patterns
-                            segments.push({ type: "math", text: "$" + afterRestored + "$" });
-                        } else {
-                            segments.push({ type: "math", text: "$" + afterRestored + "$" });
-                        }
-                    }
-                    return;
+            // ── Detect ALL fractions with inputs (iterative) ──
+            // A single math block can contain multiple fractions, e.g.:
+            // $= \dfrac{...}{({{0}})({{1}})} \cdot \dfrac{({{2}})({{3}})}{(x-2)({{4}})}$
+            // We iterate, extracting each fraction with inputs as a separate segment.
+            var fracRe = /\\d?frac\{([^{}]*)\}\{([^{}]*)\}/g;
+            var fracFound = false;
+            var fm;
+            var lastEnd = 0;
+            var tempSegments = [];
+
+            while ((fm = fracRe.exec(safeInner)) !== null) {
+                var fNum = restore(fm[1]);
+                var fDen = restore(fm[2]);
+                if (/\{\{\d+\}\}/.test(fNum) || /\{\{\d+\}\}/.test(fDen)) {
+                    fracFound = true;
+                    // Text before this fraction
+                    var beforeChunk = safeInner.substring(lastEnd, fm.index).trim();
+                    if (beforeChunk) tempSegments.push({ type: "math", text: "$" + restore(beforeChunk) + "$" });
+                    tempSegments.push({ type: "frac", num: fNum, den: fDen });
+                    lastEnd = fm.index + fm[0].length;
                 }
+            }
+
+            if (fracFound) {
+                // Text after the last extracted fraction
+                var tailChunk = safeInner.substring(lastEnd).trim();
+                if (tailChunk) tempSegments.push({ type: "math", text: "$" + restore(tailChunk) + "$" });
+                tempSegments.forEach(function (ts) { segments.push(ts); });
+                return;
             }
 
             // ── Detect superscripts with inputs: base^{{{N}}} ──
