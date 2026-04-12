@@ -385,16 +385,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     // KaTeX renders \htmlId{id}{content} as <span id="id">content</span>,
     // which we can find with getElementById after rendering.
     Question.prototype._insertMarkers = function (latex, prefix) {
-        var marked = latex.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+        return latex.replace(/\{\{(\d+)\}\}/g, function (m, n) {
             return "\\htmlId{" + prefix + n + "}{\\boxed{\\phantom{xxx}}}";
         });
-        // Promote \frac to \dfrac when it contains input markers, so KaTeX renders
-        // display-style fractions with enough vertical space for the frac-line
-        // to be visible between numerator and denominator MQ fields.
-        if (marked.indexOf("\\htmlId{") !== -1) {
-            marked = marked.replace(/\\frac\{/g, "\\dfrac{");
-        }
-        return marked;
     };
 
     // Find rendered placeholder elements by ID and replace with input elements.
@@ -414,6 +407,21 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
             phEl.parentNode.replaceChild(replacement, phEl);
         });
+
+        // Fix fraction line visibility: KaTeX renders numerator, frac-line, denominator
+        // as sibling spans in a vlist. The denominator span paints after the frac-line span,
+        // so MQ field backgrounds cover the thin frac-line. Fix by elevating the frac-line's
+        // parent span above the denominator's parent span in the stacking order.
+        var fracs = root.querySelectorAll('.mfrac');
+        for (var i = 0; i < fracs.length; i++) {
+            var mfrac = fracs[i];
+            if (!mfrac.querySelector('.mq-slot, .mq-editable-field')) continue;
+            var fracLine = mfrac.querySelector('.frac-line');
+            if (fracLine && fracLine.parentNode) {
+                fracLine.parentNode.style.position = 'relative';
+                fracLine.parentNode.style.zIndex = '3';
+            }
+        }
     };
 
     // ── Validation utilities ──
@@ -1350,12 +1358,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             var prefix = "REQPH" + sec.id.replace(/[^a-zA-Z0-9]/g, "") + "X";
 
             var marked = tpl.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function (mathBlock) {
-                var b = mathBlock.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+                return mathBlock.replace(/\{\{(\d+)\}\}/g, function (m, n) {
                     return "\\htmlId{" + prefix + n + "}{\\boxed{\\phantom{xx}}}";
                 });
-                // Promote \frac to \dfrac so frac-line stays visible with MQ fields
-                if (b.indexOf("\\htmlId{") !== -1) b = b.replace(/\\frac\{/g, "\\dfrac{");
-                return b;
             });
             // Replace remaining {{N}} (in prose) with HTML placeholder spans
             marked = marked.replace(/\{\{(\d+)\}\}/g, function (m, n) {
@@ -1504,12 +1509,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         // Inside math zones ($...$, $$...$$): replace {{N}} with \htmlId placeholder boxes
         var marked = tpl.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function (mathBlock) {
-            var b = mathBlock.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+            return mathBlock.replace(/\{\{(\d+)\}\}/g, function (m, n) {
                 return "\\htmlId{" + prefix + n + "}{\\boxed{\\phantom{xx}}}";
             });
-            // Promote \frac to \dfrac so frac-line stays visible with MQ fields
-            if (b.indexOf("\\htmlId{") !== -1) b = b.replace(/\\frac\{/g, "\\dfrac{");
-            return b;
         });
         // In prose zones: replace remaining {{N}} with HTML span placeholders
         marked = marked.replace(/\{\{(\d+)\}\}/g, function (m, n) {
