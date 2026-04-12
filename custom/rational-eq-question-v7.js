@@ -441,13 +441,21 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
             // If replacing inside a KaTeX span (math zone), the wrapper retains
             // fixed dimensions from the original placeholder. For dropdowns, pull
-            // them out of the KaTeX wrapper to avoid dead space.
+            // them out of the KaTeX wrapper and collapse the empty wrapper.
             var katexParent = phEl.closest ? phEl.closest('.katex-html') : null;
             if (katexParent && inp && inp.type === "dropdown") {
-                // Move dropdown after the .katex element instead of inside it
                 var katexEl = katexParent.parentNode; // .katex
                 if (katexEl && katexEl.parentNode) {
-                    phEl.parentNode.removeChild(phEl);
+                    var phParent = phEl.parentNode;
+                    phParent.removeChild(phEl);
+                    // Collapse empty ancestor wrappers up to .base so no gap remains
+                    var anc = phParent;
+                    while (anc && !anc.classList.contains('base') && !anc.classList.contains('katex-html')) {
+                        if (!anc.textContent.trim()) {
+                            anc.style.display = 'none';
+                        }
+                        anc = anc.parentNode;
+                    }
                     katexEl.parentNode.insertBefore(replacement, katexEl.nextSibling);
                 } else {
                     phEl.parentNode.replaceChild(replacement, phEl);
