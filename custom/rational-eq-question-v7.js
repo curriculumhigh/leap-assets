@@ -386,7 +386,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     // which we can find with getElementById after rendering.
     Question.prototype._insertMarkers = function (latex, prefix) {
         var marked = latex.replace(/\{\{(\d+)\}\}/g, function (m, n) {
-            return "\\htmlId{" + prefix + n + "}{\\boxed{\\phantom{xxx}}}";
+            return "\\htmlId{" + prefix + n + "}{\\boxed{\\strut\\phantom{xxx}}}";
         });
         // Promote \frac → \dfrac (display-style) when containing input markers.
         // \dfrac has more vertical space so the frac-line stays visible between MQ fields.
@@ -1353,7 +1353,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
             var marked = tpl.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function (mathBlock) {
                 var b = mathBlock.replace(/\{\{(\d+)\}\}/g, function (m, n) {
-                    return "\\htmlId{" + prefix + n + "}{\\boxed{\\phantom{xx}}}";
+                    return "\\htmlId{" + prefix + n + "}{\\boxed{\\strut\\phantom{xx}}}";
                 });
                 // Promote \frac → \dfrac (not \dfrac) so frac-line stays visible
                 if (b.indexOf("\\htmlId{") !== -1) b = b.replace(/(^|[^d])\\frac\{/g, "$1\\dfrac{");
@@ -1507,7 +1507,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Inside math zones ($...$, $$...$$): replace {{N}} with \htmlId placeholder boxes
         var marked = tpl.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function (mathBlock) {
             var b = mathBlock.replace(/\{\{(\d+)\}\}/g, function (m, n) {
-                return "\\htmlId{" + prefix + n + "}{\\boxed{\\phantom{xx}}}";
+                return "\\htmlId{" + prefix + n + "}{\\boxed{\\strut\\phantom{xx}}}";
             });
             // Promote \frac → \dfrac (not \dfrac) so frac-line stays visible
             if (b.indexOf("\\htmlId{") !== -1) b = b.replace(/(^|[^d])\\frac\{/g, "$1\\dfrac{");
