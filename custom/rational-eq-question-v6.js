@@ -1535,10 +1535,97 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var useContainerWrap = row.container && self.isTeacher && !row.containers;
 
         // ── Step 1: Parse content into segments ──
-        // Split on $...$ and $$...$$ boundaries. For each math segment, detect
-        // structures containing {{N}} (fractions, superscripts, subscripts) and
-        // pull them out as separate segments that will be rendered as HTML siblings.
+        // Split on $...$ and $$...$$ boundaries. For each math segment, extract
+        // ALL structures containing {{N}} (fractions, superscripts, subscripts)
+        // as HTML sibling segments — never inside KaTeX.
+        //
+        // Uses a multi-pass approach:
+        //   Pass 1: Extract all \frac / \dfrac with inputs
+        //   Pass 2: Extract all ^{...} with inputs from remaining math
+        //   Pass 3: Extract all _{...} with inputs from remaining math
+        //   Final:  Convert leftover math-raw segments to math (with $ delimiters)
         var segments = [];
+
+        /**
+         * Extract all structures with {{N}} inputs from a safe inner string.
+         * Returns an array of segment objects: frac, sup, sub, or math.
+         */
+        var extractStructures = function (safeInner) {
+            var restore = function (s) { return s.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}"); };
+
+            // ── Pass 1: Extract all fractions with inputs ──
+            var pass1 = [];
+            var fracRe = /\\d?frac\{([^{}]*)\}\{([^{}]*)\}/g;
+            var fm, lastEnd = 0, hasFracs = false;
+
+            while ((fm = fracRe.exec(safeInner)) !== null) {
+                var fNum = restore(fm[1]);
+                var fDen = restore(fm[2]);
+                if (/\{\{\d+\}\}/.test(fNum) || /\{\{\d+\}\}/.test(fDen)) {
+                    hasFracs = true;
+                    var before = safeInner.substring(lastEnd, fm.index).trim();
+                    if (before) pass1.push({ type: "_raw", text: before });
+                    pass1.push({ type: "frac", num: fNum, den: fDen });
+                    lastEnd = fm.index + fm[0].length;
+                }
+            }
+            if (hasFracs) {
+                var tail = safeInner.substring(lastEnd).trim();
+                if (tail) pass1.push({ type: "_raw", text: tail });
+            } else {
+                pass1.push({ type: "_raw", text: safeInner });
+            }
+
+            // ── Pass 2: Extract all superscripts with inputs from _raw segments ──
+            var pass2 = [];
+            pass1.forEach(function (seg) {
+                if (seg.type !== "_raw") { pass2.push(seg); return; }
+                var supRe = /\^\{([^{}]*REQINPUT\d+REQEND[^{}]*)\}/g;
+                var sm, sLast = 0, hasSups = false;
+                while ((sm = supRe.exec(seg.text)) !== null) {
+                    hasSups = true;
+                    var sBefore = seg.text.substring(sLast, sm.index).trim();
+                    if (sBefore) pass2.push({ type: "_raw", text: sBefore });
+                    pass2.push({ type: "sup", content: restore(sm[1]) });
+                    sLast = sm.index + sm[0].length;
+                }
+                if (hasSups) {
+                    var sTail = seg.text.substring(sLast).trim();
+                    if (sTail) pass2.push({ type: "_raw", text: sTail });
+                } else {
+                    pass2.push(seg);
+                }
+            });
+
+            // ── Pass 3: Extract all subscripts with inputs from _raw segments ──
+            var pass3 = [];
+            pass2.forEach(function (seg) {
+                if (seg.type !== "_raw") { pass3.push(seg); return; }
+                var subRe = /_\{([^{}]*REQINPUT\d+REQEND[^{}]*)\}/g;
+                var bm, bLast = 0, hasSubs = false;
+                while ((bm = subRe.exec(seg.text)) !== null) {
+                    hasSubs = true;
+                    var bBefore = seg.text.substring(bLast, bm.index).trim();
+                    if (bBefore) pass3.push({ type: "_raw", text: bBefore });
+                    pass3.push({ type: "sub", content: restore(bm[1]) });
+                    bLast = bm.index + bm[0].length;
+                }
+                if (hasSubs) {
+                    var bTail = seg.text.substring(bLast).trim();
+                    if (bTail) pass3.push({ type: "_raw", text: bTail });
+                } else {
+                    pass3.push(seg);
+                }
+            });
+
+            // ── Final: Convert _raw to math with $ delimiters ──
+            return pass3.map(function (seg) {
+                if (seg.type === "_raw") {
+                    return { type: "math", text: "$" + restore(seg.text) + "$" };
+                }
+                return seg;
+            });
+        };
 
         tpl.split(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/).forEach(function (chunk) {
             if (!chunk || !chunk.trim()) return;
@@ -1549,70 +1636,18 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 return;
             }
 
-            // Math chunk — extract inner LaTeX
+            // Math chunk — protect {{N}} and extract all structures
             var inner = chunk.replace(/^\$\$?|\$\$?$/g, "");
-
-            // Protect {{N}} from brace-matching regex by replacing with safe tokens
             var safeInner = inner.replace(/\{\{(\d+)\}\}/g, "REQINPUT$1REQEND");
-            var restore = function (s) { return s.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}"); };
 
-            // ── Detect ALL fractions with inputs (iterative) ──
-            // A single math block can contain multiple fractions, e.g.:
-            // $= \dfrac{...}{({{0}})({{1}})} \cdot \dfrac{({{2}})({{3}})}{(x-2)({{4}})}$
-            // We iterate, extracting each fraction with inputs as a separate segment.
-            var fracRe = /\\d?frac\{([^{}]*)\}\{([^{}]*)\}/g;
-            var fracFound = false;
-            var fm;
-            var lastEnd = 0;
-            var tempSegments = [];
-
-            while ((fm = fracRe.exec(safeInner)) !== null) {
-                var fNum = restore(fm[1]);
-                var fDen = restore(fm[2]);
-                if (/\{\{\d+\}\}/.test(fNum) || /\{\{\d+\}\}/.test(fDen)) {
-                    fracFound = true;
-                    // Text before this fraction
-                    var beforeChunk = safeInner.substring(lastEnd, fm.index).trim();
-                    if (beforeChunk) tempSegments.push({ type: "math", text: "$" + restore(beforeChunk) + "$" });
-                    tempSegments.push({ type: "frac", num: fNum, den: fDen });
-                    lastEnd = fm.index + fm[0].length;
-                }
-            }
-
-            if (fracFound) {
-                // Text after the last extracted fraction
-                var tailChunk = safeInner.substring(lastEnd).trim();
-                if (tailChunk) tempSegments.push({ type: "math", text: "$" + restore(tailChunk) + "$" });
-                tempSegments.forEach(function (ts) { segments.push(ts); });
+            // If no inputs at all, pass through as plain math
+            if (safeInner.indexOf("REQINPUT") < 0) {
+                segments.push({ type: "math", text: chunk });
                 return;
             }
 
-            // ── Detect superscripts with inputs: base^{{{N}}} ──
-            var supMatch = safeInner.match(/^(.*?)\^\{([^{}]*REQINPUT\d+REQEND[^{}]*)\}(.*)$/);
-            if (supMatch) {
-                var supBefore = restore(supMatch[1]).trim();
-                var supContent = restore(supMatch[2]);
-                var supAfter = restore(supMatch[3]).trim();
-                if (supBefore) segments.push({ type: "math", text: "$" + supBefore + "$" });
-                segments.push({ type: "sup", content: supContent });
-                if (supAfter) segments.push({ type: "math", text: "$" + supAfter + "$" });
-                return;
-            }
-
-            // ── Detect subscripts with inputs: base_{{{N}}} ──
-            var subMatch = safeInner.match(/^(.*?)_\{([^{}]*REQINPUT\d+REQEND[^{}]*)\}(.*)$/);
-            if (subMatch) {
-                var subBefore = restore(subMatch[1]).trim();
-                var subContent = restore(subMatch[2]);
-                var subAfter = restore(subMatch[3]).trim();
-                if (subBefore) segments.push({ type: "math", text: "$" + subBefore + "$" });
-                segments.push({ type: "sub", content: subContent });
-                if (subAfter) segments.push({ type: "math", text: "$" + subAfter + "$" });
-                return;
-            }
-
-            // No special structures with inputs — keep as plain math
-            segments.push({ type: "math", text: chunk });
+            var extracted = extractStructures(safeInner);
+            extracted.forEach(function (seg) { segments.push(seg); });
         });
 
         // ── Step 2: Build DOM from segments ──
