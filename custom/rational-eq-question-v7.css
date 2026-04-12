@@ -102,6 +102,17 @@
     overflow: visible;
 }
 
+/* KaTeX vlist reset row overlaps denominators — pass through pointer events */
+.req-widget .katex .vlist-t2 > .vlist-r:last-child { pointer-events: none; }
+.req-widget .katex .vlist-s { pointer-events: none; }
+.req-widget .katex .pstrut { pointer-events: none; }
+
+/* MQ fields inside KaTeX must be clickable above any overlapping layers */
+.req-widget .katex .mq-editable-field {
+    position: relative;
+    z-index: 1;
+}
+
 /* MQ fields inside KaTeX should not inherit katex font-family */
 .req-widget .katex .mq-editable-field {
     font-family: inherit;
