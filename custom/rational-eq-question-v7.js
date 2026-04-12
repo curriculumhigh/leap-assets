@@ -376,6 +376,35 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         return tpl.replace(/<<|>>/g, "");
     };
 
+    // Move DN (dropdown) placeholders out of $...$ math zones so they render
+    // as prose HTML spans instead of KaTeX markers. This prevents dead space
+    // from KaTeX fixed-width wrappers around dropdowns.
+    // e.g. "$x = {{0}}$" → "$x =$ {{0}}" when input 0 is a dropdown.
+    Question.prototype._extractDNFromMath = function (tpl, inputs) {
+        if (!inputs) return tpl;
+        return tpl.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function (mathBlock) {
+            // Check if any {{N}} in this math block corresponds to a dropdown input
+            var hasDN = false;
+            mathBlock.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+                var inp = inputs[parseInt(n)];
+                if (inp && inp.type === "dropdown") hasDN = true;
+            });
+            if (!hasDN) return mathBlock;
+            // Split math block at DN placeholders: close $ before, reopen after
+            var delim = mathBlock.charAt(0) === '$' && mathBlock.charAt(1) === '$' ? '$$' : '$';
+            var inner = mathBlock.slice(delim.length, mathBlock.length - delim.length);
+            // Split on {{N}} where N is a DN input
+            var result = inner.replace(/\{\{(\d+)\}\}/g, function (m, n) {
+                var inp = inputs[parseInt(n)];
+                if (inp && inp.type === "dropdown") {
+                    return delim + " " + m + " " + delim;
+                }
+                return m;
+            });
+            return delim + result + delim;
+        });
+    };
+
     // Convert newlines in text to HTML: detect ordered/unordered lists, remaining \n → <br>
     Question.prototype._formatTextBlock = function (text) {
         if (!text || text.indexOf("\n") === -1) return text;
@@ -439,30 +468,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 replacement = $('<span class="mq-slot" id="' + mkId(idx, "mq") + '" style="display:inline-block;vertical-align:middle;"></span>')[0];
             }
 
-            // If replacing inside a KaTeX span (math zone), the wrapper retains
-            // fixed dimensions from the original placeholder. For dropdowns, pull
-            // them out of the KaTeX wrapper and collapse the empty wrapper.
-            var katexParent = phEl.closest ? phEl.closest('.katex-html') : null;
-            if (katexParent && inp && inp.type === "dropdown") {
-                var katexEl = katexParent.parentNode; // .katex
-                if (katexEl && katexEl.parentNode) {
-                    var phParent = phEl.parentNode;
-                    phParent.removeChild(phEl);
-                    // Collapse empty ancestor wrappers up to .base so no gap remains
-                    var anc = phParent;
-                    while (anc && !anc.classList.contains('base') && !anc.classList.contains('katex-html')) {
-                        if (!anc.textContent.trim()) {
-                            anc.style.display = 'none';
-                        }
-                        anc = anc.parentNode;
-                    }
-                    katexEl.parentNode.insertBefore(replacement, katexEl.nextSibling);
-                } else {
-                    phEl.parentNode.replaceChild(replacement, phEl);
-                }
-            } else {
-                phEl.parentNode.replaceChild(replacement, phEl);
-            }
+            phEl.parentNode.replaceChild(replacement, phEl);
         });
     };
 
@@ -1382,7 +1388,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Left: content area
         var $content = $('<div style="flex:1"></div>');
 
-        var tpl = self._stripContainerDelims(sec.template || "");
+        var tpl = self._extractDNFromMath(
+            self._stripContainerDelims(sec.template || ""),
+            sec.inputs
+        );
         var $p = $("<div style='font-size:15px;line-height:1.7;margin:0 0 10px;'></div>");
 
         // Check if any {{N}} sits inside a $...$ or $$...$$ math zone.
@@ -1528,7 +1537,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         }
 
         // v6 unified path: normalize to content format
-        var tpl = self._stripContainerDelims(self._normalizeToContent(row));
+        var tpl = self._extractDNFromMath(
+            self._stripContainerDelims(self._normalizeToContent(row)),
+            row.inputs
+        );
         var prefix = "REQV7" + secId.replace(/[^a-zA-Z0-9]/g, "") + "R" + rowIdx + "X";
 
         var mkId = function (idx, kind) {
