@@ -70,6 +70,9 @@
 .req-twi-flex + .req-twi-flex { margin-top: 14px; }
 
 /* ── MathQuill inputs (compact sizing to match Learnosity native) ── */
+.req-widget .mq-slot {
+    min-width: 40px;
+}
 .req-widget .mq-editable-field {
     border: 1px solid #999;
     border-radius: 2px;
@@ -80,13 +83,22 @@
 }
 
 /* ── v7: KaTeX-context MQ sizing (inputs rendered inside KaTeX layout) ── */
+/* MQ slots inside KaTeX fractions: override inline min-width */
+.req-widget .katex .mfrac .mq-slot {
+    min-width: 24px !important;
+}
 /* MQ fields inside KaTeX fractions: tighter fit */
 .req-widget .katex .mfrac .mq-editable-field {
     min-width: 24px;
     padding: 1px 3px;
     font-size: 13px;
+    margin: 2px 0;
 }
 
+/* MQ slots inside KaTeX superscripts/subscripts: override inline min-width */
+.req-widget .katex .msupsub .mq-slot {
+    min-width: 20px !important;
+}
 /* MQ fields inside KaTeX superscripts/subscripts */
 .req-widget .katex .msupsub .mq-editable-field {
     min-width: 20px;
@@ -100,6 +112,12 @@
 .req-widget .katex .msqrt,
 .req-widget .katex .minner {
     overflow: visible;
+}
+
+/* KaTeX fraction line must be visible above MQ field backgrounds */
+.req-widget .katex .frac-line {
+    position: relative;
+    z-index: 2;
 }
 
 /* KaTeX vlist reset row overlaps denominators — pass through pointer events */

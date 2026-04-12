@@ -402,7 +402,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 var $dd = self._buildDropdown(mkId(idx, "dd"), inp.options || [], function () { self._fireChanged(); });
                 replacement = $dd[0];
             } else {
-                replacement = $('<span class="mq-slot" id="' + mkId(idx, "mq") + '" style="display:inline-block;min-width:60px;vertical-align:middle;"></span>')[0];
+                replacement = $('<span class="mq-slot" id="' + mkId(idx, "mq") + '" style="display:inline-block;vertical-align:middle;"></span>')[0];
             }
 
             phEl.parentNode.replaceChild(replacement, phEl);
