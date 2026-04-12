@@ -1561,6 +1561,36 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var restore = function (s) { return s.replace(/REQINPUT(\d+)REQEND/g, "{{$1}}"); };
 
         /**
+         * Find the end position of a \left...\right pair (past the \right delimiter).
+         * Counts nested \left/\right pairs. Returns -1 if unmatched.
+         * leftIdx points to the '\' of \left.
+         */
+        var findMatchingRight = function (str, leftIdx) {
+            var depth = 1;
+            // Skip past \left and its delimiter char(s)
+            var j = leftIdx + 5; // past "\\left"
+            if (j < str.length) {
+                if (str[j] === "\\") j += 2; // \{ or similar escaped delimiter
+                else j++; // (, [, |, .
+            }
+            while (j < str.length) {
+                if (str[j] === "\\" && str.substring(j, j + 5) === "\\left") {
+                    depth++;
+                    j += 5;
+                    if (j < str.length) { j += (str[j] === "\\" ? 2 : 1); }
+                } else if (str[j] === "\\" && str.substring(j, j + 6) === "\\right") {
+                    depth--;
+                    j += 6;
+                    if (j < str.length) { j += (str[j] === "\\" ? 2 : 1); }
+                    if (depth === 0) return j;
+                } else {
+                    j++;
+                }
+            }
+            return -1;
+        };
+
+        /**
          * Extract all structures with {{N}} inputs from a safe inner string.
          * Returns an array of segment objects with recursive inner segments.
          *
@@ -1581,10 +1611,19 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 if (end <= rawStart) return;
                 var raw = safeInner.substring(rawStart, end).trim();
                 if (!raw) return;
+                // Safety: strip orphaned \left/\right (keep just the delimiter)
+                raw = raw.replace(/\\left\s*/g, "").replace(/\\right\s*/g, "");
                 result.push({ type: "math", text: "$" + restore(raw) + "$" });
             };
 
             while (i < len) {
+                // Skip over \left...\right pairs — they stay as KaTeX with
+                // \htmlId markers for inputs (preserves auto-sizing delimiters)
+                if (safeInner[i] === "\\" && safeInner.substring(i, i + 5) === "\\left") {
+                    var rightEnd = findMatchingRight(safeInner, i);
+                    if (rightEnd > 0) { i = rightEnd; continue; }
+                }
+
                 // Check for \frac{ or \dfrac{
                 if (safeInner[i] === "\\" &&
                     (safeInner.substring(i, i + 6) === "\\frac{" ||
