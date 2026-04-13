@@ -154,6 +154,25 @@ All styling is **self-contained** in `rational-eq-question-v7.css` and inline st
 - Math in hints: `$$...$$` renders as display math, `$...$` renders as inline math (both via KaTeX)
 - Teacher side: hint shown for active sub-step only, hidden on completion
 
+### Teacher-Side Container UX
+
+Containers group multiple MQ input boxes into a single validation unit. Two formats: `row.containers` (plural, V7/V5+) and `row.container` (singular, legacy).
+
+**Teacher side:**
+- Inputs in a container are wrapped in a `req-container-wrap` span (gray `#bdbdbd` border, `border-radius: 5px`)
+- ONE badge number per container (not per individual box)
+- Correct answers panel shows assembled answer per container (e.g., `(x-4)(x+4)`)
+- Container wrap border turns green (`req-cwrap-correct`, `#3a9447`) or orange (`req-cwrap-incorrect`, `#e8883a`) with ✓/✗ inside the wrap
+- Individual boxes inside containers do NOT show per-box red/green borders
+- Row-level ✓/✗ feedback still appears at right edge as usual
+
+**Student side:**
+- No container wrapper visible — boxes render normally
+- On check: all boxes in a container turn red or green together (container-level validation)
+- Row-level ✓/✗ at right edge as usual
+
+**Reference**: V5 item 9 (`V5-RationalEq-Extran-Q1`) in `POC-Custom-Questions` activity has the canonical container teacher UX.
+
 ## Learnosity Publishing
 
 ### Item References (current)
