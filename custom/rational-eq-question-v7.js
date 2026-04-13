@@ -1672,7 +1672,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                 if (r.bottom > maxY) maxY = r.bottom;
                             });
                             if (minX === Infinity) return;
-                            var pad = 6;
+                            var pad = 12;
                             var $overlay = $('<div class="req-container-wrap" id="' + self.uid + '-cwrap-' + secIdCap + '-' + rowIdxCap + '-' + ci + '"></div>');
                             $overlay.css({
                                 position: "absolute",
