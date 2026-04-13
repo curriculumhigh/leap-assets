@@ -1672,7 +1672,15 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                 if (r.bottom > maxY) maxY = r.bottom;
                             });
                             if (minX === Infinity) return;
-                            var padX = 10, padY = 4;
+                            // Detect context: if any slot is inside a fraction, use tight vertical padding
+                            var inFraction = false;
+                            ctr.inputIndices.forEach(function (idx) {
+                                var slotId = self.uid + "-mq-" + secIdCap + "-" + rowIdxCap + "-" + idx;
+                                var slot = document.getElementById(slotId);
+                                if (slot && $(slot).closest(".mfrac").length) inFraction = true;
+                            });
+                            var padX = inFraction ? 8 : 6;
+                            var padY = inFraction ? 3 : 8;
                             var $overlay = $('<div class="req-container-wrap" id="' + self.uid + '-cwrap-' + secIdCap + '-' + rowIdxCap + '-' + ci + '"></div>');
                             $overlay.css({
                                 position: "absolute",
