@@ -510,8 +510,10 @@
 .req-cwrap-correct {
     border-color: #3a9447 !important;
     border-width: 2px !important;
+    border-style: solid !important;
 }
 .req-cwrap-incorrect {
     border-color: #e8883a !important;
     border-width: 2px !important;
+    border-style: solid !important;
 }

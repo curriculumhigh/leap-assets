@@ -1672,7 +1672,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                 if (r.bottom > maxY) maxY = r.bottom;
                             });
                             if (minX === Infinity) return;
-                            var pad = 5;
+                            var pad = 10;
                             var $overlay = $('<div class="req-container-wrap" id="' + self.uid + '-cwrap-' + secIdCap + '-' + rowIdxCap + '-' + ci + '"></div>');
                             $overlay.css({
                                 position: "absolute",
@@ -1683,7 +1683,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                 pointerEvents: "none",
                                 background: "transparent",
                                 padding: "0",
-                                display: "block"
+                                display: "block",
+                                border: "1.5px dashed #9e9e9e",
+                                borderRadius: "6px",
+                                zIndex: "2"
                             });
                             $(refEl).append($overlay);
                         });
