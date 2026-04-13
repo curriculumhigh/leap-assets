@@ -3007,8 +3007,42 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             if (sec.type === "equation-table") {
                 sec.rows.forEach(function (row, ri) {
                     if (!row.inputs || row.inputs.length === 0) return;
-                    if (row.container) {
-                        // Container: one badge on the expression cell, not on any box
+                    if (row.containers && row.containers.length > 0) {
+                        // Multi-container: one badge per container, individual badges for non-container inputs
+                        // Badges are deferred to _addContainerBadges (runs after overlays exist at 600ms)
+                        var containerInputSet = {};
+                        row.containers.forEach(function (ctr) {
+                            if (ctr.inputIndices) ctr.inputIndices.forEach(function (idx) { containerInputSet[idx] = true; });
+                        });
+                        var emittedContainers = {};
+                        row.inputs.forEach(function (inp, ii) {
+                            var belongsTo = -1;
+                            row.containers.forEach(function (ctr, ci) {
+                                if (ctr.inputIndices && ctr.inputIndices.indexOf(ii) >= 0) belongsTo = ci;
+                            });
+                            if (belongsTo >= 0) {
+                                if (!emittedContainers[belongsTo]) {
+                                    emittedContainers[belongsTo] = true;
+                                    inputNum++;
+                                    // Store deferred badge info for this container
+                                    self._deferredContainerBadges = self._deferredContainerBadges || [];
+                                    self._deferredContainerBadges.push({
+                                        cwrapId: self.uid + "-cwrap-" + sec.id + "-" + ri + "-" + belongsTo,
+                                        num: inputNum
+                                    });
+                                }
+                            } else {
+                                inputNum++;
+                                var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii;
+                                var slot = document.getElementById(slotId);
+                                if (slot) {
+                                    $(slot).addClass("req-input-numbered");
+                                    $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                                }
+                            }
+                        });
+                    } else if (row.container) {
+                        // Legacy single container: one badge on the expression cell
                         inputNum++;
                         var $row = $("#" + self.uid + "-row-" + sec.id + "-" + ri);
                         var $exprCell = $row.find("td:first");
@@ -3053,6 +3087,21 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         // Show correct answers panel (all answers initially)
         self._renderCorrectAnswersPanelDynamic({}, {});
+
+        // Deferred container badges — overlays are created at 500ms, so add badges at 700ms
+        if (self._deferredContainerBadges && self._deferredContainerBadges.length > 0) {
+            var badges = self._deferredContainerBadges;
+            self._deferredContainerBadges = [];
+            setTimeout(function () {
+                badges.forEach(function (b) {
+                    var $cw = $("#" + b.cwrapId);
+                    if ($cw.length) {
+                        $cw.find(".req-num-badge").remove();
+                        $cw.append($('<span class="req-num-badge req-container-badge" style="position:absolute;top:-10px;left:-6px;z-index:3;"></span>').text(b.num));
+                    }
+                });
+            }, 700);
+        }
     };
 
     /**
