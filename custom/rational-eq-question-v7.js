@@ -1680,7 +1680,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                 top: (minY - refRect.top - pad) + "px",
                                 width: (maxX - minX + 2 * pad) + "px",
                                 height: (maxY - minY + 2 * pad) + "px",
-                                pointerEvents: "none"
+                                pointerEvents: "none",
+                                background: "transparent",
+                                padding: "0",
+                                display: "block"
                             });
                             $(refEl).append($overlay);
                         });
