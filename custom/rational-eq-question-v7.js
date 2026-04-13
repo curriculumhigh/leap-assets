@@ -2568,8 +2568,45 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             if (sec.type === "equation-table") {
                 sec.rows.forEach(function (row, ri) {
                     if (!row.inputs || row.inputs.length === 0) return;
-                    if (row.container) {
-                        // Container: one badge on the expression cell, not on any box
+                    if (row.containers && row.containers.length > 0) {
+                        // Multi-container: one badge per container, individual badges for non-container inputs
+                        var containerInputSet = {};
+                        row.containers.forEach(function (ctr) {
+                            if (ctr.inputIndices) ctr.inputIndices.forEach(function (idx) { containerInputSet[idx] = true; });
+                        });
+                        // Iterate inputs in order; when hitting first input of a container, emit container badge
+                        var emittedContainers = {};
+                        row.inputs.forEach(function (inp, ii) {
+                            // Check if this input belongs to a container
+                            var belongsTo = -1;
+                            row.containers.forEach(function (ctr, ci) {
+                                if (ctr.inputIndices && ctr.inputIndices.indexOf(ii) >= 0) belongsTo = ci;
+                            });
+                            if (belongsTo >= 0) {
+                                if (!emittedContainers[belongsTo]) {
+                                    emittedContainers[belongsTo] = true;
+                                    inputNum++;
+                                    // Badge on first input slot of this container
+                                    var firstIdx = row.containers[belongsTo].inputIndices[0];
+                                    var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + firstIdx;
+                                    var slot = document.getElementById(slotId);
+                                    if (slot) {
+                                        $(slot).addClass("req-input-numbered req-container-numbered");
+                                        $(slot).prepend($('<span class="req-num-badge req-container-badge"></span>').text(inputNum));
+                                    }
+                                }
+                            } else {
+                                inputNum++;
+                                var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii;
+                                var slot = document.getElementById(slotId);
+                                if (slot) {
+                                    $(slot).addClass("req-input-numbered");
+                                    $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                                }
+                            }
+                        });
+                    } else if (row.container) {
+                        // Legacy single container: one badge on the expression cell
                         inputNum++;
                         var $row = $("#" + self.uid + "-row-" + sec.id + "-" + ri);
                         var $exprCell = $row.find("td:first");
@@ -2725,12 +2762,67 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 sec.rows.forEach(function (row, ri) {
                     if (!row.inputs || row.inputs.length === 0) return;
                     var rowDone = !!(completedRows[sec.id] && completedRows[sec.id][ri]);
-                    if (row.container) {
-                        // Container: one box showing assembled answer
+                    if (row.containers && row.containers.length > 0) {
+                        // Multi-container: one box per container showing assembled answer,
+                        // individual boxes for non-container inputs
+                        var containerInputSet = {};
+                        row.containers.forEach(function (ctr) {
+                            if (ctr.inputIndices) ctr.inputIndices.forEach(function (idx) { containerInputSet[idx] = true; });
+                        });
+                        var emittedContainers = {};
+                        row.inputs.forEach(function (inp, ii) {
+                            var belongsTo = -1;
+                            row.containers.forEach(function (ctr, ci) {
+                                if (ctr.inputIndices && ctr.inputIndices.indexOf(ii) >= 0) belongsTo = ci;
+                            });
+                            if (belongsTo >= 0) {
+                                if (!emittedContainers[belongsTo]) {
+                                    emittedContainers[belongsTo] = true;
+                                    num++;
+                                    if (!rowDone) {
+                                        shown++;
+                                        // Build assembled answer from container's assembleTemplate
+                                        var ctr = row.containers[belongsTo];
+                                        var displayParts = ctr.assembleTemplate || "{{0}}";
+                                        ctr.inputIndices.forEach(function (idx, localI) {
+                                            var dispLtx = self.nerdamerToDisplayLatex(row.inputs[idx].answer);
+                                            displayParts = displayParts.replace("{{" + localI + "}}", dispLtx);
+                                        });
+                                        var $box = $('<div class="req-ca-box"></div>');
+                                        $box.append($('<span class="req-num-badge"></span>').text(num));
+                                        var $val = $('<span></span>');
+                                        try {
+                                            $val.html(katex.renderToString(displayParts, { throwOnError: false }));
+                                        } catch (e) {
+                                            $val.text(ctr.answer || displayParts);
+                                        }
+                                        $box.append($val);
+                                        $grid.append($box);
+                                    }
+                                }
+                            } else {
+                                num++;
+                                if (!rowDone) {
+                                    shown++;
+                                    var displayLatex = self.nerdamerToDisplayLatex(inp.answer);
+                                    var $box = $('<div class="req-ca-box"></div>');
+                                    $box.append($('<span class="req-num-badge"></span>').text(num));
+                                    var $val = $('<span></span>');
+                                    try {
+                                        $val.html(katex.renderToString(displayLatex, { throwOnError: false }));
+                                    } catch (e) {
+                                        $val.text(inp.answer);
+                                    }
+                                    $box.append($val);
+                                    $grid.append($box);
+                                }
+                            }
+                        });
+                    } else if (row.container) {
+                        // Legacy single container: one box showing assembled answer
                         num++;
                         if (!rowDone) {
                             shown++;
-                            // Build display LaTeX from template + individual answers
                             var tpl = self._stripContainerDelims(row.template || "{{0}}");
                             var displayParts = tpl;
                             row.inputs.forEach(function (inp, ii) {
@@ -3046,7 +3138,14 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         sections.forEach(function (sec) {
             if (sec.type === "equation-table") {
                 sec.rows.forEach(function (row, ri) {
-                    if (row.container && row.inputs) {
+                    if (row.containers && row.containers.length > 0) {
+                        // Multi-container: mark all inputs in any container
+                        row.containers.forEach(function (ctr) {
+                            if (ctr.inputIndices) ctr.inputIndices.forEach(function (idx) {
+                                containerKeys[sec.id + "-" + ri + "-" + idx] = true;
+                            });
+                        });
+                    } else if (row.container && row.inputs) {
                         row.inputs.forEach(function (inp, ii) {
                             containerKeys[sec.id + "-" + ri + "-" + ii] = true;
                         });
