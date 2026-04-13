@@ -508,12 +508,10 @@
 
 /* Validation states on the container wrap (teacher side) */
 .req-cwrap-correct {
-    border-color: #3a9447 !important;
-    border-width: 2px !important;
-    border-style: solid !important;
+    background: rgba(58, 148, 71, 0.10) !important;
+    box-shadow: 0 0 0 1.5px #3a9447 !important;
 }
 .req-cwrap-incorrect {
-    border-color: #e8883a !important;
-    border-width: 2px !important;
-    border-style: solid !important;
+    background: rgba(232, 136, 58, 0.10) !important;
+    box-shadow: 0 0 0 1.5px #e8883a !important;
 }
