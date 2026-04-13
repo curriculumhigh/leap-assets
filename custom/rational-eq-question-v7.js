@@ -3254,7 +3254,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                 var $cw = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ri + "-" + ci);
                                 $cw.removeClass("req-cwrap-incorrect").addClass("req-cwrap-correct");
                                 $cw.find(".req-cwrap-tick").remove();
-                                $cw.append('<span class="req-cwrap-tick" style="color:#3a9447;font-size:14px;margin-left:6px;vertical-align:middle;">&#10003;</span>');
+                                $cw.append('<span class="req-cwrap-tick" style="position:absolute;right:-18px;top:50%;transform:translateY(-50%);color:#3a9447;font-size:14px;">&#10003;</span>');
                             });
                         } else if (row.container) {
                             var $cw = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ri);
@@ -3286,8 +3286,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                 if (!containerOk) allContainersOk = false;
                                 $cw.addClass(containerOk ? "req-cwrap-correct" : "req-cwrap-incorrect");
                                 $cw.append(containerOk
-                                    ? '<span class="req-cwrap-tick" style="color:#3a9447;font-size:14px;margin-left:6px;vertical-align:middle;">&#10003;</span>'
-                                    : '<span class="req-cwrap-tick" style="color:#e8883a;font-size:14px;margin-left:6px;vertical-align:middle;">&#10007;</span>');
+                                    ? '<span class="req-cwrap-tick" style="position:absolute;right:-18px;top:50%;transform:translateY(-50%);color:#3a9447;font-size:14px;">&#10003;</span>'
+                                    : '<span class="req-cwrap-tick" style="position:absolute;right:-18px;top:50%;transform:translateY(-50%);color:#e8883a;font-size:14px;">&#10007;</span>');
                             } else {
                                 allContainersOk = false;
                             }
