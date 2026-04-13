@@ -1672,14 +1672,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                 if (r.bottom > maxY) maxY = r.bottom;
                             });
                             if (minX === Infinity) return;
-                            var pad = 8;
-                            var padRight = 24; // extra space for ✓/✗ tick inside
+                            var pad = 6;
                             var $overlay = $('<div class="req-container-wrap" id="' + self.uid + '-cwrap-' + secIdCap + '-' + rowIdxCap + '-' + ci + '"></div>');
                             $overlay.css({
                                 position: "absolute",
                                 left: (minX - refRect.left - pad) + "px",
                                 top: (minY - refRect.top - pad) + "px",
-                                width: (maxX - minX + pad + padRight) + "px",
+                                width: (maxX - minX + 2 * pad) + "px",
                                 height: (maxY - minY + 2 * pad) + "px",
                                 pointerEvents: "none",
                                 background: "transparent",
@@ -3305,13 +3304,11 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     var $fb = $("#" + self.uid + "-fb-" + sec.id + "-" + ri);
                     if (rowCompleted) {
                         $fb.html('<span style="color:#3a9447;font-size:16px;">&#10003;</span>');
-                        // Container wrap: green border + tick
+                        // Container wrap: green border
                         if (row.containers && row.containers.length > 0) {
                             row.containers.forEach(function (ctr, ci) {
                                 var $cw = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ri + "-" + ci);
                                 $cw.removeClass("req-cwrap-incorrect").addClass("req-cwrap-correct");
-                                $cw.find(".req-cwrap-tick").remove();
-                                $cw.append('<span class="req-cwrap-tick" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);color:#3a9447;font-size:14px;">&#10003;</span>');
                             });
                         } else if (row.container) {
                             var $cw = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ri);
@@ -3336,15 +3333,11 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                 }
                             });
                             var $cw = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ri + "-" + ci);
-                            $cw.find(".req-cwrap-tick").remove();
                             $cw.removeClass("req-cwrap-correct req-cwrap-incorrect");
                             if (allFilled) {
                                 var containerOk = self.validateContainer(ctr, boxLatex);
                                 if (!containerOk) allContainersOk = false;
                                 $cw.addClass(containerOk ? "req-cwrap-correct" : "req-cwrap-incorrect");
-                                $cw.append(containerOk
-                                    ? '<span class="req-cwrap-tick" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);color:#3a9447;font-size:14px;">&#10003;</span>'
-                                    : '<span class="req-cwrap-tick" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);color:#e8883a;font-size:14px;">&#10007;</span>');
                             } else {
                                 allContainersOk = false;
                             }
