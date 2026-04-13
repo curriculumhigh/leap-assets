@@ -156,22 +156,61 @@ All styling is **self-contained** in `rational-eq-question-v7.css` and inline st
 
 ### Teacher-Side Container UX
 
-Containers group multiple MQ input boxes into a single validation unit. Two formats: `row.containers` (plural, V7/V5+) and `row.container` (singular, legacy).
+Containers group multiple MQ input boxes into a single validation unit. Two formats: `row.containers` (plural, V7) and `row.container` (singular, V5 legacy).
 
-**Teacher side:**
-- Inputs in a container are wrapped in a `req-container-wrap` span (gray `#bdbdbd` border, `border-radius: 5px`)
-- ONE badge number per container (not per individual box)
-- Correct answers panel shows assembled answer per container (e.g., `(x-4)(x+4)`)
-- Container wrap border turns green (`req-cwrap-correct`, `#3a9447`) or orange (`req-cwrap-incorrect`, `#e8883a`) with ✓/✗ inside the wrap
-- Individual boxes inside containers do NOT show per-box red/green borders
-- Row-level ✓/✗ feedback still appears at right edge as usual
+#### V7 overlay approach (`row.containers`)
 
-**Student side:**
+V7 containers use absolutely-positioned overlay divs because MQ slots live inside KaTeX's vlist DOM — moving them would break layout. The overlay is a sibling of the KaTeX content, not a parent.
+
+**Overlay creation** (deferred to 500ms after MQ init, inside `_buildEquationRow`):
+- Measures bounding rects of all MQ slots in the container via `getBoundingClientRect()`
+- Computes min/max bounds, adds context-aware padding
+- Appends an absolutely-positioned `<div class="req-container-wrap">` to the expression cell (`<td>`)
+
+**Context-aware padding** — detects if slots are inside a KaTeX `.mfrac` element:
+
+| Context | padX | padY | Rationale |
+|---------|------|------|-----------|
+| Inside fraction (`.mfrac`) | 8px | 3px | Tight vertical — fraction rows above/below are close |
+| Not in fraction (inline, superscript, etc.) | 6px | 8px | Generous vertical — room for tall expressions |
+
+**Overlay styling**:
+- Default: `1.5px solid #ccc` border, transparent background, `border-radius: 5px`, `z-index: 1`
+- Correct: green border + light green tint via `req-cwrap-correct` (`border-color: #3a9447`, `background: rgba(58,148,71,0.06)`)
+- Incorrect: orange border + light orange tint via `req-cwrap-incorrect` (`border-color: #e8883a`, `background: rgba(232,136,58,0.06)`)
+- `pointer-events: none` — overlay doesn't interfere with input interaction
+
+**Badge numbering** (deferred to 700ms, inside `_applyTeacherLiveMode`):
+- ONE badge per container, placed on the overlay div at `top:-10px; left:-6px`
+- Non-container inputs in the same row get individual badges as normal
+- Badge numbering is sequential across all sections/rows/containers
+
+**Correct answers panel** (`_renderCorrectAnswersPanelDynamic`):
+- One entry per container showing the assembled answer (via `ctr.assembleTemplate` with blanks replaced)
+- Non-container inputs get individual entries
+
+**Feedback** (applied in `_updateTeacherFromResponse`):
+- Container: border color changes to green/orange — no tick/cross on the overlay
+- Non-container boxes: individual per-box `correct`/`incorrect` class (green/red border)
+- Row-level ✓/✗ at right edge requires ALL inputs filled and correct (containers + non-containers)
+
+**Timing chain** (critical for correct rendering):
+1. MQ init via `requestAnimationFrame` (~16ms)
+2. `_applyTeacherLiveMode` at 200ms — unlocks rows, disables interactivity, initial teacher update
+3. Overlay divs created at 500ms — MQ slots now have non-zero dimensions
+4. Badges placed at 700ms — overlays exist, then re-triggers `_updateTeacherFromResponse` to apply feedback to now-existing overlays
+
+#### V5 legacy inline approach (`row.container`)
+
+V5 containers use inline `<span class="req-container-wrap">` that wraps the content before KaTeX renders. This works because V5 builds the DOM differently (HTML template approach). Includes inline ✓/✗ tick inside the wrap span.
+
+#### Student side (both formats)
+
 - No container wrapper visible — boxes render normally
 - On check: all boxes in a container turn red or green together (container-level validation)
 - Row-level ✓/✗ at right edge as usual
 
-**Reference**: V5 item 9 (`V5-RationalEq-Extran-Q1`) in `POC-Custom-Questions` activity has the canonical container teacher UX.
+**Reference items**: V5 `V5-ExponentialEq-Q1` and `V5-RationalEq-Extran-Q1` in `POC-Custom-Questions` activity show the V5 container teacher UX. V7 items 193--195 in `V7-Custom-Questions` show the V7 overlay approach.
 
 ## Learnosity Publishing
 
