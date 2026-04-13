@@ -3354,24 +3354,26 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                         row.containers.forEach(function (ctr) {
                             if (ctr.inputIndices) ctr.inputIndices.forEach(function (idx) { containerInputSet[idx] = true; });
                         });
-                        var hasNonContainer = false, nonContainerOk = true;
+                        var nonContainerOk = true, allNonContainerFilled = true;
                         row.inputs.forEach(function (inp, ii) {
                             if (containerInputSet[ii]) return;
                             var savedKey = sec.id + "-" + ri + "-" + ii;
                             var sv = savedInputs[savedKey];
                             if (sv && sv.latex) {
-                                hasNonContainer = true;
                                 if (!sv.correct) nonContainerOk = false;
+                            } else {
+                                allNonContainerFilled = false;
                             }
                         });
-                        // Row-level feedback
+                        // Row-level feedback: only show ✓ when ALL inputs (containers + non-containers) are filled and correct
                         var anyFilled = false;
                         row.inputs.forEach(function (inp, ii) {
                             var savedKey = sec.id + "-" + ri + "-" + ii;
-                            if (savedInputs[savedKey] && savedInputs[savedKey].latex) anyFilled = true;
+                            if (savedInputs[savedKey] && (savedInputs[savedKey].latex || savedInputs[savedKey].value)) anyFilled = true;
                         });
                         if (anyFilled) {
-                            var rowOk = allContainersOk && nonContainerOk;
+                            // allContainersOk is false if any container has unfilled inputs
+                            var rowOk = allContainersOk && nonContainerOk && allNonContainerFilled;
                             $fb.html(rowOk
                                 ? '<span style="color:#3a9447;font-size:16px;">&#10003;</span>'
                                 : '<span style="color:#e8883a;font-size:16px;">&#10007;</span>');
