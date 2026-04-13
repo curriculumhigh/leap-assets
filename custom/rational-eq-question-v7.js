@@ -3451,6 +3451,59 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         // Update correct answers panel — remove completed inputs
         self._renderCorrectAnswersPanelDynamic(savedCompletedRows, savedCompletedSections);
+
+        // Reposition container overlays (MQ fields may have resized after population)
+        self._repositionContainerOverlays();
+    };
+
+    /**
+     * Re-measure MQ slot positions and resize container overlay divs.
+     * Called after _updateTeacherFromResponse populates fields (which changes their width).
+     */
+    Question.prototype._repositionContainerOverlays = function () {
+        var self = this;
+        var sections = self.question.sections || [];
+        sections.forEach(function (sec) {
+            if (sec.type !== "equation-table") return;
+            sec.rows.forEach(function (row, ri) {
+                if (!row.containers || row.containers.length === 0) return;
+                row.containers.forEach(function (ctr, ci) {
+                    if (!ctr.inputIndices || ctr.inputIndices.length === 0) return;
+                    var $overlay = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ri + "-" + ci);
+                    if (!$overlay.length) return;
+                    var refEl = $overlay.parent()[0];
+                    if (!refEl) return;
+                    var refRect = refEl.getBoundingClientRect();
+                    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                    ctr.inputIndices.forEach(function (idx) {
+                        var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + idx;
+                        var slot = document.getElementById(slotId);
+                        if (!slot) return;
+                        var r = slot.getBoundingClientRect();
+                        if (r.width === 0 && r.height === 0) return;
+                        if (r.left < minX) minX = r.left;
+                        if (r.top < minY) minY = r.top;
+                        if (r.right > maxX) maxX = r.right;
+                        if (r.bottom > maxY) maxY = r.bottom;
+                    });
+                    if (minX === Infinity) return;
+                    var inFraction = false;
+                    ctr.inputIndices.forEach(function (idx) {
+                        var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + idx;
+                        var slot = document.getElementById(slotId);
+                        if (slot && $(slot).closest(".mfrac").length) inFraction = true;
+                    });
+                    var padX = inFraction ? 8 : 6;
+                    var padY = inFraction ? 3 : 8;
+                    $overlay.css({
+                        left: (minX - refRect.left - padX) + "px",
+                        top: (minY - refRect.top - padY) + "px",
+                        width: (maxX - minX + 2 * padX) + "px",
+                        height: (maxY - minY + 2 * padY) + "px"
+                    });
+                });
+            });
+        });
     };
 
     // ═════════════════════════════════════════════════
