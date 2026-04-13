@@ -1684,8 +1684,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                 background: "transparent",
                                 padding: "0",
                                 display: "block",
-                                border: "1.5px dashed #9e9e9e",
-                                borderRadius: "6px",
+                                border: "1px solid #bdbdbd",
+                                borderRadius: "5px",
                                 zIndex: "2"
                             });
                             $(refEl).append($overlay);
