@@ -1627,26 +1627,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Swap all \htmlId markers for MQ/dropdown input fields
         self._replaceMarkers($container[0], prefix, row.inputs, mkId);
 
-        // For multi-container rows on teacher side, wrap each container's inputs
-        if (row.containers && row.containers.length > 0 && self.isTeacher) {
-            row.containers.forEach(function (ctr, ci) {
-                if (!ctr.inputIndices || ctr.inputIndices.length === 0) return;
-                // Find the MQ slots for this container
-                var slots = [];
-                ctr.inputIndices.forEach(function (idx) {
-                    var slotId = self.uid + "-mq-" + secId + "-" + rowIdx + "-" + idx;
-                    var slot = document.getElementById(slotId);
-                    if (slot) slots.push(slot);
-                });
-                if (slots.length === 0) return;
-                // Create wrapper and insert before the first slot
-                var $cWrap = $('<span class="req-container-wrap" id="' + self.uid + '-cwrap-' + secId + '-' + rowIdx + '-' + ci + '"></span>');
-                $(slots[0]).before($cWrap);
-                // Move all container slots into the wrapper
-                slots.forEach(function (s) { $cWrap.append(s); });
-            });
-        }
-
         // Init MathQuill fields
         requestAnimationFrame(function () {
             row.inputs.forEach(function (inp, inputIdx) {
@@ -1667,6 +1647,41 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     self.setupKeypadForField(field, slot);
                 }
             });
+
+            // Teacher side: draw container overlay borders around grouped MQ slots
+            if (row.containers && row.containers.length > 0 && self.isTeacher) {
+                var $exprCell = $container.closest("td");
+                if ($exprCell.length) $exprCell.css("position", "relative");
+
+                row.containers.forEach(function (ctr, ci) {
+                    if (!ctr.inputIndices || ctr.inputIndices.length === 0) return;
+                    var refEl = $exprCell.length ? $exprCell[0] : $container[0];
+                    var refRect = refEl.getBoundingClientRect();
+                    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                    ctr.inputIndices.forEach(function (idx) {
+                        var slotId = self.uid + "-mq-" + secId + "-" + rowIdx + "-" + idx;
+                        var slot = document.getElementById(slotId);
+                        if (!slot) return;
+                        var r = slot.getBoundingClientRect();
+                        if (r.left < minX) minX = r.left;
+                        if (r.top < minY) minY = r.top;
+                        if (r.right > maxX) maxX = r.right;
+                        if (r.bottom > maxY) maxY = r.bottom;
+                    });
+                    if (minX === Infinity) return;
+                    var pad = 5;
+                    var $overlay = $('<div class="req-container-wrap" id="' + self.uid + '-cwrap-' + secId + '-' + rowIdx + '-' + ci + '"></div>');
+                    $overlay.css({
+                        position: "absolute",
+                        left: (minX - refRect.left - pad) + "px",
+                        top: (minY - refRect.top - pad) + "px",
+                        width: (maxX - minX + 2 * pad) + "px",
+                        height: (maxY - minY + 2 * pad) + "px",
+                        pointerEvents: "none"
+                    });
+                    $(refEl).append($overlay);
+                });
+            }
         });
     };
 
