@@ -322,8 +322,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         latex = latex.replace(/([a-zA-Z0-9]+|\([^)]+\)|\{[^}]+\})\/([a-zA-Z0-9]+|\([^)]+\)|\{[^}]+\})/g, function (_, n, d) {
             return '\\frac{' + n + '}{' + d + '}';
         });
-        // Wrap English words in \text{} with ~ spacing, skip LaTeX command names
-        latex = latex.replace(/(?<!\\)\b([a-zA-Z]{2,}(?:\s+(?!\\)[a-zA-Z]{2,})*)/g, function (m) {
+        // Wrap English prose in \text{} with ~ spacing, skip LaTeX command names.
+        // A prose run starts with a 2+ letter word OR a single letter followed by
+        // a 2+ letter word, and continues with any word (including single-letter).
+        latex = latex.replace(/(?<!\\)\b((?:[a-zA-Z]{2,}|[a-zA-Z](?=\s+[a-zA-Z]{2,}))(?:\s+(?!\\)[a-zA-Z]+)*)/g, function (m) {
             return '~\\text{' + m + '}~';
         });
         latex = latex.replace(/^~|~$/g, '').replace(/~~+/g, '~');
