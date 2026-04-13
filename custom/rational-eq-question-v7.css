@@ -72,6 +72,8 @@
 /* ── MathQuill inputs (compact sizing to match Learnosity native) ── */
 .req-widget .mq-slot {
     min-width: 48px;
+    position: relative;
+    z-index: 3;
 }
 .req-widget .mq-editable-field {
     border: 1px solid #999;
