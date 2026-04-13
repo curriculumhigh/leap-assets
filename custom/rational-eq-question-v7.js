@@ -1672,8 +1672,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                 if (r.bottom > maxY) maxY = r.bottom;
                             });
                             if (minX === Infinity) return;
-                            var pad = 4;
-                            var padRight = 20; // extra space for ✓/✗ tick inside
+                            var pad = 8;
+                            var padRight = 24; // extra space for ✓/✗ tick inside
                             var $overlay = $('<div class="req-container-wrap" id="' + self.uid + '-cwrap-' + secIdCap + '-' + rowIdxCap + '-' + ci + '"></div>');
                             $overlay.css({
                                 position: "absolute",
