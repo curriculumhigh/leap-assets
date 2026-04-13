@@ -1648,39 +1648,44 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 }
             });
 
-            // Teacher side: draw container overlay borders around grouped MQ slots
+            // Teacher side: schedule container overlay borders (must wait for teacher mode
+            // to unlock rows — _applyTeacherLiveMode runs at 200ms, so defer to 400ms)
             if (row.containers && row.containers.length > 0 && self.isTeacher) {
-                var $exprCell = $container.closest("td");
-                if ($exprCell.length) $exprCell.css("position", "relative");
+                (function (containers, secIdCap, rowIdxCap, $containerCap) {
+                    setTimeout(function () {
+                        var $exprCell = $containerCap.closest("td");
+                        if ($exprCell.length) $exprCell.css("position", "relative");
 
-                row.containers.forEach(function (ctr, ci) {
-                    if (!ctr.inputIndices || ctr.inputIndices.length === 0) return;
-                    var refEl = $exprCell.length ? $exprCell[0] : $container[0];
-                    var refRect = refEl.getBoundingClientRect();
-                    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-                    ctr.inputIndices.forEach(function (idx) {
-                        var slotId = self.uid + "-mq-" + secId + "-" + rowIdx + "-" + idx;
-                        var slot = document.getElementById(slotId);
-                        if (!slot) return;
-                        var r = slot.getBoundingClientRect();
-                        if (r.left < minX) minX = r.left;
-                        if (r.top < minY) minY = r.top;
-                        if (r.right > maxX) maxX = r.right;
-                        if (r.bottom > maxY) maxY = r.bottom;
-                    });
-                    if (minX === Infinity) return;
-                    var pad = 5;
-                    var $overlay = $('<div class="req-container-wrap" id="' + self.uid + '-cwrap-' + secId + '-' + rowIdx + '-' + ci + '"></div>');
-                    $overlay.css({
-                        position: "absolute",
-                        left: (minX - refRect.left - pad) + "px",
-                        top: (minY - refRect.top - pad) + "px",
-                        width: (maxX - minX + 2 * pad) + "px",
-                        height: (maxY - minY + 2 * pad) + "px",
-                        pointerEvents: "none"
-                    });
-                    $(refEl).append($overlay);
-                });
+                        containers.forEach(function (ctr, ci) {
+                            if (!ctr.inputIndices || ctr.inputIndices.length === 0) return;
+                            var refEl = $exprCell.length ? $exprCell[0] : $containerCap[0];
+                            var refRect = refEl.getBoundingClientRect();
+                            var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                            ctr.inputIndices.forEach(function (idx) {
+                                var slotId = self.uid + "-mq-" + secIdCap + "-" + rowIdxCap + "-" + idx;
+                                var slot = document.getElementById(slotId);
+                                if (!slot) return;
+                                var r = slot.getBoundingClientRect();
+                                if (r.left < minX) minX = r.left;
+                                if (r.top < minY) minY = r.top;
+                                if (r.right > maxX) maxX = r.right;
+                                if (r.bottom > maxY) maxY = r.bottom;
+                            });
+                            if (minX === Infinity) return;
+                            var pad = 5;
+                            var $overlay = $('<div class="req-container-wrap" id="' + self.uid + '-cwrap-' + secIdCap + '-' + rowIdxCap + '-' + ci + '"></div>');
+                            $overlay.css({
+                                position: "absolute",
+                                left: (minX - refRect.left - pad) + "px",
+                                top: (minY - refRect.top - pad) + "px",
+                                width: (maxX - minX + 2 * pad) + "px",
+                                height: (maxY - minY + 2 * pad) + "px",
+                                pointerEvents: "none"
+                            });
+                            $(refEl).append($overlay);
+                        });
+                    }, 500);
+                })(row.containers, secId, rowIdx, $container);
             }
         });
     };
