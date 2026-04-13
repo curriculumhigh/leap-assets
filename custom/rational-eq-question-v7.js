@@ -1627,6 +1627,26 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Swap all \htmlId markers for MQ/dropdown input fields
         self._replaceMarkers($container[0], prefix, row.inputs, mkId);
 
+        // For multi-container rows on teacher side, wrap each container's inputs
+        if (row.containers && row.containers.length > 0 && self.isTeacher) {
+            row.containers.forEach(function (ctr, ci) {
+                if (!ctr.inputIndices || ctr.inputIndices.length === 0) return;
+                // Find the MQ slots for this container
+                var slots = [];
+                ctr.inputIndices.forEach(function (idx) {
+                    var slotId = self.uid + "-mq-" + secId + "-" + rowIdx + "-" + idx;
+                    var slot = document.getElementById(slotId);
+                    if (slot) slots.push(slot);
+                });
+                if (slots.length === 0) return;
+                // Create wrapper and insert before the first slot
+                var $cWrap = $('<span class="req-container-wrap" id="' + self.uid + '-cwrap-' + secId + '-' + rowIdx + '-' + ci + '"></span>');
+                $(slots[0]).before($cWrap);
+                // Move all container slots into the wrapper
+                slots.forEach(function (s) { $cWrap.append(s); });
+            });
+        }
+
         // Init MathQuill fields
         requestAnimationFrame(function () {
             row.inputs.forEach(function (inp, inputIdx) {
@@ -3206,14 +3226,80 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     if (rowCompleted) {
                         $fb.html('<span style="color:#3a9447;font-size:16px;">&#10003;</span>');
                         // Container wrap: green border + tick
-                        if (row.container) {
+                        if (row.containers && row.containers.length > 0) {
+                            row.containers.forEach(function (ctr, ci) {
+                                var $cw = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ri + "-" + ci);
+                                $cw.removeClass("req-cwrap-incorrect").addClass("req-cwrap-correct");
+                                $cw.find(".req-cwrap-tick").remove();
+                                $cw.append('<span class="req-cwrap-tick" style="color:#3a9447;font-size:14px;margin-left:6px;vertical-align:middle;">&#10003;</span>');
+                            });
+                        } else if (row.container) {
                             var $cw = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ri);
                             $cw.removeClass("req-cwrap-incorrect").addClass("req-cwrap-correct");
                             $cw.find(".req-cwrap-tick").remove();
                             $cw.append('<span class="req-cwrap-tick" style="color:#3a9447;font-size:14px;margin-left:6px;vertical-align:middle;">&#10003;</span>');
                         }
+                    } else if (row.containers && row.containers.length > 0) {
+                        // Multi-container: validate each container, style wraps
+                        var allContainersOk = true;
+                        row.containers.forEach(function (ctr, ci) {
+                            if (!ctr.inputIndices) return;
+                            var boxLatex = [];
+                            var allFilled = true;
+                            ctr.inputIndices.forEach(function (idx) {
+                                var savedKey = sec.id + "-" + ri + "-" + idx;
+                                var sv = savedInputs[savedKey];
+                                if (sv && sv.latex) {
+                                    boxLatex.push(sv.latex);
+                                } else {
+                                    allFilled = false;
+                                }
+                            });
+                            var $cw = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ri + "-" + ci);
+                            $cw.find(".req-cwrap-tick").remove();
+                            $cw.removeClass("req-cwrap-correct req-cwrap-incorrect");
+                            if (allFilled) {
+                                var containerOk = self.validateContainer(ctr, boxLatex);
+                                if (!containerOk) allContainersOk = false;
+                                $cw.addClass(containerOk ? "req-cwrap-correct" : "req-cwrap-incorrect");
+                                $cw.append(containerOk
+                                    ? '<span class="req-cwrap-tick" style="color:#3a9447;font-size:14px;margin-left:6px;vertical-align:middle;">&#10003;</span>'
+                                    : '<span class="req-cwrap-tick" style="color:#e8883a;font-size:14px;margin-left:6px;vertical-align:middle;">&#10007;</span>');
+                            } else {
+                                allContainersOk = false;
+                            }
+                        });
+                        // Also check non-container inputs in the row
+                        var containerInputSet = {};
+                        row.containers.forEach(function (ctr) {
+                            if (ctr.inputIndices) ctr.inputIndices.forEach(function (idx) { containerInputSet[idx] = true; });
+                        });
+                        var hasNonContainer = false, nonContainerOk = true;
+                        row.inputs.forEach(function (inp, ii) {
+                            if (containerInputSet[ii]) return;
+                            var savedKey = sec.id + "-" + ri + "-" + ii;
+                            var sv = savedInputs[savedKey];
+                            if (sv && sv.latex) {
+                                hasNonContainer = true;
+                                if (!sv.correct) nonContainerOk = false;
+                            }
+                        });
+                        // Row-level feedback
+                        var anyFilled = false;
+                        row.inputs.forEach(function (inp, ii) {
+                            var savedKey = sec.id + "-" + ri + "-" + ii;
+                            if (savedInputs[savedKey] && savedInputs[savedKey].latex) anyFilled = true;
+                        });
+                        if (anyFilled) {
+                            var rowOk = allContainersOk && nonContainerOk;
+                            $fb.html(rowOk
+                                ? '<span style="color:#3a9447;font-size:16px;">&#10003;</span>'
+                                : '<span style="color:#e8883a;font-size:16px;">&#10007;</span>');
+                        } else {
+                            $fb.html("");
+                        }
                     } else if (row.container) {
-                        // Container: run live validation on synced input values
+                        // Legacy single container: run live validation on synced input values
                         var boxLatex = [];
                         var allFilled = true;
                         row.inputs.forEach(function (inp, ii) {
