@@ -1682,13 +1682,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                 width: (maxX - minX + pad + padRight) + "px",
                                 height: (maxY - minY + 2 * pad) + "px",
                                 pointerEvents: "none",
-                                background: "#fff",
+                                background: "transparent",
                                 padding: "0",
                                 display: "block",
-                                border: "none",
+                                border: "1.5px solid #ccc",
                                 borderRadius: "5px",
-                                zIndex: "1",
-                                boxShadow: "0 0 0 1px rgba(0,0,0,0.08)"
+                                zIndex: "1"
                             });
                             $(refEl).append($overlay);
                         });
