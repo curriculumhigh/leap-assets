@@ -3100,6 +3100,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                         $cw.append($('<span class="req-num-badge req-container-badge" style="position:absolute;top:-10px;left:-6px;z-index:3;"></span>').text(b.num));
                     }
                 });
+                // Re-trigger teacher update now that overlays + badges exist
+                if (self.response && self.response.inputs) {
+                    self._updateTeacherFromResponse(self.response);
+                }
             }, 700);
         }
     };
