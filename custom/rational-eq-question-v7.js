@@ -3851,140 +3851,34 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     };
 
     // ── Symbol keypad ──
-    // ── Keypad key presets ──
-    var KEYPAD_NUMPAD = [
-        { label: "7", cmd: "7", type: "write" },
-        { label: "8", cmd: "8", type: "write" },
-        { label: "9", cmd: "9", type: "write" },
-        { label: "\\div", cmd: "\\div", type: "cmd" },
-        { label: "4", cmd: "4", type: "write" },
-        { label: "5", cmd: "5", type: "write" },
-        { label: "6", cmd: "6", type: "write" },
-        { label: "\\times", cmd: "\\times", type: "cmd" },
-        { label: "1", cmd: "1", type: "write" },
-        { label: "2", cmd: "2", type: "write" },
-        { label: "3", cmd: "3", type: "write" },
-        { label: "-", cmd: "-", type: "write" },
-        { label: "0", cmd: "0", type: "write" },
-        { label: ".", cmd: ".", type: "write" },
-        { label: ",", cmd: ",", type: "write" },
-        { label: "+", cmd: "+", type: "write" },
-        { label: "\\triangleleft", type: "keystroke", cmd: "Left" },
-        { label: "\\triangleright", type: "keystroke", cmd: "Right" },
-        { label: "\\Leftarrow", type: "keystroke", cmd: "Backspace" },
-        { label: "=", cmd: "=", type: "write" }
-    ];
+    Question.prototype.buildKeypad = function ($container) {
+        var self = this;
+        var $keypad = $('<div class="req-keypad" id="' + self.uid + '-keypad"></div>');
 
-    var KEYPAD_PRESETS = {
-        algebra: [
-            { label: "x", cmd: "x", type: "write" },
-            { label: "y", cmd: "y", type: "write" },
-            { label: "x^2", cmd: "^", type: "cmd", extra: "2" },
-            { label: "\\sqrt{\\square}", cmd: "\\sqrt", type: "cmd" },
-            { label: "\\frac{x}{\\square}", cmd: "/", type: "cmd" },
-            { label: "\\frac{x^{\\square}}{\\square}", cmd: "/", type: "cmd" },
+        var keys = [
+            { label: "+", cmd: "+", type: "write" },
+            { label: "-", cmd: "-", type: "write" },
+            { label: "\\times", cmd: "\\times", type: "cmd" },
+            { label: "\\div", cmd: "\\div", type: "cmd" },
+            { label: "=", cmd: "=", type: "write" },
+            { label: "(\\,)", cmd: "(", type: "write", extra: ")" },
+            { label: ",", cmd: ",", type: "write" },
             { label: "x^{\\square}", cmd: "^", type: "cmd" },
-            { label: "\\sqrt[\\square]{\\square}", cmd: "\\nthroot", type: "cmd" },
-            { label: "<", cmd: "<", type: "write" },
-            { label: ">", cmd: ">", type: "write" },
-            { label: "\\pm", cmd: "\\pm", type: "cmd" },
-            { label: "|\\square|", cmd: "|", type: "write", extra: "|" },
-            { label: "\\pi", cmd: "\\pi", type: "cmd" },
-            { label: "\\infty", cmd: "\\infty", type: "cmd" },
-            { label: "(\\square)", cmd: "(", type: "write", extra: ")" },
-            { label: "[\\square]", cmd: "[", type: "write", extra: "]" }
-        ],
-        trig: [
-            { label: "\\sin", cmd: "\\sin", type: "cmd" },
-            { label: "\\sec", cmd: "\\sec", type: "cmd" },
-            { label: "\\sin^{-1}", type: "sequence", sequence: [
-                { type: "cmd", cmd: "\\sin" }, { type: "cmd", cmd: "^" },
-                { type: "write", cmd: "-1" }, { type: "keystroke", cmd: "Right" }
-            ]},
-            { label: "\\sec^{-1}", type: "sequence", sequence: [
-                { type: "cmd", cmd: "\\sec" }, { type: "cmd", cmd: "^" },
-                { type: "write", cmd: "-1" }, { type: "keystroke", cmd: "Right" }
-            ]},
-            { label: "\\cos", cmd: "\\cos", type: "cmd" },
-            { label: "\\csc", cmd: "\\csc", type: "cmd" },
-            { label: "\\cos^{-1}", type: "sequence", sequence: [
-                { type: "cmd", cmd: "\\cos" }, { type: "cmd", cmd: "^" },
-                { type: "write", cmd: "-1" }, { type: "keystroke", cmd: "Right" }
-            ]},
-            { label: "\\csc^{-1}", type: "sequence", sequence: [
-                { type: "cmd", cmd: "\\csc" }, { type: "cmd", cmd: "^" },
-                { type: "write", cmd: "-1" }, { type: "keystroke", cmd: "Right" }
-            ]},
-            { label: "\\tan", cmd: "\\tan", type: "cmd" },
-            { label: "\\cot", cmd: "\\cot", type: "cmd" },
-            { label: "\\tan^{-1}", type: "sequence", sequence: [
-                { type: "cmd", cmd: "\\tan" }, { type: "cmd", cmd: "^" },
-                { type: "write", cmd: "-1" }, { type: "keystroke", cmd: "Right" }
-            ]},
-            { label: "\\cot^{-1}", type: "sequence", sequence: [
-                { type: "cmd", cmd: "\\cot" }, { type: "cmd", cmd: "^" },
-                { type: "write", cmd: "-1" }, { type: "keystroke", cmd: "Right" }
-            ]}
-        ],
-        logarithms: [
+            { label: "\\dfrac{\\square}{\\square}", cmd: "/", type: "cmd" },
+            { label: "\\sqrt{\\square}", cmd: "\\sqrt", type: "cmd" },
             { label: "\\ln", cmd: "\\ln", type: "cmd" },
             { label: "\\log", cmd: "\\log", type: "cmd" },
             { label: "\\log_{\\square}", cmd: "\\log_", type: "cmd" },
-            { label: "i", cmd: "i", type: "write" }
-        ]
-    };
+            { label: "i", cmd: "i", type: "write" },
+            { label: "x", cmd: "x", type: "write" }
+        ];
 
-    Question.prototype.buildKeypad = function ($container) {
-        var self = this;
-        var groups = self.question.keypad || ["algebra"];
-        var $keypad = $('<div class="req-keypad" id="' + self.uid + '-keypad"></div>');
-
-        // Header (drag handle)
-        var $header = $('<div class="req-kp-header"></div>');
-        $header.append($('<span class="req-kp-dots">⋮⋮⋮⋮</span>'));
-        var $close = $('<button class="req-kp-close">&times;</button>');
-        $close.on("mousedown", function (ev) {
-            ev.preventDefault();
-            ev.stopPropagation();
-            $keypad.removeClass("visible");
-            self.focusedMQField = null;
-        });
-        $header.append($close);
-        $keypad.append($header);
-
-        // Toolbar (group dropdown) — only if >1 group
-        if (groups.length > 1) {
-            var $toolbar = $('<div class="req-kp-toolbar"></div>');
-            var $select = $('<select class="req-kp-group-select"></select>');
-            groups.forEach(function (g) {
-                $select.append($('<option></option>').val(g).text(g.charAt(0).toUpperCase() + g.slice(1)));
-            });
-            $select.on("change", function () {
-                self._populateSymbolPanel($keypad.find(".req-kp-symbols"), $(this).val());
-            });
-            $toolbar.append($select);
-            $keypad.append($toolbar);
-        }
-
-        // Body (two panels)
-        var $body = $('<div class="req-kp-body"></div>');
-        var $numpad = $('<div class="req-kp-numpad"></div>');
-        var $symbols = $('<div class="req-kp-symbols"></div>');
-        self._buildPanelButtons(KEYPAD_NUMPAD, $numpad);
-        self._populateSymbolPanel($symbols, groups[0]);
-        $body.append($numpad).append($symbols);
-        $keypad.append($body);
-
-        // Drag support
-        self._initKeypadDrag($keypad, $header);
-
-        $container.append($keypad);
-    };
-
-    Question.prototype._buildPanelButtons = function ($keys, $panel) {
-        var self = this;
-        $keys.forEach(function (k) {
-            var $btn = $('<button class="req-kp-btn"></button>');
+        keys.forEach(function (k) {
+            if (k.type === "sep") {
+                $keypad.append($('<div class="req-keypad-sep"></div>'));
+                return;
+            }
+            var $btn = $('<button class="req-keypad-btn"></button>');
             try {
                 $btn.html(katex.renderToString(k.label, { throwOnError: false }));
             } catch (e) { $btn.text(k.label); }
@@ -3992,73 +3886,16 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             $btn.on("mousedown", function (ev) {
                 ev.preventDefault();
                 if (!self.focusedMQField) return;
-                var f = self.focusedMQField;
-                if (k.type === "sequence") {
-                    k.sequence.forEach(function (step) {
-                        if (step.type === "cmd") f.cmd(step.cmd);
-                        else if (step.type === "write") f.write(step.cmd);
-                        else if (step.type === "keystroke") f.keystroke(step.cmd);
-                    });
-                } else if (k.type === "cmd") {
-                    f.cmd(k.cmd);
-                } else if (k.type === "keystroke") {
-                    f.keystroke(k.cmd);
-                } else {
-                    f.write(k.cmd);
-                }
-                if (k.extra) f.write(k.extra);
-                f.focus();
+                if (k.type === "cmd") self.focusedMQField.cmd(k.cmd);
+                else self.focusedMQField.write(k.cmd);
+                if (k.extra) self.focusedMQField.write(k.extra);
+                self.focusedMQField.focus();
             });
 
-            $panel.append($btn);
-        });
-    };
-
-    Question.prototype._populateSymbolPanel = function ($panel, groupName) {
-        var keys = KEYPAD_PRESETS[groupName] || KEYPAD_PRESETS.algebra;
-        $panel.empty();
-        this._buildPanelButtons(keys, $panel);
-    };
-
-    Question.prototype._initKeypadDrag = function ($keypad, $header) {
-        var dragging = false, startX, startY, origLeft, origTop;
-
-        function onMove(px, py) {
-            if (!dragging) return;
-            $keypad.css({
-                left: (origLeft + px - startX) + "px",
-                top: (origTop + py - startY) + "px"
-            });
-        }
-        function onEnd() {
-            dragging = false;
-            $(document).off("mousemove.reqkpdrag mouseup.reqkpdrag touchmove.reqkpdrag touchend.reqkpdrag");
-        }
-
-        $header.on("mousedown", function (ev) {
-            if ($(ev.target).hasClass("req-kp-close")) return;
-            ev.preventDefault();
-            dragging = true;
-            startX = ev.pageX; startY = ev.pageY;
-            origLeft = parseInt($keypad.css("left"), 10) || 0;
-            origTop = parseInt($keypad.css("top"), 10) || 0;
-            $(document).on("mousemove.reqkpdrag", function (e) { onMove(e.pageX, e.pageY); });
-            $(document).on("mouseup.reqkpdrag", onEnd);
+            $keypad.append($btn);
         });
 
-        $header.on("touchstart", function (ev) {
-            if ($(ev.target).hasClass("req-kp-close")) return;
-            var t = ev.originalEvent.touches[0];
-            dragging = true;
-            startX = t.pageX; startY = t.pageY;
-            origLeft = parseInt($keypad.css("left"), 10) || 0;
-            origTop = parseInt($keypad.css("top"), 10) || 0;
-            $(document).on("touchmove.reqkpdrag", function (e) {
-                var tt = e.originalEvent.touches[0];
-                onMove(tt.pageX, tt.pageY);
-            });
-            $(document).on("touchend.reqkpdrag", onEnd);
-        });
+        $container.append($keypad);
     };
 
     Question.prototype.setupKeypadForField = function (field, slot) {
@@ -4086,14 +3923,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             var left = cellRight - widgetOff.left + 8;
 
             // Clamp so keypad stays within widget
-            var keypadW = $keypad.outerWidth() || 320;
+            var keypadW = $keypad.outerWidth() || 220;
             var widgetW = $widget.outerWidth() || 700;
             if (left + keypadW > widgetW) left = Math.max(0, widgetW - keypadW - 8);
-
-            // Vertical clamp: don't go below widget bottom
-            var keypadH = $keypad.outerHeight() || 200;
-            var widgetH = $widget.outerHeight() || 600;
-            if (top + keypadH > widgetH) top = Math.max(0, widgetH - keypadH - 8);
 
             $keypad.css({ top: top + "px", left: left + "px" });
         });

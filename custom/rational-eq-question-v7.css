@@ -338,119 +338,37 @@
 .req-ca-feedback.correct { color: #3a9447; }
 .req-ca-feedback.incomplete { color: #e65100; }
 
-/* ── Two-panel keypad (Learnosity style) ── */
+/* ── Symbol keypad (floating grid) ── */
 .req-keypad {
     position: absolute;
     display: none;
-    flex-direction: column;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    grid-template-columns: repeat(5, auto);
+    gap: 4px;
+    padding: 8px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
     z-index: 1000;
-    overflow: hidden;
-    width: 306px;
-    user-select: none;
-    -webkit-user-select: none;
 }
-.req-keypad.visible { display: flex; }
+.req-keypad.visible { display: grid; }
 
-/* Header bar (drag handle) */
-.req-kp-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 22px;
-    background: #3a3a3a;
-    cursor: grab;
-    position: relative;
+.req-keypad-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 36px; height: 36px;
+    border: 1px solid #e0e0e0; border-radius: 6px;
+    background: #fafafa; cursor: pointer; font-size: 14px;
+    transition: background 0.1s; padding: 0 6px;
 }
-.req-kp-header:active { cursor: grabbing; }
-.req-kp-dots {
-    color: #999;
-    font-size: 10px;
-    letter-spacing: 2px;
-    line-height: 1;
-}
-.req-kp-close {
-    position: absolute;
-    right: 4px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: #bbb;
-    font-size: 14px;
-    cursor: pointer;
-    padding: 0 4px;
-    line-height: 1;
-}
-.req-kp-close:hover { color: #fff; }
-
-/* Toolbar (group selector) */
-.req-kp-toolbar {
-    display: flex;
-    align-items: center;
-    padding: 3px 6px;
-    background: #f0f0f0;
-    border-bottom: 1px solid #ddd;
-}
-.req-kp-group-select {
-    font-size: 11px;
-    padding: 1px 4px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    background: #fff;
-}
-
-/* Body: flex row of two panels */
-.req-kp-body {
-    display: flex;
-    flex-direction: row;
-}
-
-/* Left panel (numpad) */
-.req-kp-numpad {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2px;
-    padding: 4px;
-    background: #fdf6e3;
-    flex: 0 0 152px;
-}
-
-/* Right panel (symbols) */
-.req-kp-symbols {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2px;
-    padding: 4px;
-    background: #e8f0fe;
-    flex: 1;
-    align-content: start;
-}
-
-/* Buttons */
-.req-kp-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 32px;
-    height: 32px;
-    border: 1px solid #d0d0d0;
-    border-radius: 4px;
-    background: #fff;
-    cursor: pointer;
-    font-size: 13px;
-    padding: 0 3px;
-    transition: background 0.1s;
-    line-height: 1;
-}
-.req-kp-btn:hover { background: #eee; }
-.req-kp-btn:active { background: #ddd; }
-.req-kp-btn .katex { font-size: 13px; }
+.req-keypad-btn:hover { background: #e5e7eb; }
+.req-keypad-btn:active { background: #d1d5db; }
+.req-keypad-btn .katex { font-size: 16px; }
 
 /* Display math inside indented blocks should left-align, not center */
 [style*="margin-left"] .katex-display,
 [style*="padding-left"] .katex-display { text-align: left; }
+
+.req-keypad-sep { display: none; }
 
 /* ── Numbered badge (shared by input labels and correct answers panel) ── */
 .req-num-badge {
