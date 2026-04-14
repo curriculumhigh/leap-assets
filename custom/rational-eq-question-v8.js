@@ -4089,30 +4089,34 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             // Final fallback: use the widget itself
             if (!$step.length) $step = $widget;
 
-            // Position below all visible content in the active step
-            // (equation rows, Next/Try again buttons, feedback pill, hints)
-            var stepOff = $step.offset();
-            var stepBottom = (stepOff ? stepOff.top : widgetOff.top) + $step.outerHeight();
-            // Check key children that may extend below the step's layout box
-            $step.find(".req-hint-box.visible, .req-check-btn, .req-try-btn, .req-fb-pill").each(function () {
-                var $el = $(this);
-                if (!$el.is(":visible")) return;
-                var off = $el.offset();
-                if (!off) return;
-                var bottom = off.top + $el.outerHeight();
-                if (bottom > stepBottom) stepBottom = bottom;
-            });
-            var top = stepBottom - widgetOff.top + 6;
+            // Find the Next button (req-check-btn) in the active step
+            var $nextBtn = $step.find(".req-check-btn:visible").first();
+            var top, left;
 
-            // Find annotation column left edge (first .req-annotation cell in widget)
-            var $annot = $widget.find(".req-annotation:visible").first();
-            var left;
-            if ($annot.length && $annot.offset()) {
-                left = $annot.offset().left - widgetOff.left;
+            if ($nextBtn.length && $nextBtn.offset()) {
+                var btnOff = $nextBtn.offset();
+                var btnBottom = btnOff.top + $nextBtn.outerHeight();
+                // Also check feedback pill (may be beside/below button)
+                $step.find(".req-fb-pill:visible").each(function () {
+                    var off = $(this).offset();
+                    if (off) {
+                        var b = off.top + $(this).outerHeight();
+                        if (b > btnBottom) btnBottom = b;
+                    }
+                });
+                top = btnBottom - widgetOff.top + 6;
+                // Left edge = right edge of the Next button
+                left = btnOff.left + $nextBtn.outerWidth() - widgetOff.left;
             } else {
-                // Fallback: roughly 45% from left (typical annotation start)
-                var widgetW = $widget.outerWidth() || 700;
-                left = Math.round(widgetW * 0.45);
+                // Fallback: below step, aligned with annotation column
+                var stepOff = $step.offset();
+                top = ((stepOff ? stepOff.top : widgetOff.top) + $step.outerHeight()) - widgetOff.top + 6;
+                var $annot = $widget.find(".req-annotation:visible").first();
+                if ($annot.length && $annot.offset()) {
+                    left = $annot.offset().left - widgetOff.left;
+                } else {
+                    left = Math.round(($widget.outerWidth() || 700) * 0.45);
+                }
             }
 
             $keypad.css({ top: top + "px", left: left + "px" });
