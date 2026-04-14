@@ -4082,17 +4082,23 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             var widgetOff = $widget.offset();
             if (!widgetOff) return;
 
-            // Position: flush right within widget, below the current sub-step
+            // Position: flush right, below all visible content in the widget
             var keypadW = $keypad.outerWidth() || 400;
             var widgetW = $widget.outerWidth() || 700;
 
-            // Find the containing sub-step (scaffold block, eq-table section, or twi flex)
-            var $step = $slot.closest(".req-scaffold-block, .req-twi-flex, table.req-eq-table");
-            if (!$step.length) $step = $slot.closest("tr");
-            var stepOff = $step.offset() || widgetOff;
-            var stepBottom = stepOff.top + $step.outerHeight();
+            // Find the lowest visible element in the widget
+            var bottomY = 0;
+            $widget.children().each(function () {
+                var $el = $(this);
+                // Skip hidden elements and the keypad itself
+                if ($el.is(":hidden") || $el.hasClass("req-keypad")) return;
+                var elOff = $el.offset();
+                if (!elOff) return;
+                var elBottom = elOff.top + $el.outerHeight();
+                if (elBottom > bottomY) bottomY = elBottom;
+            });
 
-            var top = stepBottom - widgetOff.top + 6;
+            var top = bottomY - widgetOff.top + 6;
             var left = widgetW - keypadW;
             if (left < 0) left = 0;
 
