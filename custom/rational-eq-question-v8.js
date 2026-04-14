@@ -3892,7 +3892,11 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             { label: "\\pi", cmd: "\\pi", type: "cmd" },
             { label: "\\infty", cmd: "\\infty", type: "cmd" },
             { label: "(\\square)", cmd: "(", type: "write", extra: ")" },
-            { label: "[\\square]", cmd: "[", type: "write", extra: "]" }
+            { label: "[\\square]", cmd: "[", type: "write", extra: "]" },
+            { label: "\\leq", cmd: "\\leq", type: "cmd" },
+            { label: "\\geq", cmd: "\\geq", type: "cmd" },
+            { label: "\\frac{\\square}{\\square}", cmd: "/", type: "cmd" },
+            { label: "\\phi", cmd: "\\phi", type: "cmd" }
         ],
         trig: [
             { label: "\\sin", cmd: "\\sin", type: "cmd" },
