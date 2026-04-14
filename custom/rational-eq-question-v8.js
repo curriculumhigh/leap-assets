@@ -4082,48 +4082,19 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             var widgetOff = $widget.offset();
             if (!widgetOff) return;
 
-            // Position depends on context:
-            // - Equation-table row: diagonally below-right of the table's right edge
-            // - TWI / other: diagonally below-right of the rightmost MQ input
-            var $row = $slot.closest("tr, .req-twi-flex");
-            var top, left;
+            // Position: flush right within widget, below the current sub-step
             var keypadW = $keypad.outerWidth() || 400;
             var widgetW = $widget.outerWidth() || 700;
 
-            var $table = $slot.closest("table.req-eq-table");
-            if ($table.length) {
-                // Equation-table: diagonally below-right of the table
-                var tableOff = $table.offset();
-                var tableRight = tableOff.left + $table.outerWidth();
-                var tableBottom = tableOff.top + $table.outerHeight();
-                top = tableBottom - widgetOff.top + 6;
-                left = tableRight - widgetOff.left + 8;
-                // Clamp so keypad stays within widget
-                if (left + keypadW > widgetW) left = Math.max(0, widgetW - keypadW - 8);
-            } else {
-                // TWI / other: find rightmost MQ slot in the row
-                var $mqSlots = $row.find(".mq-editable-field");
-                var maxRight = 0;
-                var maxBottom = 0;
-                $mqSlots.each(function () {
-                    var off = $(this).offset();
-                    if (!off) return;
-                    var r = off.left + $(this).outerWidth();
-                    var b = off.top + $(this).outerHeight();
-                    if (r > maxRight) maxRight = r;
-                    if (b > maxBottom) maxBottom = b;
-                });
-                if (maxRight > 0) {
-                    top = maxBottom - widgetOff.top + 4;
-                    left = maxRight - widgetOff.left + 8;
-                } else {
-                    var rowOff = $row.offset() || widgetOff;
-                    top = rowOff.top + $row.outerHeight() - widgetOff.top + 4;
-                    left = rowOff.left - widgetOff.left + 8;
-                }
-                // Clamp right edge within widget
-                if (left + keypadW > widgetW) left = Math.max(0, widgetW - keypadW - 8);
-            }
+            // Find the containing sub-step (scaffold block, eq-table section, or twi flex)
+            var $step = $slot.closest(".req-scaffold-block, .req-twi-flex, table.req-eq-table");
+            if (!$step.length) $step = $slot.closest("tr");
+            var stepOff = $step.offset() || widgetOff;
+            var stepBottom = stepOff.top + $step.outerHeight();
+
+            var top = stepBottom - widgetOff.top + 6;
+            var left = widgetW - keypadW;
+            if (left < 0) left = 0;
 
             // Clamp so keypad stays within widget
             var keypadW = $keypad.outerWidth() || 400;
