@@ -4073,17 +4073,45 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             var widgetOff = $widget.offset();
             if (!widgetOff) return;
 
-            // Find the expression cell (first td in row, or the twi content area)
+            // Position anchor depends on context:
+            // - Equation-table row: right edge of expression cell (first td)
+            // - Other (TWI etc.): right edge of the rightmost MQ input in that line
             var $row = $slot.closest("tr, .req-twi-flex");
-            var $exprCell = $row.find("td:first");
-            if (!$exprCell.length) $exprCell = $row; // fallback for twi sections
-            var cellOff = $exprCell.offset();
-            var cellRight = cellOff ? cellOff.left + $exprCell.outerWidth() : 0;
-            var cellBottom = cellOff ? cellOff.top + $exprCell.outerHeight() : 0;
+            var anchorRight, anchorBottom;
 
-            // Diagonally below-right of the expression's right edge
-            var top = cellBottom - widgetOff.top + 4;
-            var left = cellRight - widgetOff.left + 8;
+            var $exprCell = $row.find("td:first");
+            if ($exprCell.length) {
+                // Equation-table row: anchor to expression cell
+                var cellOff = $exprCell.offset();
+                anchorRight = cellOff.left + $exprCell.outerWidth();
+                anchorBottom = cellOff.top + $exprCell.outerHeight();
+            } else {
+                // TWI / other: find rightmost MQ slot in the row
+                var $mqSlots = $row.find(".mq-editable-field");
+                var maxRight = 0;
+                var maxBottom = 0;
+                $mqSlots.each(function () {
+                    var off = $(this).offset();
+                    if (!off) return;
+                    var r = off.left + $(this).outerWidth();
+                    var b = off.top + $(this).outerHeight();
+                    if (r > maxRight) { maxRight = r; maxBottom = b; }
+                    if (b > maxBottom) maxBottom = b;
+                });
+                if (maxRight > 0) {
+                    anchorRight = maxRight;
+                    anchorBottom = maxBottom;
+                } else {
+                    // fallback to the row itself
+                    var rowOff = $row.offset() || widgetOff;
+                    anchorRight = rowOff.left + $row.outerWidth();
+                    anchorBottom = rowOff.top + $row.outerHeight();
+                }
+            }
+
+            // Diagonally below-right of the anchor
+            var top = anchorBottom - widgetOff.top + 4;
+            var left = anchorRight - widgetOff.left + 8;
 
             // Clamp so keypad stays within widget
             var keypadW = $keypad.outerWidth() || 400;
