@@ -4086,26 +4086,11 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             var keypadW = $keypad.outerWidth() || 400;
             var widgetW = $widget.outerWidth() || 700;
 
-            // Find the lowest visible element in the widget
-            var bottomY = 0;
-            $widget.children().each(function () {
-                var $el = $(this);
-                // Skip hidden elements and the keypad itself
-                if ($el.is(":hidden") || $el.hasClass("req-keypad")) return;
-                var elOff = $el.offset();
-                if (!elOff) return;
-                var elBottom = elOff.top + $el.outerHeight();
-                if (elBottom > bottomY) bottomY = elBottom;
-            });
-
-            var top = bottomY - widgetOff.top + 6;
+            // Use scrollHeight to find the bottom of all content (including nested)
+            var contentH = $widget[0].scrollHeight || $widget.outerHeight() || 400;
+            var top = contentH + 6;
             var left = widgetW - keypadW;
             if (left < 0) left = 0;
-
-            // Clamp so keypad stays within widget
-            var keypadW = $keypad.outerWidth() || 400;
-            var widgetW = $widget.outerWidth() || 700;
-            if (left + keypadW > widgetW) left = Math.max(0, widgetW - keypadW - 8);
 
             // Vertical clamp: don't go below widget bottom
             var keypadH = $keypad.outerHeight() || 250;
