@@ -302,7 +302,7 @@
 
 .req-hint-box {
     display: none; margin-top: 10px; padding: 14px 18px;
-    background: #e8f4fd; border: 1px solid #c4dff0; border-radius: 6px;
+    background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 6px;
     font-size: 14px; line-height: 1.7; color: #1a2a3a;
 }
 .req-hint-box.visible { display: block; }

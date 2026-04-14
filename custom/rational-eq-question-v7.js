@@ -1404,15 +1404,19 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
                 $tdE.append($actions);
 
-                // Per-step hint (shown on failed Check, hidden on success)
-                if (row.hint) {
-                    var hintResult = self._renderHint(row.hint);
-                    var $hintBox = $('<div class="req-hint-box ' + hintResult.modeClass + '" id="' + self.uid + '-hint-' + sec.id + '-' + ri + '"></div>').html(hintResult.html);
-                    $tdE.append($hintBox);
-                }
-
                 $trBtn.append($tdE);
                 $tbody.append($trBtn);
+
+                // Per-step hint — own row so teacher-side button-row hiding doesn't affect it
+                if (row.hint) {
+                    var hintResult = self._renderHint(row.hint);
+                    var $trHint = $('<tr class="req-eq-row req-hint-row locked" id="' + self.uid + '-hintrow-' + sec.id + '-' + ri + '"></tr>');
+                    var $tdHint = $('<td colspan="3"></td>');
+                    var $hintBox = $('<div class="req-hint-box ' + hintResult.modeClass + '" id="' + self.uid + '-hint-' + sec.id + '-' + ri + '"></div>').html(hintResult.html);
+                    $tdHint.append($hintBox);
+                    $trHint.append($tdHint);
+                    $tbody.append($trHint);
+                }
             }
         });
 
@@ -1880,18 +1884,23 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             var $trBtn = $("#" + self.uid + "-rowbtn-" + sec.id + "-" + ri);
             if (!$tr.length) return;
 
+            var $trHint = $("#" + self.uid + "-hintrow-" + sec.id + "-" + ri);
             $tr.removeClass("locked active completed");
             $trBtn.removeClass("locked active completed");
+            $trHint.removeClass("locked active completed");
 
             if (self.completedRows[sec.id] && self.completedRows[sec.id][ri]) {
                 $tr.addClass("completed");
                 $trBtn.addClass("completed");
+                $trHint.addClass("completed");
             } else if (self.unlockedRows[sec.id] && self.unlockedRows[sec.id][ri]) {
                 $tr.addClass("active");
                 $trBtn.addClass("active");
+                $trHint.addClass("active");
             } else {
                 $tr.addClass("locked");
                 $trBtn.addClass("locked");
+                $trHint.addClass("locked");
             }
         });
     };
@@ -2552,8 +2561,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 sec.rows.forEach(function (row, ri) {
                     var $tr = $("#" + self.uid + "-row-" + sec.id + "-" + ri);
                     var $trBtn = $("#" + self.uid + "-rowbtn-" + sec.id + "-" + ri);
+                    var $trHint = $("#" + self.uid + "-hintrow-" + sec.id + "-" + ri);
                     $tr.removeClass("locked").addClass("completed");
                     $trBtn.removeClass("locked").addClass("completed");
+                    $trHint.removeClass("locked").addClass("completed");
                 });
             }
         });
@@ -2975,8 +2986,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     self.unlockedRows[sec.id][ri] = true;
                     var $tr = $("#" + self.uid + "-row-" + sec.id + "-" + ri);
                     var $trBtn = $("#" + self.uid + "-rowbtn-" + sec.id + "-" + ri);
+                    var $trHint = $("#" + self.uid + "-hintrow-" + sec.id + "-" + ri);
                     $tr.removeClass("locked").addClass("active");
                     $trBtn.removeClass("locked");
+                    $trHint.removeClass("locked");
                 });
             }
         });
@@ -3161,7 +3174,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     }
 
                     var rowDone = !!(completedRows[sec.id] && completedRows[sec.id][ri]);
-                    // Teacher hint: show for active step only
+                    // Teacher hint: show for active step, hide for completed/future
                     var $rowHint = $("#" + self.uid + "-hint-" + sec.id + "-" + ri);
                     if (rowDone) {
                         $tr.addClass("req-tl-completed");
