@@ -4082,20 +4082,22 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             var widgetOff = $widget.offset();
             if (!widgetOff) return;
 
-            // Position: flush right, below all visible content in the widget
+            // Find the active step block containing this input
+            var $step = $slot.closest(".req-scaffold-block");
+            // Fallback: if not inside a scaffold block, use the closest section
+            if (!$step.length) $step = $slot.closest("[id^='sec-']");
+            // Final fallback: use the widget itself
+            if (!$step.length) $step = $widget;
+
             var keypadW = $keypad.outerWidth() || 400;
             var widgetW = $widget.outerWidth() || 700;
 
-            // Use scrollHeight to find the bottom of all content (including nested)
-            var contentH = $widget[0].scrollHeight || $widget.outerHeight() || 400;
-            var top = contentH + 6;
+            // Position below the active step, flush right to widget edge
+            var stepOff = $step.offset();
+            var stepBottom = (stepOff ? stepOff.top : widgetOff.top) + $step.outerHeight();
+            var top = stepBottom - widgetOff.top + 6;
             var left = widgetW - keypadW;
             if (left < 0) left = 0;
-
-            // Vertical clamp: don't go below widget bottom
-            var keypadH = $keypad.outerHeight() || 250;
-            var widgetH = $widget.outerHeight() || 600;
-            if (top + keypadH > widgetH) top = Math.max(0, widgetH - keypadH - 8);
 
             $keypad.css({ top: top + "px", left: left + "px" });
         });
