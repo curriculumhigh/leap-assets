@@ -4089,9 +4089,19 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             // Final fallback: use the widget itself
             if (!$step.length) $step = $widget;
 
-            // Position below the active step, left edge aligned with annotation column
+            // Position below all visible content in the active step
+            // (equation rows, Next/Try again buttons, feedback pill, hints)
             var stepOff = $step.offset();
             var stepBottom = (stepOff ? stepOff.top : widgetOff.top) + $step.outerHeight();
+            // Check key children that may extend below the step's layout box
+            $step.find(".req-hint-box.visible, .req-check-btn, .req-try-btn, .req-fb-pill").each(function () {
+                var $el = $(this);
+                if (!$el.is(":visible")) return;
+                var off = $el.offset();
+                if (!off) return;
+                var bottom = off.top + $el.outerHeight();
+                if (bottom > stepBottom) stepBottom = bottom;
+            });
             var top = stepBottom - widgetOff.top + 6;
 
             // Find annotation column left edge (first .req-annotation cell in widget)
