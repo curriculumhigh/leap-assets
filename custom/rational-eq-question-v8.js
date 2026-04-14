@@ -4089,15 +4089,21 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             // Final fallback: use the widget itself
             if (!$step.length) $step = $widget;
 
-            var keypadW = $keypad.outerWidth() || 400;
-            var widgetW = $widget.outerWidth() || 700;
-
-            // Position below the active step, flush right to widget edge
+            // Position below the active step, left edge aligned with annotation column
             var stepOff = $step.offset();
             var stepBottom = (stepOff ? stepOff.top : widgetOff.top) + $step.outerHeight();
             var top = stepBottom - widgetOff.top + 6;
-            var left = widgetW - keypadW;
-            if (left < 0) left = 0;
+
+            // Find annotation column left edge (first .req-annotation cell in widget)
+            var $annot = $widget.find(".req-annotation:visible").first();
+            var left;
+            if ($annot.length && $annot.offset()) {
+                left = $annot.offset().left - widgetOff.left;
+            } else {
+                // Fallback: roughly 45% from left (typical annotation start)
+                var widgetW = $widget.outerWidth() || 700;
+                left = Math.round(widgetW * 0.45);
+            }
 
             $keypad.css({ top: top + "px", left: left + "px" });
         });
