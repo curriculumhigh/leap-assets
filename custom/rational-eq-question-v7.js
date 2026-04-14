@@ -1545,6 +1545,53 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     self.setupKeypadForField(field, slot);
                 }
             });
+
+            // Teacher side: container overlay borders for TWI sections
+            if (sec.containers && sec.containers.length > 0 && self.isTeacher) {
+                setTimeout(function () {
+                    var refEl = $p[0];
+                    $(refEl).css("position", "relative");
+                    sec.containers.forEach(function (ctr, ci) {
+                        if (!ctr.inputIndices || ctr.inputIndices.length === 0) return;
+                        var refRect = refEl.getBoundingClientRect();
+                        var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                        ctr.inputIndices.forEach(function (idx) {
+                            var slotId = self.uid + "-mq-" + sec.id + "-" + idx;
+                            var slot = document.getElementById(slotId);
+                            if (!slot) return;
+                            var r = slot.getBoundingClientRect();
+                            if (r.left < minX) minX = r.left;
+                            if (r.top < minY) minY = r.top;
+                            if (r.right > maxX) maxX = r.right;
+                            if (r.bottom > maxY) maxY = r.bottom;
+                        });
+                        if (minX === Infinity) return;
+                        var inFraction = false;
+                        ctr.inputIndices.forEach(function (idx) {
+                            var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + idx);
+                            if (slot && $(slot).closest(".mfrac").length) inFraction = true;
+                        });
+                        var padX = inFraction ? 8 : 6;
+                        var padY = inFraction ? 3 : 8;
+                        var $overlay = $('<div class="req-container-wrap" id="' + self.uid + '-cwrap-' + sec.id + '-' + ci + '"></div>');
+                        $overlay.css({
+                            position: "absolute",
+                            left: (minX - refRect.left - padX) + "px",
+                            top: (minY - refRect.top - padY) + "px",
+                            width: (maxX - minX + 2 * padX) + "px",
+                            height: (maxY - minY + 2 * padY) + "px",
+                            pointerEvents: "none",
+                            background: "transparent",
+                            padding: "0",
+                            display: "block",
+                            border: "1.5px solid #ccc",
+                            borderRadius: "5px",
+                            zIndex: "1"
+                        });
+                        $(refEl).append($overlay);
+                    });
+                }, 500);
+            }
         });
 
         return $wrapper;
@@ -2092,22 +2139,72 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         if (self._disabled) return;
         var allCorrect = true;
 
-        sec.inputs.forEach(function (inp, ii) {
-            if (inp.type === "dropdown") {
-                var dd = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
-                if (!dd) return;
-                var correct = dd.getValue() === inp.answer;
-                $(dd).removeClass("correct incorrect").addClass(correct ? "correct" : "incorrect");
+        if (sec.containers && sec.containers.length > 0) {
+            // Container validation — same logic as equation-table row containers
+            var containerInputs = {};
+            sec.containers.forEach(function (ctr) {
+                if (!ctr.inputIndices) return;
+                ctr.inputIndices.forEach(function (idx) { containerInputs[idx] = true; });
+            });
+
+            // Validate each container as a grouped expression
+            sec.containers.forEach(function (ctr) {
+                if (!ctr.inputIndices) return;
+                var boxValues = [];
+                var boxOk = true;
+                ctr.inputIndices.forEach(function (idx) {
+                    var field = self.mqFields[sec.id + "-" + idx];
+                    if (!field) { boxOk = false; return; }
+                    boxValues.push(field.latex());
+                });
+                if (!boxOk || boxValues.length !== ctr.inputIndices.length) {
+                    allCorrect = false;
+                    return;
+                }
+                var correct = self.validateContainer(ctr, boxValues);
                 if (!correct) allCorrect = false;
-            } else {
-                var field = self.mqFields[sec.id + "-" + ii];
-                if (!field) return;
-                var correct2 = self.validateInput(field.latex(), inp);
-                var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ii);
-                if (slot) { $(slot).removeClass("correct incorrect").addClass(correct2 ? "correct" : "incorrect"); }
-                if (!correct2) allCorrect = false;
-            }
-        });
+                ctr.inputIndices.forEach(function (idx) {
+                    var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + idx);
+                    if (slot) { $(slot).removeClass("correct incorrect").addClass(correct ? "correct" : "incorrect"); }
+                });
+            });
+
+            // Validate individual inputs not in any container
+            sec.inputs.forEach(function (inp, ii) {
+                if (containerInputs[ii]) return;
+                if (inp.type === "dropdown") {
+                    var dd = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
+                    if (!dd) return;
+                    var correct = dd.getValue() === inp.answer;
+                    $(dd).removeClass("correct incorrect").addClass(correct ? "correct" : "incorrect");
+                    if (!correct) allCorrect = false;
+                } else {
+                    var field = self.mqFields[sec.id + "-" + ii];
+                    if (!field) return;
+                    var correct2 = self.validateInput(field.latex(), inp);
+                    var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ii);
+                    if (slot) { $(slot).removeClass("correct incorrect").addClass(correct2 ? "correct" : "incorrect"); }
+                    if (!correct2) allCorrect = false;
+                }
+            });
+        } else {
+            sec.inputs.forEach(function (inp, ii) {
+                if (inp.type === "dropdown") {
+                    var dd = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
+                    if (!dd) return;
+                    var correct = dd.getValue() === inp.answer;
+                    $(dd).removeClass("correct incorrect").addClass(correct ? "correct" : "incorrect");
+                    if (!correct) allCorrect = false;
+                } else {
+                    var field = self.mqFields[sec.id + "-" + ii];
+                    if (!field) return;
+                    var correct2 = self.validateInput(field.latex(), inp);
+                    var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ii);
+                    if (slot) { $(slot).removeClass("correct incorrect").addClass(correct2 ? "correct" : "incorrect"); }
+                    if (!correct2) allCorrect = false;
+                }
+            });
+        }
 
         var $fbPill = $("#" + self.uid + "-fbpill-" + sec.id);
         $fbPill.attr("class", "req-fb " + (allCorrect ? "correct" : "wrong")).text(allCorrect ? "Correct!" : "Try again");
@@ -2190,6 +2287,25 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 });
             } else if (sec.type === "text-with-input") {
                 var secCompleted = !!self.completedSections[sec.id];
+                // Build container input set for grouped validation
+                var ctrInputSet = {};
+                var ctrResults = {};
+                if (sec.containers && sec.containers.length > 0) {
+                    sec.containers.forEach(function (ctr, ci) {
+                        if (!ctr.inputIndices) return;
+                        var boxValues = [];
+                        ctr.inputIndices.forEach(function (idx) {
+                            ctrInputSet[idx] = ci;
+                            var field = self.mqFields[sec.id + "-" + idx];
+                            boxValues.push(field ? field.latex() : "");
+                        });
+                        var correct = secCompleted;
+                        if (!correct) {
+                            try { correct = self.validateContainer(ctr, boxValues); } catch (e) { correct = false; }
+                        }
+                        ctrResults[ci] = correct;
+                    });
+                }
                 sec.inputs.forEach(function (inp, ii) {
                     var key = sec.id + "-" + ii;
                     if (inp.type === "dropdown") {
@@ -2202,8 +2318,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                         if (field) {
                             var latex = field.latex();
                             var correct2 = secCompleted;
-                            if (!correct2 && latex) {
-                                try { correct2 = self.validateInput(latex, inp); } catch (e) { correct2 = false; }
+                            if (!correct2) {
+                                if (ctrInputSet.hasOwnProperty(ii)) {
+                                    correct2 = !!ctrResults[ctrInputSet[ii]];
+                                } else if (latex) {
+                                    try { correct2 = self.validateInput(latex, inp); } catch (e) { correct2 = false; }
+                                }
                             }
                             inputs[key] = { latex: latex, correct: correct2 };
                         }
@@ -2690,24 +2810,66 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     }
                 });
             } else if (sec.type === "text-with-input") {
-                sec.inputs.forEach(function (inp, ii) {
-                    inputNum++;
-                    if (inp.type === "dropdown") {
-                        var ddId = self.uid + "-dd-" + sec.id + "-" + ii;
-                        var dd = document.getElementById(ddId);
-                        if (dd) {
-                            var $wrap = $(dd).wrap('<span class="req-input-numbered"></span>').parent();
-                            $wrap.prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                if (sec.containers && sec.containers.length > 0) {
+                    var twiCtrSet = {};
+                    sec.containers.forEach(function (ctr) {
+                        if (ctr.inputIndices) ctr.inputIndices.forEach(function (idx) { twiCtrSet[idx] = true; });
+                    });
+                    var twiCtrEmitted = {};
+                    sec.inputs.forEach(function (inp, ii) {
+                        var belongsTo = -1;
+                        sec.containers.forEach(function (ctr, ci) {
+                            if (ctr.inputIndices && ctr.inputIndices.indexOf(ii) >= 0) belongsTo = ci;
+                        });
+                        if (belongsTo >= 0) {
+                            if (!twiCtrEmitted[belongsTo]) {
+                                twiCtrEmitted[belongsTo] = true;
+                                inputNum++;
+                                self._deferredContainerBadges = self._deferredContainerBadges || [];
+                                self._deferredContainerBadges.push({
+                                    cwrapId: self.uid + "-cwrap-" + sec.id + "-" + belongsTo,
+                                    num: inputNum
+                                });
+                            }
+                        } else {
+                            inputNum++;
+                            if (inp.type === "dropdown") {
+                                var ddId = self.uid + "-dd-" + sec.id + "-" + ii;
+                                var dd = document.getElementById(ddId);
+                                if (dd) {
+                                    var $wrap = $(dd).wrap('<span class="req-input-numbered"></span>').parent();
+                                    $wrap.prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                                }
+                            } else {
+                                var slotId = self.uid + "-mq-" + sec.id + "-" + ii;
+                                var slot = document.getElementById(slotId);
+                                if (slot) {
+                                    $(slot).addClass("req-input-numbered");
+                                    $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                                }
+                            }
                         }
-                    } else {
-                        var slotId = self.uid + "-mq-" + sec.id + "-" + ii;
-                        var slot = document.getElementById(slotId);
-                        if (slot) {
-                            $(slot).addClass("req-input-numbered");
-                            $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                    });
+                } else {
+                    sec.inputs.forEach(function (inp, ii) {
+                        inputNum++;
+                        if (inp.type === "dropdown") {
+                            var ddId = self.uid + "-dd-" + sec.id + "-" + ii;
+                            var dd = document.getElementById(ddId);
+                            if (dd) {
+                                var $wrap = $(dd).wrap('<span class="req-input-numbered"></span>').parent();
+                                $wrap.prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                            }
+                        } else {
+                            var slotId = self.uid + "-mq-" + sec.id + "-" + ii;
+                            var slot = document.getElementById(slotId);
+                            if (slot) {
+                                $(slot).addClass("req-input-numbered");
+                                $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
         });
 
@@ -2926,28 +3088,90 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 });
             } else if (sec.type === "text-with-input") {
                 var secDone = !!completedSections[sec.id];
-                sec.inputs.forEach(function (inp) {
-                    num++;
-                    if (secDone) return; // skip completed
-                    shown++;
-                    var $box = $('<div class="req-ca-box"></div>');
-                    $box.append($('<span class="req-num-badge"></span>').text(num));
-                    var $val = $('<span></span>');
-                    if (inp.type === "dropdown") {
-                        var ans = inp.answer;
-                        var rAns = self._renderDNOption(ans);
-                        if (rAns) { $val.html(rAns); } else { $val.text(ans); }
-                    } else {
-                        var displayLatex = self.nerdamerToDisplayLatex(inp.answer);
-                        try {
-                            $val.html(katex.renderToString(displayLatex, { throwOnError: false }));
-                        } catch (e) {
-                            $val.text(inp.answer);
+                if (sec.containers && sec.containers.length > 0) {
+                    // Container-aware: group container inputs, show individual non-container inputs
+                    var containerInputSet = {};
+                    sec.containers.forEach(function (ctr) {
+                        if (ctr.inputIndices) ctr.inputIndices.forEach(function (idx) { containerInputSet[idx] = true; });
+                    });
+                    var emittedContainers = {};
+                    sec.inputs.forEach(function (inp, ii) {
+                        var belongsTo = -1;
+                        sec.containers.forEach(function (ctr, ci) {
+                            if (ctr.inputIndices && ctr.inputIndices.indexOf(ii) >= 0) belongsTo = ci;
+                        });
+                        if (belongsTo >= 0) {
+                            if (!emittedContainers[belongsTo]) {
+                                emittedContainers[belongsTo] = true;
+                                num++;
+                                if (!secDone) {
+                                    shown++;
+                                    var ctr = sec.containers[belongsTo];
+                                    var displayParts = ctr.assembleTemplate || "{{0}}";
+                                    ctr.inputIndices.forEach(function (idx, localI) {
+                                        var dispLtx = self.nerdamerToDisplayLatex(sec.inputs[idx].answer);
+                                        displayParts = displayParts.replace("{{" + localI + "}}", dispLtx);
+                                    });
+                                    var $box = $('<div class="req-ca-box"></div>');
+                                    $box.append($('<span class="req-num-badge"></span>').text(num));
+                                    var $val = $('<span></span>');
+                                    try {
+                                        $val.html(katex.renderToString(displayParts, { throwOnError: false }));
+                                    } catch (e) {
+                                        $val.text(ctr.answer || displayParts);
+                                    }
+                                    $box.append($val);
+                                    $grid.append($box);
+                                }
+                            }
+                        } else {
+                            num++;
+                            if (!secDone) {
+                                shown++;
+                                var $box = $('<div class="req-ca-box"></div>');
+                                $box.append($('<span class="req-num-badge"></span>').text(num));
+                                var $val = $('<span></span>');
+                                if (inp.type === "dropdown") {
+                                    var ans = inp.answer;
+                                    var rAns = self._renderDNOption(ans);
+                                    if (rAns) { $val.html(rAns); } else { $val.text(ans); }
+                                } else {
+                                    var displayLatex = self.nerdamerToDisplayLatex(inp.answer);
+                                    try {
+                                        $val.html(katex.renderToString(displayLatex, { throwOnError: false }));
+                                    } catch (e) {
+                                        $val.text(inp.answer);
+                                    }
+                                }
+                                $box.append($val);
+                                $grid.append($box);
+                            }
                         }
-                    }
-                    $box.append($val);
-                    $grid.append($box);
-                });
+                    });
+                } else {
+                    sec.inputs.forEach(function (inp) {
+                        num++;
+                        if (secDone) return; // skip completed
+                        shown++;
+                        var $box = $('<div class="req-ca-box"></div>');
+                        $box.append($('<span class="req-num-badge"></span>').text(num));
+                        var $val = $('<span></span>');
+                        if (inp.type === "dropdown") {
+                            var ans = inp.answer;
+                            var rAns = self._renderDNOption(ans);
+                            if (rAns) { $val.html(rAns); } else { $val.text(ans); }
+                        } else {
+                            var displayLatex = self.nerdamerToDisplayLatex(inp.answer);
+                            try {
+                                $val.html(katex.renderToString(displayLatex, { throwOnError: false }));
+                            } catch (e) {
+                                $val.text(inp.answer);
+                            }
+                        }
+                        $box.append($val);
+                        $grid.append($box);
+                    });
+                }
             }
         });
 
@@ -3082,24 +3306,66 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     }
                 });
             } else if (sec.type === "text-with-input") {
-                sec.inputs.forEach(function (inp, ii) {
-                    inputNum++;
-                    if (inp.type === "dropdown") {
-                        var ddId = self.uid + "-dd-" + sec.id + "-" + ii;
-                        var dd = document.getElementById(ddId);
-                        if (dd) {
-                            var $wrap = $(dd).wrap('<span class="req-input-numbered"></span>').parent();
-                            $wrap.prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                if (sec.containers && sec.containers.length > 0) {
+                    var twiCtrSet = {};
+                    sec.containers.forEach(function (ctr) {
+                        if (ctr.inputIndices) ctr.inputIndices.forEach(function (idx) { twiCtrSet[idx] = true; });
+                    });
+                    var twiCtrEmitted = {};
+                    sec.inputs.forEach(function (inp, ii) {
+                        var belongsTo = -1;
+                        sec.containers.forEach(function (ctr, ci) {
+                            if (ctr.inputIndices && ctr.inputIndices.indexOf(ii) >= 0) belongsTo = ci;
+                        });
+                        if (belongsTo >= 0) {
+                            if (!twiCtrEmitted[belongsTo]) {
+                                twiCtrEmitted[belongsTo] = true;
+                                inputNum++;
+                                self._deferredContainerBadges = self._deferredContainerBadges || [];
+                                self._deferredContainerBadges.push({
+                                    cwrapId: self.uid + "-cwrap-" + sec.id + "-" + belongsTo,
+                                    num: inputNum
+                                });
+                            }
+                        } else {
+                            inputNum++;
+                            if (inp.type === "dropdown") {
+                                var ddId = self.uid + "-dd-" + sec.id + "-" + ii;
+                                var dd = document.getElementById(ddId);
+                                if (dd) {
+                                    var $wrap = $(dd).wrap('<span class="req-input-numbered"></span>').parent();
+                                    $wrap.prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                                }
+                            } else {
+                                var slotId = self.uid + "-mq-" + sec.id + "-" + ii;
+                                var slot = document.getElementById(slotId);
+                                if (slot) {
+                                    $(slot).addClass("req-input-numbered");
+                                    $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                                }
+                            }
                         }
-                    } else {
-                        var slotId = self.uid + "-mq-" + sec.id + "-" + ii;
-                        var slot = document.getElementById(slotId);
-                        if (slot) {
-                            $(slot).addClass("req-input-numbered");
-                            $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                    });
+                } else {
+                    sec.inputs.forEach(function (inp, ii) {
+                        inputNum++;
+                        if (inp.type === "dropdown") {
+                            var ddId = self.uid + "-dd-" + sec.id + "-" + ii;
+                            var dd = document.getElementById(ddId);
+                            if (dd) {
+                                var $wrap = $(dd).wrap('<span class="req-input-numbered"></span>').parent();
+                                $wrap.prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                            }
+                        } else {
+                            var slotId = self.uid + "-mq-" + sec.id + "-" + ii;
+                            var slot = document.getElementById(slotId);
+                            if (slot) {
+                                $(slot).addClass("req-input-numbered");
+                                $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
         });
 
@@ -3270,6 +3536,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                             containerKeys[sec.id + "-" + ri + "-" + ii] = true;
                         });
                     }
+                });
+            } else if (sec.type === "text-with-input" && sec.containers && sec.containers.length > 0) {
+                sec.containers.forEach(function (ctr) {
+                    if (ctr.inputIndices) ctr.inputIndices.forEach(function (idx) {
+                        containerKeys[sec.id + "-" + idx] = true;
+                    });
                 });
             }
         });
@@ -3456,6 +3728,32 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 } else {
                     $("#" + self.uid + "-tick-" + sec.id).css("visibility", "hidden");
                 }
+                // Container wrap coloring for TWI sections
+                if (sec.containers && sec.containers.length > 0) {
+                    sec.containers.forEach(function (ctr, ci) {
+                        var $cw = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ci);
+                        $cw.removeClass("req-cwrap-correct req-cwrap-incorrect");
+                        if (secCompleted) {
+                            $cw.addClass("req-cwrap-correct");
+                        } else if (ctr.inputIndices) {
+                            var allFilled = true;
+                            var boxLatex = [];
+                            ctr.inputIndices.forEach(function (idx) {
+                                var savedKey = sec.id + "-" + idx;
+                                var sv = savedInputs[savedKey];
+                                if (sv && sv.latex) {
+                                    boxLatex.push(sv.latex);
+                                } else {
+                                    allFilled = false;
+                                }
+                            });
+                            if (allFilled) {
+                                var containerOk = self.validateContainer(ctr, boxLatex);
+                                $cw.addClass(containerOk ? "req-cwrap-correct" : "req-cwrap-incorrect");
+                            }
+                        }
+                    });
+                }
             }
         });
 
@@ -3476,46 +3774,63 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     Question.prototype._repositionContainerOverlays = function () {
         var self = this;
         var sections = self.question.sections || [];
+
+        function repositionOverlay(secId, rowIdx, ctr, ci) {
+            if (!ctr.inputIndices || ctr.inputIndices.length === 0) return;
+            var overlayId = rowIdx !== null
+                ? self.uid + "-cwrap-" + secId + "-" + rowIdx + "-" + ci
+                : self.uid + "-cwrap-" + secId + "-" + ci;
+            var $overlay = $("#" + overlayId);
+            if (!$overlay.length) return;
+            var refEl = $overlay.parent()[0];
+            if (!refEl) return;
+            var refRect = refEl.getBoundingClientRect();
+            var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            ctr.inputIndices.forEach(function (idx) {
+                var slotId = rowIdx !== null
+                    ? self.uid + "-mq-" + secId + "-" + rowIdx + "-" + idx
+                    : self.uid + "-mq-" + secId + "-" + idx;
+                var slot = document.getElementById(slotId);
+                if (!slot) return;
+                var r = slot.getBoundingClientRect();
+                if (r.width === 0 && r.height === 0) return;
+                if (r.left < minX) minX = r.left;
+                if (r.top < minY) minY = r.top;
+                if (r.right > maxX) maxX = r.right;
+                if (r.bottom > maxY) maxY = r.bottom;
+            });
+            if (minX === Infinity) return;
+            var inFraction = false;
+            ctr.inputIndices.forEach(function (idx) {
+                var slotId = rowIdx !== null
+                    ? self.uid + "-mq-" + secId + "-" + rowIdx + "-" + idx
+                    : self.uid + "-mq-" + secId + "-" + idx;
+                var slot = document.getElementById(slotId);
+                if (slot && $(slot).closest(".mfrac").length) inFraction = true;
+            });
+            var padX = inFraction ? 8 : 6;
+            var padY = inFraction ? 3 : 8;
+            $overlay.css({
+                left: (minX - refRect.left - padX) + "px",
+                top: (minY - refRect.top - padY) + "px",
+                width: (maxX - minX + 2 * padX) + "px",
+                height: (maxY - minY + 2 * padY) + "px"
+            });
+        }
+
         sections.forEach(function (sec) {
-            if (sec.type !== "equation-table") return;
-            sec.rows.forEach(function (row, ri) {
-                if (!row.containers || row.containers.length === 0) return;
-                row.containers.forEach(function (ctr, ci) {
-                    if (!ctr.inputIndices || ctr.inputIndices.length === 0) return;
-                    var $overlay = $("#" + self.uid + "-cwrap-" + sec.id + "-" + ri + "-" + ci);
-                    if (!$overlay.length) return;
-                    var refEl = $overlay.parent()[0];
-                    if (!refEl) return;
-                    var refRect = refEl.getBoundingClientRect();
-                    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-                    ctr.inputIndices.forEach(function (idx) {
-                        var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + idx;
-                        var slot = document.getElementById(slotId);
-                        if (!slot) return;
-                        var r = slot.getBoundingClientRect();
-                        if (r.width === 0 && r.height === 0) return;
-                        if (r.left < minX) minX = r.left;
-                        if (r.top < minY) minY = r.top;
-                        if (r.right > maxX) maxX = r.right;
-                        if (r.bottom > maxY) maxY = r.bottom;
-                    });
-                    if (minX === Infinity) return;
-                    var inFraction = false;
-                    ctr.inputIndices.forEach(function (idx) {
-                        var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + idx;
-                        var slot = document.getElementById(slotId);
-                        if (slot && $(slot).closest(".mfrac").length) inFraction = true;
-                    });
-                    var padX = inFraction ? 8 : 6;
-                    var padY = inFraction ? 3 : 8;
-                    $overlay.css({
-                        left: (minX - refRect.left - padX) + "px",
-                        top: (minY - refRect.top - padY) + "px",
-                        width: (maxX - minX + 2 * padX) + "px",
-                        height: (maxY - minY + 2 * padY) + "px"
+            if (sec.type === "equation-table") {
+                sec.rows.forEach(function (row, ri) {
+                    if (!row.containers || row.containers.length === 0) return;
+                    row.containers.forEach(function (ctr, ci) {
+                        repositionOverlay(sec.id, ri, ctr, ci);
                     });
                 });
-            });
+            } else if (sec.type === "text-with-input" && sec.containers && sec.containers.length > 0) {
+                sec.containers.forEach(function (ctr, ci) {
+                    repositionOverlay(sec.id, null, ctr, ci);
+                });
+            }
         });
     };
 
