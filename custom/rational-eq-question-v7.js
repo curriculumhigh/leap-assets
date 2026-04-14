@@ -3910,22 +3910,39 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             var widgetOff = $widget.offset();
             if (!widgetOff) return;
 
-            // Find the expression cell (first td in row, or the twi content area)
-            var $row = $slot.closest("tr, .req-twi-flex");
-            var $exprCell = $row.find("td:first");
-            if (!$exprCell.length) $exprCell = $row; // fallback for twi sections
-            var cellOff = $exprCell.offset();
-            var cellRight = cellOff ? cellOff.left + $exprCell.outerWidth() : 0;
-            var cellBottom = cellOff ? cellOff.top + $exprCell.outerHeight() : 0;
+            // Find the active step block containing this input
+            var $step = $slot.closest(".req-scaffold-block");
+            if (!$step.length) $step = $slot.closest("[id^='sec-']");
+            if (!$step.length) $step = $widget;
 
-            // Diagonally below-right of the expression's right edge
-            var top = cellBottom - widgetOff.top + 4;
-            var left = cellRight - widgetOff.left + 8;
+            // Find the Next button in the active step
+            var $nextBtn = $step.find(".req-check-btn:visible").first();
+            var top, left;
 
-            // Clamp so keypad stays within widget
-            var keypadW = $keypad.outerWidth() || 220;
-            var widgetW = $widget.outerWidth() || 700;
-            if (left + keypadW > widgetW) left = Math.max(0, widgetW - keypadW - 8);
+            if ($nextBtn.length && $nextBtn.offset()) {
+                var btnOff = $nextBtn.offset();
+                var btnBottom = btnOff.top + $nextBtn.outerHeight();
+                // Also check feedback pill
+                $step.find(".req-fb-pill:visible").each(function () {
+                    var off = $(this).offset();
+                    if (off) {
+                        var b = off.top + $(this).outerHeight();
+                        if (b > btnBottom) btnBottom = b;
+                    }
+                });
+                top = btnBottom - widgetOff.top + 6;
+                left = btnOff.left + $nextBtn.outerWidth() - widgetOff.left;
+            } else {
+                // Fallback: below step, left edge at typical Next button right edge
+                var stepOff = $step.offset();
+                top = ((stepOff ? stepOff.top : widgetOff.top) + $step.outerHeight()) - widgetOff.top + 6;
+                var $anyBtn = $widget.find(".req-check-btn").first();
+                if ($anyBtn.length && $anyBtn.offset() && $anyBtn.outerWidth() > 0) {
+                    left = $anyBtn.offset().left + $anyBtn.outerWidth() - widgetOff.left;
+                } else {
+                    left = 100;
+                }
+            }
 
             $keypad.css({ top: top + "px", left: left + "px" });
         });
