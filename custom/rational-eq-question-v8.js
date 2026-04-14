@@ -3853,26 +3853,26 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     // ── Symbol keypad ──
     // ── Keypad key presets ──
     var KEYPAD_NUMPAD = [
-        { label: "7", cmd: "7", type: "write" },
-        { label: "8", cmd: "8", type: "write" },
-        { label: "9", cmd: "9", type: "write" },
-        { label: "\\div", cmd: "\\div", type: "cmd" },
-        { label: "4", cmd: "4", type: "write" },
-        { label: "5", cmd: "5", type: "write" },
-        { label: "6", cmd: "6", type: "write" },
-        { label: "\\times", cmd: "\\times", type: "cmd" },
-        { label: "1", cmd: "1", type: "write" },
-        { label: "2", cmd: "2", type: "write" },
-        { label: "3", cmd: "3", type: "write" },
-        { label: "-", cmd: "-", type: "write" },
-        { label: "0", cmd: "0", type: "write" },
-        { label: ".", cmd: ".", type: "write" },
-        { label: ",", cmd: ",", type: "write" },
-        { label: "+", cmd: "+", type: "write" },
-        { label: "\\triangleleft", type: "keystroke", cmd: "Left" },
-        { label: "\\triangleright", type: "keystroke", cmd: "Right" },
-        { label: "\\Leftarrow", type: "keystroke", cmd: "Backspace" },
-        { label: "=", cmd: "=", type: "write" }
+        { label: "7", cmd: "7", type: "write", zone: "digit" },
+        { label: "8", cmd: "8", type: "write", zone: "digit" },
+        { label: "9", cmd: "9", type: "write", zone: "digit" },
+        { label: "\\div", cmd: "\\div", type: "cmd", zone: "op" },
+        { label: "4", cmd: "4", type: "write", zone: "digit" },
+        { label: "5", cmd: "5", type: "write", zone: "digit" },
+        { label: "6", cmd: "6", type: "write", zone: "digit" },
+        { label: "\\times", cmd: "\\times", type: "cmd", zone: "op" },
+        { label: "1", cmd: "1", type: "write", zone: "digit" },
+        { label: "2", cmd: "2", type: "write", zone: "digit" },
+        { label: "3", cmd: "3", type: "write", zone: "digit" },
+        { label: "-", cmd: "-", type: "write", zone: "op" },
+        { label: "0", cmd: "0", type: "write", zone: "digit" },
+        { label: ".", cmd: ".", type: "write", zone: "digit" },
+        { label: ",", cmd: ",", type: "write", zone: "digit" },
+        { label: "+", cmd: "+", type: "write", zone: "op" },
+        { label: "◀", type: "keystroke", cmd: "Left", zone: "nav", raw: true },
+        { label: "▶", type: "keystroke", cmd: "Right", zone: "nav", raw: true },
+        { label: "⌫", type: "keystroke", cmd: "Backspace", zone: "nav", raw: true },
+        { label: "=", cmd: "=", type: "write", zone: "op" }
     ];
 
     var KEYPAD_PRESETS = {
@@ -3981,13 +3981,18 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         $container.append($keypad);
     };
 
-    Question.prototype._buildPanelButtons = function ($keys, $panel) {
+    Question.prototype._buildPanelButtons = function ($keys, $panel, defaultZone) {
         var self = this;
         $keys.forEach(function (k) {
-            var $btn = $('<button class="req-kp-btn"></button>');
-            try {
-                $btn.html(katex.renderToString(k.label, { throwOnError: false }));
-            } catch (e) { $btn.text(k.label); }
+            var zone = k.zone || defaultZone || "";
+            var $btn = $('<button class="req-kp-btn' + (zone ? ' req-kp-btn-' + zone : '') + '"></button>');
+            if (k.raw) {
+                $btn.text(k.label);
+            } else {
+                try {
+                    $btn.html(katex.renderToString(k.label, { throwOnError: false }));
+                } catch (e) { $btn.text(k.label); }
+            }
 
             $btn.on("mousedown", function (ev) {
                 ev.preventDefault();
@@ -4017,7 +4022,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     Question.prototype._populateSymbolPanel = function ($panel, groupName) {
         var keys = KEYPAD_PRESETS[groupName] || KEYPAD_PRESETS.algebra;
         $panel.empty();
-        this._buildPanelButtons(keys, $panel);
+        this._buildPanelButtons(keys, $panel, "sym");
     };
 
     Question.prototype._initKeypadDrag = function ($keypad, $header) {

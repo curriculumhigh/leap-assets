@@ -407,46 +407,51 @@
     flex-direction: row;
 }
 
-/* Left panel (numpad) */
+/* Left panel (numpad): 8-col grid — digits span cols 1-3, operators col 4 */
 .req-kp-numpad {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 3px;
-    padding: 5px;
-    background: #fdf6e3;
+    gap: 1px;
     flex: 0 0 196px;
+    background: #e0e0e0; /* gap color */
 }
 
 /* Right panel (symbols) */
 .req-kp-symbols {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 3px;
-    padding: 5px;
-    background: #e8f0fe;
+    gap: 1px;
+    background: #e0e0e0; /* gap color */
     flex: 1;
     align-content: start;
 }
 
-/* Buttons */
+/* ── Buttons (flat, no border — bg color defines zones) ── */
 .req-kp-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     min-width: 40px;
-    height: 40px;
-    border: 1px solid #d0d0d0;
-    border-radius: 4px;
+    height: 44px;
+    border: none;
+    border-radius: 0;
     background: #fff;
     cursor: pointer;
-    font-size: 15px;
+    font-size: 16px;
     padding: 0 4px;
-    transition: background 0.1s;
+    transition: background 0.12s;
     line-height: 1;
+    color: #333;
 }
-.req-kp-btn:hover { background: #eee; }
-.req-kp-btn:active { background: #ddd; }
-.req-kp-btn .katex { font-size: 15px; }
+.req-kp-btn:hover { filter: brightness(0.94); }
+.req-kp-btn:active { filter: brightness(0.88); }
+.req-kp-btn .katex { font-size: 16px; }
+
+/* Zone colors (matching Learnosity) */
+.req-kp-btn-digit { background: #fdf6e3; }
+.req-kp-btn-op    { background: #e0ddd4; }
+.req-kp-btn-nav   { background: #e0ddd4; }
+.req-kp-btn-sym   { background: #e8f0fe; }
 
 /* Display math inside indented blocks should left-align, not center */
 [style*="margin-left"] .katex-display,
