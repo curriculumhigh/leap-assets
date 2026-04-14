@@ -4083,49 +4083,40 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             if (!widgetOff) return;
 
             // Position depends on context:
-            // - Equation-table row: below the expression cell, right-aligned to its edge
-            //   (avoids masking the annotation column to the right)
-            // - TWI / other: diagonally below-right of the rightmost MQ input
+            // - Equation-table row: below the row, right-aligned to widget edge
+            //   (avoids annotation to the right AND check button/feedback below-left)
+            // - TWI / other: below the rightmost MQ input, right-aligned to widget
             var $row = $slot.closest("tr, .req-twi-flex");
-            var anchorLeft, anchorBottom;
+            var top, left;
             var keypadW = $keypad.outerWidth() || 400;
+            var widgetW = $widget.outerWidth() || 700;
 
             var $exprCell = $row.find("td:first");
             if ($exprCell.length) {
-                // Equation-table row: place below expression, right edge aligned
-                var cellOff = $exprCell.offset();
-                var cellW = $exprCell.outerWidth();
-                anchorBottom = cellOff.top + $exprCell.outerHeight();
-                // Right-align: keypad right edge aligns with expression cell right edge
-                anchorLeft = cellOff.left + cellW - keypadW;
-                // But don't go left of the widget
-                if (anchorLeft < widgetOff.left) anchorLeft = widgetOff.left;
+                // Equation-table row: below row, flush right within widget
+                var rowBottom = $row.offset().top + $row.outerHeight();
+                top = rowBottom - widgetOff.top + 4;
+                left = widgetW - keypadW - 8;
+                if (left < 0) left = 0;
             } else {
                 // TWI / other: find rightmost MQ slot in the row
                 var $mqSlots = $row.find(".mq-editable-field");
-                var maxRight = 0;
                 var maxBottom = 0;
                 $mqSlots.each(function () {
                     var off = $(this).offset();
                     if (!off) return;
-                    var r = off.left + $(this).outerWidth();
                     var b = off.top + $(this).outerHeight();
-                    if (r > maxRight) { maxRight = r; maxBottom = b; }
                     if (b > maxBottom) maxBottom = b;
                 });
-                if (maxRight > 0) {
-                    anchorLeft = maxRight + 8;
-                    anchorBottom = maxBottom;
+                if (maxBottom > 0) {
+                    top = maxBottom - widgetOff.top + 4;
                 } else {
                     var rowOff = $row.offset() || widgetOff;
-                    anchorLeft = rowOff.left + $row.outerWidth() + 8;
-                    anchorBottom = rowOff.top + $row.outerHeight();
+                    top = rowOff.top + $row.outerHeight() - widgetOff.top + 4;
                 }
+                left = widgetW - keypadW - 8;
+                if (left < 0) left = 0;
             }
-
-            // Convert to widget-relative coordinates
-            var top = anchorBottom - widgetOff.top + 4;
-            var left = anchorLeft - widgetOff.left;
 
             // Clamp so keypad stays within widget
             var keypadW = $keypad.outerWidth() || 400;
