@@ -4108,14 +4108,16 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 // Left edge = right edge of the Next button
                 left = btnOff.left + $nextBtn.outerWidth() - widgetOff.left;
             } else {
-                // Fallback: below step, aligned with annotation column
+                // Fallback: below step, left edge at typical Next button right edge
                 var stepOff = $step.offset();
                 top = ((stepOff ? stepOff.top : widgetOff.top) + $step.outerHeight()) - widgetOff.top + 6;
-                var $annot = $widget.find(".req-annotation:visible").first();
-                if ($annot.length && $annot.offset()) {
-                    left = $annot.offset().left - widgetOff.left;
+                // Find any Next button in the widget (even hidden) to get typical left position
+                var $anyBtn = $widget.find(".req-check-btn").first();
+                if ($anyBtn.length && $anyBtn.offset() && $anyBtn.outerWidth() > 0) {
+                    left = $anyBtn.offset().left + $anyBtn.outerWidth() - widgetOff.left;
                 } else {
-                    left = Math.round(($widget.outerWidth() || 700) * 0.45);
+                    // Hardcoded fallback: ~100px from widget left (typical Next button right edge)
+                    left = 100;
                 }
             }
 
