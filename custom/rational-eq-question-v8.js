@@ -1589,7 +1589,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                             $(wrapEl).addClass("req-container-wrap").css({
                                 border: "1.5px solid #ccc",
                                 borderRadius: "5px",
-                                padding: "2px 4px"
+                                padding: "2px 4px",
+                                display: "inline-block"
                             });
                             return;
                         }
@@ -1762,7 +1763,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                 $(wrapEl).addClass("req-container-wrap").css({
                                     border: "1.5px solid #ccc",
                                     borderRadius: "5px",
-                                    padding: "2px 4px"
+                                    padding: "2px 4px",
+                                    display: "inline-block"
                                 });
                                 return;
                             }
