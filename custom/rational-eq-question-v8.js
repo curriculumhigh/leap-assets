@@ -414,15 +414,15 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         return tpl.replace(/<<|>>/g, "");
     };
 
-    // Replace <<>> with \htmlId boundary markers inside math zones (teacher side only).
-    // These markers let the container overlay span the full delimited region, not just inputs.
+    // Replace <<content>> with \htmlId wrapper inside math zones (teacher side only).
+    // KaTeX wraps the content in a <span>, which we later style as the container border.
+    // This is flow-based (not absolute-positioned) so it stays aligned on layout changes.
     Question.prototype._markContainerBounds = function (tpl, secId, rowIdx) {
         var prefix = "REQCB" + secId.replace(/[^a-zA-Z0-9]/g, "") + "R" + rowIdx;
         var ci = 0;
         tpl = tpl.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function (mathBlock) {
-            return mathBlock.replace(/<<|>>/g, function (m) {
-                if (m === "<<") return "\\htmlId{" + prefix + "S" + ci + "}{}";
-                return "\\htmlId{" + prefix + "E" + (ci++) + "}{}";
+            return mathBlock.replace(/<<([\s\S]*?)>>/g, function (m, content) {
+                return "\\htmlId{" + prefix + "C" + (ci++) + "}{" + content + "}";
             });
         });
         // Strip any remaining outside math
@@ -1576,28 +1576,27 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 }
             });
 
-            // Teacher side: container overlay borders for TWI sections
+            // Teacher side: style container wrapper elements for TWI sections
             if (sec.containers && sec.containers.length > 0 && self.isTeacher) {
                 setTimeout(function () {
-                    var refEl = $p[0];
-                    $(refEl).css("position", "relative");
                     var cbPrefixTwi = "REQCB" + sec.id.replace(/[^a-zA-Z0-9]/g, "") + "R0";
                     sec.containers.forEach(function (ctr, ci) {
                         if (!ctr.inputIndices || ctr.inputIndices.length === 0) return;
+                        // Prefer flow-based wrapper
+                        var wrapEl = document.getElementById(cbPrefixTwi + "C" + ci);
+                        if (wrapEl) {
+                            $(wrapEl).addClass("req-container-wrap").css({
+                                border: "1.5px solid #ccc",
+                                borderRadius: "5px",
+                                padding: "2px 4px"
+                            });
+                            return;
+                        }
+                        // Fallback: absolute-positioned overlay
+                        var refEl = $p[0];
+                        $(refEl).css("position", "relative");
                         var refRect = refEl.getBoundingClientRect();
                         var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-
-                        // Use boundary markers if available
-                        var startM = document.getElementById(cbPrefixTwi + "S" + ci);
-                        var endM = document.getElementById(cbPrefixTwi + "E" + ci);
-                        if (startM && endM) {
-                            var sr = startM.getBoundingClientRect();
-                            var er = endM.getBoundingClientRect();
-                            if (sr.left || sr.right) minX = sr.left;
-                            if (er.right || er.left) maxX = Math.max(er.right, er.left);
-                        }
-
-                        // Always include input slots (vertical bounds + fallback)
                         ctr.inputIndices.forEach(function (idx) {
                             var slotId = self.uid + "-mq-" + sec.id + "-" + idx;
                             var slot = document.getElementById(slotId);
@@ -1746,34 +1745,30 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 }
             });
 
-            // Teacher side: schedule container overlay borders (must wait for teacher mode
-            // to unlock rows — _applyTeacherLiveMode runs at 200ms, so defer to 400ms)
+            // Teacher side: style container wrapper elements created by _markContainerBounds
             if (row.containers && row.containers.length > 0 && self.isTeacher) {
                 (function (containers, secIdCap, rowIdxCap, $containerCap) {
                     setTimeout(function () {
-                        var $exprCell = $containerCap.closest("td");
-                        if ($exprCell.length) $exprCell.css("position", "relative");
-
-                        // Compute marker prefix for container boundary elements
                         var cbPrefix = "REQCB" + secIdCap.replace(/[^a-zA-Z0-9]/g, "") + "R" + rowIdxCap;
 
                         containers.forEach(function (ctr, ci) {
                             if (!ctr.inputIndices || ctr.inputIndices.length === 0) return;
+                            // Prefer flow-based wrapper (inline span from \htmlId in KaTeX)
+                            var wrapEl = document.getElementById(cbPrefix + "C" + ci);
+                            if (wrapEl) {
+                                $(wrapEl).addClass("req-container-wrap").css({
+                                    border: "1.5px solid #ccc",
+                                    borderRadius: "5px",
+                                    padding: "2px 4px"
+                                });
+                                return;
+                            }
+                            // Fallback: absolute-positioned overlay from input slot bounds
+                            var $exprCell = $containerCap.closest("td");
+                            if ($exprCell.length) $exprCell.css("position", "relative");
                             var refEl = $exprCell.length ? $exprCell[0] : $containerCap[0];
                             var refRect = refEl.getBoundingClientRect();
                             var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-
-                            // Use boundary markers if available (covers static text like "= 0")
-                            var startM = document.getElementById(cbPrefix + "S" + ci);
-                            var endM = document.getElementById(cbPrefix + "E" + ci);
-                            if (startM && endM) {
-                                var sr = startM.getBoundingClientRect();
-                                var er = endM.getBoundingClientRect();
-                                if (sr.left || sr.right) minX = sr.left;
-                                if (er.right || er.left) maxX = Math.max(er.right, er.left);
-                            }
-
-                            // Always include input slots (needed for vertical bounds and fallback)
                             ctr.inputIndices.forEach(function (idx) {
                                 var slotId = self.uid + "-mq-" + secIdCap + "-" + rowIdxCap + "-" + idx;
                                 var slot = document.getElementById(slotId);
@@ -1785,7 +1780,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                 if (r.bottom > maxY) maxY = r.bottom;
                             });
                             if (minX === Infinity) return;
-                            // Detect context: if any slot is inside a fraction, use tight vertical padding
                             var inFraction = false;
                             ctr.inputIndices.forEach(function (idx) {
                                 var slotId = self.uid + "-mq-" + secIdCap + "-" + rowIdxCap + "-" + idx;
