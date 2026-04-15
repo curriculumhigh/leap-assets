@@ -1585,6 +1585,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                         // Prefer flow-based wrapper
                         var wrapEl = document.getElementById(cbPrefixTwi + "C" + ci);
                         if (wrapEl) {
+                            wrapEl.id = self.uid + "-cwrap-" + sec.id + "-" + ci;
                             $(wrapEl).addClass("req-container-wrap").css({
                                 border: "1.5px solid #ccc",
                                 borderRadius: "5px",
@@ -1756,6 +1757,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                             // Prefer flow-based wrapper (inline span from \htmlId in KaTeX)
                             var wrapEl = document.getElementById(cbPrefix + "C" + ci);
                             if (wrapEl) {
+                                // Assign the cwrap ID so feedback code can find it for color changes
+                                wrapEl.id = self.uid + "-cwrap-" + secIdCap + "-" + rowIdxCap + "-" + ci;
                                 $(wrapEl).addClass("req-container-wrap").css({
                                     border: "1.5px solid #ccc",
                                     borderRadius: "5px",
