@@ -1589,8 +1589,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                             $(wrapEl).addClass("req-container-wrap").css({
                                 border: "1.5px solid #ccc",
                                 borderRadius: "5px",
-                                padding: "2px 4px",
-                                display: "inline-block"
+                                padding: "2px 4px"
                             });
                             return;
                         }
@@ -1763,8 +1762,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                 $(wrapEl).addClass("req-container-wrap").css({
                                     border: "1.5px solid #ccc",
                                     borderRadius: "5px",
-                                    padding: "2px 4px",
-                                    display: "inline-block"
+                                    padding: "2px 4px"
                                 });
                                 return;
                             }
@@ -3843,6 +3841,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 : self.uid + "-cwrap-" + secId + "-" + ci;
             var $overlay = $("#" + overlayId);
             if (!$overlay.length) return;
+            // Skip flow-based wrappers (KaTeX inline spans) — they self-size
+            if ($overlay[0].tagName === "SPAN") return;
             var refEl = $overlay.parent()[0];
             if (!refEl) return;
             var refRect = refEl.getBoundingClientRect();
