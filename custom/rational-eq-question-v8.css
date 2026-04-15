@@ -6,6 +6,7 @@
     padding-left: 16px;
     margin: 4px 0 16px;
 }
+.req-scaffold-block > * + * { margin-top: 14px; }
 .req-scaffold-block p { font-size: 16px; line-height: 1.7; margin: 0 0 10px; }
 
 /* ── HTML fraction (for templates with MQ inputs in numerator/denominator) ── */
@@ -67,7 +68,7 @@
 
 /* ── Text-with-input flex layout (content + tick cell) ── */
 .req-twi-flex { display: flex; align-items: flex-start; gap: 8px; }
-.req-twi-flex + .req-twi-flex { margin-top: 14px; }
+
 
 /* ── MathQuill inputs (compact sizing to match Learnosity native) ── */
 .req-widget .mq-slot {
