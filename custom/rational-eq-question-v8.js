@@ -1358,6 +1358,14 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var self = this;
         var $wrapper = $('<div id="' + self.uid + '-sec-' + sec.id + '"></div>');
 
+        // Render preamble text before the table (if any)
+        if (sec.preamble) {
+            var $pre = $('<div class="req-preamble" style="font-size:15px;line-height:1.7;margin:0 0 6px;"></div>');
+            $pre.html(self._formatTextBlock(sec.preamble));
+            self.renderKaTeX($pre[0]);
+            $wrapper.append($pre);
+        }
+
         var $table = $('<table class="req-eq-table"><tbody></tbody></table>');
         var $tbody = $table.find("tbody");
 
