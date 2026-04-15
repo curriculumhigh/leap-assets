@@ -513,6 +513,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     // ── Validation utilities ──
     Question.prototype.latexToNerdamer = function (latex) {
         var s = latex.trim();
+        // Normalize bare decimals like .4 → 0.4 so nerdamer can parse them
+        s = s.replace(/(^|[^0-9])\.(\d)/g, "$10.$2");
         s = s.replace(/\\left/g, "").replace(/\\right/g, "");
         while (s.match(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/)) {
             s = s.replace(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/g, "(($1)/($2))");
