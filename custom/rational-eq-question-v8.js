@@ -414,6 +414,22 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         return tpl.replace(/<<|>>/g, "");
     };
 
+    // Replace <<>> with \htmlId boundary markers inside math zones (teacher side only).
+    // These markers let the container overlay span the full delimited region, not just inputs.
+    Question.prototype._markContainerBounds = function (tpl, secId, rowIdx) {
+        var prefix = "REQCB" + secId.replace(/[^a-zA-Z0-9]/g, "") + "R" + rowIdx;
+        var ci = 0;
+        tpl = tpl.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function (mathBlock) {
+            return mathBlock.replace(/<<|>>/g, function (m) {
+                if (m === "<<") return "\\htmlId{" + prefix + "S" + ci + "}{}";
+                return "\\htmlId{" + prefix + "E" + (ci++) + "}{}";
+            });
+        });
+        // Strip any remaining outside math
+        tpl = tpl.replace(/<<|>>/g, "");
+        return tpl;
+    };
+
     // Move DN (dropdown) placeholders out of $...$ math zones so they render
     // as prose HTML spans instead of KaTeX markers. This prevents dead space
     // from KaTeX fixed-width wrappers around dropdowns.
@@ -1441,8 +1457,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Left: content area
         var $content = $('<div style="flex:1"></div>');
 
+        var hasCtr = sec.containers && sec.containers.length > 0;
+        var rawTpl = sec.template || "";
         var tpl = self._extractDNFromMath(
-            self._stripContainerDelims(sec.template || ""),
+            (hasCtr && self.isTeacher)
+                ? self._markContainerBounds(rawTpl, sec.id, "0")
+                : self._stripContainerDelims(rawTpl),
             sec.inputs
         );
         var $p = $("<div style='font-size:15px;line-height:1.7;margin:0 0 10px;'></div>");
@@ -1561,10 +1581,23 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 setTimeout(function () {
                     var refEl = $p[0];
                     $(refEl).css("position", "relative");
+                    var cbPrefixTwi = "REQCB" + sec.id.replace(/[^a-zA-Z0-9]/g, "") + "R0";
                     sec.containers.forEach(function (ctr, ci) {
                         if (!ctr.inputIndices || ctr.inputIndices.length === 0) return;
                         var refRect = refEl.getBoundingClientRect();
                         var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+                        // Use boundary markers if available
+                        var startM = document.getElementById(cbPrefixTwi + "S" + ci);
+                        var endM = document.getElementById(cbPrefixTwi + "E" + ci);
+                        if (startM && endM) {
+                            var sr = startM.getBoundingClientRect();
+                            var er = endM.getBoundingClientRect();
+                            if (sr.left || sr.right) minX = sr.left;
+                            if (er.right || er.left) maxX = Math.max(er.right, er.left);
+                        }
+
+                        // Always include input slots (vertical bounds + fallback)
                         ctr.inputIndices.forEach(function (idx) {
                             var slotId = self.uid + "-mq-" + sec.id + "-" + idx;
                             var slot = document.getElementById(slotId);
@@ -1638,8 +1671,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         }
 
         // v6 unified path: normalize to content format
+        var rawContent = self._normalizeToContent(row);
+        var hasContainers = row.containers && row.containers.length > 0;
         var tpl = self._extractDNFromMath(
-            self._stripContainerDelims(self._normalizeToContent(row)),
+            (hasContainers && self.isTeacher)
+                ? self._markContainerBounds(rawContent, secId, rowIdx)
+                : self._stripContainerDelims(rawContent),
             row.inputs
         );
         var prefix = "REQV7" + secId.replace(/[^a-zA-Z0-9]/g, "") + "R" + rowIdx + "X";
@@ -1717,11 +1754,26 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                         var $exprCell = $containerCap.closest("td");
                         if ($exprCell.length) $exprCell.css("position", "relative");
 
+                        // Compute marker prefix for container boundary elements
+                        var cbPrefix = "REQCB" + secIdCap.replace(/[^a-zA-Z0-9]/g, "") + "R" + rowIdxCap;
+
                         containers.forEach(function (ctr, ci) {
                             if (!ctr.inputIndices || ctr.inputIndices.length === 0) return;
                             var refEl = $exprCell.length ? $exprCell[0] : $containerCap[0];
                             var refRect = refEl.getBoundingClientRect();
                             var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+                            // Use boundary markers if available (covers static text like "= 0")
+                            var startM = document.getElementById(cbPrefix + "S" + ci);
+                            var endM = document.getElementById(cbPrefix + "E" + ci);
+                            if (startM && endM) {
+                                var sr = startM.getBoundingClientRect();
+                                var er = endM.getBoundingClientRect();
+                                if (sr.left || sr.right) minX = sr.left;
+                                if (er.right || er.left) maxX = Math.max(er.right, er.left);
+                            }
+
+                            // Always include input slots (needed for vertical bounds and fallback)
                             ctr.inputIndices.forEach(function (idx) {
                                 var slotId = self.uid + "-mq-" + secIdCap + "-" + rowIdxCap + "-" + idx;
                                 var slot = document.getElementById(slotId);
