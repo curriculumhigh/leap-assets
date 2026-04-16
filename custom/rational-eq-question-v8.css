@@ -1,5 +1,8 @@
 /* Rational Equation — Learnosity Custom Question Styles v8 */
 
+/* ── Base widget font size (override Learnosity default ~14px) ── */
+.req-widget { font-size: 16px; line-height: 1.7; }
+
 /* ── Scaffold wrapper (wraps each step — blue left bar) ── */
 .req-scaffold-block {
     border-left: 3px solid #1565C0;
