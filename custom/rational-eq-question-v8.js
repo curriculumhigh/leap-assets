@@ -127,7 +127,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Render stimulus with KaTeX
         var stim = q.stimulus || "";
         if (stim) {
-            $w.append($('<p style="font-size:15px;line-height:1.7;margin:0 0 14px;"></p>').html(stim));
+            $w.append($('<p style="font-size:16px;line-height:1.7;margin:0 0 14px;"></p>').html(stim));
         }
 
         // Sections — wrapped in scaffold-block (blue left bar) per STEP.
@@ -1378,7 +1378,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         // Render preamble text before the table (if any)
         if (sec.preamble) {
-            var $pre = $('<div class="req-preamble" style="font-size:15px;line-height:1.7;margin:0 0 6px;"></div>');
+            var $pre = $('<div class="req-preamble" style="font-size:16px;line-height:1.7;margin:0 0 6px;"></div>');
             $pre.html(self._formatTextBlock(sec.preamble));
             self.renderKaTeX($pre[0]);
             $wrapper.append($pre);
@@ -1465,7 +1465,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 : self._stripContainerDelims(rawTpl),
             sec.inputs
         );
-        var $p = $("<div style='font-size:15px;line-height:1.7;margin:0 0 10px;'></div>");
+        var $p = $("<div style='font-size:16px;line-height:1.7;margin:0 0 10px;'></div>");
 
         // Check if any {{N}} sits inside a $...$ or $$...$$ math zone.
         // If so, use marker-based rendering so KaTeX sees complete LaTeX.
