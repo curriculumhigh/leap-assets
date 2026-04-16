@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HLT — f(x) = 5/(x−1)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 190px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 6px;
+        }
+        .slider-readout {
+            font-size: 14px; font-weight: 600; color: #2563EB; margin-bottom: 4px;
+            min-height: 22px;
+        }
+        .slider-input {
+            width: 100%; -webkit-appearance: none; appearance: none;
+            height: 5px; border-radius: 3px; background: #e5e7eb; outline: none;
+        }
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 15px; height: 15px; border-radius: 50%; cursor: pointer;
+            background: #2563EB;
+        }
+        .function-section { border-top: 1px solid #e5e7eb; padding-top: 12px; }
+        .function-display { min-height: 28px; }
+        .info-section { border-top: 1px solid #e5e7eb; padding-top: 12px; }
+        .readout-row { margin-bottom: 6px; }
+        .readout-value { min-height: 24px; }
+        .special-msg {
+            font-size: 12px; color: #0EA5E9; line-height: 1.5;
+            border-top: 1px solid #e5e7eb; padding-top: 10px;
+            display: none;
+        }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; min-width: 0; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <!-- Slider section -->
+                <div class="panel-section">
+                    <div class="panel-label">Horizontal line</div>
+                    <div class="slider-readout" id="slider-readout"></div>
+                    <input type="range" id="slider-k" class="slider-input" min="-10" max="10" step="0.1" value="3">
+                </div>
+
+                <!-- Function display -->
+                <div class="panel-section function-section">
+                    <div class="panel-label">Function</div>
+                    <div class="function-display" id="function-display"></div>
+                </div>
+
+                <!-- Intersections -->
+                <div class="panel-section info-section">
+                    <div class="panel-label">Intersections</div>
+                    <div class="readout-row">
+                        <div class="readout-value" id="readout-count"></div>
+                    </div>
+                    <div class="readout-row">
+                        <div class="readout-value" id="readout-coord"></div>
+                    </div>
+                </div>
+
+                <!-- Special message for y=0 -->
+                <div class="special-msg" id="special-msg">
+                    <b>y = 0</b> is the horizontal asymptote — it is outside the range of <i>f</i>, so there is no intersection.
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 12, 13, -12],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444', label: { fontSize: 11 },
+                        minorTicks: 0, ticksDistance: 2
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444', label: { fontSize: 11 },
+                        minorTicks: 0, ticksDistance: 2
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [12.5, -0.8, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.35, 11.5, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Color constants
+        var COL_CURVE = '#222222';
+        var COL_LINE = '#2563EB';
+        var COL_CONSTR = '#0EA5E9';
+
+        // ── Asymptotes ──────────────────────────────────────────────────
+        // Vertical asymptote x = 1
+        board.create('line', [[1, 0], [1, 1]], {
+            strokeColor: COL_CONSTR, strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('text', [1.6, 10.5, 'x = 1'], {
+            fontSize: 12, color: COL_CONSTR, useKatex: true, fixed: true, highlight: false
+        });
+
+        // Horizontal asymptote y = 0
+        board.create('line', [[0, 0], [1, 0]], {
+            strokeColor: COL_CONSTR, strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false, layer: 5
+        });
+        board.create('text', [9.5, 0.8, 'y = 0'], {
+            fontSize: 12, color: COL_CONSTR, useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Curve: f(x) = 5/(x-1) — two branches ──────────────────────
+        // Left branch: x < 1
+        board.create('functiongraph', [
+            function(x) { return 5 / (x - 1); },
+            -7, 0.97
+        ], { strokeColor: COL_CURVE, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Right branch: x > 1
+        board.create('functiongraph', [
+            function(x) { return 5 / (x - 1); },
+            1.03, 13
+        ], { strokeColor: COL_CURVE, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Function label on board
+        board.create('text', [7, 5.5, 'f(x) = \\dfrac{5}{x-1}'], {
+            fontSize: 13, color: COL_CURVE, useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Horizontal test line y = k (secondary curve — blue) ─────────
+        var kVal = 3;
+
+        var hLine = board.create('line', [
+            function() { return [0, kVal]; },
+            function() { return [1, kVal]; }
+        ], {
+            strokeColor: COL_LINE, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        // Line label on board
+        board.create('text', [
+            -6.5,
+            function() {
+                return kVal >= 0 ? kVal + 0.8 : kVal - 0.8;
+            },
+            function() { return 'y = ' + kVal.toFixed(1); }
+        ], {
+            fontSize: 12, color: COL_LINE, fixed: true, highlight: false,
+            anchorX: 'left'
+        });
+
+        // ── Intersection point ──────────────────────────────────────────
+        var intPt = board.create('point', [
+            function() { return (Math.abs(kVal) < 0.05) ? -999 : 5 / kVal + 1; },
+            function() { return kVal; }
+        ], {
+            name: '', size: 5, color: COL_LINE, fixed: true, highlight: false,
+            visible: function() { return Math.abs(kVal) >= 0.05; }
+        });
+
+        // Intersection coordinate label (plain text for smooth updates)
+        board.create('text', [
+            function() {
+                var xCoord = 5 / kVal + 1;
+                return xCoord + 0.5;
+            },
+            function() {
+                return kVal > 0 ? kVal + 0.9 : kVal - 1.1;
+            },
+            function() {
+                if (Math.abs(kVal) < 0.05) return '';
+                var xCoord = 5 / kVal + 1;
+                return '(' + xCoord.toFixed(1) + ', ' + kVal.toFixed(1) + ')';
+            }
+        ], {
+            fontSize: 12, color: COL_LINE, anchorX: 'left', fixed: true, highlight: false,
+            visible: function() { return Math.abs(kVal) >= 0.05; }
+        });
+
+        // ── Slider sync ─────────────────────────────────────────────────
+        var sliderK = document.getElementById('slider-k');
+
+        function syncFromSlider() {
+            kVal = parseFloat(sliderK.value);
+            board.update();
+            updatePanel();
+        }
+
+        sliderK.addEventListener('input', syncFromSlider);
+
+        // ── Panel updates ───────────────────────────────────────────────
+        function updatePanel() {
+            // Slider readout above slider
+            katex.render(
+                '\\color{' + COL_LINE + '}{y = ' + kVal.toFixed(1) + '}',
+                document.getElementById('slider-readout'),
+                { throwOnError: false }
+            );
+
+            // Function display
+            katex.render(
+                'f(x) = \\dfrac{5}{x - 1}',
+                document.getElementById('function-display'),
+                { throwOnError: false }
+            );
+
+            var isZero = Math.abs(kVal) < 0.05;
+            var count = isZero ? 0 : 1;
+
+            // Intersection count
+            katex.render(
+                '\\text{Count: } ' + count,
+                document.getElementById('readout-count'),
+                { throwOnError: false }
+            );
+
+            // Intersection coordinate
+            if (!isZero) {
+                var xCoord = 5 / kVal + 1;
+                katex.render(
+                    '\\color{' + COL_LINE + '}{\\left(' + xCoord.toFixed(1) + ',\\,' + kVal.toFixed(1) + '\\right)}',
+                    document.getElementById('readout-coord'),
+                    { throwOnError: false }
+                );
+            } else {
+                document.getElementById('readout-coord').textContent = '';
+            }
+
+            // Special message for y ≈ 0
+            document.getElementById('special-msg').style.display = isZero ? 'block' : 'none';
+        }
+
+        updatePanel();
+    </script>
+</body>
+</html>
