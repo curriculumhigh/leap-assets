@@ -563,6 +563,10 @@
     pointer-events: none;
     position: relative;
 }
+/* But allow interaction with embedded sims/iframes */
+.req-widget.req-teacher-live iframe {
+    pointer-events: auto;
+}
 
 /* ── Grayed state: steps the student hasn't reached yet ── */
 .req-tl-grayed {
