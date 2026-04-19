@@ -66,6 +66,19 @@
         }
         .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; }
         #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
     </style>
 </head>
 <body>
@@ -104,6 +117,7 @@
             </div>
         </div>
     </div>
+    <div class="coord-tooltip" id="tooltip"></div>
 
     <script>
         var board = JXG.JSXGraph.initBoard('board', {
@@ -145,15 +159,31 @@
             function(x) { return Math.pow(bVal, x); }
         ], { strokeColor: '#222222', strokeWidth: 1.4, fixed: true });
 
-        // Key point (0, 1)
+        // Key point (0, 1) — tooltip on hover
         var keyPt = board.create('point', [0, 1], {
-            name: '', size: 5, color: '#222222', fixed: true, highlight: false
-        });
-        var keyLabel = board.create('text', [0.4, 1.6, '(0,\\, 1)'], {
-            fontSize: 13, color: '#222222', fixed: true, highlight: false, useKatex: true
+            name: '', size: 5, color: '#222222', fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: '#222222', highlightStrokeColor: '#222222'
         });
 
-        // Function label on the board — position adapts to b
+        var tooltipEl = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        keyPt.on('over', function() {
+            var latex = '\\left(0,\\, 1\\right)';
+            katex.render(latex, tooltipEl, { throwOnError: false });
+            tooltipEl.style.borderColor = '#222222';
+            tooltipEl.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [0, 1], board);
+            tooltipEl.style.left = (coords.scrCoords[1] + rect.left + 14) + 'px';
+            tooltipEl.style.top = (coords.scrCoords[2] + rect.top - 28) + 'px';
+        });
+        keyPt.on('out', function() {
+            tooltipEl.style.display = 'none';
+        });
+
+        // Function label on the board — KaTeX, position adapts to b
         var funcLabel = board.create('text', [
             function() {
                 if (bVal === 0 || bVal === 1) return -100;
@@ -176,10 +206,10 @@
             },
             function() {
                 if (bVal === 0 || bVal === 1) return '';
-                return 'y = ' + bVal.toFixed(1) + '^x';
+                return 'y = (' + bVal.toFixed(1) + ')^x';
             }
         ], {
-            fontSize: 13, color: '#222222', fixed: true, highlight: false
+            fontSize: 13, color: '#222222', fixed: true, highlight: false, useKatex: true
         });
 
         // Slider sync
@@ -196,8 +226,8 @@
             // Show/hide curve and key point
             curve.setAttribute({ visible: !isInvalid });
             keyPt.setAttribute({ visible: !isInvalid });
-            keyLabel.setAttribute({ visible: !isInvalid });
             funcLabel.setAttribute({ visible: !isInvalid });
+            if (isInvalid) tooltipEl.style.display = 'none';
 
             // Equation
             var eqEl = document.getElementById('equation');
@@ -205,7 +235,7 @@
                 eqEl.innerHTML = '';
             } else {
                 katex.render(
-                    'y = ' + bVal.toFixed(1) + '^x',
+                    'y = (' + bVal.toFixed(1) + ')^x',
                     eqEl,
                     { throwOnError: false }
                 );

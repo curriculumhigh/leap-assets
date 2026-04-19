@@ -15,16 +15,28 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
         .container {
-            max-width: 450px;
-            margin: 0 auto;
+            max-width: 700px;
+            margin: 0;
             padding: 6px;
             height: calc(100% - 12px);
         }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 175px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 6px;
+        }
+        .func-def { min-height: 24px; margin-bottom: 8px; }
+        .hint-text { font-size: 12px; color: #777; line-height: 1.5; }
         .board-wrapper {
+            flex: 1;
             background: white;
             border-radius: 8px;
             padding: 10px;
-            height: calc(100% - 20px);
         }
         #board {
             width: 100%;
@@ -47,13 +59,27 @@
 </head>
 <body>
     <div class="container">
-        <div class="board-wrapper">
-            <div id="board"></div>
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-section">
+                    <div class="panel-label">Function</div>
+                    <div class="func-def" id="func-q"></div>
+                </div>
+                <div class="panel-section" style="border-top: 1px solid #e5e7eb; padding-top: 12px;">
+                    <div class="hint-text">Hover over highlighted points to see coordinates.</div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
         </div>
     </div>
     <div class="coord-tooltip" id="tooltip"></div>
 
     <script>
+        // ── Panel KaTeX label ───────────────────────────────────────────
+        katex.render('q(x) = \\left(\\tfrac{1}{3}\\right)^{\\!x}', document.getElementById('func-q'), { throwOnError: false });
+
         var board = JXG.JSXGraph.initBoard('board', {
             boundingbox: [-4.5, 12, 4.5, -2],
             axis: true,
