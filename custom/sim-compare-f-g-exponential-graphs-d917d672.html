@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparing f(x) = 3(2)^x and g(x) = 2^x</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 175px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 6px;
+        }
+        .func-def { min-height: 24px; margin-bottom: 8px; }
+        .hint-text { font-size: 12px; color: #777; line-height: 1.5; }
+        .readout { font-size: 11px; line-height: 1.5; color: #333; display: none; }
+        .readout ul { margin: 0; padding-left: 14px; }
+        .readout li { margin-bottom: 8px; }
+        .rd-line2 { display: block; padding-left: 2px; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-section">
+                    <div class="panel-label">Functions</div>
+                    <div class="func-def" id="func-f"></div>
+                    <div class="func-def" id="func-g"></div>
+                </div>
+                <div class="panel-section" style="border-top: 1px solid #e5e7eb; padding-top: 12px;">
+                    <div class="hint-text" id="hint-msg">Hover over highlighted points to see coordinates and heights from the x-axis.</div>
+                    <div class="readout" id="readout"></div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip-f"></div>
+    <div class="coord-tooltip" id="tooltip-g"></div>
+
+    <script>
+        // ── Panel KaTeX labels ──────────────────────────────────────────
+        katex.render('\\color{#2563EB}{f(x) = 3(2)^x}', document.getElementById('func-f'), { throwOnError: false });
+        katex.render('g(x) = 2^x', document.getElementById('func-g'), { throwOnError: false });
+
+        // ── Board ───────────────────────────────────────────────────────
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 15, 5.5, -2],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 2 }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [5.1, -0.7, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 14.4, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_G = '#222222';
+        var COL_F = '#2563EB';
+        var COL_PROJ_F = '#DC2626';   // red — height arrow for f
+        var COL_PROJ_G = '#8B5CF6';   // purple — height arrow for g
+        var COL_HLINE = '#999999';    // darker gray for horizontal extensions
+
+        // ── Curves ──────────────────────────────────────────────────────
+        var gFunc = function(x) { return Math.pow(2, x); };
+        var fFunc = function(x) { return 3 * Math.pow(2, x); };
+
+        board.create('functiongraph', [gFunc, -3.8, 5.5], {
+            strokeColor: COL_G, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('functiongraph', [fFunc, -3.8, 5.5], {
+            strokeColor: COL_F, strokeWidth: 1.6, fixed: true, highlight: false
+        });
+
+        // ── Curve labels ────────────────────────────────────────────────
+        board.create('text', [2.6, 5.5, 'g(x) = 2^x'], {
+            fontSize: 13, color: COL_G, useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [-3.6, 2.2, 'f(x) = 3(2)^x'], {
+            fontSize: 13, color: COL_F, useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Tooltip infrastructure ──────────────────────────────────────
+        var tooltipF = document.getElementById('tooltip-f');
+        var tooltipG = document.getElementById('tooltip-g');
+        var boardContainer = document.getElementById('board');
+        var hintMsg = document.getElementById('hint-msg');
+        var readoutEl = document.getElementById('readout');
+
+        function formatValKatex(v) {
+            var absV = Math.abs(v);
+            var sign = v < 0 ? '-' : '';
+            if (Math.abs(absV - 1/4) < 0.001) return sign + '\\tfrac{1}{4}';
+            if (Math.abs(absV - 1/2) < 0.001) return sign + '\\tfrac{1}{2}';
+            if (Math.abs(absV - 3/4) < 0.001) return sign + '\\tfrac{3}{4}';
+            if (Math.abs(absV - 3/2) < 0.001) return sign + '\\tfrac{3}{2}';
+            if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+            return v.toFixed(2);
+        }
+
+        function positionTooltip(el, pt, offX, offY) {
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [pt.X(), pt.Y()], board);
+            el.style.left = (coords.scrCoords[1] + rect.left + offX) + 'px';
+            el.style.top = (coords.scrCoords[2] + rect.top + offY) + 'px';
+        }
+
+        // ── Pre-create overlay elements for each x-value ────────────────
+        var xVals = [-2, -1, 0, 1, 2];
+        var overlays = {};
+
+        // Offsets for the height arrows: g-arrow closer, f-arrow further
+        var G_OFF = 1.0;
+        var F_OFF = 1.8;
+
+        xVals.forEach(function(xv) {
+            var fy = fFunc(xv);
+            var gy = gFunc(xv);
+            var gArrX = xv + G_OFF;
+            var fArrX = xv + F_OFF;
+
+            // Horizontal dashed gray extension from f-point to fArrX
+            var hLineF = board.create('segment', [[xv, fy], [fArrX, fy]], {
+                strokeColor: COL_HLINE, strokeWidth: 1.2, dash: 2,
+                fixed: true, highlight: false, visible: false
+            });
+
+            // Horizontal dashed gray extension from g-point to gArrX
+            var hLineG = board.create('segment', [[xv, gy], [gArrX, gy]], {
+                strokeColor: COL_HLINE, strokeWidth: 1.2, dash: 2,
+                fixed: true, highlight: false, visible: false
+            });
+
+            // Vertical red arrow: x-axis to f-level at fArrX
+            var vArrowF = board.create('arrow', [[fArrX, 0], [fArrX, fy]], {
+                strokeColor: COL_PROJ_F, strokeWidth: 1.6, dash: 2,
+                lastArrow: { type: 2, size: 5 },
+                fixed: true, highlight: false, visible: false
+            });
+
+            // Label for f height — centered vertically along the arrow
+            var vLabelF = board.create('text', [fArrX + 0.25, fy / 2, ''], {
+                fontSize: 11, color: COL_PROJ_F, fixed: true, highlight: false,
+                useKatex: true, visible: false, anchorX: 'left'
+            });
+
+            // Vertical purple arrow: x-axis to g-level at gArrX
+            var vArrowG = board.create('arrow', [[gArrX, 0], [gArrX, gy]], {
+                strokeColor: COL_PROJ_G, strokeWidth: 1.6, dash: 2,
+                lastArrow: { type: 2, size: 5 },
+                fixed: true, highlight: false, visible: false
+            });
+
+            // Label for g height — centered vertically along the arrow
+            var vLabelG = board.create('text', [gArrX + 0.25, gy / 2, ''], {
+                fontSize: 11, color: COL_PROJ_G, fixed: true, highlight: false,
+                useKatex: true, visible: false, anchorX: 'left'
+            });
+
+            overlays[xv] = {
+                hLineF: hLineF, hLineG: hLineG,
+                vArrowF: vArrowF, vLabelF: vLabelF,
+                vArrowG: vArrowG, vLabelG: vLabelG,
+                fy: fy, gy: gy
+            };
+        });
+
+        // ── Show/hide logic ─────────────────────────────────────────────
+        var activeX = null;
+
+        function showOverlays(xv) {
+            if (activeX === xv) return;
+            hideAll();
+            activeX = xv;
+            var o = overlays[xv];
+
+            // Show horizontal extensions
+            o.hLineF.setAttribute({ visible: true });
+            o.hLineG.setAttribute({ visible: true });
+
+            // Show vertical arrows
+            o.vArrowF.setAttribute({ visible: true });
+            o.vArrowG.setAttribute({ visible: true });
+
+            // Set and show height labels
+            var fyAbs = formatValKatex(Math.abs(o.fy));
+            var gyAbs = formatValKatex(Math.abs(o.gy));
+            o.vLabelF.setText('\\color{' + COL_PROJ_F + '}{' + fyAbs + '}');
+            o.vLabelG.setText('\\color{' + COL_PROJ_G + '}{' + gyAbs + '}');
+            o.vLabelF.setAttribute({ visible: true });
+            o.vLabelG.setAttribute({ visible: true });
+
+            // Show coordinate tooltips
+            var fPt = fPoints[xv];
+            var gPt = gPoints[xv];
+
+            var latexF = '\\color{' + COL_F + '}{\\left(' + formatValKatex(xv) + ',\\,' + formatValKatex(o.fy) + '\\right)}';
+            katex.render(latexF, tooltipF, { throwOnError: false });
+            tooltipF.style.borderColor = COL_F;
+            tooltipF.style.display = 'block';
+            positionTooltip(tooltipF, fPt, -90, -40);
+
+            var latexG = '\\color{' + COL_G + '}{\\left(' + formatValKatex(xv) + ',\\,' + formatValKatex(o.gy) + '\\right)}';
+            katex.render(latexG, tooltipG, { throwOnError: false });
+            tooltipG.style.borderColor = COL_G;
+            tooltipG.style.display = 'block';
+            positionTooltip(tooltipG, gPt, -80, -40);
+
+            // Dynamic readout in left panel (two lines per bullet)
+            var fAboveBelow = o.fy >= 0 ? 'above' : 'below';
+            var gAboveBelow = o.gy >= 0 ? 'above' : 'below';
+            var fCoord = '(' + formatValKatex(xv) + ',\\,' + formatValKatex(o.fy) + ')';
+            var gCoord = '(' + formatValKatex(xv) + ',\\,' + formatValKatex(o.gy) + ')';
+
+            readoutEl.innerHTML =
+                '<ul>' +
+                '<li><span id="rd-f1"></span><span class="rd-line2" id="rd-f2"></span></li>' +
+                '<li><span id="rd-g1"></span><span class="rd-line2" id="rd-g2"></span></li>' +
+                '</ul>';
+            katex.render('\\color{' + COL_F + '}{' + fCoord + '}' + '\\text{ on }f', document.getElementById('rd-f1'), { throwOnError: false });
+            katex.render('\\text{lies }\\color{' + COL_PROJ_F + '}{' + fyAbs + '}\\text{ units ' + fAboveBelow + ' the }x\\text{-axis}', document.getElementById('rd-f2'), { throwOnError: false });
+            katex.render('\\color{' + COL_G + '}{' + gCoord + '}' + '\\text{ on }g', document.getElementById('rd-g1'), { throwOnError: false });
+            katex.render('\\text{lies }\\color{' + COL_PROJ_G + '}{' + gyAbs + '}\\text{ units ' + gAboveBelow + ' the }x\\text{-axis}', document.getElementById('rd-g2'), { throwOnError: false });
+
+            hintMsg.style.display = 'none';
+            readoutEl.style.display = 'block';
+            board.update();
+        }
+
+        function hideAll() {
+            activeX = null;
+            tooltipF.style.display = 'none';
+            tooltipG.style.display = 'none';
+            xVals.forEach(function(xv) {
+                var o = overlays[xv];
+                o.hLineF.setAttribute({ visible: false });
+                o.hLineG.setAttribute({ visible: false });
+                o.vArrowF.setAttribute({ visible: false });
+                o.vArrowG.setAttribute({ visible: false });
+                o.vLabelF.setAttribute({ visible: false });
+                o.vLabelG.setAttribute({ visible: false });
+            });
+            hintMsg.style.display = 'block';
+            readoutEl.style.display = 'none';
+            board.update();
+        }
+
+        // ── Key points ──────────────────────────────────────────────────
+        var fPoints = {};
+        var gPoints = {};
+
+        // Points on g(x) = 2^x (dark/black)
+        xVals.forEach(function(xv) {
+            var pt = board.create('point', [xv, gFunc(xv)], {
+                name: '', size: 4, color: COL_G, fixed: true,
+                showInfobox: false, highlight: true,
+                highlightFillColor: COL_G, highlightStrokeColor: COL_G
+            });
+            gPoints[xv] = pt;
+            pt.on('over', function() { showOverlays(xv); });
+            pt.on('out', function() { hideAll(); });
+        });
+
+        // Points on f(x) = 3(2)^x (deep blue)
+        xVals.forEach(function(xv) {
+            var pt = board.create('point', [xv, fFunc(xv)], {
+                name: '', size: 4, color: COL_F, fixed: true,
+                showInfobox: false, highlight: true,
+                highlightFillColor: COL_F, highlightStrokeColor: COL_F
+            });
+            fPoints[xv] = pt;
+            pt.on('over', function() { showOverlays(xv); });
+            pt.on('out', function() { hideAll(); });
+        });
+    </script>
+</body>
+</html>
