@@ -844,6 +844,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         // For container validation, student input is already in nerdamer form
         return this.validateInputNerdamer(assembled, syntheticSpec);
+    };
 
     /**
      * Validate a container that assembles into an equation/inequality.
