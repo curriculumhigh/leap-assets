@@ -475,6 +475,28 @@
 .req-kp-btn-op    { background: #e0ddd4; }
 .req-kp-btn-nav   { background: #e0ddd4; }
 .req-kp-btn-sym   { background: #e8f0fe; }
+.req-kp-btn-abc   { background: #f0fdf4; }
+.req-kp-btn-abc.wide { grid-column: span 2; }
+.req-kp-btn-abc.space { grid-column: span 4; }
+.req-kp-btn-shift { background: #e0ddd4; font-size: 14px; }
+.req-kp-btn-shift.active { background: #7c3aed; color: #fff; }
+
+/* abc mode: full-width QWERTY layout replacing both panels */
+.req-kp-abc {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 1px;
+    background: #e0e0e0;
+    width: 100%;
+}
+.req-kp-abc .req-kp-btn { min-width: 0; }
+
+/* When abc mode is active, hide the two-panel body and show abc panel */
+.req-kp-body.abc-active .req-kp-numpad,
+.req-kp-body.abc-active .req-kp-symbols { display: none; }
+.req-kp-body .req-kp-abc { display: none; }
+.req-kp-body.abc-active .req-kp-abc { display: grid; }
+.req-kp-body.abc-active { flex-direction: column; }
 
 /* Display math inside indented blocks should left-align, not center */
 [style*="margin-left"] .katex-display,

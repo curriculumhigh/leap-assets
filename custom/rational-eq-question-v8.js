@@ -4007,9 +4007,18 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         ]
     };
 
+    // ── ABC (QWERTY) key layout ──
+    var KEYPAD_ABC_LOWER = [
+        "q","w","e","r","t","y","u","i","o","p",
+        "a","s","d","f","g","h","j","k","l",
+        "z","x","c","v","b","n","m"
+    ];
+
     Question.prototype.buildKeypad = function ($container) {
         var self = this;
         var groups = self.question.keypad || ["algebra"];
+        // Always include "abc" in dropdown options (prepend it)
+        var allGroups = ["abc"].concat(groups);
         var $keypad = $('<div class="req-keypad" id="' + self.uid + '-keypad"></div>');
 
         // Header (drag handle)
@@ -4025,27 +4034,34 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         $header.append($close);
         $keypad.append($header);
 
-        // Toolbar (group dropdown) — only if >1 group
-        if (groups.length > 1) {
-            var $toolbar = $('<div class="req-kp-toolbar"></div>');
-            var $select = $('<select class="req-kp-group-select"></select>');
-            groups.forEach(function (g) {
-                $select.append($('<option></option>').val(g).text(g.charAt(0).toUpperCase() + g.slice(1)));
-            });
-            $select.on("change", function () {
-                self._populateSymbolPanel($keypad.find(".req-kp-symbols"), $(this).val());
-            });
-            $toolbar.append($select);
-            $keypad.append($toolbar);
-        }
+        // Toolbar (group dropdown) — always shown (abc is always available)
+        var $toolbar = $('<div class="req-kp-toolbar"></div>');
+        var $select = $('<select class="req-kp-group-select"></select>');
+        allGroups.forEach(function (g) {
+            $select.append($('<option></option>').val(g).text(g.charAt(0).toUpperCase() + g.slice(1)));
+        });
+        // Default to first math group (skip abc)
+        $select.val(groups[0]);
+        $select.on("change", function () {
+            var val = $(this).val();
+            self._switchKeypadMode($keypad, val);
+        });
+        $toolbar.append($select);
+        $keypad.append($toolbar);
 
-        // Body (two panels)
+        // Body (two panels + abc panel)
         var $body = $('<div class="req-kp-body"></div>');
         var $numpad = $('<div class="req-kp-numpad"></div>');
         var $symbols = $('<div class="req-kp-symbols"></div>');
         self._buildPanelButtons(KEYPAD_NUMPAD, $numpad);
         self._populateSymbolPanel($symbols, groups[0]);
         $body.append($numpad).append($symbols);
+
+        // ABC panel (hidden by default, shown when "abc" selected)
+        var $abc = $('<div class="req-kp-abc"></div>');
+        self._buildAbcPanel($abc);
+        $body.append($abc);
+
         $keypad.append($body);
 
         // Drag support
@@ -4096,6 +4112,134 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var keys = KEYPAD_PRESETS[groupName] || KEYPAD_PRESETS.algebra;
         $panel.empty();
         this._buildPanelButtons(keys, $panel, "sym");
+    };
+
+    Question.prototype._buildAbcPanel = function ($panel) {
+        var self = this;
+        self._abcShifted = false;
+
+        // Row 1: q-p (10 keys)
+        KEYPAD_ABC_LOWER.slice(0, 10).forEach(function (ch) {
+            var $btn = $('<button class="req-kp-btn req-kp-btn-abc" data-ch="' + ch + '">' + ch + '</button>');
+            $btn.on("mousedown", function (ev) {
+                ev.preventDefault();
+                if (!self.focusedMQField) return;
+                var c = self._abcShifted ? ch.toUpperCase() : ch;
+                self.focusedMQField.write(c);
+                self.focusedMQField.focus();
+            });
+            $panel.append($btn);
+        });
+
+        // Row 2: a-l (9 keys) — offset by 0.5 col visually, but in 10-col grid we leave col 10 empty
+        KEYPAD_ABC_LOWER.slice(10, 19).forEach(function (ch) {
+            var $btn = $('<button class="req-kp-btn req-kp-btn-abc" data-ch="' + ch + '">' + ch + '</button>');
+            $btn.on("mousedown", function (ev) {
+                ev.preventDefault();
+                if (!self.focusedMQField) return;
+                var c = self._abcShifted ? ch.toUpperCase() : ch;
+                self.focusedMQField.write(c);
+                self.focusedMQField.focus();
+            });
+            $panel.append($btn);
+        });
+        // Empty cell to fill row 2 (col 10)
+        $panel.append($('<div class="req-kp-btn" style="visibility:hidden"></div>'));
+
+        // Row 3: shift + z-m (7 keys) + backspace = 10 cols (shift=1, 7 letters, backspace=2)
+        var $shift = $('<button class="req-kp-btn req-kp-btn-shift">⇧</button>');
+        $shift.on("mousedown", function (ev) {
+            ev.preventDefault();
+            self._abcShifted = !self._abcShifted;
+            $(this).toggleClass("active", self._abcShifted);
+            // Update all letter labels
+            $panel.find("[data-ch]").each(function () {
+                var ch = $(this).attr("data-ch");
+                $(this).text(self._abcShifted ? ch.toUpperCase() : ch);
+            });
+        });
+        $panel.append($shift);
+
+        KEYPAD_ABC_LOWER.slice(19).forEach(function (ch) {
+            var $btn = $('<button class="req-kp-btn req-kp-btn-abc" data-ch="' + ch + '">' + ch + '</button>');
+            $btn.on("mousedown", function (ev) {
+                ev.preventDefault();
+                if (!self.focusedMQField) return;
+                var c = self._abcShifted ? ch.toUpperCase() : ch;
+                self.focusedMQField.write(c);
+                self.focusedMQField.focus();
+            });
+            $panel.append($btn);
+        });
+
+        var $bksp = $('<button class="req-kp-btn req-kp-btn-nav req-kp-btn-abc wide">⌫</button>');
+        $bksp.on("mousedown", function (ev) {
+            ev.preventDefault();
+            if (!self.focusedMQField) return;
+            self.focusedMQField.keystroke("Backspace");
+            self.focusedMQField.focus();
+        });
+        $panel.append($bksp);
+
+        // Row 4: ◀ ▶ (space) . , (10 cols: nav=1 each, space=4, punct=1 each, pad remaining)
+        var $left = $('<button class="req-kp-btn req-kp-btn-nav">◀</button>');
+        $left.on("mousedown", function (ev) {
+            ev.preventDefault();
+            if (!self.focusedMQField) return;
+            self.focusedMQField.keystroke("Left");
+            self.focusedMQField.focus();
+        });
+        $panel.append($left);
+
+        var $right = $('<button class="req-kp-btn req-kp-btn-nav">▶</button>');
+        $right.on("mousedown", function (ev) {
+            ev.preventDefault();
+            if (!self.focusedMQField) return;
+            self.focusedMQField.keystroke("Right");
+            self.focusedMQField.focus();
+        });
+        $panel.append($right);
+
+        var $space = $('<button class="req-kp-btn req-kp-btn-abc space">&nbsp;</button>');
+        $space.on("mousedown", function (ev) {
+            ev.preventDefault();
+            if (!self.focusedMQField) return;
+            self.focusedMQField.write("\\ ");
+            self.focusedMQField.focus();
+        });
+        $panel.append($space);
+
+        var $dot = $('<button class="req-kp-btn req-kp-btn-abc">.</button>');
+        $dot.on("mousedown", function (ev) {
+            ev.preventDefault();
+            if (!self.focusedMQField) return;
+            self.focusedMQField.write(".");
+            self.focusedMQField.focus();
+        });
+        $panel.append($dot);
+
+        var $comma = $('<button class="req-kp-btn req-kp-btn-abc">,</button>');
+        $comma.on("mousedown", function (ev) {
+            ev.preventDefault();
+            if (!self.focusedMQField) return;
+            self.focusedMQField.write(",");
+            self.focusedMQField.focus();
+        });
+        $panel.append($comma);
+
+        // Fill remaining 2 cells in row 4
+        $panel.append($('<div class="req-kp-btn" style="visibility:hidden"></div>'));
+        $panel.append($('<div class="req-kp-btn" style="visibility:hidden"></div>'));
+    };
+
+    Question.prototype._switchKeypadMode = function ($keypad, mode) {
+        var $body = $keypad.find(".req-kp-body");
+        if (mode === "abc") {
+            $body.addClass("abc-active");
+        } else {
+            $body.removeClass("abc-active");
+            this._populateSymbolPanel($keypad.find(".req-kp-symbols"), mode);
+        }
     };
 
     Question.prototype._initKeypadDrag = function ($keypad, $header) {
