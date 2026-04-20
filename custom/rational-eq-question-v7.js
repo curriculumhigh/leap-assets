@@ -87,6 +87,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             || href.indexOf("/classroom") >= 0
             || href.indexOf("teacher") >= 0;
 
+        // QC mode: all steps visible + interactive, no locking after correct answers
+        this.isQC = href.indexOf("qc=1") >= 0;
+
         // Internal state
         this.MQ = null;
         this.mqFields = {};
@@ -202,7 +205,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         });
 
         // Branch based on state and role
-        if (self.isTeacher) {
+        if (self.isQC) {
+            // QC mode: unlock everything, keep interactive, no locking on correct
+            setTimeout(function () { self._applyQCMode(); }, 200);
+        } else if (self.isTeacher) {
             // v4: Teacher live view — grayed out, real-time updates, step progress
             setTimeout(function () {
                 self._applyTeacherLiveMode();
@@ -2097,6 +2103,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             : '<span style="color:#e8883a;font-size:16px;">&#10007;</span>');
 
         if (allCorrect) {
+            if (self.isQC) {
+                // QC mode: show tick but don't lock — keep inputs editable
+                self.updateRowStates(sec);
+                self.events.trigger("changed", self.getResponse());
+                return;
+            }
+
             self.completedRows[sec.id][rowIdx] = true;
 
             // Disable inputs
@@ -2228,6 +2241,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         }
 
         if (allCorrect) {
+            if (self.isQC) {
+                // QC mode: show tick but don't lock — keep inputs editable
+                $("#" + self.uid + "-tick-" + sec.id).css("visibility", "visible");
+                self.events.trigger("changed", self.getResponse());
+                return;
+            }
+
             self.completedSections[sec.id] = true;
 
             // Hide actions, show tick on right edge
@@ -3401,6 +3421,30 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 }
             }, 700);
         }
+    };
+
+    /**
+     * QC mode: unlock all sections and rows so the entire widget is visible
+     * and interactive. Inputs remain editable; correct answers don't lock.
+     */
+    Question.prototype._applyQCMode = function () {
+        var self = this;
+        var sections = self.question.sections || [];
+
+        // Unlock all sections
+        self.$el.find(".req-section-locked").removeClass("req-section-locked");
+
+        // Unlock and activate all equation-table rows
+        sections.forEach(function (sec) {
+            if (sec.type === "equation-table") {
+                if (!self.unlockedRows[sec.id]) self.unlockedRows[sec.id] = {};
+                if (!self.completedRows[sec.id]) self.completedRows[sec.id] = {};
+                sec.rows.forEach(function (row, ri) {
+                    self.unlockedRows[sec.id][ri] = true;
+                });
+                self.updateRowStates(sec);
+            }
+        });
     };
 
     /**
