@@ -4118,58 +4118,54 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var self = this;
         self._abcShifted = false;
 
+        // Helper: render letter label via KaTeX (italic math, matching x/y in symbol panel)
+        function renderLetter($btn, ch, shifted) {
+            var c = shifted ? ch.toUpperCase() : ch;
+            try {
+                $btn.html(katex.renderToString(c, { throwOnError: false }));
+            } catch (e) { $btn.text(c); }
+        }
+
+        // Helper: create a letter button
+        function makeLetter(ch) {
+            var $btn = $('<button class="req-kp-btn req-kp-btn-abc" data-ch="' + ch + '"></button>');
+            renderLetter($btn, ch, false);
+            $btn.on("mousedown", function (ev) {
+                ev.preventDefault();
+                if (!self.focusedMQField) return;
+                var c = self._abcShifted ? ch.toUpperCase() : ch;
+                self.focusedMQField.write(c);
+                self.focusedMQField.focus();
+            });
+            return $btn;
+        }
+
         // Row 1: q-p (10 keys)
         KEYPAD_ABC_LOWER.slice(0, 10).forEach(function (ch) {
-            var $btn = $('<button class="req-kp-btn req-kp-btn-abc" data-ch="' + ch + '">' + ch + '</button>');
-            $btn.on("mousedown", function (ev) {
-                ev.preventDefault();
-                if (!self.focusedMQField) return;
-                var c = self._abcShifted ? ch.toUpperCase() : ch;
-                self.focusedMQField.write(c);
-                self.focusedMQField.focus();
-            });
-            $panel.append($btn);
+            $panel.append(makeLetter(ch));
         });
 
-        // Row 2: a-l (9 keys) — offset by 0.5 col visually, but in 10-col grid we leave col 10 empty
+        // Row 2: a-l (9 keys) + 1 empty cell
         KEYPAD_ABC_LOWER.slice(10, 19).forEach(function (ch) {
-            var $btn = $('<button class="req-kp-btn req-kp-btn-abc" data-ch="' + ch + '">' + ch + '</button>');
-            $btn.on("mousedown", function (ev) {
-                ev.preventDefault();
-                if (!self.focusedMQField) return;
-                var c = self._abcShifted ? ch.toUpperCase() : ch;
-                self.focusedMQField.write(c);
-                self.focusedMQField.focus();
-            });
-            $panel.append($btn);
+            $panel.append(makeLetter(ch));
         });
-        // Empty cell to fill row 2 (col 10)
         $panel.append($('<div class="req-kp-btn" style="visibility:hidden"></div>'));
 
-        // Row 3: shift + z-m (7 keys) + backspace = 10 cols (shift=1, 7 letters, backspace=2)
+        // Row 3: shift + z-m (7 keys) + backspace = 10 cols
         var $shift = $('<button class="req-kp-btn req-kp-btn-shift">⇧</button>');
         $shift.on("mousedown", function (ev) {
             ev.preventDefault();
             self._abcShifted = !self._abcShifted;
             $(this).toggleClass("active", self._abcShifted);
-            // Update all letter labels
+            // Re-render all letter labels via KaTeX
             $panel.find("[data-ch]").each(function () {
-                var ch = $(this).attr("data-ch");
-                $(this).text(self._abcShifted ? ch.toUpperCase() : ch);
+                renderLetter($(this), $(this).attr("data-ch"), self._abcShifted);
             });
         });
         $panel.append($shift);
 
         KEYPAD_ABC_LOWER.slice(19).forEach(function (ch) {
-            var $btn = $('<button class="req-kp-btn req-kp-btn-abc" data-ch="' + ch + '">' + ch + '</button>');
-            $btn.on("mousedown", function (ev) {
-                ev.preventDefault();
-                if (!self.focusedMQField) return;
-                var c = self._abcShifted ? ch.toUpperCase() : ch;
-                self.focusedMQField.write(c);
-                self.focusedMQField.focus();
-            });
-            $panel.append($btn);
+            $panel.append(makeLetter(ch));
         });
 
         var $bksp = $('<button class="req-kp-btn req-kp-btn-nav req-kp-btn-abc wide">⌫</button>');

@@ -475,7 +475,7 @@
 .req-kp-btn-op    { background: #e0ddd4; }
 .req-kp-btn-nav   { background: #e0ddd4; }
 .req-kp-btn-sym   { background: #e8f0fe; }
-.req-kp-btn-abc   { background: #f0fdf4; }
+.req-kp-btn-abc   { background: #e8f0fe; }
 .req-kp-btn-abc.wide { grid-column: span 2; }
 .req-kp-btn-abc.space { grid-column: span 4; }
 .req-kp-btn-shift { background: #e0ddd4; font-size: 14px; }
