@@ -636,6 +636,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // ── v5: Unified validation with constraints ──
         var self = this;
         var method = inputSpec.method || "equivSymbolic";
+        if (method === "equivLiteral") method = "equiLiteral"; // normalize alias
         var constraints = inputSpec.constraints || {};
         var studentNerd = this.latexToNerdamer(studentLatex);
         if (!studentNerd.trim()) return false;
@@ -900,6 +901,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
      */
     Question.prototype.validateInputNerdamer = function (studentNerd, inputSpec) {
         var method = inputSpec.method || "equivSymbolic";
+        if (method === "equivLiteral") method = "equiLiteral"; // normalize alias
         var constraints = inputSpec.constraints || {};
 
         if (!studentNerd.trim()) return false;
