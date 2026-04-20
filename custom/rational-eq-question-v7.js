@@ -805,21 +805,41 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             assembled = assembled.replace("{{" + i + "}}", "(" + nerd + ")");
         }
 
+        // Step 1b: Strip LaTeX braces from assembled expression and answer.
+        // assembleTemplate uses LaTeX syntax (e.g. 10^{ {{0}} }) but nerdamer
+        // misinterprets { } — it ignores brace contents, making all values equal.
+        assembled = this._stripLatexBraces(assembled);
+        var answer = this._stripLatexBraces(container.answer);
+
         // Step 2: Detect equation/inequality in assembled expression
         var relMatch = assembled.match(/^(.+?)(=|<=|>=|<|>)(.+)$/);
         if (relMatch) {
-            return this.validateContainerRelation(assembled, container, relMatch);
+            return this.validateContainerRelation(assembled, { answer: answer, method: container.method, constraints: container.constraints }, relMatch);
         }
 
         // Step 3: Plain expression — validate via inputSpec-style
         var syntheticSpec = {
-            answer: container.answer,
+            answer: answer,
             method: container.method || "equivSymbolic",
             constraints: container.constraints || {}
         };
 
         // For container validation, student input is already in nerdamer form
         return this.validateInputNerdamer(assembled, syntheticSpec);
+    };
+
+    /**
+     * Strip LaTeX brace syntax from a string so nerdamer can parse it correctly.
+     * Converts ^{...} → ^(...), _{...} → _(...), then removes remaining bare { }.
+     */
+    Question.prototype._stripLatexBraces = function (s) {
+        if (!s) return s;
+        // Convert ^{...} and _{...} to ^(...) and _(...)
+        s = s.replace(/\^{([^{}]+)}/g, "^($1)");
+        s = s.replace(/_{([^{}]+)}/g, "_($1)");
+        // Remove any remaining bare braces
+        s = s.replace(/[{}]/g, "");
+        return s;
     };
 
     /**
