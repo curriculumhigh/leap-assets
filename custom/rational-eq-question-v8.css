@@ -2,6 +2,7 @@
 
 /* ── Base widget font (override Learnosity defaults) ── */
 .req-widget { font-family: "Noto Serif", serif; font-size: 16px; line-height: 1.7; }
+.req-dd-item .katex .mord.text { font-family: "Noto Serif", serif; }
 
 /* ── Scaffold wrapper (wraps each step — blue left bar) ── */
 .req-scaffold-block {
