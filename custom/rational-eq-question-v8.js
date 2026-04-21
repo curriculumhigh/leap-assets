@@ -55,6 +55,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     }
 
     function loadDeps() {
+        loadCSS("https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap");
         loadCSS(CDN.katexCSS);
         loadCSS(CDN.mqCSS);
         if (!window.jQuery) window.jQuery = $;
