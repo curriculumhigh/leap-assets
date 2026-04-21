@@ -125,7 +125,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             .parent().find(".lrn_stimulus").hide();
 
         // Render stimulus with KaTeX
-        var stim = q.stimulus || "";
+        var stim = self._sanitizeContent(q.stimulus || "");
         if (stim) {
             $w.append($('<p style="font-size:16px;line-height:1.7;margin:0 0 14px;"></p>').html(stim));
         }
@@ -460,6 +460,20 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     };
 
     // Convert newlines in text to HTML: detect ordered/unordered lists, remaining \n → <br>
+    // ── Strip copy-paste artifacts (inline styles, <meta> tags) from content ──
+    Question.prototype._sanitizeContent = function (text) {
+        if (!text) return text;
+        // Remove <meta charset="utf-8"> tags
+        text = text.replace(/<meta[^>]*>/gi, '');
+        // Remove style attributes from span/div tags (copy-paste from rich text)
+        text = text.replace(/(<(?:span|div|p))\s+style="[^"]*"/gi, '$1');
+        // Unwrap empty <span> and <div> wrappers: <span>content</span> → content
+        text = text.replace(/<span>([\s\S]*?)<\/span>/gi, '$1');
+        // Remove empty <div></div>
+        text = text.replace(/<div><\/div>/gi, '');
+        return text;
+    };
+
     Question.prototype._formatTextBlock = function (text) {
         if (!text || text.indexOf("\n") === -1) return text;
         var lines = text.split("\n");
@@ -1376,7 +1390,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     // ── Section builders ──
     Question.prototype.buildTextSection = function (sec) {
         var $div = $('<div id="' + this.uid + '-sec-' + sec.id + '"></div>');
-        $div.append($("<div></div>").html(this._formatTextBlock(sec.content)));
+        $div.append($("<div></div>").html(this._formatTextBlock(this._sanitizeContent(sec.content))));
         return $div;
     };
 
@@ -1387,7 +1401,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Render preamble text before the table (if any)
         if (sec.preamble) {
             var $pre = $('<div class="req-preamble" style="font-size:16px;line-height:1.7;margin:0 0 6px;"></div>');
-            $pre.html(self._formatTextBlock(sec.preamble));
+            $pre.html(self._formatTextBlock(self._sanitizeContent(sec.preamble)));
             self.renderKaTeX($pre[0]);
             $wrapper.append($pre);
         }
@@ -1466,7 +1480,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var $content = $('<div style="flex:1"></div>');
 
         var hasCtr = sec.containers && sec.containers.length > 0;
-        var rawTpl = sec.template || "";
+        var rawTpl = self._sanitizeContent(sec.template || "");
         var tpl = self._extractDNFromMath(
             (hasCtr && self.isTeacher)
                 ? self._markContainerBounds(rawTpl, sec.id, "0")
@@ -1679,7 +1693,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         }
 
         // v6 unified path: normalize to content format
-        var rawContent = self._normalizeToContent(row);
+        var rawContent = self._sanitizeContent(self._normalizeToContent(row));
         var hasContainers = row.containers && row.containers.length > 0;
         var tpl = self._extractDNFromMath(
             (hasContainers && self.isTeacher)
