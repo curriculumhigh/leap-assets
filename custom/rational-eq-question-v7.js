@@ -449,9 +449,16 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         if (!text) return text;
         // Remove <meta charset="utf-8"> tags
         text = text.replace(/<meta[^>]*>/gi, '');
-        // Remove style attributes from span/div tags (copy-paste from rich text)
-        text = text.replace(/(<(?:span|div|p))\s+style="[^"]*"/gi, '$1');
-        // Unwrap empty <span> and <div> wrappers: <span>content</span> → content
+        // Strip style entirely from <span> (always copy-paste junk; legitimate spans don't use style)
+        text = text.replace(/<span\s+style="[^"]*"/gi, '<span');
+        // For <div> and <p>: strip only font-related CSS properties, preserve layout (margin, padding, etc.)
+        text = text.replace(/(<(?:div|p))\s+style="([^"]*)"/gi, function (m, tag, css) {
+            var cleaned = css.replace(/\b(?:font-family|font-size|font-style|font-variant[\w-]*|font-weight|letter-spacing|color|box-sizing)\s*:[^;]*;?\s*/gi, '').trim();
+            // Remove trailing semicolons and whitespace
+            cleaned = cleaned.replace(/;\s*$/, '').trim();
+            return cleaned ? tag + ' style="' + cleaned + '"' : tag;
+        });
+        // Unwrap bare <span>content</span> (no remaining attributes)
         text = text.replace(/<span>([\s\S]*?)<\/span>/gi, '$1');
         // Remove empty <div></div>
         text = text.replace(/<div><\/div>/gi, '');
