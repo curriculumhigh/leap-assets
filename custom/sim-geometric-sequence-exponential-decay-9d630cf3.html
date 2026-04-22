@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometric Sequence — Exponential Decay</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 185px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 6px;
+        }
+        .checkbox-row {
+            display: flex; align-items: flex-start; gap: 8px; cursor: pointer;
+        }
+        .checkbox-row input[type="checkbox"] {
+            margin-top: 3px; width: 15px; height: 15px; cursor: pointer;
+            accent-color: #2563EB;
+        }
+        .checkbox-label { font-size: 13px; color: #333; line-height: 1.5; }
+        .checkbox-equation { margin-top: 6px; display: none; }
+        .curve-legend {
+            display: flex; align-items: center; gap: 6px;
+            white-space: nowrap;
+        }
+        .curve-swatch {
+            width: 20px; height: 3px; border-radius: 1px; background: #2563EB; flex-shrink: 0;
+        }
+        #eq-label { font-size: 13px; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-section">
+                    <div class="panel-label">Options</div>
+                    <label class="checkbox-row">
+                        <input type="checkbox" id="cb-curve">
+                        <div>
+                            <div class="checkbox-label">Show curve joining points</div>
+                            <div class="checkbox-equation" id="eq-section">
+                                <div class="curve-legend">
+                                    <div class="curve-swatch"></div>
+                                    <span id="eq-label"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+
+    <script>
+        // Render equation label
+        katex.render('\\small f(x)=256\\cdot\\left(\\tfrac{1}{4}\\right)^{x-1}', document.getElementById('eq-label'), { throwOnError: false });
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 300, 8.8, -20],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 50
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [8.4, -8, '<i>n</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.15, 292, '<i>a</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.38, 282, '<i style="font-size:10px">n</i>'], { fontSize: 10, fixed: true, highlight: false });
+
+        // Exponential decay curve (hidden by default)
+        var expCurve = board.create('functiongraph', [
+            function(x) { return 256 * Math.pow(0.25, x - 1); }
+        ], {
+            strokeColor: '#2563EB', strokeWidth: 1.5, fixed: true, highlight: false,
+            visible: false
+        });
+
+        // Sequence data
+        var seqData = [
+            [1, 256], [2, 64], [3, 16], [4, 4], [5, 1], [6, 0.25], [7, 0.0625]
+        ];
+
+        // Tooltip formatting — display fractions for non-integer values
+        var tooltipLabels = {
+            1: '256',
+            2: '64',
+            3: '16',
+            4: '4',
+            5: '1',
+            6: '\\tfrac{1}{4}',
+            7: '\\tfrac{1}{16}'
+        };
+
+        // Tooltip setup
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function showTooltip(pt, xVal, yLabel) {
+            var latex = '\\left(' + xVal + ',\\,' + yLabel + '\\right)';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = '#222222';
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [pt.X(), pt.Y()], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+        }
+
+        // Create discrete points
+        for (var i = 0; i < seqData.length; i++) {
+            (function(idx) {
+                var xv = seqData[idx][0];
+                var yv = seqData[idx][1];
+                var yLabel = tooltipLabels[xv];
+                var pt = board.create('point', [xv, yv], {
+                    name: '', size: 5, color: '#222222', fixed: true,
+                    showInfobox: false, highlight: true,
+                    highlightFillColor: '#222222', highlightStrokeColor: '#222222'
+                });
+                pt.on('over', function() { showTooltip(pt, xv, yLabel); });
+                pt.on('out', function() { hideTooltip(); });
+            })(i);
+        }
+
+        // Checkbox toggle
+        var cbCurve = document.getElementById('cb-curve');
+        var eqSection = document.getElementById('eq-section');
+
+        cbCurve.addEventListener('change', function() {
+            var show = cbCurve.checked;
+            expCurve.setAttribute({ visible: show });
+            eqSection.style.display = show ? 'block' : 'none';
+            board.update();
+        });
+    </script>
+</body>
+</html>
