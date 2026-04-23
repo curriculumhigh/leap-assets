@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exponential and Horizontal Line Intersection</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 190px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 8px;
+        }
+        .equation-row { min-height: 28px; margin-bottom: 8px; }
+        .hint-text {
+            font-size: 11px; color: #aaa; line-height: 1.5;
+            border-top: 1px solid #e5e7eb; padding-top: 12px;
+        }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-section">
+                    <div class="panel-label">Equations</div>
+                    <div class="equation-row" id="eq1"></div>
+                    <div class="equation-row" id="eq2"></div>
+                </div>
+                <div class="hint-text">
+                    Hover over the intersection point to view its coordinates.
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+
+    <script>
+        // Render panel equations
+        katex.render('y = \\left(\\tfrac{1}{3}\\right)^{x+2}', document.getElementById('eq1'), { throwOnError: false, displayMode: false });
+        katex.render('\\color{#2563EB}{y = 5}', document.getElementById('eq2'), { throwOnError: false, displayMode: false });
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 12, 4, -2],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 2
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [3.6, -0.6, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 11.5, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Primary curve: y = (1/3)^(x+2)
+        board.create('functiongraph', [
+            function(x) { return Math.pow(1/3, x + 2); }
+        ], { strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Secondary line: y = 5
+        board.create('functiongraph', [
+            function(x) { return 5; },
+            -7, 4
+        ], { strokeColor: '#2563EB', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // Intersection point
+        var xInt = -2 - Math.log(5) / Math.log(3);
+        var yInt = 5;
+
+        var intPt = board.create('point', [xInt, yInt], {
+            name: '', size: 5, color: '#222222', fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: '#222222', highlightStrokeColor: '#222222',
+            highlightSize: 6
+        });
+
+        // Tooltip logic
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function showTooltip(pt, color) {
+            var xCoord = pt.X();
+            var yCoord = pt.Y();
+            var xStr = xCoord.toFixed(2);
+            var yStr = Math.round(yCoord).toString();
+            var latex = '\\color{' + color + '}{\\left(' + xStr + ',\\,' + yStr + '\\right)}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xCoord, yCoord], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+        }
+
+        intPt.on('over', function() { showTooltip(intPt, '#222222'); });
+        intPt.on('out', function() { hideTooltip(); });
+    </script>
+</body>
+</html>
