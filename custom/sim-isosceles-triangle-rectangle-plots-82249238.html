@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Isosceles Triangle and Rectangle Plots</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 8.5, 16.5, -2.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Color constants ─────────────────────────────────────────────
+        var COL_TRI_FILL = '#BBF7D0';
+        var COL_TRI_STROKE = '#059669';
+        var COL_RECT_FILL = '#A7F3D0';
+        var COL_RECT_STROKE = '#15803D';
+        var COL_TRI_LABEL = '#047857';
+        var COL_RECT_LABEL = '#166534';
+
+        // ── Triangle geometry ───────────────────────────────────────────
+        var triLeft = [0.5, 0];
+        var triRight = [5.5, 0];
+        var triApex = [3.0, 5.5];
+
+        var tA = board.create('point', triLeft, { visible: false, name: '' });
+        var tB = board.create('point', triRight, { visible: false, name: '' });
+        var tC = board.create('point', triApex, { visible: false, name: '' });
+
+        board.create('polygon', [tA, tB, tC], {
+            fillColor: COL_TRI_FILL,
+            fillOpacity: 0.40,
+            borders: { strokeColor: COL_TRI_STROKE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Triangle labels ─────────────────────────────────────────────
+        board.create('text', [
+            (triLeft[0] + triRight[0]) / 2,
+            -0.7,
+            '4x'
+        ], {
+            useKatex: true, fontSize: 16, color: COL_TRI_LABEL,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var leftMidX = (triLeft[0] + triApex[0]) / 2;
+        var leftMidY = (triLeft[1] + triApex[1]) / 2;
+        board.create('text', [
+            leftMidX - 0.7,
+            leftMidY + 0.1,
+            '3y'
+        ], {
+            useKatex: true, fontSize: 16, color: COL_TRI_LABEL,
+            anchorX: 'right', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var rightMidX = (triRight[0] + triApex[0]) / 2;
+        var rightMidY = (triRight[1] + triApex[1]) / 2;
+        board.create('text', [
+            rightMidX + 0.7,
+            rightMidY + 0.1,
+            '3y'
+        ], {
+            useKatex: true, fontSize: 16, color: COL_TRI_LABEL,
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Rectangle geometry ──────────────────────────────────────────
+        var rectX = 8;
+        var rectY = 0;
+        var rectW = 6.5;
+        var rectH = 5.5;
+
+        var rA = board.create('point', [rectX, rectY], { visible: false, name: '' });
+        var rB = board.create('point', [rectX + rectW, rectY], { visible: false, name: '' });
+        var rC = board.create('point', [rectX + rectW, rectY + rectH], { visible: false, name: '' });
+        var rD = board.create('point', [rectX, rectY + rectH], { visible: false, name: '' });
+
+        board.create('polygon', [rA, rB, rC, rD], {
+            fillColor: COL_RECT_FILL,
+            fillOpacity: 0.40,
+            borders: { strokeColor: COL_RECT_STROKE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Rectangle labels (distinct edges only) ──────────────────────
+        board.create('text', [
+            rectX + rectW / 2,
+            -0.7,
+            '6x'
+        ], {
+            useKatex: true, fontSize: 16, color: COL_RECT_LABEL,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [
+            rectX + rectW + 0.7,
+            rectY + rectH / 2,
+            '9y'
+        ], {
+            useKatex: true, fontSize: 16, color: COL_RECT_LABEL,
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
