@@ -54,6 +54,7 @@
 .req-widget table:not(.req-eq-table) th {
     background: #f1f5f9;
     font-weight: 600;
+    text-align: center;
 }
 
 /* ── Equation table ── */
