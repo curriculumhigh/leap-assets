@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph of f(x) = -2·(1/3)^x</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { width: 300px; height: 200px; }
+        .board-wrapper { background: white; border-radius: 8px; padding: 4px; width: 292px; height: 192px; }
+        #board { width: 284px; height: 184px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 6, 6, -8],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 10 },
+                        minorTicks: 0,
+                        ticksDistance: 2
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 10 },
+                        minorTicks: 0,
+                        ticksDistance: 2
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [5.5, -0.6, '<i>x</i>'], { fontSize: 13, fixed: true, highlight: false });
+        board.create('text', [0.2, 5.4, '<i>y</i>'], { fontSize: 13, fixed: true, highlight: false });
+
+        // f(x) = -2 * (1/3)^x
+        board.create('functiongraph', [
+            function(x) { return -2 * Math.pow(1 / 3, x); }
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
