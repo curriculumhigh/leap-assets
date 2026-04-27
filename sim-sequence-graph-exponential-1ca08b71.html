@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sequence Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 440px; margin: 0 auto; padding: 6px; }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; }
+        #board { width: 400px; height: 400px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var xMin = -1.4, xMax = 5.5, yMin = -5, yMax = 59;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [xMin, yMax, xMax, yMin],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var i;
+
+        // Horizontal grid lines (every 2 units on y)
+        for (i = 2; i <= 56; i += 2) {
+            board.create('line', [[0, i], [1, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                straightFirst: true, straightLast: true,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Vertical grid lines (every 1 unit on x)
+        for (i = 1; i <= 5; i++) {
+            board.create('line', [[i, 0], [i, 1]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                straightFirst: true, straightLast: true,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Axes
+        board.create('arrow', [[xMin, 0], [xMax, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        board.create('arrow', [[0, yMin], [0, yMax]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // x-axis labels (every 1)
+        for (i = 1; i <= 5; i++) {
+            board.create('text', [i, -2, String(i)], {
+                fontSize: 10, anchorX: 'middle', anchorY: 'middle',
+                color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        // y-axis labels (every 2)
+        for (i = 2; i <= 56; i += 2) {
+            board.create('text', [-0.5, i, String(i)], {
+                fontSize: 8, anchorX: 'right', anchorY: 'middle',
+                color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        // Axis labels
+        board.create('text', [5.15, -2.5, '<i>n</i>'], {
+            fontSize: 12, fixed: true, highlight: false
+        });
+        board.create('text', [0.2, 57.5, '<i>a<sub>n</sub></i>'], {
+            fontSize: 12, fixed: true, highlight: false
+        });
+
+        // Sequence points: (1,2), (2,6), (3,18), (4,54)
+        var pts = [[1, 2], [2, 6], [3, 18], [4, 54]];
+
+        for (var p = 0; p < pts.length; p++) {
+            board.create('point', pts[p], {
+                name: '',
+                size: 2.5,
+                color: '#222222',
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
