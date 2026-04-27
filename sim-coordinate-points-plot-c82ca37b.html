@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coordinate Points Plot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 17, 7.5, -9],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var bb = [-1.5, 17, 7.5, -9];
+        var xMinG = Math.ceil(bb[0]);
+        var xMaxG = Math.floor(bb[2]);
+        var yMinG = Math.ceil(bb[3]);
+        var yMaxG = Math.floor(bb[1]);
+        var gx, gy, tx, ty;
+
+        // Grid lines — vertical (1-unit spacing)
+        for (gx = xMinG; gx <= xMaxG; gx++) {
+            board.create('segment', [[gx, bb[3]], [gx, bb[1]]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+        // Grid lines — horizontal (1-unit spacing)
+        for (gy = yMinG; gy <= yMaxG; gy++) {
+            board.create('segment', [[bb[0], gy], [bb[2], gy]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+
+        // X-axis with arrow
+        board.create('arrow', [[bb[0], 0], [bb[2], 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Y-axis with arrow
+        board.create('arrow', [[0, bb[3]], [0, bb[1]]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // X-axis: tick marks and labels at every 1 unit
+        for (tx = xMinG; tx <= xMaxG; tx++) {
+            if (tx === 0) continue;
+            board.create('segment', [[tx, -0.25], [tx, 0.25]], {
+                strokeColor: '#444444', strokeWidth: 1,
+                fixed: true, highlight: false
+            });
+            board.create('text', [tx, -0.9, String(tx)], {
+                fontSize: 11, color: '#444444',
+                anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Y-axis: tick marks at every 1 unit, labels at every 2 units
+        for (ty = yMinG; ty <= yMaxG; ty++) {
+            if (ty === 0) continue;
+            // Tick mark at every 1 unit
+            board.create('segment', [[-0.15, ty], [0.15, ty]], {
+                strokeColor: '#444444', strokeWidth: 1,
+                fixed: true, highlight: false
+            });
+            // Label only at every 2 units
+            if (ty % 2 === 0) {
+                board.create('text', [-0.55, ty, String(ty)], {
+                    fontSize: 11, color: '#444444',
+                    anchorX: 'right', anchorY: 'middle',
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // Axis labels near arrow tips
+        board.create('text', [7.0, -0.8, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.35, 16.3, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Points: (1,14), (2,9), (3,4), (4,-1), (5,-6)
+        var pts = [[1, 14], [2, 9], [3, 4], [4, -1], [5, -6]];
+
+        for (var i = 0; i < pts.length; i++) {
+            board.create('point', [pts[i][0], pts[i][1]], {
+                name: '',
+                size: 5,
+                color: '#222222',
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
