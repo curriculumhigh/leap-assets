@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cell Division Tree Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 9, 15, -1],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        // ── Layout constants ────────────────────────────────────────────
+        var Y1 = 7.5;   // Hour 1 y
+        var Y2 = 4.5;   // Hour 2 y
+        var Y3 = 1.5;   // Hour 3 y
+
+        var COL_CELL = '#2563EB';
+        var COL_BRANCH = '#555555';
+        var COL_LABEL = '#444444';
+        var COL_COUNT = '#888888';
+
+        // ── Hour 3 positions (20 nodes) — these drive everything ────────
+        var GROUP_GAP = 0.7;
+        var NODE_GAP = 0.55;
+
+        var h3x = [];
+        var cx = 2.5;
+        var g, n;
+        for (g = 0; g < 5; g++) {
+            for (n = 0; n < 4; n++) {
+                h3x.push(cx);
+                cx += NODE_GAP;
+            }
+            cx += GROUP_GAP;
+        }
+
+        var h2x = [];
+        for (var i = 0; i < 20; i += 2) {
+            h2x.push((h3x[i] + h3x[i + 1]) / 2);
+        }
+
+        var h1x = [];
+        for (var i = 0; i < 10; i += 2) {
+            h1x.push((h2x[i] + h2x[i + 1]) / 2);
+        }
+
+        // ── Draw branches first (behind nodes) ─────────────────────────
+        for (var i = 0; i < 5; i++) {
+            var child1 = i * 2;
+            var child2 = i * 2 + 1;
+            board.create('segment', [[h1x[i], Y1], [h2x[child1], Y2]], {
+                strokeColor: COL_BRANCH, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('segment', [[h1x[i], Y1], [h2x[child2], Y2]], {
+                strokeColor: COL_BRANCH, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+
+        for (var i = 0; i < 10; i++) {
+            var child1 = i * 2;
+            var child2 = i * 2 + 1;
+            board.create('segment', [[h2x[i], Y2], [h3x[child1], Y3]], {
+                strokeColor: COL_BRANCH, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('segment', [[h2x[i], Y2], [h3x[child2], Y3]], {
+                strokeColor: COL_BRANCH, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+
+        // ── Draw nodes (on top of branches) ─────────────────────────────
+        for (var i = 0; i < 5; i++) {
+            board.create('point', [h1x[i], Y1], {
+                name: '', size: 3, color: COL_CELL, strokeColor: COL_CELL,
+                fixed: true, highlight: false, showInfobox: false
+            });
+        }
+
+        for (var i = 0; i < 10; i++) {
+            board.create('point', [h2x[i], Y2], {
+                name: '', size: 2.5, color: COL_CELL, strokeColor: COL_CELL,
+                fixed: true, highlight: false, showInfobox: false
+            });
+        }
+
+        for (var i = 0; i < 20; i++) {
+            board.create('point', [h3x[i], Y3], {
+                name: '', size: 2, color: COL_CELL, strokeColor: COL_CELL,
+                fixed: true, highlight: false, showInfobox: false
+            });
+        }
+
+        // ── Hour labels (left side) ─────────────────────────────────────
+        board.create('text', [-2.8, Y1, '<b>Hour 1</b>'], {
+            fontSize: 13, color: COL_LABEL, fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+        board.create('text', [-2.8, Y1 - 0.55, '5 cells'], {
+            fontSize: 12, color: COL_COUNT, fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+
+        board.create('text', [-2.8, Y2, '<b>Hour 2</b>'], {
+            fontSize: 13, color: COL_LABEL, fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+        board.create('text', [-2.8, Y2 - 0.55, '10 cells'], {
+            fontSize: 12, color: COL_COUNT, fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+
+        board.create('text', [-2.8, Y3, '<b>Hour 3</b>'], {
+            fontSize: 13, color: COL_LABEL, fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+        board.create('text', [-2.8, Y3 - 0.55, '20 cells'], {
+            fontSize: 12, color: COL_COUNT, fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+
+        // ── Subtle horizontal separator lines for each hour level ───────
+        var SEPARATOR_COLOR = '#E5E7EB';
+        var sepLeft = -3.5;
+        var sepRight = 14.5;
+
+        board.create('segment', [[sepLeft, Y1 + 1.0], [sepRight, Y1 + 1.0]], {
+            strokeColor: SEPARATOR_COLOR, strokeWidth: 0.5, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[sepLeft, (Y1 + Y2) / 2], [sepRight, (Y1 + Y2) / 2]], {
+            strokeColor: SEPARATOR_COLOR, strokeWidth: 0.5, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[sepLeft, (Y2 + Y3) / 2], [sepRight, (Y2 + Y3) / 2]], {
+            strokeColor: SEPARATOR_COLOR, strokeWidth: 0.5, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[sepLeft, Y3 - 1.0], [sepRight, Y3 - 1.0]], {
+            strokeColor: SEPARATOR_COLOR, strokeWidth: 0.5, dash: 2,
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
