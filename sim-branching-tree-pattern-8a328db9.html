@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Branching Tree Pattern</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 10.5, 18.5, -1],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_BRANCH = '#059669';
+        var COL_TIP = '#059669';
+        var TIP_SIZE = 2.5;
+
+        function seg(x1, y1, x2, y2, w) {
+            board.create('segment', [[x1, y1], [x2, y2]], {
+                strokeColor: COL_BRANCH,
+                strokeWidth: w,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        function tip(x, y) {
+            board.create('point', [x, y], {
+                name: '',
+                size: TIP_SIZE,
+                color: COL_TIP,
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+        }
+
+        function tree(x, y, angle, len, splits, spread, maxSplits) {
+            var level = maxSplits - splits;
+            var w = Math.max(1.2, 2.8 - level * 0.5);
+
+            if (splits <= 0) {
+                tip(x, y);
+                return;
+            }
+
+            var leftAngle = angle + spread;
+            var rightAngle = angle - spread;
+            var childLen = len * 0.68;
+
+            var lx = x + len * Math.cos(leftAngle);
+            var ly = y + len * Math.sin(leftAngle);
+            var rx = x + len * Math.cos(rightAngle);
+            var ry = y + len * Math.sin(rightAngle);
+
+            seg(x, y, lx, ly, w);
+            seg(x, y, rx, ry, w);
+
+            var childSpread = spread * 0.85;
+            tree(lx, ly, leftAngle, childLen, splits - 1, childSpread, maxSplits);
+            tree(rx, ry, rightAngle, childLen, splits - 1, childSpread, maxSplits);
+        }
+
+        var treeBaseY = 1.2;
+        var trunkHeight = 2.5;
+        var firstBranchLen = 2.2;
+        var spreadAngle = 0.48;
+
+        // Figure 1: 1 split -> 2 tips
+        var x1 = 3;
+        seg(x1, treeBaseY, x1, treeBaseY + trunkHeight, 3.0);
+        tree(x1, treeBaseY + trunkHeight, Math.PI / 2, firstBranchLen, 1, spreadAngle, 1);
+
+        board.create('text', [x1, 0.3, 'Fig 1'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#444444',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        // Figure 2: 2 splits -> 4 tips
+        var x2 = 9.25;
+        seg(x2, treeBaseY, x2, treeBaseY + trunkHeight, 3.0);
+        tree(x2, treeBaseY + trunkHeight, Math.PI / 2, firstBranchLen, 2, spreadAngle, 2);
+
+        board.create('text', [x2, 0.3, 'Fig 2'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#444444',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        // Figure 3: 3 splits -> 8 tips
+        var x3 = 15.5;
+        seg(x3, treeBaseY, x3, treeBaseY + trunkHeight, 3.0);
+        tree(x3, treeBaseY + trunkHeight, Math.PI / 2, firstBranchLen, 3, spreadAngle, 3);
+
+        board.create('text', [x3, 0.3, 'Fig 3'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#444444',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+    </script>
+</body>
+</html>
