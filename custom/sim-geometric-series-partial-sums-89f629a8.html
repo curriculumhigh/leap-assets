@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometric Series Partial Sums</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 720px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 200px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 12px;
+            overflow: hidden;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 4px;
+        }
+        .slider-group { margin-bottom: 4px; }
+        .slider-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 2px;
+        }
+        .slider-name { font-weight: 600; font-size: 13px; }
+        .slider-val-display { min-height: 22px; text-align: right; }
+        .slider-input {
+            width: 100%; -webkit-appearance: none; appearance: none;
+            height: 5px; border-radius: 3px; background: #e5e7eb; outline: none;
+            margin-top: 2px;
+        }
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 15px; height: 15px; border-radius: 50%; cursor: pointer;
+        }
+        .slider-a1::-webkit-slider-thumb { background: #222222; }
+        .slider-r::-webkit-slider-thumb { background: #2563EB; }
+        .slider-n::-webkit-slider-thumb { background: #059669; }
+        .result-section { border-top: 1px solid #e5e7eb; padding-top: 12px; }
+        .result-display { min-height: 30px; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px 10px 10px 20px; min-width: 0; position: relative; }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div>
+                    <div class="panel-label">Parameters</div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-name" style="color: #222222;" id="label-a1"></span>
+                            <span class="slider-val-display" id="val-a1"></span>
+                        </div>
+                        <input type="range" id="slider-a1" class="slider-input slider-a1" min="-5" max="5" step="0.5" value="2">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-name" style="color: #2563EB;" id="label-r"></span>
+                            <span class="slider-val-display" id="val-r"></span>
+                        </div>
+                        <input type="range" id="slider-r" class="slider-input slider-r" min="-2.5" max="2.5" step="0.25" value="0.5">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-name" style="color: #059669;" id="label-n"></span>
+                            <span class="slider-val-display" id="val-n"></span>
+                        </div>
+                        <input type="range" id="slider-n" class="slider-input slider-n" min="1" max="15" step="1" value="1">
+                    </div>
+                </div>
+
+                <div class="result-section">
+                    <div class="panel-label">Partial sum</div>
+                    <div class="result-display" id="result-sn"></div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+                <div class="coord-tooltip" id="tooltip"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ── State ──────────────────────────────────────────────────────── */
+        var a1 = 2, r = 0.5, n = 1;
+
+        /* ── Fraction formatter for r (denominator-4 grid) ─────────────── */
+        function toFrac(v) {
+            if (v === 0) return '0';
+            var sign = v < 0 ? '-' : '';
+            var abs = Math.abs(v);
+            var num4 = Math.round(abs * 4);
+            var num = num4, den = 4;
+            if (num % 4 === 0) { num = num / 4; den = 1; }
+            else if (num % 2 === 0) { num = num / 2; den = 2; }
+            if (den === 1) return sign + num;
+            return sign + '\\tfrac{' + num + '}{' + den + '}';
+        }
+
+        /* ── Partial sum computation (direct summation) ────────────────── */
+        function partialSum(a, ratio, k) {
+            if (k === 0) return 0;
+            var s = 0, term = a;
+            for (var i = 0; i < k; i++) {
+                s += term;
+                term *= ratio;
+            }
+            return s;
+        }
+
+        /* ── Format number for display ─────────────────────────────────── */
+        function fmtNum(v) {
+            if (Math.abs(v) >= 1e6) return v.toExponential(2);
+            if (Math.abs(v - Math.round(v)) < 0.005) return String(Math.round(v));
+            return v.toFixed(2);
+        }
+
+        /* ── Board ─────────────────────────────────────────────────────── */
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.2, 5, 16.5, -5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11, anchorX: 'middle', offset: [0, -14] },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11, anchorX: 'right', offset: [-8, 0] },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        /* ── Axis labels (KaTeX) ───────────────────────────────────────── */
+        board.create('text', [15.8, -0.6, 'n'], {
+            fontSize: 14, fixed: true, highlight: false, useKatex: true
+        });
+        var yAxisLabel = board.create('text', [
+            0.4,
+            function() { return board.getBoundingBox()[1] - 0.3 * (board.getBoundingBox()[1] - board.getBoundingBox()[3]) / 10; },
+            'S_n'
+        ], {
+            fontSize: 14, fixed: true, highlight: false, useKatex: true
+        });
+
+        /* ── Tooltip setup ─────────────────────────────────────────────── */
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function showTooltip(pt) {
+            var xVal = Math.round(pt.X());
+            var yVal = pt.Y();
+            var latex = '\\left(' + xVal + ',\\,' + fmtNum(yVal) + '\\right)';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = '#222222';
+            tooltip.style.display = 'block';
+
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [pt.X(), pt.Y()], board);
+            var sx = coords.scrCoords[1];
+            var sy = coords.scrCoords[2];
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+        /* ── Create point pool (max 15, show/hide as needed) ───────────── */
+        var MAX_N = 15;
+        var points = [];
+        for (var i = 0; i < MAX_N; i++) {
+            (function(idx) {
+                var pt = board.create('point', [
+                    function() { return idx + 1; },
+                    function() { return partialSum(a1, r, idx + 1); }
+                ], {
+                    name: '', size: 4, color: '#222222', fixed: true,
+                    showInfobox: false, highlight: true,
+                    highlightFillColor: '#222222', highlightStrokeColor: '#222222',
+                    highlightSize: 5,
+                    visible: function() { return idx < n; }
+                });
+                pt.on('over', function() { showTooltip(pt); });
+                pt.on('out', function() { hideTooltip(); });
+                points.push(pt);
+            })(i);
+        }
+
+        /* ── Dynamic bounding box ──────────────────────────────────────── */
+        function updateBoundingBox() {
+            var yMin = 0, yMax = 0;
+            for (var i = 0; i < n; i++) {
+                var sv = partialSum(a1, r, i + 1);
+                if (sv < yMin) yMin = sv;
+                if (sv > yMax) yMax = sv;
+            }
+            // Ensure minimum range
+            if (yMax - yMin < 4) {
+                var mid = (yMax + yMin) / 2;
+                yMin = mid - 2;
+                yMax = mid + 2;
+            }
+            var pad = (yMax - yMin) * 0.18;
+            yMin -= pad;
+            yMax += pad;
+
+            // Compute tick distance
+            var yRange = yMax - yMin;
+            var rawStep = yRange / 6;
+            var mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+            var candidates = [1, 2, 2.5, 5, 10];
+            var bestTick = mag;
+            for (var c = 0; c < candidates.length; c++) {
+                var t = candidates[c] * mag;
+                if (t >= rawStep * 0.6) { bestTick = t; break; }
+            }
+
+            // Compute left padding based on largest tick label width
+            var maxAbsY = Math.max(Math.abs(yMin), Math.abs(yMax));
+            var leftPad = -1.5;
+            if (maxAbsY >= 100) leftPad = -2.2;
+            if (maxAbsY >= 1000) leftPad = -3.0;
+            if (maxAbsY >= 10000) leftPad = -3.8;
+            if (maxAbsY >= 100000) leftPad = -4.8;
+
+            board.setBoundingBox([leftPad, yMax, 16.5, yMin]);
+
+            // Update y-axis tick distance
+            if (board.defaultAxes && board.defaultAxes.y) {
+                board.defaultAxes.y.ticks[0].setAttribute({ ticksDistance: bestTick });
+            }
+        }
+
+        /* ── Panel updates ─────────────────────────────────────────────── */
+        function updatePanel() {
+            // a1 display
+            katex.render(
+                'a_1 = ' + fmtNum(a1),
+                document.getElementById('val-a1'),
+                { throwOnError: false }
+            );
+            // r display as fraction
+            katex.render(
+                '\\color{#2563EB}{r = ' + toFrac(r) + '}',
+                document.getElementById('val-r'),
+                { throwOnError: false }
+            );
+            // n display
+            katex.render(
+                '\\color{#059669}{n = ' + n + '}',
+                document.getElementById('val-n'),
+                { throwOnError: false }
+            );
+
+            // Result S_n
+            var sn = partialSum(a1, r, n);
+            katex.render(
+                'S_{' + n + '} = ' + fmtNum(sn),
+                document.getElementById('result-sn'),
+                { throwOnError: false }
+            );
+        }
+
+        /* ── Render static panel labels ────────────────────────────────── */
+        function renderLabels() {
+            katex.render('a_1', document.getElementById('label-a1'), { throwOnError: false });
+            katex.render('\\color{#2563EB}{r}', document.getElementById('label-r'), { throwOnError: false });
+            katex.render('\\color{#059669}{n}', document.getElementById('label-n'), { throwOnError: false });
+        }
+
+        /* ── Full update ───────────────────────────────────────────────── */
+        function fullUpdate() {
+            updateBoundingBox();
+            board.update();
+            updatePanel();
+        }
+
+        /* ── Slider wiring ─────────────────────────────────────────────── */
+        var sliderA1 = document.getElementById('slider-a1');
+        var sliderR = document.getElementById('slider-r');
+        var sliderN = document.getElementById('slider-n');
+
+        sliderA1.addEventListener('input', function() {
+            a1 = parseFloat(this.value);
+            fullUpdate();
+        });
+        sliderR.addEventListener('input', function() {
+            r = parseFloat(this.value);
+            fullUpdate();
+        });
+        sliderN.addEventListener('input', function() {
+            n = parseInt(this.value);
+            fullUpdate();
+        });
+
+        /* ── Initial render ────────────────────────────────────────────── */
+        renderLabels();
+        fullUpdate();
+    </script>
+</body>
+</html>

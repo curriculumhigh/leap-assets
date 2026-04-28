@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partial Sums — Geometric Series r=2</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 190px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 6px;
+        }
+        .series-display { min-height: 28px; margin-bottom: 4px; }
+        .slider-section { border-top: 1px solid #e5e7eb; padding-top: 12px; }
+        .slider-row {
+            display: flex; align-items: center; gap: 8px; margin-top: 6px;
+        }
+        .slider-input {
+            flex: 1; -webkit-appearance: none; appearance: none;
+            height: 5px; border-radius: 3px; background: #e5e7eb; outline: none;
+        }
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 15px; height: 15px; border-radius: 50%; cursor: pointer;
+            background: #222222;
+        }
+        .slider-val {
+            font-size: 14px; font-variant-numeric: tabular-nums;
+            width: 22px; text-align: right; font-weight: 600; color: #222222;
+        }
+        .readout-section { border-top: 1px solid #e5e7eb; padding-top: 12px; }
+        .readout-line { min-height: 28px; margin-bottom: 6px; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-section">
+                    <div class="panel-label">Series</div>
+                    <div class="series-display" id="series-formula"></div>
+                </div>
+                <div class="panel-section slider-section">
+                    <div class="panel-label">Number of terms</div>
+                    <div class="slider-row">
+                        <span style="font-size: 13px; color: #666;">n</span>
+                        <input type="range" id="slider-n" class="slider-input" min="1" max="15" step="1" value="1">
+                        <span class="slider-val" id="val-n">1</span>
+                    </div>
+                </div>
+                <div class="panel-section readout-section">
+                    <div class="panel-label">Partial sum</div>
+                    <div class="readout-line" id="readout-sn"></div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+
+    <script>
+        // ── Precompute partial sums ─────────────────────────────────────────
+        var MAX_N = 15;
+        var partialSums = [];
+        var cumSum = 0;
+        for (var i = 0; i < MAX_N; i++) {
+            cumSum += Math.pow(2, i);
+            partialSums.push(cumSum);
+        }
+
+        // ── Format number with commas for KaTeX ────────────────────────────
+        function formatComma(n) {
+            return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '{,}');
+        }
+
+        // ── Board ───────────────────────────────────────────────────────────
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.8, 36000, 17, -3000],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: {
+                            fontSize: 10,
+                            anchorX: 'right',
+                            offset: [-8, 0]
+                        },
+                        minorTicks: 0,
+                        ticksDistance: 5000
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // ── Axis labels (KaTeX) ─────────────────────────────────────────────
+        board.create('text', [16.2, -1200, 'n'], {
+            fontSize: 14, fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [-2.4, 35000, 'S_n'], {
+            fontSize: 14, fixed: true, highlight: false, useKatex: true
+        });
+
+        // ── Tooltip setup ───────────────────────────────────────────────────
+        var nVal = 1;
+        var points = [];
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function showTooltip(pt, k) {
+            var sn = partialSums[k - 1];
+            var latex = '\\left(' + k + ',\\,' + formatComma(sn) + '\\right)';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = '#222222';
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [pt.X(), pt.Y()], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            if (sy - rect.top < 40) {
+                tooltip.style.left = (sx + 14) + 'px';
+                tooltip.style.top = (sy + 14) + 'px';
+            } else {
+                tooltip.style.left = (sx + 14) + 'px';
+                tooltip.style.top = (sy - 28) + 'px';
+            }
+        }
+
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+        }
+
+        // ── Create all 15 points ────────────────────────────────────────────
+        for (var k = 1; k <= MAX_N; k++) {
+            (function(idx) {
+                var pt = board.create('point', [idx, partialSums[idx - 1]], {
+                    name: '', size: 4, color: '#222222',
+                    fixed: true, showInfobox: false,
+                    highlight: true,
+                    highlightFillColor: '#222222',
+                    highlightStrokeColor: '#222222',
+                    highlightSize: 5,
+                    visible: idx <= nVal
+                });
+                pt.on('over', function() { showTooltip(pt, idx); });
+                pt.on('out', function() { hideTooltip(); });
+                points.push(pt);
+            })(k);
+        }
+
+        // ── Slider sync ─────────────────────────────────────────────────────
+        var sliderN = document.getElementById('slider-n');
+
+        function syncFromSlider() {
+            nVal = parseInt(sliderN.value);
+            for (var i = 0; i < MAX_N; i++) {
+                points[i].setAttribute({ visible: (i < nVal) });
+            }
+            board.update();
+            updatePanel();
+        }
+
+        sliderN.addEventListener('input', syncFromSlider);
+
+        // ── Panel updates ───────────────────────────────────────────────────
+        function updatePanel() {
+            document.getElementById('val-n').textContent = nVal;
+
+            var sn = partialSums[nVal - 1];
+
+            katex.render(
+                'S_{' + nVal + '} = ' + formatComma(sn),
+                document.getElementById('readout-sn'),
+                { throwOnError: false }
+            );
+        }
+
+        // ── Initial render ──────────────────────────────────────────────────
+        katex.render(
+            '1 + 2 + 4 + 8 + 16 + \\cdots',
+            document.getElementById('series-formula'),
+            { throwOnError: false }
+        );
+        updatePanel();
+    </script>
+</body>
+</html>
