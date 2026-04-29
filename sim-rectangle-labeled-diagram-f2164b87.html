@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangle Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 5.5, 10, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Rectangle vertices (landscape, ~5:3 ratio)
+        var x0 = 0, y0 = 0;
+        var rectW = 7.5;  // horizontal length
+        var rectH = 4.0;  // vertical width
+
+        var A = board.create('point', [x0, y0], { visible: false, fixed: true, name: '' });
+        var B = board.create('point', [x0 + rectW, y0], { visible: false, fixed: true, name: '' });
+        var C = board.create('point', [x0 + rectW, y0 + rectH], { visible: false, fixed: true, name: '' });
+        var D = board.create('point', [x0, y0 + rectH], { visible: false, fixed: true, name: '' });
+
+        // Rectangle polygon — no fill
+        board.create('polygon', [A, B, C, D], {
+            fillColor: 'none',
+            fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // Right-angle marker at bottom-left corner (A)
+        var markerSize = 0.4;
+        board.create('segment', [[x0 + markerSize, y0], [x0 + markerSize, y0 + markerSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[x0 + markerSize, y0 + markerSize], [x0, y0 + markerSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Length label — centered below the bottom edge
+        board.create('text', [x0 + rectW / 2, y0 - 0.7, '5\\sqrt[3]{2x^2}'], {
+            useKatex: true,
+            fontSize: 14,
+            color: '#222222',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+
+        // "Length" descriptor below the math
+        board.create('text', [x0 + rectW / 2, y0 - 1.4, 'Length'], {
+            fontSize: 12,
+            color: '#888888',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+
+        // Width label — centered to the right of the right edge
+        board.create('text', [x0 + rectW + 1.0, y0 + rectH / 2, '\\sqrt[3]{16x^2}'], {
+            useKatex: true,
+            fontSize: 14,
+            color: '#222222',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+
+        // "Width" descriptor to the right of the math
+        board.create('text', [x0 + rectW + 1.0, y0 + rectH / 2 - 0.7, 'Width'], {
+            fontSize: 12,
+            color: '#888888',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
