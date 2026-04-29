@@ -536,6 +536,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     Question.prototype.latexToNerdamer = function (latex) {
         var s = latex.trim();
         s = s.replace(/\\left/g, "").replace(/\\right/g, "");
+        // nth roots first (before frac, so nested braces are eliminated)
+        // \sqrt[n]{x} → (x)^(1/(n))
+        s = s.replace(/\\sqrt\[([^\[\]]+)\]\{([^{}]+)\}/g, "(($2))^(1/($1))");
         while (s.match(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/)) {
             s = s.replace(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/g, "(($1)/($2))");
         }

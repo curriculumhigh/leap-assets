@@ -554,6 +554,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Normalize bare decimals like .4 → 0.4 so nerdamer can parse them
         s = s.replace(/(^|[^0-9])\.(\d)/g, "$10.$2");
         s = s.replace(/\\left/g, "").replace(/\\right/g, "");
+        // nth roots first (before frac, so nested braces are eliminated)
+        // \sqrt[n]{x} → (x)^(1/(n))
+        s = s.replace(/\\sqrt\[([^\[\]]+)\]\{([^{}]+)\}/g, "(($2))^(1/($1))");
         while (s.match(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/)) {
             s = s.replace(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/g, "(($1)/($2))");
         }
