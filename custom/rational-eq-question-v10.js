@@ -2378,9 +2378,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     $opt.addClass("correct");
                 } else if (isSelected && !isCorrectOpt) {
                     $opt.addClass("incorrect");
-                } else if (!isSelected && isCorrectOpt && !allCorrect) {
-                    // Reveal missed correct on SC (always) or MC (on wrong answer)
-                    $opt.addClass("correct");
                 }
             });
 
@@ -3873,6 +3870,42 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                             $(slot).addClass(saved.correct ? "correct" : "incorrect");
                         }
                     }
+                }
+            } else if (saved.selected !== undefined) {
+                // v10: SC/MC choice group — restore selection and show feedback on teacher side
+                var choiceKey = key; // e.g. "w2-scaffold-sc1-choice"
+                var secId = choiceKey.replace(/-choice$/, "");
+                var choiceEl = document.getElementById(self.uid + "-choice-" + secId);
+                if (choiceEl && choiceEl.setValue) {
+                    choiceEl.setValue(saved.selected);
+                    // Find the section to get correctIndices
+                    var secObj = null;
+                    for (var si = 0; si < sections.length; si++) {
+                        if (sections[si].id === secId) { secObj = sections[si]; break; }
+                    }
+                    if (secObj) {
+                        var correctIndices = [];
+                        (secObj.options || []).forEach(function (opt, oi) {
+                            if (typeof opt === 'object' && opt.correct) correctIndices.push(oi);
+                        });
+                        // Apply per-option feedback styling
+                        $(choiceEl).find(".req-choice-option").each(function () {
+                            var $opt = $(this);
+                            var idx = parseInt($opt.attr("data-option-index"));
+                            $opt.removeClass("correct incorrect");
+                            var isSelected = saved.selected.indexOf(idx) >= 0;
+                            var isCorrectOpt = correctIndices.indexOf(idx) >= 0;
+                            if (isSelected && isCorrectOpt) {
+                                $opt.addClass("correct");
+                            } else if (isSelected && !isCorrectOpt) {
+                                $opt.addClass("incorrect");
+                            } else if (!isSelected && isCorrectOpt) {
+                                // Teacher can see missed correct answers
+                                $opt.addClass("correct");
+                            }
+                        });
+                    }
+                    choiceEl.setDisabled(true);
                 }
             }
         }
