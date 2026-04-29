@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sigma Notation Anatomy</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 580px; margin: 0 auto; padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white; border-radius: 8px; padding: 10px;
+            height: calc(100% - 20px);
+        }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-13, 8, 13, -8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_SIGMA = '#2563EB';
+        var COL_INDEX = '#059669';
+        var COL_LOWER = '#D97706';
+        var COL_UPPER = '#7C3AED';
+        var COL_RULE  = '#DC2626';
+        var COL_TEXT  = '#222222';
+
+        // ── Central notation ────────────────────────────────────────────
+        board.create('text', [-1.5, 0, '\\Huge\\Sigma'], {
+            useKatex: true, fontSize: 52, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, color: COL_TEXT
+        });
+
+        board.create('text', [-1.0, 4.4, '\\Large b'], {
+            useKatex: true, fontSize: 24, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, color: COL_TEXT
+        });
+
+        board.create('text', [-1.0, -4.2, '\\Large i = a'], {
+            useKatex: true, fontSize: 22, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, color: COL_TEXT
+        });
+
+        board.create('text', [3.5, 0, '\\Large f(i)'], {
+            useKatex: true, fontSize: 28, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, color: COL_TEXT
+        });
+
+        // ── Trim helper ─────────────────────────────────────────────────
+        function trimmedEnds(ax, ay, bx, by, trimA, trimB) {
+            var dx = bx - ax;
+            var dy = by - ay;
+            var len = Math.sqrt(dx * dx + dy * dy);
+            if (len < 0.01) return [[ax, ay], [bx, by]];
+            var ux = dx / len;
+            var uy = dy / len;
+            return [
+                [ax + ux * trimA, ay + uy * trimA],
+                [bx - ux * trimB, by - uy * trimB]
+            ];
+        }
+
+        // ── Callouts ────────────────────────────────────────────────────
+        var callouts = [
+            {
+                tx: -3.0, ty: 0.3,
+                lx: -9.0, ly: 1.5,
+                text: 'sigma',
+                note: 'means "sum"',
+                col: COL_SIGMA,
+                trimL: 1.1, trimT: 0.6
+            },
+            {
+                tx: -1.0, ty: 5.4,
+                lx: -6.5, ly: 6.8,
+                text: 'upper limit',
+                note: 'ending value of the index',
+                col: COL_UPPER,
+                trimL: 1.6, trimT: 0.5
+            },
+            {
+                tx: -2.8, ty: -4.2,
+                lx: -9.5, ly: -5.5,
+                text: 'index of summation',
+                note: 'variable that changes each step',
+                col: COL_INDEX,
+                trimL: 2.2, trimT: 0.5
+            },
+            {
+                tx: 0.8, ty: -4.2,
+                lx: 8.5, ly: -5.5,
+                text: 'lower limit',
+                note: 'starting value of the index',
+                col: COL_LOWER,
+                trimL: 1.6, trimT: 0.5
+            },
+            {
+                tx: 5.5, ty: 0.5,
+                lx: 10.0, ly: 4.0,
+                text: 'rule',
+                note: 'expression evaluated at each index',
+                col: COL_RULE,
+                trimL: 0.9, trimT: 0.5
+            }
+        ];
+
+        for (var i = 0; i < callouts.length; i++) {
+            var c = callouts[i];
+            var ends = trimmedEnds(c.lx, c.ly, c.tx, c.ty, c.trimL, c.trimT);
+
+            board.create('segment', [ends[0], ends[1]], {
+                strokeColor: c.col, strokeWidth: 1.2, dash: 2,
+                fixed: true, highlight: false,
+                lastArrow: { type: 2, size: 5 }
+            });
+
+            var lbl = board.create('text', [c.lx, c.ly, c.text], {
+                fontSize: 15, color: c.col, fixed: true, highlight: true,
+                anchorX: 'middle', anchorY: 'middle',
+                cssStyle: 'font-weight:700; cursor: default;'
+            });
+
+            var noteEl = board.create('text', [c.lx, c.ly - 1.1, c.note], {
+                fontSize: 11, color: '#888', fixed: true, highlight: false,
+                anchorX: 'middle', anchorY: 'middle',
+                cssStyle: 'font-style: italic;',
+                visible: false
+            });
+
+            (function(label, note) {
+                label.on('over', function() { note.setAttribute({ visible: true }); });
+                label.on('out', function() { note.setAttribute({ visible: false }); });
+            })(lbl, noteEl);
+        }
+
+    </script>
+</body>
+</html>
