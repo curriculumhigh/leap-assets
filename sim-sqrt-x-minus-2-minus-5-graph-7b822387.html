@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph of sqrt(x-2) - 5</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 320px;
+            margin: 0 auto;
+            padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            width: 300px;
+            height: 300px;
+        }
+        #board {
+            width: 300px;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 3, 33, -8],
+            axis: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            grid: false
+        });
+
+        var bb = board.getBoundingBox();
+        var xMin = bb[0], yMax = bb[1], xMax = bb[2], yMin = bb[3];
+        var i;
+
+        /* ── Manual grid (every 2 on x, every 1 on y) ───────── */
+        // Vertical grid lines every 2 units
+        for (i = Math.ceil(xMin / 2) * 2; i <= xMax; i += 2) {
+            board.create('line', [[i, 0], [i, 1]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                straightFirst: true, straightLast: true,
+                fixed: true, highlight: false
+            });
+        }
+        // Horizontal grid lines every 1 unit
+        for (i = Math.ceil(yMin); i <= yMax; i += 1) {
+            board.create('line', [[0, i], [1, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                straightFirst: true, straightLast: true,
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── Axes ────────────────────────────────────────────── */
+        board.create('arrow', [[xMin, 0], [xMax, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        board.create('arrow', [[0, yMin], [0, yMax]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        /* ── X-axis tick labels (every 2 units, no marks) ────── */
+        for (i = 2; i < xMax; i += 2) {
+            board.create('text', [i, -0.5, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+        for (i = -2; i > xMin; i -= 2) {
+            board.create('text', [i, -0.5, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── Y-axis tick labels (every 1 unit, no marks) ─────── */
+        for (i = 1; i < yMax; i += 1) {
+            board.create('text', [-0.8, i, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+        for (i = -1; i > yMin; i -= 1) {
+            board.create('text', [-0.8, i, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── Axis labels near arrow tips ─────────────────────── */
+        board.create('text', [32.2, -0.5, '<i>x</i>'], {
+            fontSize: 14, fixed: true, highlight: false
+        });
+        board.create('text', [0.4, 2.6, '<i>y</i>'], {
+            fontSize: 14, fixed: true, highlight: false
+        });
+
+        /* ── f(x) = sqrt(x - 2) - 5 ─────────────────────────── */
+        board.create('functiongraph', [
+            function(x) {
+                if (x < 2) return NaN;
+                return Math.sqrt(x - 2) - 5;
+            },
+            2, 33
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        /* ── Endpoint at (2, -5) ─────────────────────────────── */
+        board.create('point', [2, -5], {
+            name: '',
+            size: 5,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            showInfobox: false
+        });
+    </script>
+</body>
+</html>
