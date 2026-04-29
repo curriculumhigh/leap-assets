@@ -3899,9 +3899,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                 $opt.addClass("correct");
                             } else if (isSelected && !isCorrectOpt) {
                                 $opt.addClass("incorrect");
-                            } else if (!isSelected && isCorrectOpt) {
-                                // Teacher can see missed correct answers
-                                $opt.addClass("correct");
                             }
                         });
                     }
