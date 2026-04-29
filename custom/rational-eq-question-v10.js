@@ -439,10 +439,14 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 $option.append('<span class="req-choice-checkbox"></span>');
             }
 
-            // Label with KaTeX rendering
+            // Label — HTML content (iframes, images) rendered directly; math via KaTeX
             var $label = $('<span class="req-choice-label"></span>');
-            var rendered = self._renderDNOption(text);
-            if (rendered) { $label.html(rendered); } else { $label.text(text); }
+            if (/<\w+[\s>]/.test(text)) {
+                $label.html(text);
+            } else {
+                var rendered = self._renderDNOption(text);
+                if (rendered) { $label.html(rendered); } else { $label.text(text); }
+            }
             $option.append($label);
 
             // Teacher mode: gray tick on correct options
