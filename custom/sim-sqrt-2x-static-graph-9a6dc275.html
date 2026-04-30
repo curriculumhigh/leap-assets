@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph of sqrt(2x)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; width: 100%; height: 100%; background: transparent; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div id="board"></div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 8, 20, -1.5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        majorHeight: 0,
+                        minorTicks: 0,
+                        ticksDistance: 2,
+                        label: { fontSize: 9, color: '#444444', offset: [0, -10] },
+                        drawZero: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        majorHeight: 0,
+                        minorTicks: 0,
+                        ticksDistance: 2,
+                        label: { fontSize: 10, color: '#444444', offset: [-12, 0] },
+                        drawZero: false
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        board.create('text', [19.3, -0.7, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false, color: '#444444' });
+        board.create('text', [0.4, 7.4, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false, color: '#444444' });
+
+        board.create('functiongraph', [function(x) { return Math.sqrt(2 * x); }, 0, 20], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        var keyPoints = [[0, 0], [2, 2], [8, 4], [18, 6]];
+        for (var i = 0; i < keyPoints.length; i++) {
+            board.create('point', keyPoints[i], {
+                name: '', size: 4, color: '#222222', fixed: true, highlight: false, showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>

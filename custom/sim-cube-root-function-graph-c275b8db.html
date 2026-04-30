@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cube Root Function Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; width: 100%; height: 100%; background: transparent; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div id="board"></div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-10.5, 5.8, 10.5, -5.8],
+            axis: false, grid: false,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false }
+        });
+
+        var xMin = -10, xMax = 10, yMin = -5, yMax = 5;
+        var i;
+        for (i = xMin; i <= xMax; i += 2) {
+            board.create('segment', [[i, yMin], [i, yMax]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false, layer: 0
+            });
+        }
+        for (i = yMin; i <= yMax; i += 1) {
+            board.create('segment', [[xMin, i], [xMax, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false, layer: 0
+            });
+        }
+
+        board.create('arrow', [[-10.2, 0], [10.2, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }, firstArrow: { type: 2, size: 6 }
+        });
+        board.create('arrow', [[0, -5.5], [0, 5.5]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }, firstArrow: { type: 2, size: 6 }
+        });
+
+        var xTicks = [-10, -8, -6, -4, -2, 2, 4, 6, 8, 10];
+        for (i = 0; i < xTicks.length; i++) {
+            board.create('text', [xTicks[i], -0.45, String(xTicks[i])], {
+                fontSize: 9, anchorX: 'middle', anchorY: 'top', color: '#444444', fixed: true, highlight: false
+            });
+        }
+        var yTicks = [-5, -4, -3, -2, -1, 1, 2, 3, 4, 5];
+        for (i = 0; i < yTicks.length; i++) {
+            board.create('text', [-0.4, yTicks[i], String(yTicks[i])], {
+                fontSize: 9, anchorX: 'right', anchorY: 'middle', color: '#444444', fixed: true, highlight: false
+            });
+        }
+        board.create('text', [-0.4, -0.45, '0'], {
+            fontSize: 9, anchorX: 'right', anchorY: 'top', color: '#444444', fixed: true, highlight: false
+        });
+
+        board.create('text', [10.0, -0.5, '<i>x</i>'], { fontSize: 12, color: '#444444', fixed: true, highlight: false, anchorX: 'middle' });
+        board.create('text', [0.35, 5.4, '<i>y</i>'], { fontSize: 12, color: '#444444', fixed: true, highlight: false, anchorX: 'left' });
+
+        board.create('functiongraph', [function(x) {
+            if (x >= 0) return -2 * Math.pow(x, 1/3);
+            else return 2 * Math.pow(-x, 1/3);
+        }, -10.5, 10.5], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        var keyPoints = [[-8, 4], [-1, 2], [0, 0], [1, -2], [8, -4]];
+        for (i = 0; i < keyPoints.length; i++) {
+            board.create('point', keyPoints[i], {
+                name: '', size: 3, color: '#222222', fixed: true, highlight: false, showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
