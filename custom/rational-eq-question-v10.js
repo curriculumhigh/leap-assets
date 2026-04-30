@@ -1559,9 +1559,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
                 var $fb = $('<span class="req-fb" id="' + self.uid + '-fbpill-' + sec.id + '-' + ri + '"></span>');
                 $actions.append($fb);
-                // Comma hint for equation table rows
+                // Comma hint for equation table rows (FM only, not DN)
                 var hasCommaAnswerRow = (row.inputs || []).some(function (inp) {
-                    return inp.answer && inp.answer.indexOf(",") >= 0;
+                    return inp.answer && inp.answer.indexOf(",") >= 0 && inp.type !== "dropdown";
                 });
                 if (hasCommaAnswerRow) {
                     $actions.append($('<span class="req-comma-hint" id="' + self.uid + '-commahint-' + sec.id + '-' + ri + '">Separate multiple values with commas</span>'));
@@ -1683,9 +1683,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             })(sec);
             $actions.append($btn);
             $actions.append($('<span class="req-fb" id="' + self.uid + '-fbpill-' + sec.id + '"></span>'));
-            // Comma hint — shown next to "Try again" if any input expects comma-separated values
+            // Comma hint — shown next to "Try again" if any input expects comma-separated values (FM only, not DN)
             var hasCommaAnswer = (sec.inputs || []).some(function (inp) {
-                return inp.answer && inp.answer.indexOf(",") >= 0;
+                return inp.answer && inp.answer.indexOf(",") >= 0 && inp.type !== "dropdown";
             });
             if (hasCommaAnswer) {
                 $actions.append($('<span class="req-comma-hint" id="' + self.uid + '-commahint-' + sec.id + '">Separate multiple values with commas</span>'));
