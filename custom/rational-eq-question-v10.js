@@ -1561,6 +1561,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
                 var $fb = $('<span class="req-fb" id="' + self.uid + '-fbpill-' + sec.id + '-' + ri + '"></span>');
                 $actions.append($fb);
+                // Comma hint for equation table rows
+                var hasCommaAnswerRow = (row.inputs || []).some(function (inp) {
+                    return inp.answer && inp.answer.indexOf(",") >= 0;
+                });
+                if (hasCommaAnswerRow) {
+                    $actions.append($('<span class="req-comma-hint" id="' + self.uid + '-commahint-' + sec.id + '-' + ri + '">Separate multiple values with commas</span>'));
+                }
 
                 $tdE.append($actions);
 
@@ -2282,6 +2289,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Feedback pill
         var $fbPill = $("#" + self.uid + "-fbpill-" + sec.id + "-" + rowIdx);
         $fbPill.attr("class", "req-fb " + (allCorrect ? "correct" : "wrong")).text(allCorrect ? "Correct!" : "Try again");
+
+        // Comma hint
+        var $commaHintRow = $("#" + self.uid + "-commahint-" + sec.id + "-" + rowIdx);
+        if ($commaHintRow.length) $commaHintRow.toggle(!allCorrect);
 
         // Per-step hint: show on failure, hide on success
         var $hintBox = $("#" + self.uid + "-hint-" + sec.id + "-" + rowIdx);
