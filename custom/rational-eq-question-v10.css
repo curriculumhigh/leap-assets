@@ -394,9 +394,12 @@
 .req-comma-hint {
     display: none;
     margin-left: 10px;
-    font-size: 12px;
+    font-size: 11px;
     color: #1565C0;
     font-style: italic;
+    background: #e0f2fe;
+    padding: 2px 8px;
+    border-radius: 4px;
     vertical-align: middle;
 }
 
