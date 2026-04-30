@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cube Root Static Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; width: 100%; height: 100%; background: transparent; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div id="board"></div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 11, 15, -11],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        /* ── Grid ──────────────────────────────────────────────────── */
+        var xMin = -6, xMax = 14, yMin = -10, yMax = 10;
+        var i;
+        for (i = Math.ceil(xMin / 2) * 2; i <= xMax; i += 2) {
+            board.create('line', [[i, 0], [i, 1]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false,
+                straightFirst: true, straightLast: true
+            });
+        }
+        for (i = Math.ceil(yMin / 2) * 2; i <= yMax; i += 2) {
+            board.create('line', [[0, i], [1, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false,
+                straightFirst: true, straightLast: true
+            });
+        }
+
+        /* ── Axes ──────────────────────────────────────────────────── */
+        var xAxis = board.create('arrow', [[-6.5, 0], [14.5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        var yAxis = board.create('arrow', [[0, -10.5], [0, 10.5]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        /* ── Tick labels (no tick marks) ───────────────────────────── */
+        for (i = Math.ceil(xMin / 2) * 2; i <= xMax; i += 2) {
+            if (i === 0) continue;
+            board.create('text', [i, -0.9, String(i)], {
+                fontSize: 11, color: '#444444',
+                anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+        for (i = Math.ceil(yMin / 2) * 2; i <= yMax; i += 2) {
+            if (i === 0) continue;
+            board.create('text', [-0.7, i, String(i)], {
+                fontSize: 11, color: '#444444',
+                anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── Axis labels ───────────────────────────────────────────── */
+        board.create('text', [14.0, -1.2, '<i>x</i>'], {
+            fontSize: 14, color: '#444444',
+            fixed: true, highlight: false
+        });
+        board.create('text', [0.5, 10.2, '<i>y</i>'], {
+            fontSize: 14, color: '#444444',
+            fixed: true, highlight: false
+        });
+
+        /* ── Function: f(x) = -4(x-2)^(1/3) ──────────────────────── */
+        function cbrt(x) {
+            if (x >= 0) return Math.pow(x, 1 / 3);
+            return -Math.pow(-x, 1 / 3);
+        }
+
+        function f(x) {
+            return -4 * cbrt(x - 2);
+        }
+
+        board.create('functiongraph', [
+            function(x) { return f(x); },
+            -7, 15
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        /* ── Inflection point at (2, 0) ────────────────────────────── */
+        board.create('point', [2, 0], {
+            name: '',
+            size: 3,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            showInfobox: false
+        });
+    </script>
+</body>
+</html>
