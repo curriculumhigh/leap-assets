@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cube Root Static Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; width: 100%; height: 100%; background: transparent; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div id="board"></div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-10, 10, 10, -10],
+            axis: false,
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 },
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Axes ─────────────────────────────────────────────────── */
+        var xAxis = board.create('axis', [[0, 0], [1, 0]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            highlight: false,
+            ticks: {
+                strokeColor: '#444444',
+                majorHeight: 0,
+                minorHeight: 0,
+                minorTicks: 0,
+                ticksDistance: 2,
+                label: { fontSize: 10, color: '#444444', offset: [0, -12] },
+                drawZero: false,
+                insertTicks: false
+            }
+        });
+
+        var yAxis = board.create('axis', [[0, 0], [0, 1]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            highlight: false,
+            ticks: {
+                strokeColor: '#444444',
+                majorHeight: 0,
+                minorHeight: 0,
+                minorTicks: 0,
+                ticksDistance: 2,
+                label: { fontSize: 10, color: '#444444', offset: [-15, 0] },
+                drawZero: false,
+                insertTicks: false
+            }
+        });
+
+        /* ── Axis labels ──────────────────────────────────────────── */
+        board.create('text', [9.3, -0.9, '<i>x</i>'], {
+            fontSize: 13, color: '#444444', fixed: true, highlight: false
+        });
+        board.create('text', [0.5, 9.3, '<i>y</i>'], {
+            fontSize: 13, color: '#444444', fixed: true, highlight: false
+        });
+
+        /* ── Curve: f(x) = -4 * cbrt(x) ──────────────────────────── */
+        board.create('functiongraph', [
+            function(x) {
+                return -4 * Math.cbrt(x);
+            },
+            -10, 10
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
