@@ -395,12 +395,12 @@
     display: none;
     margin-left: 10px;
     font-size: 13px;
-    color: #1a2a3a;
+    color: #b45309;
     font-style: italic;
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 2px 8px;
-    border-radius: 4px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    padding: 7px 14px;
+    border-radius: 6px;
     vertical-align: middle;
 }
 
