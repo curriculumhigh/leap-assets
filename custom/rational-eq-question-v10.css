@@ -390,6 +390,16 @@
     flex-shrink: 0;
 }
 
+/* Comma-separated values hint — inline next to "Try again" */
+.req-comma-hint {
+    display: none;
+    margin-left: 10px;
+    font-size: 12px;
+    color: #1565C0;
+    font-style: italic;
+    vertical-align: middle;
+}
+
 /* ── Check button ── */
 .req-check-btn {
     display: inline-block;
