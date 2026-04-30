@@ -279,6 +279,20 @@
     background-color: #fde8d8;
 }
 
+/* Comma-separated values hint — inline next to "Try again" */
+.req-comma-hint {
+    display: none;
+    margin-left: 10px;
+    font-size: 13px;
+    color: #b45309;
+    font-style: italic;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    padding: 7px 14px;
+    border-radius: 6px;
+    vertical-align: middle;
+}
+
 /* ── Check button ── */
 .req-check-btn {
     display: inline-block;
