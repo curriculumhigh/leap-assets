@@ -430,12 +430,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         indices.forEach(function (origIdx) {
             var opt = options[origIdx];
             var text = typeof opt === 'string' ? opt : (opt.text || '');
-            var $option = $('<div class="req-choice-option" data-option-index="' + origIdx + '"></div>');
+            var $option = $('<div class="req-choice-option' + (subtype === 'sc' ? ' req-choice-card' : '') + '" data-option-index="' + origIdx + '"></div>');
 
-            // Indicator
-            if (subtype === 'sc') {
-                $option.append('<span class="req-choice-radio"></span>');
-            } else {
+            // Indicator: SC uses selectable cards (no radio); MC keeps checkbox
+            if (subtype !== 'sc') {
                 $option.append('<span class="req-choice-checkbox"></span>');
             }
 
