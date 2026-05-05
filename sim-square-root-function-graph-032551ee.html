@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Square Root Function Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0;
+            padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            height: calc(100% - 20px);
+        }
+        #board {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 2, 16, -6],
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            axis: false,
+            grid: false
+        });
+
+        // Manual grid (1-unit spacing on both axes)
+        var bb = board.getBoundingBox();
+        var xMin = Math.ceil(bb[0]);
+        var xMax = Math.floor(bb[2]);
+        var yMin = Math.ceil(bb[3]);
+        var yMax = Math.floor(bb[1]);
+        var i;
+
+        for (i = xMin; i <= xMax; i++) {
+            board.create('line', [[i, 0], [i, 1]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false, straightFirst: true, straightLast: true
+            });
+        }
+        for (i = yMin; i <= yMax; i++) {
+            board.create('line', [[0, i], [1, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false, straightFirst: true, straightLast: true
+            });
+        }
+
+        // X-axis
+        var xAxis = board.create('arrow', [[bb[0], 0], [bb[2], 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // X-axis tick labels — every 1 unit, no tick marks
+        for (i = xMin; i <= xMax; i++) {
+            if (i === 0) continue;
+            board.create('text', [i, -0.35, String(i)], {
+                fontSize: 11, color: '#444444',
+                anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Y-axis
+        var yAxis = board.create('arrow', [[0, bb[3]], [0, bb[1]]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Y-axis tick labels — every 1 unit, no tick marks
+        for (i = yMin; i <= yMax; i++) {
+            if (i === 0) continue;
+            board.create('text', [-0.3, i, String(i)], {
+                fontSize: 11, color: '#444444',
+                anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Axis labels near arrow tips
+        board.create('text', [15.5, -0.4, '<i>x</i>'], {
+            fontSize: 14, fixed: true, highlight: false
+        });
+        board.create('text', [0.3, 1.6, '<i>y</i>'], {
+            fontSize: 14, fixed: true, highlight: false
+        });
+
+        // Function: f(x) = (1/3) * sqrt(x + 2) - 4
+        board.create('functiongraph', [
+            function(x) {
+                if (x < -2) return NaN;
+                return (1.0 / 3.0) * Math.sqrt(x + 2) - 4;
+            },
+            -2, 16
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Starting point at (-2, -4) — filled, no label
+        board.create('point', [-2, -4], {
+            name: '',
+            size: 5,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            showInfobox: false
+        });
+    </script>
+</body>
+</html>
