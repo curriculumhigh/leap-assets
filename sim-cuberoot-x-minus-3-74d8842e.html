@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cube Root x minus 3</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        .board-wrapper {
+            background: white;
+            border-radius: 6px;
+            padding: 4px;
+            height: calc(100% - 8px);
+            width: calc(100% - 8px);
+        }
+        #board {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-9, 4, 9, -7],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Manual grid
+        board.create('grid', [], {
+            strokeColor: '#D1D5DB',
+            strokeWidth: 0.4,
+            majorStep: [1, 1],
+            minorElements: 0
+        });
+
+        // Manual x-axis
+        var xAxis = board.create('axis', [[0, 0], [1, 0]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            firstArrow: { type: 2, size: 4 },
+            lastArrow: { type: 2, size: 4 },
+            highlight: false,
+            ticks: {
+                strokeColor: 'transparent',
+                strokeWidth: 0,
+                majorHeight: 0,
+                minorHeight: 0,
+                minorTicks: 0,
+                ticksDistance: 1,
+                insertTicks: false,
+                label: {
+                    fontSize: 9,
+                    color: '#444444',
+                    anchorX: 'middle',
+                    anchorY: 'top',
+                    offset: [0, -3]
+                },
+                drawZero: false
+            }
+        });
+
+        // Manual y-axis
+        var yAxis = board.create('axis', [[0, 0], [0, 1]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            firstArrow: { type: 2, size: 4 },
+            lastArrow: { type: 2, size: 4 },
+            highlight: false,
+            ticks: {
+                strokeColor: 'transparent',
+                strokeWidth: 0,
+                majorHeight: 0,
+                minorHeight: 0,
+                minorTicks: 0,
+                ticksDistance: 1,
+                insertTicks: false,
+                label: {
+                    fontSize: 9,
+                    color: '#444444',
+                    anchorX: 'right',
+                    anchorY: 'middle',
+                    offset: [-4, 0]
+                },
+                drawZero: false
+            }
+        });
+
+        // Axis labels near arrow tips
+        board.create('text', [8.4, -0.55, '<i>x</i>'], {
+            fontSize: 11, color: '#444444', fixed: true, highlight: false
+        });
+        board.create('text', [0.35, 3.5, '<i>y</i>'], {
+            fontSize: 11, color: '#444444', fixed: true, highlight: false
+        });
+
+        // Cube root function: f(x) = cbrt(x) - 3
+        board.create('functiongraph', [
+            function(x) {
+                var cbrt = (x >= 0) ? Math.pow(x, 1 / 3) : -Math.pow(-x, 1 / 3);
+                return cbrt - 3;
+            },
+            -9, 9
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
