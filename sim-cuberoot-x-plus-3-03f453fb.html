@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cube Root x plus 3</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            padding: 4px;
+            height: calc(100% - 8px);
+        }
+        .board-wrapper {
+            background: white;
+            border-radius: 6px;
+            padding: 6px;
+            height: calc(100% - 12px);
+        }
+        #board {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        // 300x200 iframe → 3:2 aspect ratio
+        // Bounding box: x-range = 12, y-range = 8 → ratio 12:8 = 3:2 → 1:1 axes
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 7, 6, -1],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Manual major gridlines only at integer positions
+        var bb = board.getBoundingBox();
+        var xMin = Math.ceil(bb[0]);
+        var xMax = Math.floor(bb[2]);
+        var yMin = Math.ceil(bb[3]);
+        var yMax = Math.floor(bb[1]);
+        var i;
+
+        for (i = xMin; i <= xMax; i++) {
+            board.create('line', [[i, 0], [i, 1]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false,
+                straightFirst: true, straightLast: true
+            });
+        }
+        for (i = yMin; i <= yMax; i++) {
+            board.create('line', [[0, i], [1, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false,
+                straightFirst: true, straightLast: true
+            });
+        }
+
+        // Create axes manually for full tick control
+        var xAxis = board.create('axis', [[0, 0], [1, 0]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 5 },
+            highlight: false,
+            ticks: {
+                strokeColor: 'transparent',
+                strokeWidth: 0,
+                majorHeight: 0,
+                minorHeight: 0,
+                minorTicks: 0,
+                ticksDistance: 1,
+                insertTicks: false,
+                includeBoundaries: false,
+                label: {
+                    fontSize: 9,
+                    color: '#333',
+                    offset: [0, -10],
+                    anchorX: 'middle'
+                }
+            }
+        });
+
+        var yAxis = board.create('axis', [[0, 0], [0, 1]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 5 },
+            highlight: false,
+            ticks: {
+                strokeColor: 'transparent',
+                strokeWidth: 0,
+                majorHeight: 0,
+                minorHeight: 0,
+                minorTicks: 0,
+                ticksDistance: 1,
+                insertTicks: false,
+                includeBoundaries: false,
+                label: {
+                    fontSize: 9,
+                    color: '#333',
+                    offset: [-12, 0],
+                    anchorX: 'right'
+                }
+            }
+        });
+
+        // Axis labels near arrow tips
+        board.create('text', [5.6, -0.35, '<i>x</i>'], {
+            fontSize: 12, fixed: true, highlight: false, color: '#333'
+        });
+        board.create('text', [0.25, 6.7, '<i>y</i>'], {
+            fontSize: 12, fixed: true, highlight: false, color: '#333'
+        });
+
+        // f(x) = cbrt(x) + 3
+        board.create('functiongraph', [
+            function(x) {
+                return (x >= 0 ? Math.pow(x, 1 / 3) : -Math.pow(-x, 1 / 3)) + 3;
+            },
+            -6, 6
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
