@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph of V(m)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 160px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .hover-msg {
+            font-size: 12px; color: #888; line-height: 1.5; text-align: center;
+        }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="hover-msg">Hover over the plotted points to see their coordinates.</div>
+            </div>
+            <div class="board-wrapper" id="board-container">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 16.5, 28, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_PT = '#222222';
+
+        /* ── Grid ──────────────────────────────────────────────────── */
+        var i;
+        for (i = 4; i <= 24; i += 4) {
+            board.create('segment', [[i, 0], [i, 15]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+        for (i = 5; i <= 15; i += 5) {
+            board.create('segment', [[0, i], [25, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        /* ── Axes ──────────────────────────────────────────────────── */
+        board.create('arrow', [[0, 0], [26.5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        board.create('arrow', [[0, 0], [0, 15.5]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        /* ── Tick labels (no tick marks) ───────────────────────────── */
+        var xTicks = [4, 8, 12, 16, 20, 24];
+        for (i = 0; i < xTicks.length; i++) {
+            board.create('text', [xTicks[i], -0.9, String(xTicks[i])], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        var yTicks = [5, 10, 15];
+        for (i = 0; i < yTicks.length; i++) {
+            board.create('text', [-1.2, yTicks[i], String(yTicks[i])], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        board.create('text', [-1.2, -0.9, '0'], {
+            fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        /* ── Axis labels ───────────────────────────────────────────── */
+        board.create('text', [25.8, -1.4, '<i>m</i>'], {
+            fontSize: 14, color: '#444444', fixed: true, highlight: false
+        });
+        board.create('text', [0.6, 15.2, '<i>V(m)</i>'], {
+            fontSize: 14, color: '#444444', fixed: true, highlight: false
+        });
+
+        /* ── Curve: V(m) = 2.5√m ──────────────────────────────────── */
+        board.create('functiongraph', [
+            function(x) { return 2.5 * Math.sqrt(x); },
+            0, 25
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        /* ── Tooltip setup ─────────────────────────────────────────── */
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board-container');
+
+        function formatValKatex(v) {
+            var absV = Math.abs(v);
+            var sign = v < 0 ? '-' : '';
+            if (Math.abs(absV - 7.5) < 0.001) return sign + '7.5';
+            if (Math.abs(absV - 12.5) < 0.001) return sign + '12.5';
+            if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+            return v.toFixed(1);
+        }
+
+        function showTooltip(pt, color) {
+            var xCoord = pt.X();
+            var yCoord = pt.Y();
+            var latex = '\\color{' + color + '}{\\left(' + formatValKatex(xCoord)
+                      + ',\\,' + formatValKatex(yCoord) + '\\right)}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xCoord, yCoord], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+        }
+
+        /* ── Key points with hover tooltips ────────────────────────── */
+        var keyPoints = [[0, 0], [4, 5], [9, 7.5], [16, 10], [25, 12.5]];
+        for (i = 0; i < keyPoints.length; i++) {
+            (function(coords) {
+                var pt = board.create('point', coords, {
+                    name: '', size: 4, color: COL_PT, fixed: true,
+                    showInfobox: false, highlight: true,
+                    highlightFillColor: COL_PT, highlightStrokeColor: COL_PT,
+                    highlightSize: 5
+                });
+                pt.on('over', function() { showTooltip(pt, COL_PT); });
+                pt.on('out', function() { hideTooltip(); });
+            })(keyPoints[i]);
+        }
+    </script>
+</body>
+</html>
