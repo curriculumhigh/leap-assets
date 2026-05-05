@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #222; }
+        .container { max-width: 720px; margin: 0; padding: 6px; height: calc(100% - 12px); box-sizing: border-box; display: flex; flex-direction: column; }
+        .control { padding: 6px 4px; font-size: 13px; display: flex; align-items: center; gap: 10px; }
+        .control input[type=range] { flex: 1; }
+        .panels { display: flex; gap: 12px; flex: 1; }
+        .panel { flex: 1; display: flex; flex-direction: column; }
+        .panel-title { text-align: center; font-size: 13px; padding: 3px; }
+        .board-wrapper { background: white; border-radius: 8px; padding: 8px; flex: 1; box-sizing: border-box; }
+        .board { width: 100%; height: 100%; }
+        .counter { text-align: center; font-size: 12px; padding: 4px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="control">
+        <span id="k-label-prefix"></span>
+        <input id="kSlider" type="range" min="-4" max="4" step="0.05" value="2" />
+        <span id="k-readout"></span>
+    </div>
+    <div class="panels">
+        <div class="panel">
+            <div class="panel-title" id="title-cubic"></div>
+            <div class="board-wrapper"><div class="board" id="board1"></div></div>
+            <div class="counter" id="count-cubic"></div>
+        </div>
+        <div class="panel">
+            <div class="panel-title" id="title-parabola"></div>
+            <div class="board-wrapper"><div class="board" id="board2"></div></div>
+            <div class="counter" id="count-parabola"></div>
+        </div>
+    </div>
+</div>
+<script>
+function kr(id, s) { katex.render(s, document.getElementById(id), { throwOnError: false }); }
+kr('title-cubic', 'f(x) = x^3');
+kr('title-parabola', 'f(x) = x^2');
+kr('k-label-prefix', 'k =');
+
+var COL_F = '#2563EB';
+var COL_FINV = '#DC2626';
+var COL_REF = '#888888';
+var COL_LINE = '#0EA5E9';
+var COL_HIT = '#DC2626';
+
+function makeBoard(id) {
+    return JXG.JSXGraph.initBoard(id, {
+        boundingbox: [-4.5, 4.5, 4.5, -4.5],
+        axis: true, keepAspectRatio: true,
+        showNavigation: false, showCopyright: false,
+        pan: { enabled: false }, zoom: { enabled: false },
+        defaultAxes: {
+            x: { strokeColor: '#444444', strokeWidth: 1.0, lastArrow: { type: 2, size: 4 },
+                 ticks: { strokeColor: '#444444', label: { fontSize: 10 }, minorTicks: 0, ticksDistance: 2 } },
+            y: { strokeColor: '#444444', strokeWidth: 1.0, lastArrow: { type: 2, size: 4 },
+                 ticks: { strokeColor: '#444444', label: { fontSize: 10 }, minorTicks: 0, ticksDistance: 2 } }
+        },
+        grid: { strokeColor: '#E5E7EB', strokeWidth: 0.3 }
+    });
+}
+
+function addYEqualsX(board) {
+    board.create('line', [[0, 0], [1, 1]], {
+        strokeColor: COL_REF, strokeWidth: 0.9, dash: 2,
+        fixed: true, highlight: false,
+        point1: { visible: false }, point2: { visible: false }
+    });
+}
+
+var slider = document.getElementById('kSlider');
+function getK() { return parseFloat(slider.value); }
+
+// ── Cubic panel ────────────────────────────────────────────────────
+var b1 = makeBoard('board1');
+addYEqualsX(b1);
+b1.create('functiongraph', [function(x) { return x*x*x; }, -1.6, 1.6],
+    { strokeColor: COL_F, strokeWidth: 1.8, fixed: true, highlight: false });
+b1.create('functiongraph', [function(x) { return Math.cbrt(x); }, -4, 4],
+    { strokeColor: COL_FINV, strokeWidth: 1.8, fixed: true, highlight: false });
+
+// Horizontal line y = k (on f, blue side) — dynamic
+b1.create('line', [
+    [function() { return -4.5; }, function() { return getK(); }],
+    [function() { return 4.5; }, function() { return getK(); }]
+], { strokeColor: COL_LINE, strokeWidth: 1.2, fixed: true, highlight: false,
+     point1: { visible: false }, point2: { visible: false } });
+
+// Vertical line x = k (on reflection, red side) — dynamic
+b1.create('line', [
+    [function() { return getK(); }, function() { return -4.5; }],
+    [function() { return getK(); }, function() { return 4.5; }]
+], { strokeColor: COL_LINE, strokeWidth: 1.2, dash: 3, fixed: true, highlight: false,
+     point1: { visible: false }, point2: { visible: false } });
+
+// Cubic: f(x) = k → x = cbrt(k). One intersection, always.
+b1.create('point', [function() { return Math.cbrt(getK()); }, function() { return getK(); }],
+    { name: '', size: 3.5, color: COL_HIT, fixed: true, highlight: false, showInfobox: false });
+// Reflection: at x = k, f^-1(k) = cbrt(k). One intersection.
+b1.create('point', [function() { return getK(); }, function() { return Math.cbrt(getK()); }],
+    { name: '', size: 3.5, color: COL_HIT, fixed: true, highlight: false, showInfobox: false });
+
+// ── Parabola panel ─────────────────────────────────────────────────
+var b2 = makeBoard('board2');
+addYEqualsX(b2);
+b2.create('functiongraph', [function(x) { return x*x; }, -2.1, 2.1],
+    { strokeColor: COL_F, strokeWidth: 1.8, fixed: true, highlight: false });
+b2.create('curve', [function(t) { return t*t; }, function(t) { return t; }, -2.1, 2.1],
+    { strokeColor: COL_FINV, strokeWidth: 1.8, fixed: true, highlight: false });
+
+b2.create('line', [
+    [function() { return -4.5; }, function() { return getK(); }],
+    [function() { return 4.5; }, function() { return getK(); }]
+], { strokeColor: COL_LINE, strokeWidth: 1.2, fixed: true, highlight: false,
+     point1: { visible: false }, point2: { visible: false } });
+b2.create('line', [
+    [function() { return getK(); }, function() { return -4.5; }],
+    [function() { return getK(); }, function() { return 4.5; }]
+], { strokeColor: COL_LINE, strokeWidth: 1.2, dash: 3, fixed: true, highlight: false,
+     point1: { visible: false }, point2: { visible: false } });
+
+// Parabola: x^2 = k → x = ±sqrt(k) for k >= 0; no real solutions for k < 0.
+// Use 2 always-rendered points; toggle visibility via callback (JSXGraph 1.9.2 supports this).
+var p2a = b2.create('point', [
+    function() { return getK() >= 0 ? Math.sqrt(getK()) : NaN; },
+    function() { return getK() >= 0 ? getK() : NaN; }
+], { name: '', size: 3.5, color: COL_HIT, fixed: true, highlight: false, showInfobox: false,
+     visible: function() { return getK() >= 0; } });
+var p2b = b2.create('point', [
+    function() { return getK() >= 0 ? -Math.sqrt(getK()) : NaN; },
+    function() { return getK() >= 0 ? getK() : NaN; }
+], { name: '', size: 3.5, color: COL_HIT, fixed: true, highlight: false, showInfobox: false,
+     visible: function() { return getK() > 0; } });
+
+// Reflection points (vertical line crossing sideways parabola)
+var pr2a = b2.create('point', [
+    function() { return getK() >= 0 ? getK() : NaN; },
+    function() { return getK() >= 0 ? Math.sqrt(getK()) : NaN; }
+], { name: '', size: 3.5, color: COL_HIT, fixed: true, highlight: false, showInfobox: false,
+     visible: function() { return getK() >= 0; } });
+var pr2b = b2.create('point', [
+    function() { return getK() >= 0 ? getK() : NaN; },
+    function() { return getK() >= 0 ? -Math.sqrt(getK()) : NaN; }
+], { name: '', size: 3.5, color: COL_HIT, fixed: true, highlight: false, showInfobox: false,
+     visible: function() { return getK() > 0; } });
+
+// ── Counters ────────────────────────────────────────────────────────
+function update() {
+    var k = getK();
+    document.getElementById('k-readout').textContent = k.toFixed(2);
+    // Cubic: always 1 intersection
+    document.getElementById('count-cubic').textContent =
+        'Horizontal line meets f at 1 point';
+    // Parabola: 0 if k<0, 1 if k=0, 2 if k>0
+    var n;
+    if (k < -0.0001) n = 0;
+    else if (Math.abs(k) < 0.0001) n = 1;
+    else n = 2;
+    document.getElementById('count-parabola').textContent =
+        'Horizontal line meets f at ' + n + ' point' + (n === 1 ? '' : 's');
+    b1.update();
+    b2.update();
+}
+slider.addEventListener('input', update);
+update();
+</script>
+</body>
+</html>
