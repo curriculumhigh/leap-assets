@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphs of f and g</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden;
+            height: 100%; background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 700px; margin: 0; padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .sim-layout {
+            display: flex; gap: 12px; height: 100%;
+        }
+        .left-panel {
+            width: 175px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; justify-content: center; gap: 18px;
+        }
+        .func-row {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .func-swatch {
+            width: 24px; height: 3px; border-radius: 2px; flex-shrink: 0;
+        }
+        .func-rule {
+            min-height: 22px;
+        }
+        .board-wrapper {
+            flex: 1; background: white; border-radius: 8px; padding: 10px;
+            height: calc(100% - 20px);
+        }
+        #board {
+            width: 100%; height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="func-row">
+                    <div class="func-swatch" style="background: #222222;"></div>
+                    <div class="func-rule" id="rule-f"></div>
+                </div>
+                <div class="func-row">
+                    <div class="func-swatch" style="background: #2563EB;"></div>
+                    <div class="func-rule" id="rule-g"></div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Render panel labels with KaTeX
+        katex.render('f(x) = \\sqrt{5x - 1}', document.getElementById('rule-f'), { throwOnError: false });
+        katex.render('g(x) = \\sqrt{2x + 5}', document.getElementById('rule-g'), { throwOnError: false });
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 7, 10, -1.5],
+            axis: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Create axes manually for full tick control
+        var xAxis = board.create('axis', [[0, 0], [1, 0]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            highlight: false,
+            ticks: {
+                strokeColor: '#444444',
+                majorHeight: 0,
+                minorHeight: 0,
+                minorTicks: 0,
+                ticksDistance: 1,
+                label: { fontSize: 11, offset: [0, -14] },
+                drawZero: false
+            }
+        });
+
+        var yAxis = board.create('axis', [[0, 0], [0, 1]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            highlight: false,
+            ticks: {
+                strokeColor: '#444444',
+                majorHeight: 0,
+                minorHeight: 0,
+                minorTicks: 0,
+                ticksDistance: 2,
+                label: { fontSize: 11, offset: [-14, 0] },
+                drawZero: false
+            }
+        });
+
+        // Axis labels near arrow tips
+        board.create('text', [9.6, -0.4, '<i>x</i>'], {
+            fontSize: 14, fixed: true, highlight: false
+        });
+        board.create('text', [0.25, 6.6, '<i>y</i>'], {
+            fontSize: 14, fixed: true, highlight: false
+        });
+
+        // f(x) = sqrt(5x - 1), domain x >= 0.2
+        board.create('functiongraph', [
+            function(x) { return Math.sqrt(5 * x - 1); },
+            0.2, 10
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // g(x) = sqrt(2x + 5), domain x >= -2.5
+        board.create('functiongraph', [
+            function(x) { return Math.sqrt(2 * x + 5); },
+            -2.5, 10
+        ], {
+            strokeColor: '#2563EB',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+
+        // Curve label "f" — placed near end of f curve
+        board.create('text', [8.8, 6.0, 'f'], {
+            fontSize: 14,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            cssStyle: 'font-style: italic; font-weight: 600;'
+        });
+
+        // Curve label "g" — placed near end of g curve
+        board.create('text', [8.8, 4.2, 'g'], {
+            fontSize: 14,
+            color: '#2563EB',
+            fixed: true,
+            highlight: false,
+            cssStyle: 'font-style: italic; font-weight: 600;'
+        });
+    </script>
+</body>
+</html>
