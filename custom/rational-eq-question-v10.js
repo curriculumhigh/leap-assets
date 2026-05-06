@@ -653,12 +653,23 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Normalize bare decimals like .4 → 0.4 so nerdamer can parse them
         s = s.replace(/(^|[^0-9])\.(\d)/g, "$10.$2");
         s = s.replace(/\\left/g, "").replace(/\\right/g, "");
-        // nth roots first (before frac, so nested braces are eliminated)
-        // \sqrt[n]{x} → (x)^(1/(n))
-        s = s.replace(/\\sqrt\[([^\[\]]+)\]\{([^{}]+)\}/g, "(($2))^(1/($1))");
-        while (s.match(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/)) {
-            s = s.replace(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/g, "(($1)/($2))");
+        // \pi → pi (nerdamer expects bare token, not the LaTeX form)
+        s = s.replace(/\\pi\b/g, "pi");
+        // |x| → abs(x) for absolute value (nerdamer doesn't parse pipe delimiters)
+        // Iterate to handle nested cases like ||x|+1| (rare but possible)
+        while (s.match(/\|([^|]+)\|/)) {
+            s = s.replace(/\|([^|]+)\|/g, "abs($1)");
         }
+        // nth roots and fractions can be nested in either order; iterate both
+        // until no more matches (handles \sqrt[n]{\frac{a}{b}}, \frac{\sqrt[n]{...}}{...}, etc.)
+        var prev;
+        do {
+            prev = s;
+            // \sqrt[n]{x} → ((x))^(1/(n))
+            s = s.replace(/\\sqrt\[([^\[\]]+)\]\{([^{}]+)\}/g, "(($2))^(1/($1))");
+            // \frac{a}{b} (and \dfrac) → ((a)/(b))
+            s = s.replace(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/g, "(($1)/($2))");
+        } while (s !== prev);
         s = s.replace(/\\cdot/g, "*");
         s = s.replace(/\\times/g, "*");
         s = s.replace(/\\div/g, "/");
