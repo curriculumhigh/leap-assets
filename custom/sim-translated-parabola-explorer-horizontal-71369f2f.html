@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translated Parabola Explorer (Horizontal)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px);
+        }
+        .sim-layout {
+            display: flex; gap: 12px; height: 100%;
+        }
+        .left-panel {
+            width: 190px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 6px;
+        }
+        .slider-group { margin-bottom: 4px; }
+        .slider-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        .slider-name { font-size: 13px; font-weight: 600; }
+        .slider-val {
+            font-size: 13px; font-weight: 600;
+            font-variant-numeric: tabular-nums; min-width: 28px; text-align: right;
+        }
+        .slider-input {
+            width: 100%; -webkit-appearance: none; appearance: none;
+            height: 5px; border-radius: 3px; background: #e5e7eb; outline: none;
+        }
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 15px; height: 15px; border-radius: 50%; cursor: pointer;
+        }
+        .slider-h::-webkit-slider-thumb { background: #2563EB; }
+        .slider-k::-webkit-slider-thumb { background: #059669; }
+        .equation-section {
+            border-top: 1px solid #e5e7eb; padding-top: 12px;
+        }
+        .equation-display { min-height: 36px; margin-bottom: 8px; }
+        .legend-section {
+            border-top: 1px solid #e5e7eb; padding-top: 12px;
+        }
+        .legend-row {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 6px; font-size: 11px; color: #555;
+        }
+        .legend-swatch {
+            width: 18px; height: 3px; border-radius: 2px; flex-shrink: 0;
+        }
+        .legend-swatch.dashed {
+            background: repeating-linear-gradient(
+                90deg, currentColor 0px, currentColor 4px, transparent 4px, transparent 8px
+            );
+            height: 2px;
+        }
+        .legend-dot {
+            width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+        }
+        .board-wrapper {
+            flex: 1; background: white; border-radius: 8px; padding: 10px;
+            height: calc(100% - 20px);
+        }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-section">
+                    <div class="panel-label">Parameters</div>
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-name" style="color: #2563EB;">h</span>
+                            <span class="slider-val" id="val-h" style="color: #2563EB;">0</span>
+                        </div>
+                        <input type="range" id="slider-h" class="slider-input slider-h"
+                               min="-3" max="3" step="0.5" value="0">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-name" style="color: #059669;">k</span>
+                            <span class="slider-val" id="val-k" style="color: #059669;">0</span>
+                        </div>
+                        <input type="range" id="slider-k" class="slider-input slider-k"
+                               min="-3" max="3" step="0.5" value="0">
+                    </div>
+                </div>
+                <div class="panel-section equation-section">
+                    <div class="panel-label">Equation</div>
+                    <div class="equation-display" id="equation"></div>
+                </div>
+                <div class="panel-section legend-section">
+                    <div class="panel-label">Legend</div>
+                    <div class="legend-row">
+                        <div class="legend-dot" style="background: #222222;"></div>
+                        <span>Vertex (V)</span>
+                    </div>
+                    <div class="legend-row">
+                        <div class="legend-dot" style="background: #2563EB;"></div>
+                        <span>Focus (F)</span>
+                    </div>
+                    <div class="legend-row">
+                        <div class="legend-swatch dashed" style="color: #DC2626;"></div>
+                        <span>Directrix</span>
+                    </div>
+                    <div class="legend-row">
+                        <div class="legend-swatch dashed" style="color: #0EA5E9;"></div>
+                        <span>Axis of symmetry</span>
+                    </div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+
+    <script>
+        // ── State ───────────────────────────────────────────────────────
+        var hVal = 0;
+        var kVal = 0;
+        var P = 2;
+
+        // ── Board ───────────────────────────────────────────────────────
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8, 10, 12, -10],
+            axis: true,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 2
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 2
+                    }
+                }
+            },
+            grid: false
+        });
+
+        // Axis labels
+        board.create('text', [11.5, -0.6, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.3, 9.5, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // ── Helper points for dynamic lines (hidden) ────────────────────
+
+        // Directrix: x = h - p (vertical line)
+        var dirPt1 = board.create('point', [
+            function() { return hVal - P; },
+            function() { return -10; }
+        ], { visible: false, fixed: true, name: '' });
+
+        var dirPt2 = board.create('point', [
+            function() { return hVal - P; },
+            function() { return 10; }
+        ], { visible: false, fixed: true, name: '' });
+
+        var directrix = board.create('line', [dirPt1, dirPt2], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false, straightFirst: true, straightLast: true
+        });
+
+        // Directrix label (placed near top, just left of the line)
+        board.create('text', [
+            function() { return hVal - P - 0.4; },
+            function() { return 8.5; },
+            function() {
+                var val = hVal - P;
+                return 'x = ' + formatNum(val);
+            }
+        ], {
+            fontSize: 12, color: '#DC2626', fixed: true, highlight: false,
+            anchorX: 'right'
+        });
+
+        // Axis of symmetry: y = k (horizontal line)
+        var aosPt1 = board.create('point', [
+            function() { return -8; },
+            function() { return kVal; }
+        ], { visible: false, fixed: true, name: '' });
+
+        var aosPt2 = board.create('point', [
+            function() { return 12; },
+            function() { return kVal; }
+        ], { visible: false, fixed: true, name: '' });
+
+        var axisOfSym = board.create('line', [aosPt1, aosPt2], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false, straightFirst: true, straightLast: true
+        });
+
+        // Axis of symmetry label
+        board.create('text', [
+            function() { return 10; },
+            function() { return kVal + 0.4; },
+            function() {
+                return 'y = ' + formatNum(kVal);
+            }
+        ], {
+            fontSize: 12, color: '#0EA5E9', fixed: true, highlight: false
+        });
+
+        // ── Parabola ────────────────────────────────────────────────────
+        // Parametric: x = (1/(4P))(y-k)² + h, parameterize by t = y - k
+        // x(t) = (1/(4P)) t² + h
+        // y(t) = t + k
+        board.create('curve', [
+            function(t) { return (1 / (4 * P)) * t * t + hVal; },
+            function(t) { return t + kVal; },
+            -10, 10
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Vertex ──────────────────────────────────────────────────────
+        var vertex = board.create('point', [
+            function() { return hVal; },
+            function() { return kVal; }
+        ], {
+            name: 'V', size: 5, color: '#222222', fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: '#222222', highlightStrokeColor: '#222222',
+            label: {
+                fontSize: 14, color: '#222222',
+                offset: [-16, -14]
+            }
+        });
+
+        // ── Focus ───────────────────────────────────────────────────────
+        var focus = board.create('point', [
+            function() { return hVal + P; },
+            function() { return kVal; }
+        ], {
+            name: 'F', size: 5, color: '#2563EB', fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: '#2563EB', highlightStrokeColor: '#2563EB',
+            label: {
+                fontSize: 14, color: '#2563EB',
+                offset: [10, 10]
+            }
+        });
+
+        // ── Tooltip ─────────────────────────────────────────────────────
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function formatValKatex(v) {
+            var absV = Math.abs(v);
+            var sign = v < 0 ? '-' : '';
+            if (Math.abs(absV - 0.5) < 0.001) return sign + '0.5';
+            if (Math.abs(absV - 1.5) < 0.001) return sign + '1.5';
+            if (Math.abs(absV - 2.5) < 0.001) return sign + '2.5';
+            if (Math.abs(absV - 3.5) < 0.001) return sign + '3.5';
+            if (Math.abs(absV - 4.5) < 0.001) return sign + '4.5';
+            if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+            return v.toFixed(1);
+        }
+
+        function showTooltip(pt, color) {
+            var xCoord = pt.X();
+            var yCoord = pt.Y();
+            var latex = '\\color{' + color + '}{\\left(' + formatValKatex(xCoord)
+                      + ',\\,' + formatValKatex(yCoord) + '\\right)}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xCoord, yCoord], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+        }
+
+        vertex.on('over', function() { showTooltip(vertex, '#222222'); });
+        vertex.on('out', function() { hideTooltip(); });
+        focus.on('over', function() { showTooltip(focus, '#2563EB'); });
+        focus.on('out', function() { hideTooltip(); });
+
+        // ── Number formatting ───────────────────────────────────────────
+        function formatNum(v) {
+            if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+            return v.toFixed(1);
+        }
+
+        function formatNumSigned(v) {
+            if (Math.abs(v) < 0.001) return '';
+            if (v > 0) return '+ ' + formatNum(v);
+            return '- ' + formatNum(Math.abs(v));
+        }
+
+        // ── Panel updates ───────────────────────────────────────────────
+        function updatePanel() {
+            document.getElementById('val-h').textContent = formatNum(hVal);
+            document.getElementById('val-k').textContent = formatNum(kVal);
+
+            // Build equation: x = (1/8)(y - k)^2 + h
+            var eq = 'x = \\tfrac{1}{8}';
+
+            if (Math.abs(kVal) < 0.001) {
+                eq += 'y^2';
+            } else if (kVal > 0) {
+                eq += '(y - ' + formatNum(kVal) + ')^2';
+            } else {
+                eq += '(y + ' + formatNum(Math.abs(kVal)) + ')^2';
+            }
+
+            if (Math.abs(hVal) > 0.001) {
+                eq += ' ' + formatNumSigned(hVal);
+            }
+
+            katex.render(eq, document.getElementById('equation'), { throwOnError: false });
+        }
+
+        // ── Slider sync ─────────────────────────────────────────────────
+        var sliderH = document.getElementById('slider-h');
+        var sliderK = document.getElementById('slider-k');
+
+        function syncFromSliders() {
+            hVal = parseFloat(sliderH.value);
+            kVal = parseFloat(sliderK.value);
+            board.update();
+            updatePanel();
+        }
+
+        sliderH.addEventListener('input', syncFromSliders);
+        sliderK.addEventListener('input', syncFromSliders);
+
+        // ── Initial render ──────────────────────────────────────────────
+        updatePanel();
+    </script>
+</body>
+</html>

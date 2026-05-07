@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parabola: Horizontal Slider</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+  <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+  <style>
+    html, body { margin:0; padding:0; height:100%; overflow:hidden; background:transparent;
+                  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }
+    .container { max-width:700px; margin:0; padding:6px; height:calc(100% - 12px); box-sizing:border-box; }
+    .sim-layout { display:flex; gap:12px; height:100%; }
+    .left-panel {
+      width:200px; flex-shrink:0; background:white; border-radius:8px;
+      padding:14px 14px; box-sizing:border-box; height:100%;
+      font-size:13px; line-height:1.5; color:#222222;
+    }
+    .legend { display:flex; align-items:center; gap:8px; margin:6px 0; font-size:12px; }
+    .legend .dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+    .focus-dot { background:#DC2626; }
+    .p-dot     { background:#2563EB; }
+    .d-dot     { background:#059669; }
+    .v-dot     { background:#222222; }
+    .slider-section {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid #e6dfd0;
+    }
+    .slider-section label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: #2563EB;
+    }
+    .slider-section input[type=range] {
+      width: 100%;
+      accent-color: #2563EB;
+      cursor: pointer;
+    }
+    .slider-readout {
+      font-family:'SF Mono',Menlo,Consolas,monospace; font-size:12px;
+      margin-top: 8px; padding: 5px 8px; background:#f9f7f2;
+      border:1px solid #e6dfd0; border-radius:4px;
+      text-align: center;
+    }
+    .slider-readout .val { font-weight:600; color:#222222; }
+    .board-wrapper { flex:1; background:white; border-radius:8px; padding:10px; height:100%; box-sizing:border-box; }
+    #board { width:100%; height:100%; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="sim-layout">
+    <div class="left-panel">
+      <div class="legend"><span class="dot focus-dot"></span> <b style="color:#DC2626">F</b> &mdash; focus (p, 0)</div>
+      <div class="legend"><span class="dot p-dot"></span> <b style="color:#2563EB">P</b> &mdash; on parabola</div>
+      <div class="legend"><span class="dot d-dot"></span> <b style="color:#059669">D</b> &mdash; foot on directrix</div>
+      <div class="legend"><span class="dot v-dot"></span> <b style="color:#222222">V</b> &mdash; vertex</div>
+      <div class="slider-section">
+        <label>Focal parameter <i>p</i></label>
+        <input type="range" id="slider-p" min="-3" max="3" step="0.5" value="2">
+        <div class="slider-readout">p = <span class="val" id="p-value">2.0</span></div>
+      </div>
+    </div>
+    <div class="board-wrapper"><div id="board"></div></div>
+  </div>
+</div>
+<script>
+  var pVal = 2;
+  var lastP = 2;
+
+  var board = JXG.JSXGraph.initBoard('board', {
+    boundingbox: [-4.8, 4.8, 4.8, -4.8],
+    axis: true,
+    keepAspectRatio: true,
+    showCopyright: false, showNavigation: false,
+    pan: { enabled: false }, zoom: { wheel: false },
+    defaultAxes: {
+      x: {
+        strokeColor: '#444444', strokeWidth: 1.2,
+        lastArrow: { type: 2, size: 6 },
+        ticks: { drawLabels: false, drawZero: false, majorHeight: 0, minorTicks: 0, ticksDistance: 1 }
+      },
+      y: {
+        strokeColor: '#444444', strokeWidth: 1.2,
+        lastArrow: { type: 2, size: 6 },
+        ticks: { drawLabels: false, drawZero: false, majorHeight: 0, minorTicks: 0, ticksDistance: 1 }
+      }
+    }
+  });
+
+  board.create('text', [4.45, -0.45, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+  board.create('text', [0.3, 4.45, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+  function tBound() {
+    if (Math.abs(pVal) < 0.05) return 0;
+    return Math.min(4.5, Math.sqrt(20 * Math.abs(pVal)));
+  }
+
+  var parabola = board.create('curve', [
+    function(t) {
+      if (Math.abs(pVal) < 0.05) return NaN;
+      return t*t / (4*pVal);
+    },
+    function(t) { return t; },
+    function() { return -tBound(); },
+    function() { return tBound(); }
+  ], { strokeColor: '#222222', strokeWidth: 1.8, highlight: false, fixed: true });
+
+  board.create('line', [
+    [function() { return -pVal; }, function() { return -5; }],
+    [function() { return -pVal; }, function() { return 5; }]
+  ], {
+    strokeColor: '#555555', strokeWidth: 1.0, dash: 2,
+    straightFirst: true, straightLast: true,
+    highlight: false, fixed: true
+  });
+  board.create('text', [
+    function() { return -pVal + (pVal > 0 ? -1.05 : 0.15); },
+    4.4,
+    'x = -p'
+  ], { fontSize: 12, color: '#555555', fixed: true, highlight: false });
+
+  board.create('point', [0, 0], {
+    name: 'V', showInfobox: false,
+    label: { offset: [-12, -16], cssStyle: 'font-weight:600;color:#222222;font-size:13px;' },
+    fillColor: '#222222', strokeColor: '#fff', strokeWidth: 1.5, size: 4,
+    fixed: true, highlight: false
+  });
+
+  var F = board.create('point', [
+    function() { return pVal; },
+    function() { return 0; }
+  ], {
+    name: 'F(p, 0)', showInfobox: false,
+    label: { offset: [10, -16], cssStyle: 'font-weight:600;color:#DC2626;font-size:14px;' },
+    fillColor: '#DC2626', strokeColor: '#fff', strokeWidth: 2, size: 5,
+    fixed: true, highlight: false
+  });
+
+  var P = board.create('glider', [2.4*2.4/(4*pVal), 2.4, parabola], {
+    name: 'P(x, y)', showInfobox: false,
+    label: { offset: [10, 4], cssStyle: 'font-weight:600;color:#2563EB;font-size:14px;' },
+    fillColor: '#2563EB', strokeColor: '#fff', strokeWidth: 2, size: 5,
+    highlightFillColor: '#2563EB', highlightStrokeColor: '#2563EB'
+  });
+
+  var D = board.create('point', [
+    function() { return -pVal; },
+    function() { return P.Y(); }
+  ], {
+    name: 'D(-p, y)', showInfobox: false,
+    label: { offset: [-65, 0], cssStyle: 'font-weight:600;color:#059669;font-size:14px;' },
+    fillColor: '#059669', strokeColor: '#fff', strokeWidth: 2, size: 5,
+    fixed: true
+  });
+
+  var segPF = board.create('segment', [P, F], {
+    strokeColor: '#DC2626', strokeWidth: 1.5, highlight: false, fixed: true
+  });
+  var segPD = board.create('segment', [P, D], {
+    strokeColor: '#059669', strokeWidth: 1.5, highlight: false, fixed: true
+  });
+
+  function addEqTick(seg, color) {
+    var p1 = seg.point1, p2 = seg.point2;
+    var midX = function() { return (p1.X() + p2.X()) / 2; };
+    var midY = function() { return (p1.Y() + p2.Y()) / 2; };
+    var L = function() {
+      var dx = p2.X() - p1.X(), dy = p2.Y() - p1.Y();
+      return Math.sqrt(dx*dx + dy*dy) || 0.001;
+    };
+    var TL = 0.14;
+    var t1x = function() { return midX() + (p2.Y()-p1.Y())/L() * TL; };
+    var t1y = function() { return midY() - (p2.X()-p1.X())/L() * TL; };
+    var t2x = function() { return midX() - (p2.Y()-p1.Y())/L() * TL; };
+    var t2y = function() { return midY() + (p2.X()-p1.X())/L() * TL; };
+    var a = board.create('point', [t1x, t1y], { visible:false, fixed:true, showInfobox:false });
+    var b = board.create('point', [t2x, t2y], { visible:false, fixed:true, showInfobox:false });
+    board.create('segment', [a, b], {
+      strokeColor: color, strokeWidth: 2.0, highlight: false, fixed: true
+    });
+  }
+  addEqTick(segPF, '#DC2626');
+  addEqTick(segPD, '#059669');
+
+  // Right-angle marker — flips with sign of p (interior side)
+  var ra = 0.18;
+  var raSidePy = function() { return P.Y() >= 0 ? -1 : 1; };
+  var raSideX = function() { return pVal > 0 ? 1 : -1; };
+  var raPt1 = board.create('point', [
+    function() { return -pVal; },
+    function() { return P.Y() + raSidePy() * ra; }
+  ], { visible: false, fixed: true, showInfobox: false });
+  var raPt2 = board.create('point', [
+    function() { return -pVal + raSideX() * ra; },
+    function() { return P.Y() + raSidePy() * ra; }
+  ], { visible: false, fixed: true, showInfobox: false });
+  var raPt3 = board.create('point', [
+    function() { return -pVal + raSideX() * ra; },
+    function() { return P.Y(); }
+  ], { visible: false, fixed: true, showInfobox: false });
+  board.create('segment', [raPt1, raPt2], {
+    strokeColor: '#888', strokeWidth: 1.0, highlight: false, fixed: true
+  });
+  board.create('segment', [raPt2, raPt3], {
+    strokeColor: '#888', strokeWidth: 1.0, highlight: false, fixed: true
+  });
+
+  var slider = document.getElementById('slider-p');
+  var pValueEl = document.getElementById('p-value');
+  slider.addEventListener('input', function() {
+    var raw = parseFloat(slider.value);
+    if (Math.abs(raw) < 0.01) {
+      raw = (lastP > 0) ? -0.5 : 0.5;
+      slider.value = raw;
+    }
+    pVal = raw;
+    lastP = pVal;
+    pValueEl.textContent = pVal.toFixed(1);
+    // Flip D label offset based on sign of p (avoid overlap with P when parabola opens left)
+    D.label.setAttribute({ offset: pVal > 0 ? [-65, 0] : [10, 0] });
+    board.update();
+  });
+
+  board.update();
+</script>
+</body>
+</html>
