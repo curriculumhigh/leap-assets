@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Square Root and Transformed Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; width: 100%; height: 100%; background: transparent; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div id="board"></div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 6.5, 16, -1.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Grid (manual, matching tick spacing) ──────────────────────── */
+        var gx, gy;
+        for (gx = 0; gx <= 16; gx += 2) {
+            board.create('line', [[gx, -2], [gx, 8]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false, straightFirst: true, straightLast: true
+            });
+        }
+        for (gy = 0; gy <= 6; gy += 1) {
+            board.create('line', [[-2, gy], [16, gy]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false, straightFirst: true, straightLast: true
+            });
+        }
+
+        /* ── Axes ──────────────────────────────────────────────────────── */
+        var xAxis = board.create('arrow', [[-1.2, 0], [15.5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        var yAxis = board.create('arrow', [[0, -0.9], [0, 6.2]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        /* ── Tick labels (no tick marks) ───────────────────────────────── */
+        var xi;
+        for (xi = 2; xi <= 14; xi += 2) {
+            board.create('text', [xi, -0.5, String(xi)], {
+                fontSize: 9, anchorX: 'middle', anchorY: 'middle',
+                color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        var yi;
+        for (yi = 1; yi <= 6; yi += 1) {
+            board.create('text', [-0.6, yi, String(yi)], {
+                fontSize: 9, anchorX: 'middle', anchorY: 'middle',
+                color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        board.create('text', [-0.5, -0.45, '0'], {
+            fontSize: 9, anchorX: 'middle', anchorY: 'middle',
+            color: '#444444', fixed: true, highlight: false
+        });
+
+        /* ── Axis labels ───────────────────────────────────────────────── */
+        board.create('text', [15.2, -0.5, '<i>x</i>'], {
+            fontSize: 12, fixed: true, highlight: false, color: '#444444'
+        });
+        board.create('text', [0.35, 6.1, '<i>y</i>'], {
+            fontSize: 12, fixed: true, highlight: false, color: '#444444'
+        });
+
+        /* ── Curves ────────────────────────────────────────────────────── */
+        var COL_F = '#222222';
+        var COL_G = '#2563EB';
+
+        board.create('functiongraph', [
+            function(x) { return Math.sqrt(x); },
+            0, 15.5
+        ], {
+            strokeColor: COL_F, strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        board.create('functiongraph', [
+            function(x) { return Math.sqrt(x - 5) + 2; },
+            5, 15.5
+        ], {
+            strokeColor: COL_G, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        /* ── Key points for f: (0,0), (1,1), (4,2), (9,3) ────────────── */
+        var fPts = [[0, 0], [1, 1], [4, 2], [9, 3]];
+        var i;
+        for (i = 0; i < fPts.length; i++) {
+            board.create('point', fPts[i], {
+                name: '', size: 3, color: COL_F,
+                fixed: true, highlight: false, showInfobox: false
+            });
+        }
+
+        /* ── Key points for g: shifted right 5, up 2 ──────────────────── */
+        var gPts = [[5, 2], [6, 3], [9, 4], [14, 5]];
+        for (i = 0; i < gPts.length; i++) {
+            board.create('point', gPts[i], {
+                name: '', size: 3, color: COL_G,
+                fixed: true, highlight: false, showInfobox: false
+            });
+        }
+
+        /* ── Function labels ───────────────────────────────────────────── */
+        board.create('text', [13, 3.3, '<i>f</i>'], {
+            fontSize: 13, color: COL_F, fixed: true, highlight: false
+        });
+
+        board.create('text', [14.3, 5.5, '<i>g</i>'], {
+            fontSize: 13, color: COL_G, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
