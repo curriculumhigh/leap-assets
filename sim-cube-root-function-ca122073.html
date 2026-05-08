@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cube Root Function</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 175px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 16px;
+            justify-content: center;
+        }
+        .equation-display { min-height: 24px; }
+        .hover-msg { font-size: 11px; color: #888; line-height: 1.4; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="equation-display" id="func-rule"></div>
+                <div class="hover-msg">Hover over the points to see their coordinates.</div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-10.5, 3.5, 10.5, -3.5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        majorHeight: 0,
+                        minorHeight: 0,
+                        tickEndings: [0, 0],
+                        minorTicks: 0,
+                        ticksDistance: 2,
+                        drawZero: false,
+                        label: {
+                            fontSize: 11,
+                            color: '#444444',
+                            offset: [0, -12]
+                        }
+                    }
+                },
+                y: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        majorHeight: 0,
+                        minorHeight: 0,
+                        tickEndings: [0, 0],
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        drawZero: false,
+                        label: {
+                            fontSize: 11,
+                            color: '#444444',
+                            offset: [-12, 0]
+                        }
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels near arrow tips
+        board.create('text', [10.0, -0.35, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.3, 3.2, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Cube root function
+        board.create('functiongraph', [
+            function(x) { return Math.cbrt(x); }
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Render function rule in left panel via KaTeX
+        katex.render('f(x) = \\sqrt[3]{x}', document.getElementById('func-rule'), { throwOnError: false, displayMode: false });
+
+        // Tooltip setup
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+        var PT_COLOR = '#222222';
+
+        function formatValKatex(v) {
+            if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+            return v.toFixed(2);
+        }
+
+        function showTooltip(pt) {
+            var xCoord = pt.X();
+            var yCoord = pt.Y();
+            var latex = '\\color{' + PT_COLOR + '}{\\left(' + formatValKatex(xCoord)
+                      + ',\\,' + formatValKatex(yCoord) + '\\right)}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = PT_COLOR;
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xCoord, yCoord], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+        }
+
+        // Key points with hover tooltips
+        var keyPoints = [[-8, -2], [-1, -1], [0, 0], [1, 1], [8, 2]];
+        for (var i = 0; i < keyPoints.length; i++) {
+            (function(coords) {
+                var pt = board.create('point', coords, {
+                    name: '',
+                    size: 4,
+                    color: PT_COLOR,
+                    fixed: true,
+                    showInfobox: false,
+                    highlight: true,
+                    highlightFillColor: PT_COLOR,
+                    highlightStrokeColor: PT_COLOR
+                });
+                pt.on('over', function() { showTooltip(pt); });
+                pt.on('out', function() { hideTooltip(); });
+            })(keyPoints[i]);
+        }
+    </script>
+</body>
+</html>
