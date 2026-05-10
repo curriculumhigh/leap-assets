@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizontal Parabola — y₁ and y₂</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 500px; margin: 0; padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .sim-layout {
+            display: flex; gap: 10px; height: 100%;
+        }
+        .left-panel {
+            width: 140px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 14px 12px;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 4px;
+        }
+        .curve-item {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 10px;
+        }
+        .curve-swatch {
+            width: 22px; height: 3px; border-radius: 2px; flex-shrink: 0;
+        }
+        .curve-name {
+            font-size: 14px; font-weight: 500;
+        }
+        .board-wrapper {
+            flex: 1; background: white; border-radius: 8px; padding: 10px;
+            height: calc(100% - 20px);
+        }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div>
+                    <div class="panel-label">Curves</div>
+                    <div class="curve-item">
+                        <div class="curve-swatch" style="background: #222222;"></div>
+                        <span class="curve-name" id="label-y1"></span>
+                    </div>
+                    <div class="curve-item">
+                        <div class="curve-swatch" style="background: #2563EB;"></div>
+                        <span class="curve-name" id="label-y2"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Render panel labels with KaTeX — full equations
+        katex.render('y_1 = \\sqrt{\\tfrac{x-4}{2}}', document.getElementById('label-y1'), { throwOnError: false });
+        katex.render('y_2 = -\\sqrt{\\tfrac{x-4}{2}}', document.getElementById('label-y2'), { throwOnError: false });
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 4.5, 14.5, -4.5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 2,
+                        majorHeight: 0,
+                        minorHeight: 0
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 2,
+                        majorHeight: 0,
+                        minorHeight: 0
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [14.0, -0.4, '<i>x</i>'], {
+            fontSize: 14, fixed: true, highlight: false
+        });
+        board.create('text', [0.25, 4.1, '<i>y</i>'], {
+            fontSize: 14, fixed: true, highlight: false
+        });
+
+        // y₁ = sqrt((x - 4) / 2) — upper branch, primary color
+        board.create('functiongraph', [
+            function(x) {
+                if (x < 4) return NaN;
+                return Math.sqrt((x - 4) / 2);
+            },
+            4, 14.5
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        // y₂ = -sqrt((x - 4) / 2) — lower branch, secondary color
+        board.create('functiongraph', [
+            function(x) {
+                if (x < 4) return NaN;
+                return -Math.sqrt((x - 4) / 2);
+            },
+            4, 14.5
+        ], {
+            strokeColor: '#2563EB', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        // Curve labels on the board
+        board.create('text', [11.5, 2.3, 'y_1'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            fixed: true, highlight: false
+        });
+        board.create('text', [11.5, -2.6, 'y_2'], {
+            useKatex: true, fontSize: 13, color: '#2563EB',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
