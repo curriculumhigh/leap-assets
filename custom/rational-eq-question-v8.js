@@ -2765,6 +2765,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         });
         if (allDone) {
             $("#" + self.uid + "-done").show();
+            // Pre-trigger validate so Learnosity's scorer caches the result
+            // before LEAP's Check button calls getScore()
+            setTimeout(function () {
+                self.events.trigger("changed", self.getResponse());
+                self.events.trigger("validate");
+            }, 100);
         }
 
         self.events.trigger("changed", self.getResponse());
