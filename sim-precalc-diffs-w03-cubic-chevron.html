@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Successive Differences — Cubic</title>
+<style>
+html, body { margin: 0; padding: 0; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+.wrap { padding: 6px; height: calc(100% - 12px); display: flex; align-items: center; justify-content: flex-start; }
+.card { background: white; border-radius: 8px; padding: 16px; }
+svg { display: block; }
+</style>
+</head>
+<body>
+<div class="wrap"><div class="card"><svg id="d" xmlns="http://www.w3.org/2000/svg"></svg></div></div>
+<script>
+(function () {
+  var CELL_W = 50, CELL_H = 30, HP = 70, VP = 45, LEFT = 40, TOP = 12, RIGHT = 15;
+  var xValues = [0, 1, 2, 3, 4, 5];
+  var fValues = [0, 3, 12, 33, 72, 135];
+  var fSym = 'f(x)';
+  var fBase = 'f';
+  var levels = 3;
+
+  var nVals = fValues.length;
+  var totalRows = 2 + levels;
+  var svgW = LEFT + (nVals - 1) * HP + CELL_W + RIGHT;
+  var svgH = TOP + (totalRows - 1) * VP + CELL_H + TOP;
+
+  var svg = document.getElementById('d');
+  svg.setAttribute('width', svgW);
+  svg.setAttribute('height', svgH);
+
+  function add(tag, attrs, text) {
+    var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (var k in attrs) el.setAttribute(k, attrs[k]);
+    if (text !== undefined) el.textContent = text;
+    svg.appendChild(el);
+    return el;
+  }
+  function cellLeft(row, col) {
+    var lvl = row <= 1 ? 0 : row - 1;
+    return LEFT + col * HP + lvl * HP / 2;
+  }
+  function cellY(row) { return TOP + row * VP; }
+  function cellCx(row, col) { return cellLeft(row, col) + CELL_W / 2; }
+  function cellCy(row) { return cellY(row) + CELL_H / 2; }
+  function drawCell(row, col, text, isPlaceholder) {
+    var x = cellLeft(row, col), y = cellY(row);
+    var attrs = { x: x, y: y, width: CELL_W, height: CELL_H, rx: 3 };
+    if (row === 0) { attrs.fill = '#f8fafc'; attrs.stroke = '#cbd5e1'; }
+    else if (isPlaceholder) { attrs.fill = 'white'; attrs.stroke = '#94a3b8'; attrs['stroke-dasharray'] = '3,3'; }
+    else { attrs.fill = 'white'; attrs.stroke = '#cbd5e1'; }
+    add('rect', attrs);
+    if (text !== undefined && text !== null) {
+      add('text', { x: cellCx(row, col), y: cellCy(row) + 5, 'text-anchor': 'middle', 'font-size': 16, fill: '#1e293b' }, text);
+    } else if (isPlaceholder) {
+      add('text', { x: cellCx(row, col), y: cellCy(row) + 5, 'text-anchor': 'middle', 'font-size': 14, fill: '#cbd5e1' }, '___');
+    }
+  }
+  function drawLabel(row, text) {
+    add('text', { x: LEFT - 6, y: cellCy(row) + 5, 'text-anchor': 'end', 'font-size': 15, fill: '#475569', 'font-style': 'italic' }, text);
+  }
+  function drawChevron(row, col) {
+    var upperRow = row - 1;
+    var lx1 = cellCx(upperRow, col), ly1 = cellY(upperRow) + CELL_H;
+    var lx2 = cellCx(upperRow, col + 1);
+    var bx = cellCx(row, col), by = cellY(row);
+    add('line', { x1: lx1, y1: ly1, x2: bx, y2: by, stroke: '#94a3b8', 'stroke-width': 1.2 });
+    add('line', { x1: lx2, y1: ly1, x2: bx, y2: by, stroke: '#94a3b8', 'stroke-width': 1.2 });
+  }
+
+  drawLabel(0, 'x');
+  for (var i = 0; i < nVals; i++) drawCell(0, i, xValues[i]);
+  drawLabel(1, fSym);
+  for (var i = 0; i < nVals; i++) drawCell(1, i, fValues[i]);
+  var diffLabels = ['Δ' + fBase, 'Δ²' + fBase, 'Δ³' + fBase, 'Δ⁴' + fBase];
+  for (var lvl = 1; lvl <= levels; lvl++) {
+    var row = lvl + 1;
+    drawLabel(row, diffLabels[lvl - 1]);
+    for (var i = 0; i < nVals - lvl; i++) {
+      drawChevron(row, i);
+      drawCell(row, i, null, true);
+    }
+  }
+})();
+</script>
+</body>
+</html>
