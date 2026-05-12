@@ -114,10 +114,10 @@
             // Parity
             document.getElementById('parity').textContent = (nVal % 2 === 0) ? 'even' : 'odd';
 
-            // End behavior — limit notation
+            // End behavior — display-style limit notation
             function infSymbol(sign) { return sign > 0 ? '+\\infty' : '-\\infty'; }
-            katex.render('\\lim_{x \\to -\\infty} f(x) = ' + infSymbol(endLimit(-1)), document.getElementById('end-left'), { throwOnError: false });
-            katex.render('\\lim_{x \\to +\\infty} f(x) = ' + infSymbol(endLimit(1)), document.getElementById('end-right'), { throwOnError: false });
+            katex.render('\\displaystyle\\lim_{x \\to -\\infty} f(x) = ' + infSymbol(endLimit(-1)), document.getElementById('end-left'), { throwOnError: false });
+            katex.render('\\displaystyle\\lim_{x \\to +\\infty} f(x) = ' + infSymbol(endLimit(1)), document.getElementById('end-right'), { throwOnError: false });
 
             board.update();
         }
