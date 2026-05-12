@@ -7,12 +7,25 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
     <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <style>
         html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-        .container { max-width: 520px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .container { max-width: 520px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); position: relative; }
         .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
         #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 13px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
     </style>
 </head>
 <body>
@@ -20,15 +33,16 @@
         <div class="board-wrapper">
             <div id="board"></div>
         </div>
+        <div class="coord-tooltip" id="tooltip"></div>
     </div>
     <script>
         var COL_CURVE = '#222222';
-        var COL_ZERO  = '#888888';
+        var COL_ZERO  = '#6B7280';
         var COL_P     = '#2563EB';
         var COL_Q     = '#059669';
 
         var board = JXG.JSXGraph.initBoard('board', {
-            boundingbox: [-3.5, 12, 5, -10],
+            boundingbox: [-3.5, 12, 5.5, -11],
             axis: true,
             showNavigation: false,
             showCopyright: false,
@@ -49,26 +63,14 @@
             grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
         });
 
-        board.create('text', [4.6, -0.6, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
-        board.create('text', [0.25, 11.5, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [5.1, -0.7, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.22, 11.4, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
 
         // Curve: f(x) = (x+2)(x-1)(x-4)
         var f = function(x) { return (x + 2) * (x - 1) * (x - 4); };
-        board.create('functiongraph', [f, -3.5, 5], {
+        board.create('functiongraph', [f, -3.3, 5.2], {
             strokeColor: COL_CURVE, strokeWidth: 2.2, fixed: true, highlight: false
         });
-
-        // Zeros at x = -2, 1, 4
-        var zeros = [-2, 1, 4];
-        zeros.forEach(function(z) {
-            board.create('point', [z, 0], {
-                name: '', size: 3, fillColor: COL_ZERO, strokeColor: COL_ZERO,
-                fixed: true, showInfobox: false, highlight: false
-            });
-        });
-        board.create('text', [-2, -1.4, 'x = -2'], { fontSize: 12, color: COL_ZERO, fixed: true, anchorX: 'middle', highlight: false });
-        board.create('text', [1, -1.4, 'x = 1'], { fontSize: 12, color: COL_ZERO, fixed: true, anchorX: 'middle', highlight: false });
-        board.create('text', [4, -1.4, 'x = 4'], { fontSize: 12, color: COL_ZERO, fixed: true, anchorX: 'middle', highlight: false });
 
         // Turning points: P (local max) and Q (local min)
         // f'(x) = 3x^2 - 6x - 6 = 0 -> x = 1 ± sqrt(3)
@@ -77,24 +79,65 @@
         var yP = f(xP);            // ≈  8.392
         var yQ = f(xQ);            // ≈ -8.392
 
-        board.create('point', [xP, yP], {
-            name: 'P', size: 4, fillColor: COL_P, strokeColor: COL_P,
-            fixed: true, showInfobox: false, highlight: false,
-            label: { offset: [10, 2], fontSize: 14, color: COL_P, cssStyle: 'font-weight:700;' }
-        });
-        board.create('point', [xQ, yQ], {
-            name: 'Q', size: 4, fillColor: COL_Q, strokeColor: COL_Q,
-            fixed: true, showInfobox: false, highlight: false,
-            label: { offset: [10, -2], fontSize: 14, color: COL_Q, cssStyle: 'font-weight:700;' }
+        // --- Tooltip setup ---
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function formatCoord(v) {
+            if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+            return v.toFixed(2);
+        }
+        function showTooltip(pt, color) {
+            var xC = pt.X(); var yC = pt.Y();
+            var latex = '\\color{' + color + '}{\\left(' + formatCoord(xC) + ',\\, ' + formatCoord(yC) + '\\right)}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xC, yC], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+        // Zeros — no static labels; hover for coords
+        [-2, 1, 4].forEach(function(z) {
+            var p = board.create('point', [z, 0], {
+                name: '', size: 4, fillColor: COL_ZERO, strokeColor: COL_ZERO,
+                fixed: true, showInfobox: false,
+                highlight: true, highlightFillColor: COL_ZERO, highlightStrokeColor: COL_ZERO
+            });
+            p.on('over', function() { showTooltip(p, COL_ZERO); });
+            p.on('out', function() { hideTooltip(); });
         });
 
-        // Small direction arrows on the curve segments — placed at representative x values
-        // Tick marks (small triangle decorators)
+        // P (local max)
+        var pP = board.create('point', [xP, yP], {
+            name: 'P', size: 5, fillColor: COL_P, strokeColor: COL_P,
+            fixed: true, showInfobox: false,
+            highlight: true, highlightFillColor: COL_P, highlightStrokeColor: COL_P,
+            label: { offset: [12, 4], fontSize: 15, color: COL_P, cssStyle: 'font-weight:700;' }
+        });
+        pP.on('over', function() { showTooltip(pP, COL_P); });
+        pP.on('out', function() { hideTooltip(); });
+
+        // Q (local min)
+        var pQ = board.create('point', [xQ, yQ], {
+            name: 'Q', size: 5, fillColor: COL_Q, strokeColor: COL_Q,
+            fixed: true, showInfobox: false,
+            highlight: true, highlightFillColor: COL_Q, highlightStrokeColor: COL_Q,
+            label: { offset: [12, -4], fontSize: 15, color: COL_Q, cssStyle: 'font-weight:700;' }
+        });
+        pQ.on('over', function() { showTooltip(pQ, COL_Q); });
+        pQ.on('out', function() { hideTooltip(); });
+
+        // Direction arrows on the curve (small chevrons indicating slope sign)
         function arrow(xa, dir) {
             var ya = f(xa);
             var dx = 0.001;
             var slope = (f(xa + dx) - f(xa - dx)) / (2 * dx);
-            // arrow tip direction unit vector
             var nrm = Math.sqrt(1 + slope * slope);
             var ux = dir / nrm;
             var uy = (dir * slope) / nrm;
@@ -103,12 +146,9 @@
                 lastArrow: { type: 1, size: 4 }, firstArrow: false
             });
         }
-        // Increasing before P (left side)
-        arrow(-1.7, 1);
-        // Decreasing after P, before Q
+        arrow(-2.5, 1);
         arrow(1, -1);
-        // Increasing after Q (right side)
-        arrow(3.7, 1);
+        arrow(4.3, 1);
     </script>
 </body>
 </html>
