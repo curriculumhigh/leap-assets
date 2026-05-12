@@ -106,6 +106,36 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var self = this;
         init.events.on("validate", function () { self.validateCurrentStep(); });
 
+        // Override facade scoring methods so Learnosity's getScore() resolves
+        // for custom questions (Items API doesn't resolve getScore for custom types natively)
+        if (this.facade) {
+            var f = this.facade;
+            f.isValid = function () {
+                var resp = self.getResponse();
+                if (!resp || !resp.value) return false;
+                var parts = resp.value.split("/");
+                return parseInt(parts[0]) >= parseInt(parts[1]);
+            };
+            f.score = function () {
+                var resp = self.getResponse();
+                if (!resp || !resp.value) return 0;
+                var parts = resp.value.split("/");
+                var completed = parseInt(parts[0]) || 0;
+                var total = parseInt(parts[1]) || 1;
+                var max = self.question.score || 1;
+                return (completed >= total) ? max : Math.round((completed / total) * max);
+            };
+            f.maxScore = function () {
+                return self.question.score || 1;
+            };
+            f.canValidateResponse = function () {
+                return true;
+            };
+            f.validateIndividualResponses = function () {
+                return null;
+            };
+        }
+
         loadDeps().then(function () {
             self.MQ = MathQuill.getInterface(2);
             self.render();
