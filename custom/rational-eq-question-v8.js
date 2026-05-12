@@ -2769,7 +2769,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             // before LEAP's Check button calls getScore()
             setTimeout(function () {
                 self.events.trigger("changed", self.getResponse());
-                self.events.trigger("validate");
+                // Use facade.validate() to trigger Learnosity's full scoring pipeline
+                if (self.facade && typeof self.facade.validate === "function") {
+                    self.facade.validate();
+                }
             }, 100);
         }
 
