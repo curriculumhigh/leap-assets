@@ -34,5 +34,13 @@ LearnosityAmd.define([], function () {
         return this.question.score || 1;
     };
 
+    Scorer.prototype.canValidateResponse = function () {
+        return true;
+    };
+
+    Scorer.prototype.validateIndividualResponses = function () {
+        return null;
+    };
+
     return { Scorer: Scorer };
 });
