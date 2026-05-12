@@ -58,11 +58,17 @@
             strokeColor: COL_CURVE, strokeWidth: 2.2, fixed: true, highlight: false
         });
 
-        // Mark the three turning points — no labels (the question is to identify them)
-        [[-1, -1], [0, 0.25], [2, -7.75]].forEach(function(c) {
-            board.create('point', c, {
-                name: '', size: 4, fillColor: COL_EXTREMUM, strokeColor: COL_EXTREMUM,
-                fixed: true, showInfobox: false, highlight: false
+        // Mark and label the three turning points as A, B, C (left-to-right)
+        var labeledPoints = [
+            { coords: [-1, -1],   name: 'A', offset: [-14, -2] },
+            { coords: [0, 0.25],  name: 'B', offset: [10, 14] },
+            { coords: [2, -7.75], name: 'C', offset: [12, -2] }
+        ];
+        labeledPoints.forEach(function(p) {
+            board.create('point', p.coords, {
+                name: p.name, size: 4, fillColor: COL_EXTREMUM, strokeColor: COL_EXTREMUM,
+                fixed: true, showInfobox: false, highlight: false,
+                label: { offset: p.offset, fontSize: 15, color: COL_EXTREMUM, cssStyle: 'font-weight:700;' }
             });
         });
     </script>
