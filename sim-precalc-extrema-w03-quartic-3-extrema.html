@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quartic Polynomial with Three Local Extrema</title>
+    <title>Asymmetric Quartic Polynomial with Three Local Extrema</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
     <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <style>
         html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
         .container { max-width: 520px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
@@ -23,11 +21,10 @@
     </div>
     <script>
         var COL_CURVE = '#222222';
-        var COL_MAX   = '#2563EB';
-        var COL_MIN   = '#059669';
+        var COL_EXTREMUM = '#2563EB';
 
         var board = JXG.JSXGraph.initBoard('board', {
-            boundingbox: [-3.6, 12, 3.6, -12],
+            boundingbox: [-2.5, 2.5, 3.5, -9],
             axis: true,
             showNavigation: false,
             showCopyright: false,
@@ -42,45 +39,31 @@
                 y: {
                     strokeColor: '#444444', strokeWidth: 1.2,
                     lastArrow: { type: 2, size: 6 },
-                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 2 }
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 }
                 }
             },
             grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
         });
 
-        board.create('text', [3.3, -0.7, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
-        board.create('text', [0.25, 11.5, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [3.2, -0.55, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.13, 2.15, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
 
-        // f(x) = x^4 - 8x^2 + 7
-        var f = function(x) { return x*x*x*x - 8*x*x + 7; };
-        board.create('functiongraph', [f, -3.2, 3.2], {
+        // Asymmetric quartic: g(x) = (3x^4 - 4x^3 - 12x^2 + 1) / 4
+        // Critical points at x = -1, 0, 2
+        //   local min at (-1, -1)
+        //   local max at (0, 0.25)
+        //   local min at (2, -7.75)
+        var f = function(x) { return (3 * x*x*x*x - 4 * x*x*x - 12 * x*x + 1) / 4; };
+        board.create('functiongraph', [f, -2.2, 3.2], {
             strokeColor: COL_CURVE, strokeWidth: 2.2, fixed: true, highlight: false
         });
 
-        // Local maximum at (0, 7)
-        board.create('point', [0, 7], {
-            name: '', size: 4, fillColor: COL_MAX, strokeColor: COL_MAX,
-            fixed: true, showInfobox: false, highlight: false
-        });
-        board.create('text', [0.35, 8.2, '(0, 7)'], {
-            fontSize: 12, color: COL_MAX, fixed: true, highlight: false, cssStyle: 'font-weight:600;'
-        });
-
-        // Local minima at (-2, -9) and (2, -9)
-        board.create('point', [-2, -9], {
-            name: '', size: 4, fillColor: COL_MIN, strokeColor: COL_MIN,
-            fixed: true, showInfobox: false, highlight: false
-        });
-        board.create('text', [-2.5, -10.2, '(-2, -9)'], {
-            fontSize: 12, color: COL_MIN, fixed: true, highlight: false, cssStyle: 'font-weight:600;', anchorX: 'middle'
-        });
-
-        board.create('point', [2, -9], {
-            name: '', size: 4, fillColor: COL_MIN, strokeColor: COL_MIN,
-            fixed: true, showInfobox: false, highlight: false
-        });
-        board.create('text', [2.5, -10.2, '(2, -9)'], {
-            fontSize: 12, color: COL_MIN, fixed: true, highlight: false, cssStyle: 'font-weight:600;', anchorX: 'middle'
+        // Mark the three turning points — no labels (the question is to identify them)
+        [[-1, -1], [0, 0.25], [2, -7.75]].forEach(function(c) {
+            board.create('point', c, {
+                name: '', size: 4, fillColor: COL_EXTREMUM, strokeColor: COL_EXTREMUM,
+                fixed: true, showInfobox: false, highlight: false
+            });
         });
     </script>
 </body>
