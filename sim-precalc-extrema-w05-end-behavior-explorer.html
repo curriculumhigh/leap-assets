@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>End Behavior Explorer — Polynomial f(x) = a · x^n</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 620px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel { width: 210px; flex-shrink: 0; background: white; border-radius: 8px; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; }
+        #board { width: 100%; height: 100%; }
+        .panel-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #888; margin-bottom: 5px; }
+        .slider-row { display: flex; align-items: center; gap: 8px; }
+        .slider-row input[type="range"] { flex: 1; -webkit-appearance: none; appearance: none; height: 5px; border-radius: 3px; background: #e5e7eb; outline: none; }
+        .slider-row input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 15px; height: 15px; border-radius: 50%; background: #222222; cursor: pointer; }
+        .slider-val { font-size: 14px; font-variant-numeric: tabular-nums; width: 18px; text-align: right; font-weight: 700; }
+        .toggle-group { display: flex; gap: 6px; }
+        .toggle-btn { flex: 1; font-size: 13px; padding: 6px 0; border: 1px solid #d0d0d0; border-radius: 4px; background: #f5f5f5; color: #555; cursor: pointer; font-family: inherit; }
+        .toggle-btn.active { background: #222222; color: white; border-color: #222222; }
+        .section { border-top: 1px solid #e5e7eb; padding-top: 10px; }
+        .eq-line { margin-bottom: 6px; min-height: 22px; }
+        .meta-line { font-size: 12px; color: #444; margin-bottom: 4px; }
+        .meta-label { color: #888; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div>
+                    <div class="panel-label">Degree (n)</div>
+                    <div class="slider-row">
+                        <input type="range" id="slider-n" min="2" max="5" step="1" value="4">
+                        <span class="slider-val" id="val-n">4</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="panel-label">Leading coefficient (a)</div>
+                    <div class="toggle-group">
+                        <button class="toggle-btn active" id="btn-pos" data-val="1">a = +1</button>
+                        <button class="toggle-btn" id="btn-neg" data-val="-1">a = -1</button>
+                    </div>
+                </div>
+                <div class="section">
+                    <div class="panel-label">Function</div>
+                    <div class="eq-line" id="eq-line"></div>
+                    <div class="meta-line"><span class="meta-label">Degree is</span> <span id="parity">even</span></div>
+                </div>
+                <div class="section">
+                    <div class="panel-label">End behavior</div>
+                    <div class="eq-line" id="end-left"></div>
+                    <div class="eq-line" id="end-right"></div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var nVal = 4;
+        var aVal = 1;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.6, 16, 2.6, -16],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 4 }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        board.create('text', [2.35, -1.0, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.18, 15.0, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        var curve = board.create('functiongraph', [
+            function(x) { return aVal * Math.pow(x, nVal); }, -2.5, 2.5
+        ], { strokeColor: '#222222', strokeWidth: 2.2, fixed: true, highlight: false });
+
+        function endLimit(side) {
+            // side: -1 for x -> -infinity, +1 for x -> +infinity
+            // sign of leading term in the limit
+            var rightSign = aVal; // x positive large -> x^n positive, so sign = a
+            var leftSign  = (nVal % 2 === 0) ? aVal : -aVal;
+            return side === 1 ? rightSign : leftSign;
+        }
+
+        function update() {
+            document.getElementById('val-n').textContent = nVal;
+
+            // Equation
+            var aStr = aVal === 1 ? '' : '-';
+            katex.render('f(x) = ' + aStr + 'x^{' + nVal + '}', document.getElementById('eq-line'), { throwOnError: false });
+
+            // Parity
+            document.getElementById('parity').textContent = (nVal % 2 === 0) ? 'even' : 'odd';
+
+            // End behavior
+            function infSymbol(sign) { return sign > 0 ? '+\\infty' : '-\\infty'; }
+            katex.render('\\text{As } x \\to -\\infty,\\ f(x) \\to ' + infSymbol(endLimit(-1)), document.getElementById('end-left'), { throwOnError: false });
+            katex.render('\\text{As } x \\to +\\infty,\\ f(x) \\to ' + infSymbol(endLimit(1)), document.getElementById('end-right'), { throwOnError: false });
+
+            board.update();
+        }
+
+        document.getElementById('slider-n').addEventListener('input', function(e) {
+            nVal = parseInt(e.target.value, 10);
+            update();
+        });
+
+        function setSign(val) {
+            aVal = val;
+            document.getElementById('btn-pos').classList.toggle('active', val === 1);
+            document.getElementById('btn-neg').classList.toggle('active', val === -1);
+            update();
+        }
+        document.getElementById('btn-pos').addEventListener('click', function() { setSign(1); });
+        document.getElementById('btn-neg').addEventListener('click', function() { setSign(-1); });
+
+        // Initial render — wait for KaTeX
+        if (window.katex) {
+            update();
+        } else {
+            window.addEventListener('load', update);
+        }
+    </script>
+</body>
+</html>
