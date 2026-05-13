@@ -106,36 +106,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var self = this;
         init.events.on("validate", function () { self.validateCurrentStep(); });
 
-        // Override facade scoring methods so Learnosity's getScore() resolves
-        // for custom questions (Items API doesn't resolve getScore for custom types natively)
-        if (this.facade) {
-            var f = this.facade;
-            f.isValid = function () {
-                var resp = self.getResponse();
-                if (!resp || !resp.value) return false;
-                var parts = resp.value.split("/");
-                return parseInt(parts[0]) >= parseInt(parts[1]);
-            };
-            f.score = function () {
-                var resp = self.getResponse();
-                if (!resp || !resp.value) return 0;
-                var parts = resp.value.split("/");
-                var completed = parseInt(parts[0]) || 0;
-                var total = parseInt(parts[1]) || 1;
-                var max = self.question.score || 1;
-                return (completed >= total) ? max : Math.round((completed / total) * max);
-            };
-            f.maxScore = function () {
-                return self.question.score || 1;
-            };
-            f.canValidateResponse = function () {
-                return true;
-            };
-            f.validateIndividualResponses = function () {
-                return null;
-            };
-        }
-
         loadDeps().then(function () {
             self.MQ = MathQuill.getInterface(2);
             self.render();
@@ -150,13 +120,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var self = this;
 
         var $w = $('<div class="req-widget" style="position:relative;"></div>');
-
-        // Render hidden Learnosity CheckAnswerButton to establish scoring pipeline
-        var $hiddenCheckBtn = $('<div style="display:none;"></div>');
-        $w.append($hiddenCheckBtn);
-        if (self.lrnUtils && self.lrnUtils.renderComponent) {
-            self.lrnUtils.renderComponent("CheckAnswerButton", $hiddenCheckBtn[0]).catch(function () {});
-        }
 
         // Hide Learnosity's raw stimulus rendering
         self.$el.closest(".lrn_widget, .lrn-question, .lrn_response_wrapper")
@@ -2802,15 +2765,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         });
         if (allDone) {
             $("#" + self.uid + "-done").show();
-            // Pre-trigger validate so Learnosity's scorer caches the result
-            // before LEAP's Check button calls getScore()
-            setTimeout(function () {
-                self.events.trigger("changed", self.getResponse());
-                // Use facade.validate() to trigger Learnosity's full scoring pipeline
-                if (self.facade && typeof self.facade.validate === "function") {
-                    self.facade.validate();
-                }
-            }, 100);
         }
 
         self.events.trigger("changed", self.getResponse());
