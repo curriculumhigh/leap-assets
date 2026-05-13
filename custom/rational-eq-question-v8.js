@@ -151,6 +151,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         var $w = $('<div class="req-widget" style="position:relative;"></div>');
 
+        // Render hidden Learnosity CheckAnswerButton to establish scoring pipeline
+        var $hiddenCheckBtn = $('<div style="display:none;"></div>');
+        $w.append($hiddenCheckBtn);
+        if (self.lrnUtils && self.lrnUtils.renderComponent) {
+            self.lrnUtils.renderComponent("CheckAnswerButton", $hiddenCheckBtn[0]).catch(function () {});
+        }
+
         // Hide Learnosity's raw stimulus rendering
         self.$el.closest(".lrn_widget, .lrn-question, .lrn_response_wrapper")
             .parent().find(".lrn_stimulus").hide();
