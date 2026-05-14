@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arithmetic Sequence vs Linear Function</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 660px; margin: 0; padding: 6px; height: calc(100% - 12px); position: relative; }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 200px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            box-sizing: border-box;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 2px;
+        }
+        .checkbox-row {
+            display: flex; align-items: center; gap: 8px; font-size: 13px;
+            cursor: pointer; user-select: none;
+        }
+        .checkbox-row input { cursor: pointer; margin: 0; flex-shrink: 0; }
+        .swatch {
+            display: inline-block; width: 11px; height: 11px;
+            border-radius: 50%; flex-shrink: 0;
+        }
+        .swatch-seq { background: #2563EB; }
+        .swatch-fn { background: #059669; }
+        .formula-label { flex: 1; }
+        .board-wrapper {
+            flex: 1; background: white; border-radius: 8px; padding: 10px;
+            min-width: 0;
+        }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 13px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="sim-layout">
+        <div class="left-panel">
+            <div class="panel-label">Show / Hide</div>
+            <label class="checkbox-row">
+                <input type="checkbox" id="cb-seq" checked>
+                <span class="swatch swatch-seq"></span>
+                <span class="formula-label" id="lbl-seq"></span>
+            </label>
+            <label class="checkbox-row">
+                <input type="checkbox" id="cb-fn">
+                <span class="swatch swatch-fn"></span>
+                <span class="formula-label" id="lbl-fn"></span>
+            </label>
+        </div>
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+</div>
+<script>
+    var COL_SEQ = '#2563EB';
+    var COL_FN  = '#059669';
+
+    var board = JXG.JSXGraph.initBoard('board', {
+        boundingbox: [-0.7, 22, 6.7, -1.5],
+        axis: true,
+        showNavigation: false,
+        showCopyright: false,
+        pan: { enabled: false },
+        zoom: { enabled: false },
+        defaultAxes: {
+            x: {
+                strokeColor: '#444444', strokeWidth: 1.2,
+                lastArrow: { type: 2, size: 6 },
+                ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 }
+            },
+            y: {
+                strokeColor: '#444444', strokeWidth: 1.2,
+                lastArrow: { type: 2, size: 6 },
+                ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 2 }
+            }
+        },
+        grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+    });
+
+    // Axis labels
+    board.create('text', [6.3, -0.6, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+    board.create('text', [0.25, 21, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+    // Function line (hidden by default)
+    var fnLine = board.create('functiongraph',
+        [function(x) { return 1 + 3 * x; }, -0.7, 6.7],
+        { strokeColor: COL_FN, strokeWidth: 2.2, fixed: true, visible: false, highlight: false }
+    );
+
+    // Function's y-intercept marker (visible only when function is on)
+    var yIntercept = board.create('point', [0, 1], {
+        name: '', size: 4, fillColor: COL_FN, strokeColor: COL_FN, fixed: true,
+        showInfobox: false, visible: false,
+        highlight: true, highlightFillColor: COL_FN, highlightStrokeColor: COL_FN
+    });
+
+    // Sequence dots: a_n = 1 + 3n for n = 1..6
+    var seqPoints = [];
+    for (var i = 1; i <= 6; i++) {
+        var p = board.create('point', [i, 1 + 3 * i], {
+            name: '', size: 4, fillColor: COL_SEQ, strokeColor: COL_SEQ, fixed: true,
+            showInfobox: false,
+            highlight: true, highlightFillColor: COL_SEQ, highlightStrokeColor: COL_SEQ
+        });
+        seqPoints.push(p);
+    }
+
+    // ── Custom KaTeX tooltip ─────────────────────────────────────────
+    var tooltip = document.getElementById('tooltip');
+    var boardContainer = document.getElementById('board');
+
+    function formatVal(v) {
+        if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+        return v.toFixed(2);
+    }
+
+    function showTooltip(pt, color, suffix) {
+        var x = pt.X();
+        var y = pt.Y();
+        var coordStr = '\\left(' + formatVal(x) + ',\\,' + formatVal(y) + '\\right)';
+        var latex = '\\color{' + color + '}{' + coordStr;
+        if (suffix) latex += '\\;\\text{' + suffix + '}';
+        latex += '}';
+        katex.render(latex, tooltip, { throwOnError: false });
+        tooltip.style.borderColor = color;
+        tooltip.style.display = 'block';
+        var rect = boardContainer.getBoundingClientRect();
+        var coords = new JXG.Coords(JXG.COORDS_BY_USER, [x, y], board);
+        var sx = coords.scrCoords[1] + rect.left;
+        var sy = coords.scrCoords[2] + rect.top;
+        tooltip.style.left = (sx + 14) + 'px';
+        tooltip.style.top = (sy - 28) + 'px';
+    }
+
+    function hideTooltip() { tooltip.style.display = 'none'; }
+
+    seqPoints.forEach(function(p) {
+        p.on('over', function() { showTooltip(p, COL_SEQ); });
+        p.on('out',  function() { hideTooltip(); });
+    });
+
+    yIntercept.on('over', function() {
+        showTooltip(yIntercept, COL_FN, '—\\;y\\text{-intercept}');
+    });
+    yIntercept.on('out', function() { hideTooltip(); });
+
+    // ── Checkbox labels (KaTeX) ──────────────────────────────────────
+    katex.render('a_n = 1 + 3n',  document.getElementById('lbl-seq'), { throwOnError: false });
+    katex.render('f(x) = 1 + 3x', document.getElementById('lbl-fn'),  { throwOnError: false });
+
+    // ── Checkbox toggle handlers ─────────────────────────────────────
+    document.getElementById('cb-seq').addEventListener('change', function(e) {
+        var v = e.target.checked;
+        seqPoints.forEach(function(p) { p.setAttribute({ visible: v }); });
+        board.update();
+    });
+    document.getElementById('cb-fn').addEventListener('change', function(e) {
+        var v = e.target.checked;
+        fnLine.setAttribute({ visible: v });
+        yIntercept.setAttribute({ visible: v });
+        board.update();
+    });
+</script>
+</body>
+</html>
