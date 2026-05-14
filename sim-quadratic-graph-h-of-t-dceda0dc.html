@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadratic Graph h(t)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px);
+        }
+        .sim-layout {
+            display: flex; gap: 12px; height: 100%;
+        }
+        .left-panel {
+            width: 190px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 6px;
+        }
+        .fn-row {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+        }
+        .fn-swatch {
+            width: 22px; height: 4px; border-radius: 2px; flex-shrink: 0;
+        }
+        .fn-label { min-height: 22px; }
+        .hover-msg {
+            font-size: 11px; color: #999; line-height: 1.5;
+            border-top: 1px solid #e5e7eb; padding-top: 12px; margin-top: auto;
+        }
+        .board-wrapper {
+            flex: 1; background: white; border-radius: 8px; padding: 10px;
+            height: calc(100% - 20px);
+        }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-section">
+                    <div class="panel-label">Functions</div>
+                    <div class="fn-row">
+                        <div class="fn-swatch" style="background: #222222;"></div>
+                        <div class="fn-label" id="fn-label-1"></div>
+                    </div>
+                    <div class="fn-row">
+                        <div class="fn-swatch" style="background: #2563EB;"></div>
+                        <div class="fn-label" id="fn-label-2"></div>
+                    </div>
+                </div>
+                <div class="hover-msg">
+                    Hover over the marked points on the graph to read their coordinates.
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+
+    <script>
+        // ── Render panel labels ─────────────────────────────────────────
+        katex.render('h(t) = -16t^2 + 96t + 4', document.getElementById('fn-label-1'), { throwOnError: false });
+        katex.render('h = 100', document.getElementById('fn-label-2'), { throwOnError: false });
+
+        // ── Constants ───────────────────────────────────────────────────
+        var COL_PARA = '#222222';
+        var COL_LINE = '#2563EB';
+
+        // h(t) = -16t^2 + 96t + 4
+        function h(t) {
+            return -16 * t * t + 96 * t + 4;
+        }
+
+        // Intersection: -16t^2 + 96t + 4 = 100 → t^2 - 6t + 6 = 0
+        // t = 3 ± √3
+        var SQRT3 = Math.sqrt(3);
+        var INT_T1 = 3 - SQRT3;  // ≈ 1.268
+        var INT_T2 = 3 + SQRT3;  // ≈ 4.732
+        var VERTEX_T = 3;
+        var VERTEX_H = 148;
+
+        // ── Board ───────────────────────────────────────────────────────
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 158, 7.5, -8],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11, anchorX: 'middle', offset: [0, -12] },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        majorHeight: 0,
+                        drawZero: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11, anchorX: 'right', offset: [-6, 0] },
+                        minorTicks: 0,
+                        ticksDistance: 10,
+                        majorHeight: 0,
+                        drawZero: false
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // ── Axis labels ─────────────────────────────────────────────────
+        board.create('text', [7.1, -4, '<i>t</i>'], {
+            fontSize: 14, fixed: true, highlight: false
+        });
+        board.create('text', [0.2, 155, '<i>h</i>'], {
+            fontSize: 14, fixed: true, highlight: false
+        });
+
+        // ── Parabola ────────────────────────────────────────────────────
+        board.create('functiongraph', [
+            function(t) { return h(t); }, -0.5, 6.5
+        ], {
+            strokeColor: COL_PARA, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Horizontal line h = 100 ────────────────────────────────────
+        board.create('functiongraph', [
+            function() { return 100; }, -0.8, 7.5
+        ], {
+            strokeColor: COL_LINE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Tooltip logic ───────────────────────────────────────────────
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function formatValKatex(v) {
+            var absV = Math.abs(v);
+            var sign = v < 0 ? '-' : '';
+            // Check for 3 ± √3
+            if (Math.abs(v - (3 - SQRT3)) < 0.001) return '3 - \\sqrt{3}';
+            if (Math.abs(v - (3 + SQRT3)) < 0.001) return '3 + \\sqrt{3}';
+            // Integer check
+            if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+            return v.toFixed(2);
+        }
+
+        function showTooltip(pt, color) {
+            var xCoord = pt.X();
+            var yCoord = pt.Y();
+            var latex = '\\color{' + color + '}{\\left(' + formatValKatex(xCoord)
+                      + ',\\,' + formatValKatex(yCoord) + '\\right)}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xCoord, yCoord], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+        // ── Key points: vertex ──────────────────────────────────────────
+        var ptVertex = board.create('point', [VERTEX_T, VERTEX_H], {
+            name: '', size: 5, color: COL_PARA, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_PARA, highlightStrokeColor: COL_PARA
+        });
+        ptVertex.on('over', function() { showTooltip(ptVertex, COL_PARA); });
+        ptVertex.on('out', function() { hideTooltip(); });
+
+        // ── Key points: intersections ───────────────────────────────────
+        var ptInt1 = board.create('point', [INT_T1, 100], {
+            name: '', size: 5, color: COL_LINE, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_LINE, highlightStrokeColor: COL_LINE
+        });
+        ptInt1.on('over', function() { showTooltip(ptInt1, COL_LINE); });
+        ptInt1.on('out', function() { hideTooltip(); });
+
+        var ptInt2 = board.create('point', [INT_T2, 100], {
+            name: '', size: 5, color: COL_LINE, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_LINE, highlightStrokeColor: COL_LINE
+        });
+        ptInt2.on('over', function() { showTooltip(ptInt2, COL_LINE); });
+        ptInt2.on('out', function() { hideTooltip(); });
+    </script>
+</body>
+</html>
