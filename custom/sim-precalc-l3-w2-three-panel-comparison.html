@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three-panel comparison: translation vs dilation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0;
+            padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .panel-row {
+            display: flex;
+            gap: 8px;
+            height: 100%;
+        }
+        .panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 8px;
+            padding: 8px;
+            box-sizing: border-box;
+            min-width: 0;
+        }
+        .panel-header {
+            font-size: 11px;
+            font-weight: 600;
+            color: #555;
+            text-align: center;
+            margin-bottom: 4px;
+            line-height: 1.25;
+            min-height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .panel-equation {
+            font-size: 12px;
+            color: #222;
+            text-align: center;
+            margin-bottom: 4px;
+            min-height: 18px;
+        }
+        .board {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="panel-row">
+        <div class="panel">
+            <div class="panel-header">Original</div>
+            <div class="panel-equation" id="eq-1"></div>
+            <div class="board" id="board-1"></div>
+        </div>
+        <div class="panel">
+            <div class="panel-header">Horizontal translation<br>by 2 units to the left</div>
+            <div class="panel-equation" id="eq-2"></div>
+            <div class="board" id="board-2"></div>
+        </div>
+        <div class="panel">
+            <div class="panel-header">Vertical dilation<br>by factor 25</div>
+            <div class="panel-equation" id="eq-3"></div>
+            <div class="board" id="board-3"></div>
+        </div>
+    </div>
+</div>
+<script>
+    var COL_PRIMARY = '#222222';
+    var COL_FADED   = '#BBBBBB';
+    var COL_RED     = '#DC2626';
+    var COL_AXIS    = '#444444';
+    var COL_GRID    = '#D1D5DB';
+
+    var BBOX = [-2, 30, 2, -3];
+
+    function makeBoard(id) {
+        return JXG.JSXGraph.initBoard(id, {
+            boundingbox: BBOX,
+            axis: true,
+            keepAspectRatio: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan:  { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: COL_AXIS, strokeWidth: 1.0,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: COL_AXIS,
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: COL_AXIS, strokeWidth: 1.0,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: COL_AXIS,
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 5
+                    }
+                }
+            },
+            grid: {
+                strokeColor: COL_GRID,
+                strokeWidth: 0.3
+            }
+        });
+    }
+
+    var b1 = makeBoard('board-1');
+    var b2 = makeBoard('board-2');
+    var b3 = makeBoard('board-3');
+
+    // Panel 1: f(x) = 5^x alone, dark primary
+    b1.create('functiongraph', [function(x) { return Math.pow(5, x); }, -2, 2], {
+        strokeColor: COL_PRIMARY, strokeWidth: 1.8, fixed: true, highlight: false
+    });
+
+    // Panel 2: faded f, then translated g(x) = 5^(x+2) in red on top
+    b2.create('functiongraph', [function(x) { return Math.pow(5, x); }, -2, 2], {
+        strokeColor: COL_FADED, strokeWidth: 1.2, fixed: true, highlight: false
+    });
+    b2.create('functiongraph', [function(x) { return Math.pow(5, x + 2); }, -2, 2], {
+        strokeColor: COL_RED, strokeWidth: 1.8, fixed: true, highlight: false
+    });
+
+    // Panel 3: faded f, then dilated 25 * 5^x in red on top
+    b3.create('functiongraph', [function(x) { return Math.pow(5, x); }, -2, 2], {
+        strokeColor: COL_FADED, strokeWidth: 1.2, fixed: true, highlight: false
+    });
+    b3.create('functiongraph', [function(x) { return 25 * Math.pow(5, x); }, -2, 2], {
+        strokeColor: COL_RED, strokeWidth: 1.8, fixed: true, highlight: false
+    });
+
+    // Equation labels above each board (KaTeX, once)
+    function renderEqs() {
+        if (typeof katex === 'undefined') {
+            setTimeout(renderEqs, 50);
+            return;
+        }
+        katex.render('f(x) = 5^{x}',
+            document.getElementById('eq-1'), { throwOnError: false });
+        katex.render('\\textcolor{#DC2626}{g(x) = 5^{x+2}}',
+            document.getElementById('eq-2'), { throwOnError: false });
+        katex.render('\\textcolor{#DC2626}{25 \\cdot 5^{x}}',
+            document.getElementById('eq-3'), { throwOnError: false });
+    }
+    renderEqs();
+</script>
+</body>
+</html>
