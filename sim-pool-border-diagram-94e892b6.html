@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pool with Border Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 18.5, 22.5, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var outerW = 18;
+        var outerH = 14;
+        var w = 2.5;
+
+        var ox = 0;
+        var oy = 0;
+
+        var ix = ox + w;
+        var iy = oy + w;
+        var innerW = outerW - 2 * w;
+        var innerH = outerH - 2 * w;
+
+        var outerPts = [
+            board.create('point', [ox, oy], { visible: false, fixed: true, name: '' }),
+            board.create('point', [ox + outerW, oy], { visible: false, fixed: true, name: '' }),
+            board.create('point', [ox + outerW, oy + outerH], { visible: false, fixed: true, name: '' }),
+            board.create('point', [ox, oy + outerH], { visible: false, fixed: true, name: '' })
+        ];
+        board.create('polygon', outerPts, {
+            fillColor: '#E5E7EB', fillOpacity: 0.35,
+            borders: { strokeColor: '#555555', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        var innerPts = [
+            board.create('point', [ix, iy], { visible: false, fixed: true, name: '' }),
+            board.create('point', [ix + innerW, iy], { visible: false, fixed: true, name: '' }),
+            board.create('point', [ix + innerW, iy + innerH], { visible: false, fixed: true, name: '' }),
+            board.create('point', [ix, iy + innerH], { visible: false, fixed: true, name: '' })
+        ];
+        board.create('polygon', innerPts, {
+            fillColor: '#BFDBFE', fillOpacity: 0.45,
+            borders: { strokeColor: '#555555', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        var ARROW_ATTRS = {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 },
+            firstArrow: { type: 2, size: 5 }
+        };
+
+        var ARROW_BLUE = {
+            strokeColor: '#2563EB', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 },
+            firstArrow: { type: 2, size: 4 }
+        };
+
+        var dimTopY = oy + outerH + 1.5;
+        board.create('arrow', [[ox, dimTopY], [ox + outerW, dimTopY]], ARROW_ATTRS);
+        board.create('text', [ox + outerW / 2, dimTopY + 0.9, '18 ft'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 15, color: '#222222',
+            fixed: true, highlight: false
+        });
+
+        var dimRightX = ox + outerW + 1.8;
+        board.create('arrow', [[dimRightX, oy], [dimRightX, oy + outerH]], ARROW_ATTRS);
+        board.create('text', [dimRightX + 1.0, oy + outerH / 2, '14 ft'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 15, color: '#222222',
+            fixed: true, highlight: false
+        });
+
+        var wTopX = ox + outerW / 2;
+        board.create('arrow', [[wTopX, iy + innerH], [wTopX, oy + outerH]], ARROW_BLUE);
+        board.create('text', [wTopX + 0.8, iy + innerH + (w / 2), 'w'], {
+            anchorX: 'left', anchorY: 'middle', fontSize: 15, color: '#2563EB',
+            fixed: true, highlight: false,
+            cssStyle: 'font-style: italic; font-weight: 600;'
+        });
+
+        var wRightY = oy + outerH / 2;
+        board.create('arrow', [[ix + innerW, wRightY], [ox + outerW, wRightY]], ARROW_BLUE);
+        board.create('text', [ix + innerW + (w / 2), wRightY + 0.8, 'w'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 15, color: '#2563EB',
+            fixed: true, highlight: false,
+            cssStyle: 'font-style: italic; font-weight: 600;'
+        });
+
+        board.create('text', [ix + innerW / 2, iy + innerH / 2, 'Pool'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 16, color: '#555555',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight: 500;'
+        });
+    </script>
+</body>
+</html>
