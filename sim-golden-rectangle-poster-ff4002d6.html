@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golden Rectangle Poster</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var PHI = (1 + Math.sqrt(5)) / 2;
+        var L = 8;
+        var W = L / PHI;
+
+        var ox = 1.2;
+        var oy = 1.8;
+        var borderInset = 0.55;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.8, W + oy + 1.6, L + ox + 2.2, -2.2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Outer rectangle (the golden rectangle border) ──── */
+        var oA = board.create('point', [ox, oy], { visible: false, fixed: true, name: '' });
+        var oB = board.create('point', [ox + L, oy], { visible: false, fixed: true, name: '' });
+        var oC = board.create('point', [ox + L, oy + W], { visible: false, fixed: true, name: '' });
+        var oD = board.create('point', [ox, oy + W], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [oA, oB, oC, oD], {
+            fillColor: '#b0bec5',
+            fillOpacity: 0.35,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        /* ── Inner rectangle (the poster content area) ──────── */
+        var bi = borderInset;
+        var iA = board.create('point', [ox + bi, oy + bi], { visible: false, fixed: true, name: '' });
+        var iB = board.create('point', [ox + L - bi, oy + bi], { visible: false, fixed: true, name: '' });
+        var iC = board.create('point', [ox + L - bi, oy + W - bi], { visible: false, fixed: true, name: '' });
+        var iD = board.create('point', [ox + bi, oy + W - bi], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [iA, iB, iC, iD], {
+            fillColor: '#ffffff',
+            fillOpacity: 1.0,
+            borders: { strokeColor: '#999999', strokeWidth: 1.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        /* ── "POSTER" text inside ────────────────────────────── */
+        board.create('text', [ox + L / 2, oy + W / 2 + 0.35, '\\textit{Poster}'], {
+            useKatex: true, fontSize: 18, color: '#aaaaaa',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [ox + L / 2, oy + W / 2 - 0.35, '\\textit{Content Area}'], {
+            useKatex: true, fontSize: 13, color: '#bbbbbb',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        /* ── "Border" label on the frame area ────────────────── */
+        board.create('text', [ox + 0.08, oy + 0.12, '\\small\\textsf{border}'], {
+            useKatex: true, fontSize: 9, color: '#777777',
+            anchorX: 'left', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+
+        /* ── Right-angle marker at outer corner A (bottom-left) */
+        var RA = 0.35;
+        board.create('segment', [[ox, oy + RA], [ox + RA, oy + RA]], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[ox + RA, oy + RA], [ox + RA, oy]], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        /* ── Dimension lines ─────────────────────────────────── */
+        var tickH = 0.25;
+
+        /* --- Bottom dimension: ℓ = 8 in. --- */
+        var dimYbot = oy - 0.8;
+
+        board.create('segment', [[ox, dimYbot], [ox + L, dimYbot]], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 }, lastArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[ox, dimYbot - tickH], [ox, dimYbot + tickH]], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[ox + L, dimYbot - tickH], [ox + L, dimYbot + tickH]], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [ox + L / 2, dimYbot - 0.6, '\\ell = 8 \\text{ in.}'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        /* --- Right dimension: w --- */
+        var dimXright = ox + L + 0.8;
+
+        board.create('segment', [[dimXright, oy], [dimXright, oy + W]], {
+            strokeColor: '#2563EB', strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 }, lastArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[dimXright - tickH, oy], [dimXright + tickH, oy]], {
+            strokeColor: '#2563EB', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[dimXright - tickH, oy + W], [dimXright + tickH, oy + W]], {
+            strokeColor: '#2563EB', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [dimXright + 0.6, oy + W / 2, '\\color{#2563EB}{w}'], {
+            useKatex: true, fontSize: 15, color: '#2563EB',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        /* --- Left edge label: w directly on the side --- */
+        board.create('text', [ox - 0.45, oy + W / 2, '\\color{#2563EB}{w}'], {
+            useKatex: true, fontSize: 15, color: '#2563EB',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        /* --- Top edge label: ℓ directly on the side --- */
+        board.create('text', [ox + L / 2, oy + W + 0.45, '\\ell'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
