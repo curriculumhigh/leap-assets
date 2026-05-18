@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle with Base and Height</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 7.5, 9.5, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle vertices
+        var A = board.create('point', [0, 0], { name: '', fixed: true, size: 2, color: '#222222', highlight: false });
+        var B = board.create('point', [8, 0], { name: '', fixed: true, size: 2, color: '#222222', highlight: false });
+        var C = board.create('point', [3, 6], { name: '', fixed: true, size: 2, color: '#222222', highlight: false });
+
+        // Triangle polygon
+        board.create('polygon', [A, B, C], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Foot of altitude from C to base AB
+        var footX = 3;
+        var footY = 0;
+        var F = board.create('point', [footX, footY], { name: '', fixed: true, visible: false });
+
+        // Dashed altitude line
+        board.create('segment', [C, F], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // Right angle marker at foot of altitude
+        var markerSize = 0.4;
+        board.create('segment', [[footX, footY + markerSize], [footX + markerSize, footY + markerSize]], {
+            strokeColor: '#DC2626', strokeWidth: 0.8, fixed: true, highlight: false
+        });
+        board.create('segment', [[footX + markerSize, footY + markerSize], [footX + markerSize, footY]], {
+            strokeColor: '#DC2626', strokeWidth: 0.8, fixed: true, highlight: false
+        });
+
+        // Base label: (x + 5) m — centered below the base
+        board.create('text', [4, -0.8, '(x + 5) \\text{ m}'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Height label: x m — close to the right side of the altitude line
+        board.create('text', [3.4, 3, 'x \\text{ m}'], {
+            useKatex: true, fontSize: 14, color: '#DC2626',
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Area label: A = 60 m² — inside the triangle
+        board.create('text', [4.2, 2.2, 'A = 60 \\text{ m}^2'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
