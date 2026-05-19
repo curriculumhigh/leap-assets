@@ -398,10 +398,10 @@
     flex-shrink: 0;
 }
 
-/* Comma-separated values hint — inline next to "Try again" */
+/* Comma-separated values hint — inline next to feedback pill */
 .req-comma-hint {
     display: none;
-    margin-left: 10px;
+    margin-left: 14px;
     font-size: 13px;
     color: #b45309;
     font-style: italic;
