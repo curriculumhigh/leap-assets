@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadratic and Linear Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px);
+        }
+        .sim-layout {
+            display: flex; gap: 10px; height: 100%;
+        }
+        .left-panel {
+            width: 155px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 14px;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 6px;
+        }
+        .func-row {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+        }
+        .func-swatch {
+            width: 18px; height: 3px; border-radius: 2px; flex-shrink: 0;
+        }
+        .func-rule { min-height: 22px; }
+        .hover-msg {
+            font-size: 11px; color: #999; line-height: 1.5;
+            border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: auto;
+        }
+        .board-wrapper {
+            flex: 1; background: white; border-radius: 8px; padding: 8px;
+        }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div>
+                    <div class="panel-label">Functions</div>
+                    <div class="func-row">
+                        <div class="func-swatch" style="background: #222222;"></div>
+                        <div class="func-rule" id="func1"></div>
+                    </div>
+                    <div class="func-row">
+                        <div class="func-swatch" style="background: #2563EB;"></div>
+                        <div class="func-rule" id="func2"></div>
+                    </div>
+                </div>
+                <div class="hover-msg">
+                    Use the grid to read key coordinates such as intersections and turning points.
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Render panel function labels
+        katex.render('y = x^2 - 4x + 3', document.getElementById('func1'), { throwOnError: false });
+        katex.render('y = x - 1', document.getElementById('func2'), { throwOnError: false });
+
+        var COL_PARA = '#222222';
+        var COL_LINE = '#2563EB';
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 6, 6, -2.5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: 'transparent',
+                        strokeWidth: 0,
+                        label: { fontSize: 11, color: '#444444' },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: 'transparent',
+                        strokeWidth: 0,
+                        label: { fontSize: 11, color: '#444444' },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [5.6, -0.35, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 5.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // ── Curves ──────────────────────────────────────────────────────
+        // Parabola: y = x^2 - 4x + 3
+        board.create('functiongraph', [
+            function(x) { return x * x - 4 * x + 3; }
+        ], { strokeColor: COL_PARA, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Line: y = x - 1
+        board.create('functiongraph', [
+            function(x) { return x - 1; }
+        ], { strokeColor: COL_LINE, strokeWidth: 1.5, fixed: true, highlight: false });
+    </script>
+</body>
+</html>

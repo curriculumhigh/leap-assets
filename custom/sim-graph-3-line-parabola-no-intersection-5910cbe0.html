@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph 3</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; }
+        .container { padding: 0; height: 100%; }
+        .board-wrapper { background: white; border-radius: 6px; padding: 0; height: 100%; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-10, 10, 10, -10],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 4 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        strokeWidth: 0,
+                        majorHeight: 0,
+                        minorHeight: 0,
+                        minorTicks: 0,
+                        ticksDistance: 4,
+                        drawZero: false,
+                        label: { fontSize: 9, color: '#444444', offset: [0, -10] }
+                    }
+                },
+                y: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 4 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        strokeWidth: 0,
+                        majorHeight: 0,
+                        minorHeight: 0,
+                        minorTicks: 0,
+                        ticksDistance: 4,
+                        drawZero: false,
+                        label: { fontSize: 9, color: '#444444', offset: [-12, 0] }
+                    }
+                }
+            },
+            grid: false
+        });
+
+        /* Axis labels */
+        board.create('text', [9.2, -0.8, '<i>x</i>'], {
+            fontSize: 11, fixed: true, highlight: false, color: '#444444'
+        });
+        board.create('text', [0.5, 9.2, '<i>y</i>'], {
+            fontSize: 11, fixed: true, highlight: false, color: '#444444'
+        });
+
+        /* Blue line: y = x - 1 */
+        board.create('functiongraph', [
+            function(x) { return x - 1; },
+            -10, 10
+        ], {
+            strokeColor: '#2563EB',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        /* Red parabola: y = (x - 3)^2 + 3  —  vertex at (3, 3), no intersection with the line */
+        board.create('functiongraph', [
+            function(x) { return (x - 3) * (x - 3) + 3; },
+            -10, 10
+        ], {
+            strokeColor: '#DC2626',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
