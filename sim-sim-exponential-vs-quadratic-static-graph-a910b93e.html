@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exponential vs Quadratic Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0;
+            padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            height: calc(100% - 20px);
+        }
+        #board {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 85, 7, -8],
+            axis: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // X-axis
+        var xAxis = board.create('axis', [[0, 0], [1, 0]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            highlight: false,
+            ticks: {
+                strokeColor: '#444444',
+                majorHeight: 0,
+                minorHeight: 0,
+                minorTicks: 0,
+                ticksDistance: 1,
+                insertTicks: false,
+                label: {
+                    fontSize: 11,
+                    offset: [0, -12],
+                    anchorX: 'middle'
+                },
+                drawZero: false,
+                includeBoundaries: false
+            }
+        });
+
+        // Y-axis
+        var yAxis = board.create('axis', [[0, 0], [0, 1]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            highlight: false,
+            ticks: {
+                strokeColor: '#444444',
+                majorHeight: 0,
+                minorHeight: 0,
+                minorTicks: 0,
+                ticksDistance: 10,
+                insertTicks: false,
+                label: {
+                    fontSize: 11,
+                    offset: [-8, 0],
+                    anchorX: 'right'
+                },
+                drawZero: false,
+                includeBoundaries: false
+            }
+        });
+
+        // Axis labels near arrow tips
+        board.create('text', [6.5, -3.5, '<i>x</i>'], {
+            fontSize: 14, fixed: true, highlight: false
+        });
+        board.create('text', [0.4, 82, '<i>y</i>'], {
+            fontSize: 14, fixed: true, highlight: false
+        });
+
+        // Primary curve: y = 5(2)^x — dark/black
+        board.create('functiongraph', [
+            function(x) { return 5 * Math.pow(2, x); },
+            -6, 7
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Secondary curve: y = x² + 8 — deep blue
+        board.create('functiongraph', [
+            function(x) { return x * x + 8; },
+            -6, 7
+        ], {
+            strokeColor: '#2563EB',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+
+        // Function label: y = 5(2)^x
+        board.create('text', [4.2, 62, 'y = 5(2)^x'], {
+            useKatex: true,
+            fontSize: 13,
+            color: '#222222',
+            fixed: true,
+            highlight: false
+        });
+
+        // Function label: y = x² + 8
+        board.create('text', [-5.5, 42, 'y = x^2 + 8'], {
+            useKatex: true,
+            fontSize: 13,
+            color: '#2563EB',
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
