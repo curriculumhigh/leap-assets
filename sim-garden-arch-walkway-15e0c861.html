@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garden Arch Walkway</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-60, 130, 430, -30],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var archFunc = function(x) { return -0.003 * x * x + 1.08 * x; };
+
+        // ── Sky background ──────────────────────────────────────────────
+        board.create('polygon', [
+            [-60, 130], [430, 130], [430, 0], [-60, 0]
+        ], {
+            fillColor: '#D6EAF8', fillOpacity: 1.0,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false, layer: 0
+        });
+
+        // ── Water background ────────────────────────────────────────────
+        board.create('polygon', [
+            [-60, 0], [430, 0], [430, -30], [-60, -30]
+        ], {
+            fillColor: '#85C1E9', fillOpacity: 0.6,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false, layer: 0
+        });
+
+        // ── Water wave lines ────────────────────────────────────────────
+        board.create('functiongraph', [
+            function(x) { return -10 + 2 * Math.sin(x * 0.07); }
+        , -60, 430], {
+            strokeColor: '#5A9EC6', strokeWidth: 0.7, fixed: true, highlight: false, layer: 1
+        });
+        board.create('functiongraph', [
+            function(x) { return -18 + 1.5 * Math.sin(x * 0.05 + 1.5); }
+        , -60, 430], {
+            strokeColor: '#5A9EC6', strokeWidth: 0.6, fixed: true, highlight: false, layer: 1
+        });
+
+        // ── Roadway (golden band) ───────────────────────────────────────
+        board.create('polygon', [
+            [-60, 6], [430, 6], [430, -2], [-60, -2]
+        ], {
+            fillColor: '#D4A017', fillOpacity: 0.8,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false, layer: 2
+        });
+        board.create('segment', [[-60, 6], [430, 6]], {
+            strokeColor: '#B8860B', strokeWidth: 1.2, fixed: true, highlight: false, layer: 2
+        });
+        board.create('segment', [[-60, -2], [430, -2]], {
+            strokeColor: '#B8860B', strokeWidth: 1.2, fixed: true, highlight: false, layer: 2
+        });
+
+        // ── Bridge towers ───────────────────────────────────────────────
+        function makeTower(cx, halfW) {
+            board.create('polygon', [
+                [cx - halfW, 55], [cx + halfW, 55],
+                [cx + halfW, -2], [cx - halfW, -2]
+            ], {
+                fillColor: '#A0845C', fillOpacity: 1.0,
+                borders: { strokeColor: '#7A6240', strokeWidth: 1.0 },
+                vertices: { visible: false },
+                fixed: true, highlight: false, layer: 3
+            });
+            // Cap
+            board.create('polygon', [
+                [cx - halfW - 2, 58], [cx + halfW + 2, 58],
+                [cx + halfW + 2, 55], [cx - halfW - 2, 55]
+            ], {
+                fillColor: '#8B7355', fillOpacity: 1.0,
+                borders: { strokeColor: '#6B5640', strokeWidth: 0.8 },
+                vertices: { visible: false },
+                fixed: true, highlight: false, layer: 3
+            });
+        }
+
+        makeTower(0, 8);
+        makeTower(360, 8);
+
+        // ── Vertical cables (thin blue, arch down to roadway) ───────────
+        for (var cx = 40; cx <= 320; cx += 40) {
+            var cy = archFunc(cx);
+            if (cy > 8) {
+                board.create('segment', [[cx, 6], [cx, cy]], {
+                    strokeColor: '#2563EB', strokeWidth: 0.6,
+                    strokeOpacity: 0.5,
+                    fixed: true, highlight: false, layer: 4
+                });
+            }
+        }
+
+        // ── Parabolic arch ──────────────────────────────────────────────
+        board.create('functiongraph', [archFunc, 0, 360], {
+            strokeColor: '#222222', strokeWidth: 2.2, fixed: true, highlight: false, layer: 5
+        });
+
+        // ── String of lights: y = 45 ───────────────────────────────────
+        var disc = Math.sqrt(360 * 360 - 4 * 15000);
+        var xInt1 = (360 - disc) / 2;
+        var xInt2 = (360 + disc) / 2;
+
+        board.create('segment', [[xInt1, 45], [xInt2, 45]], {
+            strokeColor: '#2563EB', strokeWidth: 1.5, dash: 2,
+            fixed: true, highlight: false, layer: 6
+        });
+
+        // ── Grid lines (subtle) ────────────────────────────────────────
+        // Vertical every 100
+        for (var gx = 100; gx <= 400; gx += 100) {
+            board.create('segment', [[gx, -2], [gx, 125]], {
+                strokeColor: '#B0BEC5', strokeWidth: 0.35,
+                strokeOpacity: 0.5,
+                fixed: true, highlight: false, layer: 1
+            });
+        }
+        // Horizontal every 50
+        for (var gy = 50; gy <= 100; gy += 50) {
+            board.create('segment', [[-10, gy], [420, gy]], {
+                strokeColor: '#B0BEC5', strokeWidth: 0.35,
+                strokeOpacity: 0.5,
+                fixed: true, highlight: false, layer: 1
+            });
+        }
+
+        // ── Axes ────────────────────────────────────────────────────────
+        board.create('arrow', [[-40, 0], [420, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false, layer: 6,
+            lastArrow: { type: 2, size: 6 }
+        });
+        board.create('arrow', [[0, -25], [0, 125]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false, layer: 6,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // x-axis tick labels
+        var xTicks = [100, 200, 300, 400];
+        for (var t = 0; t < xTicks.length; t++) {
+            board.create('segment', [[xTicks[t], -1.5], [xTicks[t], 1.5]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false, layer: 6
+            });
+            board.create('text', [xTicks[t], -9, xTicks[t].toString()], {
+                fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+                color: '#333', fixed: true, highlight: false, layer: 7
+            });
+        }
+
+        // y-axis tick labels
+        var yTicks = [50, 100];
+        for (var t = 0; t < yTicks.length; t++) {
+            board.create('segment', [[-2.5, yTicks[t]], [2.5, yTicks[t]]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false, layer: 6
+            });
+            board.create('text', [-18, yTicks[t], yTicks[t].toString()], {
+                fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+                color: '#333', fixed: true, highlight: false, layer: 7
+            });
+        }
+
+        // Axis arrow labels
+        board.create('text', [415, -9, '<i>x</i>'], {
+            fontSize: 14, fixed: true, highlight: false, layer: 7
+        });
+        board.create('text', [8, 122, '<i>y</i>'], {
+            fontSize: 14, fixed: true, highlight: false, layer: 7
+        });
+
+        // ── Origin label ────────────────────────────────────────────────
+        board.create('text', [-18, 0, '0'], {
+            fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+            color: '#333', fixed: true, highlight: false, layer: 7
+        });
+
+        // ── Equation labels ─────────────────────────────────────────────
+        // Arch equation — upper right with white background
+        board.create('text', [235, 108, 'y = -0.003x^2 + 1.08x'], {
+            fontSize: 13, color: '#222222', useKatex: true,
+            fixed: true, highlight: false, layer: 8,
+            cssStyle: 'background: rgba(255,255,255,0.9); padding: 4px 10px; border-radius: 4px; border: 1px solid #ddd;'
+        });
+
+        // y = 45 label — near the dashed line
+        board.create('text', [145, 52, 'y = 45'], {
+            fontSize: 13, color: '#2563EB', useKatex: true,
+            fixed: true, highlight: false, layer: 8,
+            cssStyle: 'background: rgba(255,255,255,0.9); padding: 2px 8px; border-radius: 3px; border: 1px solid #bdd7f0;'
+        });
+
+    </script>
+</body>
+</html>
