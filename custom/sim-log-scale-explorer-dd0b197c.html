@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logarithmic Scale Explorer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); display: flex; flex-direction: column; }
+        .board-wrapper { background: white; border-radius: 8px 8px 0 0; padding: 10px; flex: 1; }
+        #board { width: 100%; height: 100%; }
+        .bottom-strip {
+            background: white; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb;
+            padding: 10px 18px; display: flex; align-items: center; justify-content: center; gap: 12px;
+        }
+        .toggle-btn {
+            font-size: 13px; padding: 6px 16px; border: 1.5px solid #2563EB;
+            border-radius: 5px; background: #f0f7ff; color: #2563EB;
+            font-weight: 600; cursor: pointer; transition: background 0.15s;
+        }
+        .toggle-btn:hover { background: #dbeafe; }
+        .mode-label { font-size: 12px; color: #888; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+        <div class="bottom-strip">
+            <span class="mode-label" id="mode-label">Showing: Exponents</span>
+            <button class="toggle-btn" id="toggle-btn">Show values</button>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 3.0, 4.8, -3.0],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        var mode = 'exponents'; // starts in exponents mode
+
+        // ── Horizontal axis line with arrow ─────────────────────────────
+        board.create('arrow', [[-0.3, 0], [4.6, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // ── Major ticks & labels ────────────────────────────────────────
+        var tickPositions = [0, 1, 2, 3, 4];
+        var valueLabels = ['1', '10', '100', '1{,}000', '10{,}000'];
+        var exponentLabels = ['10^0', '10^1', '10^2', '10^3', '10^4'];
+
+        for (var i = 0; i < tickPositions.length; i++) {
+            // Tick mark
+            board.create('segment', [[tickPositions[i], -0.12], [tickPositions[i], 0.12]], {
+                strokeColor: '#444444', strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // Position number (0,1,2,3,4) directly under tick
+            board.create('text', [tickPositions[i], -0.25, String(tickPositions[i])], {
+                anchorX: 'middle', anchorY: 'top',
+                fontSize: 11, color: '#888',
+                fixed: true, highlight: false
+            });
+
+            // Value/exponent label below the position number (dynamic)
+            (function(idx) {
+                board.create('text', [tickPositions[idx], -0.65, function() {
+                    if (mode === 'exponents') return exponentLabels[idx];
+                    return valueLabels[idx];
+                }], {
+                    anchorX: 'middle', anchorY: 'top',
+                    fontSize: 14, color: '#222222',
+                    useKatex: true, fixed: true, highlight: false
+                });
+            })(i);
+        }
+
+        // ── "×10" curved arrows above the axis ─────────────────────────
+        var COL_MULT = '#2563EB';
+
+        for (var j = 0; j < 4; j++) {
+            (function(idx) {
+                var x1 = tickPositions[idx];
+                var x2 = tickPositions[idx + 1];
+                var xMid = (x1 + x2) / 2;
+                var yPeak = 0.85;
+
+                // Curved arc (quadratic bezier)
+                board.create('curve', [
+                    function(t) { return (1 - t) * (1 - t) * x1 + 2 * (1 - t) * t * xMid + t * t * x2; },
+                    function(t) { return 2 * (1 - t) * t * yPeak + 0.12; },
+                    0, 1
+                ], {
+                    strokeColor: COL_MULT, strokeWidth: 1.2, fixed: true, highlight: false,
+                    numberPointsHigh: 80
+                });
+
+                // Arrowhead at landing
+                var t_end = 0.91;
+                var ax1 = (1 - t_end) * (1 - t_end) * x1 + 2 * (1 - t_end) * t_end * xMid + t_end * t_end * x2;
+                var ay1 = 2 * (1 - t_end) * t_end * yPeak + 0.12;
+                board.create('arrow', [[ax1, ay1], [x2, 0.14]], {
+                    strokeColor: COL_MULT, strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    fixed: true, highlight: false
+                });
+
+                // "×10" label — tight against the arc
+                board.create('text', [xMid, yPeak + 0.02, '\\times 10'], {
+                    anchorX: 'middle', anchorY: 'bottom',
+                    fontSize: 12, color: COL_MULT,
+                    useKatex: true, fixed: true, highlight: false
+                });
+            })(j);
+        }
+
+        // ── Draggable point on the axis ─────────────────────────────────
+        var COL_POINT = '#D97706';
+
+        // Bounded segment for glider
+        var axisSegment = board.create('segment', [[0, 0], [4, 0]], {
+            visible: false, fixed: true
+        });
+
+        var dragPt = board.create('glider', [2, 0, axisSegment], {
+            name: '', size: 5, color: COL_POINT,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_POINT, highlightStrokeColor: '#b45309'
+        });
+
+        // ── Vertical dashed drop line from point to readout ─────────────
+        board.create('segment', [
+            function() { return [dragPt.X(), 0]; },
+            function() { return [dragPt.X(), -1.3]; }
+        ], {
+            strokeColor: COL_POINT, strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── Line 1: position = ... ─────────────────────────────────────
+        board.create('text', [
+            function() { return dragPt.X(); },
+            function() { return -1.4; },
+            function() {
+                var x = dragPt.X();
+                return '\\color{#888}{\\text{position} = ' + x.toFixed(2) + '}';
+            }
+        ], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 12, color: '#888',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Line 2: value = ... ─────────────────────────────────────────
+        board.create('text', [
+            function() { return dragPt.X(); },
+            function() { return -1.95; },
+            function() {
+                var x = dragPt.X();
+                var val = Math.pow(10, x);
+                if (mode === 'exponents') {
+                    if (Math.abs(x - Math.round(x)) < 0.02) {
+                        return '\\color{#D97706}{\\text{value} = 10^{' + Math.round(x) + '}}';
+                    }
+                    return '\\color{#D97706}{\\text{value} = 10^{' + x.toFixed(2) + '}}';
+                } else {
+                    if (Math.abs(x - Math.round(x)) < 0.02) {
+                        var intVal = Math.round(Math.pow(10, Math.round(x)));
+                        if (intVal >= 1000) {
+                            return '\\color{#D97706}{\\text{value} = ' + intVal.toLocaleString().replace(/,/g, '{,}') + '}';
+                        }
+                        return '\\color{#D97706}{\\text{value} = ' + intVal + '}';
+                    }
+                    if (val < 10) {
+                        return '\\color{#D97706}{\\text{value} \\approx ' + val.toFixed(1) + '}';
+                    }
+                    var rounded = Math.round(val);
+                    if (rounded >= 1000) {
+                        return '\\color{#D97706}{\\text{value} \\approx ' + rounded.toLocaleString().replace(/,/g, '{,}') + '}';
+                    }
+                    return '\\color{#D97706}{\\text{value} \\approx ' + rounded + '}';
+                }
+            }
+        ], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 14, color: COL_POINT,
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Toggle button logic ─────────────────────────────────────────
+        var toggleBtn = document.getElementById('toggle-btn');
+        var modeLabel = document.getElementById('mode-label');
+
+        toggleBtn.addEventListener('click', function() {
+            if (mode === 'exponents') {
+                mode = 'values';
+                toggleBtn.textContent = 'Show exponents';
+                modeLabel.textContent = 'Showing: Values';
+            } else {
+                mode = 'exponents';
+                toggleBtn.textContent = 'Show values';
+                modeLabel.textContent = 'Showing: Exponents';
+            }
+            board.update();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Scale — Points A, B, C</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 1.8, 4.8, -1.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        // ── Horizontal axis arrow ───────────────────────────────────────
+        board.create('arrow', [[-0.3, 0], [4.6, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // ── Tick marks and labels ───────────────────────────────────────
+        var tickPositions = [0, 1, 2, 3, 4];
+
+        for (var i = 0; i < tickPositions.length; i++) {
+            board.create('segment', [[tickPositions[i], -0.12], [tickPositions[i], 0.12]], {
+                strokeColor: '#444444', strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            board.create('text', [tickPositions[i], 0.3, String(tickPositions[i])], {
+                anchorX: 'middle', anchorY: 'bottom',
+                fontSize: 13, color: '#222222',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Points A, B, C ──────────────────────────────────────────────
+        var COL_A = '#2563EB';
+        var COL_B = '#059669';
+        var COL_C = '#D97706';
+
+        var ptA = board.create('point', [0.3, 0], {
+            name: '', size: 5, color: COL_A, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_A, highlightStrokeColor: COL_A
+        });
+
+        var ptB = board.create('point', [2.9, 0], {
+            name: '', size: 5, color: COL_B, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_B, highlightStrokeColor: COL_B
+        });
+
+        var ptC = board.create('point', [3.6, 0], {
+            name: '', size: 5, color: COL_C, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_C, highlightStrokeColor: COL_C
+        });
+
+        // ── Point labels below ──────────────────────────────────────────
+        board.create('text', [0.3, -0.4, 'A'], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 14, color: COL_A,
+            cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [2.9, -0.4, 'B'], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 14, color: COL_B,
+            cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [3.6, -0.4, 'C'], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 14, color: COL_C,
+            cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+
+        // ── Tooltip logic ───────────────────────────────────────────────
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function showTooltip(pt, color, latex) {
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [pt.X(), pt.Y()], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx - 20) + 'px';
+            tooltip.style.top = (sy - 42) + 'px';
+        }
+
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+        }
+
+        ptA.on('over', function() { showTooltip(ptA, COL_A, '\\color{' + COL_A + '}{\\log 2}'); });
+        ptA.on('out', hideTooltip);
+
+        ptB.on('over', function() { showTooltip(ptB, COL_B, '\\color{' + COL_B + '}{\\log 820}'); });
+        ptB.on('out', hideTooltip);
+
+        ptC.on('over', function() { showTooltip(ptC, COL_C, '\\color{' + COL_C + '}{\\log 4{,}000}'); });
+        ptC.on('out', hideTooltip);
+    </script>
+</body>
+</html>
