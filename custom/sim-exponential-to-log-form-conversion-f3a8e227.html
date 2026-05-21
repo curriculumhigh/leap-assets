@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exponential to Logarithmic Form Conversion</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 600px; margin: 0 auto; padding: 6px; height: calc(100% - 12px);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .sim-card {
+            background: white; border-radius: 8px; padding: 28px 40px;
+            width: 100%; box-sizing: border-box;
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
+        }
+        .equation-stage {
+            position: relative;
+            width: 340px; height: 90px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .piece {
+            position: absolute;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+        }
+        .piece.structural {
+            transition: opacity 0.4s ease, all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .convert-btn {
+            font-size: 14px; font-weight: 600;
+            padding: 10px 24px;
+            border: none; border-radius: 6px;
+            background: #2563EB; color: white;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .convert-btn:hover { background: #1d4ed8; }
+        .convert-btn:active { background: #1e40af; }
+        .convert-btn:disabled { opacity: 0.5; cursor: default; }
+
+        .legend {
+            display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: 6px; font-size: 12px; color: #555;
+        }
+        .legend-swatch {
+            width: 9px; height: 9px; border-radius: 50%;
+        }
+
+        .form-label {
+            font-size: 11px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-card">
+            <div class="form-label" id="form-label">Exponential Form</div>
+            <div class="equation-stage" id="stage"></div>
+            <button class="convert-btn" id="convert-btn">Convert to Logarithmic Form</button>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-swatch" style="background: #2563EB;"></div>
+                    <span>base</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-swatch" style="background: #D97706;"></div>
+                    <span>exponent</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-swatch" style="background: #059669;"></div>
+                    <span>result</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var COL_BASE = '#2563EB';
+        var COL_EXP = '#D97706';
+        var COL_RESULT = '#059669';
+
+        var stage = document.getElementById('stage');
+        var btn = document.getElementById('convert-btn');
+        var formLabel = document.getElementById('form-label');
+
+        var isExponential = true;
+        var animating = false;
+
+        function createPiece(id, className) {
+            var el = document.createElement('div');
+            el.id = id;
+            el.className = 'piece' + (className ? ' ' + className : '');
+            stage.appendChild(el);
+            return el;
+        }
+
+        var elBase = createPiece('p-base');
+        var elExp = createPiece('p-exp');
+        var elResult = createPiece('p-result');
+        var elEquals = createPiece('p-equals', 'structural');
+        var elLog = createPiece('p-log', 'structural');
+
+        function renderPiece(el, latex, fontSize) {
+            katex.render(latex, el, { throwOnError: false, displayMode: false });
+            el.style.fontSize = (fontSize || 32) + 'px';
+        }
+
+        renderPiece(elBase, '\\color{' + COL_BASE + '}{8}', 32);
+        renderPiece(elExp, '\\color{' + COL_EXP + '}{2}', 22);
+        renderPiece(elResult, '\\color{' + COL_RESULT + '}{64}', 32);
+        renderPiece(elEquals, '=', 32);
+        renderPiece(elLog, '\\log', 26);
+
+        var positions = {
+            exponential: {
+                base:   { left: '35%', top: '50%', transform: 'translate(-50%, -50%)' },
+                exp:    { left: '42%', top: '26%', transform: 'translate(-50%, -50%)' },
+                equals: { left: '55%', top: '50%', transform: 'translate(-50%, -50%)' },
+                result: { left: '72%', top: '50%', transform: 'translate(-50%, -50%)' },
+                log:    { left: '18%', top: '50%', transform: 'translate(-50%, -50%)', opacity: '0' }
+            },
+            logarithmic: {
+                log:    { left: '20%', top: '50%', transform: 'translate(-50%, -50%)', opacity: '1' },
+                base:   { left: '30%', top: '64%', transform: 'translate(-50%, -50%) scale(0.65)' },
+                result: { left: '44%', top: '50%', transform: 'translate(-50%, -50%)' },
+                equals: { left: '58%', top: '50%', transform: 'translate(-50%, -50%)' },
+                exp:    { left: '72%', top: '50%', transform: 'translate(-50%, -50%) scale(1.35)' }
+            }
+        };
+
+        function applyPositions(state) {
+            var pos = positions[state];
+
+            elBase.style.left = pos.base.left;
+            elBase.style.top = pos.base.top;
+            elBase.style.transform = pos.base.transform;
+
+            elExp.style.left = pos.exp.left;
+            elExp.style.top = pos.exp.top;
+            elExp.style.transform = pos.exp.transform;
+
+            elResult.style.left = pos.result.left;
+            elResult.style.top = pos.result.top;
+            elResult.style.transform = pos.result.transform;
+
+            elEquals.style.left = pos.equals.left;
+            elEquals.style.top = pos.equals.top;
+            elEquals.style.transform = pos.equals.transform;
+
+            elLog.style.left = pos.log.left;
+            elLog.style.top = pos.log.top;
+            elLog.style.transform = pos.log.transform;
+            elLog.style.opacity = pos.log.opacity;
+        }
+
+        applyPositions('exponential');
+
+        btn.addEventListener('click', function() {
+            if (animating) return;
+            animating = true;
+            btn.disabled = true;
+
+            if (isExponential) {
+                applyPositions('logarithmic');
+                formLabel.textContent = 'Logarithmic Form';
+                btn.textContent = 'Convert to Exponential Form';
+            } else {
+                applyPositions('exponential');
+                formLabel.textContent = 'Exponential Form';
+                btn.textContent = 'Convert to Logarithmic Form';
+            }
+
+            isExponential = !isExponential;
+
+            setTimeout(function() {
+                animating = false;
+                btn.disabled = false;
+            }, 850);
+        });
+    </script>
+</body>
+</html>
