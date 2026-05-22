@@ -650,6 +650,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     // ── Validation utilities ──
     Question.prototype.latexToNerdamer = function (latex) {
         var s = latex.trim();
+        var _debugInput = s; // DEBUG
         // Normalize bare decimals like .4 → 0.4 so nerdamer can parse them
         s = s.replace(/(^|[^0-9])\.(\d)/g, "$10.$2");
         s = s.replace(/\\left/g, "").replace(/\\right/g, "");
@@ -719,6 +720,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         });
         // Fix: function names shouldn't have * before ( — e.g. "log*(x)" → "log(x)"
         s = s.replace(/(sqrt|log|sin|cos|tan)\*\(/g, "$1(");
+        console.log("[DEBUG latexToNerdamer]", JSON.stringify(_debugInput), "→", JSON.stringify(s)); // DEBUG
         return s;
     };
 
@@ -729,12 +731,15 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             // Always convert expected answer through latexToNerdamer for consistent
             // implicit multiplication handling (e.g. "xy" → "x*y")
             var expectedNerdamer = this.latexToNerdamer(expectedAnswer);
+            console.log("[DEBUG checkEquivSymbolic] student:", JSON.stringify(studentExpr), "expected:", JSON.stringify(expectedNerdamer)); // DEBUG
             var diff = nerdamer("simplify((" + studentExpr + ")-(" + expectedNerdamer + "))");
+            console.log("[DEBUG checkEquivSymbolic] diff:", diff.toString()); // DEBUG
             if (diff.toString() === "0") return true;
             // Numeric fallback: if no variables remain, evaluate and compare
             // Handles cases like log(100)/log(10) vs 2 where nerdamer has float rounding
             if (diff.variables().length === 0) {
                 var numVal = parseFloat(diff.text("decimals"));
+                console.log("[DEBUG checkEquivSymbolic] numeric fallback:", numVal); // DEBUG
                 return Math.abs(numVal) < 1e-9;
             }
             return false;
