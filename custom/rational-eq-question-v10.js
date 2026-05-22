@@ -1832,7 +1832,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         if (row.template) return "$" + row.template + "$";
         if (row.expression) {
             if (row.inputs && row.inputs.length > 0) {
-                console.warn("[v10] Row '" + (row.id || "?") + "' has expression + " + row.inputs.length + " inputs but no template — inputs will not render. Fix: use a template with {{0}}, {{1}}, etc.");
+                return '<span style="color:#c00;font-size:12px;background:#fff3f3;padding:2px 6px;border-radius:3px;">⚠ This row has ' + row.inputs.length + ' input(s) but no template — input boxes cannot render here. Please fix the widget data.</span><br>' + "$" + row.expression + "$";
             }
             return "$" + row.expression + "$";
         }
