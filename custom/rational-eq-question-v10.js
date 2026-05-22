@@ -680,13 +680,15 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         s = s.replace(/\\log\s*\(([^()]+)\)/g, "(log($1)/log(10))");
         s = s.replace(/\\log\s+([a-zA-Z0-9][a-zA-Z0-9.]*)/g, "(log($1)/log(10))");
         s = s.replace(/\\log\b/g, "log"); // fallback — shouldn't normally reach here
-        // nth roots and fractions can be nested in either order; iterate both
-        // until no more matches (handles \sqrt[n]{\frac{a}{b}}, \frac{\sqrt[n]{...}}{...}, etc.)
+        // nth roots, plain sqrt, and fractions can be nested in any order;
+        // iterate all three until no more matches.
         var prev;
         do {
             prev = s;
             // \sqrt[n]{x} → ((x))^(1/(n))
             s = s.replace(/\\sqrt\[([^\[\]]+)\]\{([^{}]+)\}/g, "(($2))^(1/($1))");
+            // \sqrt{x} → sqrt(x) — must be inside loop so \frac{a}{\sqrt{b}} works
+            s = s.replace(/\\sqrt\{([^{}]+)\}/g, "sqrt($1)");
             // \frac{a}{b} (and \dfrac) → ((a)/(b))
             s = s.replace(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/g, "(($1)/($2))");
         } while (s !== prev);
@@ -697,7 +699,6 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         s = s.replace(/\^{([^{}]+)}/g, "^($1)");
         s = s.replace(/_\{([^{}]+)\}/g, "_($1)");
         s = s.replace(/(\d)([a-zA-Z])/g, "$1*$2");
-        s = s.replace(/\\sqrt\{([^{}]+)\}/g, "sqrt($1)");
         s = s.replace(/\\sqrt\s*([a-zA-Z0-9])/g, "sqrt($1)");
         s = s.replace(/\\(?!pi|e|sqrt|ln|log|sin|cos|tan|infty)/g, "");
         // Implicit multiplication between adjacent single-letter variables.
