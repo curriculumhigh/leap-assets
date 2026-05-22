@@ -4231,26 +4231,26 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
     var KEYPAD_PRESETS = {
         algebra: [
-            { label: "x", cmd: "x", type: "write" },
-            { label: "y", cmd: "y", type: "write" },
-            { label: "x^2", cmd: "^", type: "cmd", extra: "2" },
-            { label: "\\sqrt{\\square}", cmd: "\\sqrt", type: "cmd" },
-            { label: "\\frac{x}{\\square}", cmd: "/", type: "cmd" },
-            { label: "\\frac{x^{\\square}}{\\square}", cmd: "/", type: "cmd" },
-            { label: "x^{\\square}", cmd: "^", type: "cmd" },
-            { label: "\\sqrt[\\square]{\\square}", cmd: "\\nthroot", type: "cmd" },
-            { label: "<", cmd: "<", type: "write" },
-            { label: ">", cmd: ">", type: "write" },
-            { label: "\\pm", cmd: "\\pm", type: "cmd" },
-            { label: "|\\square|", cmd: "|", type: "write", extra: "|" },
-            { label: "\\pi", cmd: "\\pi", type: "cmd" },
-            { label: "\\infty", cmd: "\\infty", type: "cmd" },
-            { label: "(\\square)", cmd: "(", type: "write", extra: ")" },
-            { label: "[\\square]", cmd: "[", type: "write", extra: "]" },
-            { label: "\\leq", cmd: "\\leq", type: "cmd" },
-            { label: "\\geq", cmd: "\\geq", type: "cmd" },
-            { label: "\\frac{\\square}{\\square}", cmd: "/", type: "cmd" },
-            { label: "\\phi", cmd: "\\phi", type: "cmd" }
+            { label: "x", cmd: "x", type: "write" },                            // R1C1
+            { label: "y", cmd: "y", type: "write" },                            // R1C2
+            { label: "x^{\\square}", cmd: "^", type: "cmd" },                   // R1C3
+            { label: "x_{\\square}", cmd: "_", type: "cmd" },                   // R1C4
+            { label: "\\frac{\\square}{\\square}", cmd: "/", type: "cmd" },      // R2C1
+            { label: "\\sqrt{\\square}", cmd: "\\sqrt", type: "cmd" },           // R2C2
+            { label: "\\sqrt[\\square]{\\square}", cmd: "\\nthroot", type: "cmd" }, // R2C3
+            { label: "\\pm", cmd: "\\pm", type: "cmd" },                        // R2C4
+            { label: "<", cmd: "<", type: "write" },                             // R3C1
+            { label: ">", cmd: ">", type: "write" },                            // R3C2
+            { label: "\\leq", cmd: "\\leq", type: "cmd" },                      // R3C3
+            { label: "\\geq", cmd: "\\geq", type: "cmd" },                      // R3C4
+            { label: "(\\square)", cmd: "(", type: "write", extra: ")" },        // R4C1
+            { label: "[\\square]", cmd: "[", type: "write", extra: "]" },        // R4C2
+            { label: "|\\square|", cmd: "|", type: "write", extra: "|" },        // R4C3
+            { label: "\\pi", cmd: "\\pi", type: "cmd" },                        // R4C4
+            { label: "\\ln", cmd: "\\ln", type: "cmd" },                        // R5C1
+            { label: "\\log", cmd: "\\log", type: "cmd" },                      // R5C2
+            { label: "\\log_{\\square}", cmd: "\\log_", type: "cmd" },           // R5C3
+            { label: "\\infty", cmd: "\\infty", type: "cmd" }
         ],
         trig: [
             { label: "\\sin", cmd: "\\sin", type: "cmd" },
