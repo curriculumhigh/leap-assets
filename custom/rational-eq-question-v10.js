@@ -679,9 +679,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         s = s.replace(/\\ln\s+([a-zA-Z0-9][a-zA-Z0-9.]*)/g, "log($1)");
         s = s.replace(/\\ln\b/g, "log");
         // \log with subscript → change of base: \log_{b}(x) → log(x)/log(b)
-        s = s.replace(/\\log_\{([^{}]+)\}\s*\(([^()]+)\)/g, "(log($2)/log($1))");
-        s = s.replace(/\\log_\{([^{}]+)\}\s*\{([^{}]+)\}/g, "(log($2)/log($1))");
-        s = s.replace(/\\log_\{([^{}]+)\}\s*([a-zA-Z0-9][a-zA-Z0-9.]*)/g, "(log($2)/log($1))");
+        // Allow optional space between \log and _ (MathQuill may output \log _{b})
+        s = s.replace(/\\log\s*_\{([^{}]+)\}\s*\(([^()]+)\)/g, "(log($2)/log($1))");
+        s = s.replace(/\\log\s*_\{([^{}]+)\}\s*\{([^{}]+)\}/g, "(log($2)/log($1))");
+        s = s.replace(/\\log\s*_\{([^{}]+)\}\s*([a-zA-Z0-9][a-zA-Z0-9.]*)/g, "(log($2)/log($1))");
+        // \log_b without braces (single char base): \log_9 x → log(x)/log(9)
+        s = s.replace(/\\log\s*_([a-zA-Z0-9])\s*\(([^()]+)\)/g, "(log($2)/log($1))");
+        s = s.replace(/\\log\s*_([a-zA-Z0-9])\s*([a-zA-Z0-9][a-zA-Z0-9.]*)/g, "(log($2)/log($1))");
         // Bare \log (no subscript) means base-10: \log(x) → log(x)/log(10)
         s = s.replace(/\\log\s*\(([^()]+)\)/g, "(log($1)/log(10))");
         s = s.replace(/\\log\s+([a-zA-Z0-9][a-zA-Z0-9.]*)/g, "(log($1)/log(10))");
