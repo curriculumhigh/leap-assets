@@ -964,12 +964,18 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             var minus = latex.replace(/\\pm/g, "-");
             return [self.latexToNerdamer(plus), self.latexToNerdamer(minus)];
         }
+        function nerdEq(a, b) {
+            var diff = nerdamer("simplify((" + a + ")-(" + b + "))");
+            if (diff.toString() === "0") return true;
+            if (diff.variables().length === 0) return Math.abs(parseFloat(diff.text("decimals"))) < 1e-9;
+            return false;
+        }
         try {
             var sPair = expandPM(studentLatex);
             var ePair = expandPM(expectedAnswer);
             // Compare as unordered pair: {s+,s-} must match {e+,e-}
-            var match1 = (this.checkEquivSymbolic(sPair[0], ePair[0]) && this.checkEquivSymbolic(sPair[1], ePair[1]));
-            var match2 = (this.checkEquivSymbolic(sPair[0], ePair[1]) && this.checkEquivSymbolic(sPair[1], ePair[0]));
+            var match1 = (nerdEq(sPair[0], ePair[0]) && nerdEq(sPair[1], ePair[1]));
+            var match2 = (nerdEq(sPair[0], ePair[1]) && nerdEq(sPair[1], ePair[0]));
             return match1 || match2;
         } catch (e) {
             return this.checkEquiLiteral(studentLatex, expectedAnswer);
