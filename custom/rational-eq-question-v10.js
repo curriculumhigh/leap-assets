@@ -660,20 +660,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         while (s.match(/\|([^|]+)\|/)) {
             s = s.replace(/\|([^|]+)\|/g, "abs($1)");
         }
-        // nth roots and fractions can be nested in either order; iterate both
-        // until no more matches (handles \sqrt[n]{\frac{a}{b}}, \frac{\sqrt[n]{...}}{...}, etc.)
-        var prev;
-        do {
-            prev = s;
-            // \sqrt[n]{x} → ((x))^(1/(n))
-            s = s.replace(/\\sqrt\[([^\[\]]+)\]\{([^{}]+)\}/g, "(($2))^(1/($1))");
-            // \frac{a}{b} (and \dfrac) → ((a)/(b))
-            s = s.replace(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/g, "(($1)/($2))");
-        } while (s !== prev);
-        s = s.replace(/\\cdot/g, "*");
-        s = s.replace(/\\times/g, "*");
-        s = s.replace(/\\div/g, "/");
-        s = s.replace(/\\[,;:!]/g, "");
+        // ── Log/ln BEFORE fractions: so \log_{b}(\frac{a}{c}) captures the
+        //    \frac{...} as a single token (no parens yet), then fractions
+        //    convert later.  The paren-capture [^()]+ works because \frac
+        //    uses {} not ().
         // \ln with parens or space+arg → nerdamer's log (natural log)
         s = s.replace(/\\ln\s*\(([^()]+)\)/g, "log($1)");
         s = s.replace(/\\ln\s+([a-zA-Z0-9][a-zA-Z0-9.]*)/g, "log($1)");
@@ -690,6 +680,20 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         s = s.replace(/\\log\s*\(([^()]+)\)/g, "(log($1)/log(10))");
         s = s.replace(/\\log\s+([a-zA-Z0-9][a-zA-Z0-9.]*)/g, "(log($1)/log(10))");
         s = s.replace(/\\log\b/g, "log"); // fallback — shouldn't normally reach here
+        // nth roots and fractions can be nested in either order; iterate both
+        // until no more matches (handles \sqrt[n]{\frac{a}{b}}, \frac{\sqrt[n]{...}}{...}, etc.)
+        var prev;
+        do {
+            prev = s;
+            // \sqrt[n]{x} → ((x))^(1/(n))
+            s = s.replace(/\\sqrt\[([^\[\]]+)\]\{([^{}]+)\}/g, "(($2))^(1/($1))");
+            // \frac{a}{b} (and \dfrac) → ((a)/(b))
+            s = s.replace(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/g, "(($1)/($2))");
+        } while (s !== prev);
+        s = s.replace(/\\cdot/g, "*");
+        s = s.replace(/\\times/g, "*");
+        s = s.replace(/\\div/g, "/");
+        s = s.replace(/\\[,;:!]/g, "");
         s = s.replace(/\^{([^{}]+)}/g, "^($1)");
         s = s.replace(/_\{([^{}]+)\}/g, "_($1)");
         s = s.replace(/(\d)([a-zA-Z])/g, "$1*$2");
