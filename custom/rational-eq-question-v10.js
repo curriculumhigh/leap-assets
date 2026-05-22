@@ -676,14 +676,15 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         s = s.replace(/\\[,;:!]/g, "");
         // \ln with parens or space+arg → nerdamer's log (natural log)
         s = s.replace(/\\ln\s*\(([^()]+)\)/g, "log($1)");
-        s = s.replace(/\\ln\s+([a-zA-Z0-9])/g, "log($1)");
+        s = s.replace(/\\ln\s+([a-zA-Z0-9][a-zA-Z0-9.]*)/g, "log($1)");
         s = s.replace(/\\ln\b/g, "log");
         // \log with subscript → change of base: \log_{b}(x) → log(x)/log(b)
         s = s.replace(/\\log_\{([^{}]+)\}\s*\(([^()]+)\)/g, "(log($2)/log($1))");
-        s = s.replace(/\\log_\{([^{}]+)\}\s*([a-zA-Z0-9])/g, "(log($2)/log($1))");
+        s = s.replace(/\\log_\{([^{}]+)\}\s*\{([^{}]+)\}/g, "(log($2)/log($1))");
+        s = s.replace(/\\log_\{([^{}]+)\}\s*([a-zA-Z0-9][a-zA-Z0-9.]*)/g, "(log($2)/log($1))");
         // Bare \log (no subscript) means base-10: \log(x) → log(x)/log(10)
         s = s.replace(/\\log\s*\(([^()]+)\)/g, "(log($1)/log(10))");
-        s = s.replace(/\\log\s+([a-zA-Z0-9])/g, "(log($1)/log(10))");
+        s = s.replace(/\\log\s+([a-zA-Z0-9][a-zA-Z0-9.]*)/g, "(log($1)/log(10))");
         s = s.replace(/\\log\b/g, "log"); // fallback — shouldn't normally reach here
         s = s.replace(/\^{([^{}]+)}/g, "^($1)");
         s = s.replace(/_\{([^{}]+)\}/g, "_($1)");
@@ -4249,7 +4250,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             { label: "\\pi", cmd: "\\pi", type: "cmd" },                        // R4C4
             { label: "\\ln", cmd: "\\ln", type: "cmd" },                        // R5C1
             { label: "\\log", cmd: "\\log", type: "cmd" },                      // R5C2
-            { label: "\\log_{\\square}", cmd: "\\log_", type: "cmd" },           // R5C3
+            { label: "\\log_{\\square}", type: "sequence", sequence: [              // R5C3
+                { type: "cmd", cmd: "\\log" }, { type: "cmd", cmd: "_" }
+            ]},
             { label: "\\infty", cmd: "\\infty", type: "cmd" }
         ],
         trig: [
@@ -4287,7 +4290,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         logarithms: [
             { label: "\\ln", cmd: "\\ln", type: "cmd" },
             { label: "\\log", cmd: "\\log", type: "cmd" },
-            { label: "\\log_{\\square}", cmd: "\\log_", type: "cmd" },
+            { label: "\\log_{\\square}", type: "sequence", sequence: [
+                { type: "cmd", cmd: "\\log" }, { type: "cmd", cmd: "_" }
+            ]},
             { label: "i", cmd: "i", type: "write" }
         ]
     };
