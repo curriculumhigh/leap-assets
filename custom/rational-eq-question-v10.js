@@ -1830,6 +1830,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     Question.prototype._normalizeToContent = function (row) {
         if (row.content) return row.content;
         if (row.template) return "$" + row.template + "$";
+        if (row.expression) return "$" + row.expression + "$";
         return "";
     };
 
