@@ -1830,7 +1830,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     Question.prototype._normalizeToContent = function (row) {
         if (row.content) return row.content;
         if (row.template) return "$" + row.template + "$";
-        if (row.expression) return "$" + row.expression + "$";
+        if (row.expression) {
+            if (row.inputs && row.inputs.length > 0) {
+                console.warn("[v10] Row '" + (row.id || "?") + "' has expression + " + row.inputs.length + " inputs but no template — inputs will not render. Fix: use a template with {{0}}, {{1}}, etc.");
+            }
+            return "$" + row.expression + "$";
+        }
         return "";
     };
 
