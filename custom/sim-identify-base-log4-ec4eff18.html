@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Identify the base — log_b x</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+  .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+  #board { width: 100%; height: 100%; }
+</style>
+</head>
+<body>
+<div class="container"><div class="board-wrapper"><div id="board"></div></div></div>
+<script>
+  var COL_PRIMARY = '#222222', COL_AXIS = '#444444', COL_GRID = '#D1D5DB';
+  var board = JXG.JSXGraph.initBoard('board', {
+    boundingbox: [-1, 4, 6, -3],
+    axis: true, showNavigation: false, showCopyright: false,
+    pan: { enabled: false }, zoom: { enabled: false }, keepAspectRatio: false,
+    defaultAxes: {
+      x: { strokeColor: COL_AXIS, strokeWidth: 1.2, lastArrow: { type: 2, size: 6 },
+           ticks: { strokeColor: COL_AXIS, label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 } },
+      y: { strokeColor: COL_AXIS, strokeWidth: 1.2, lastArrow: { type: 2, size: 6 },
+           ticks: { strokeColor: COL_AXIS, label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 } }
+    },
+    grid: { strokeColor: COL_GRID, strokeWidth: 0.4 }
+  });
+  board.create('functiongraph', [function(x){ return Math.log(x) / Math.log(4); }, 0.01, 6], {
+    strokeColor: COL_PRIMARY, strokeWidth: 1.8, fixed: true, highlight: false
+  });
+  // Two key points with coordinate labels
+  board.create('point', [1, 0], {
+    name: '', size: 4, fillColor: COL_PRIMARY, strokeColor: COL_PRIMARY,
+    fixed: true, showInfobox: false, highlight: false
+  });
+  board.create('text', [1.15, -0.4, '(1, 0)'], {
+    fontSize: 12, color: COL_PRIMARY, anchorX: 'left', useKatex: false, fixed: true, highlight: false
+  });
+  board.create('point', [4, 1], {
+    name: '', size: 4, fillColor: COL_PRIMARY, strokeColor: COL_PRIMARY,
+    fixed: true, showInfobox: false, highlight: false
+  });
+  board.create('text', [4.15, 0.6, '(4, 1)'], {
+    fontSize: 12, color: COL_PRIMARY, anchorX: 'left', useKatex: false, fixed: true, highlight: false
+  });
+</script>
+</body>
+</html>
