@@ -782,6 +782,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var self = this;
         var method = inputSpec.method || "equivSymbolic";
         if (method === "equivLiteral") method = "equiLiteral"; // normalize alias
+        // \pm cannot be evaluated symbolically — fall back to literal comparison
+        if (inputSpec.answer && inputSpec.answer.indexOf("\\pm") >= 0) method = "equiLiteral";
         var constraints = inputSpec.constraints || {};
         var studentNerd = this.latexToNerdamer(studentLatex);
         if (!studentNerd.trim()) return false;
