@@ -4252,18 +4252,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             { label: ">", cmd: ">", type: "write" },                            // R3C2
             { label: "\\leq", cmd: "\\leq", type: "cmd" },                      // R3C3
             { label: "\\geq", cmd: "\\geq", type: "cmd" },                      // R3C4
-            { label: "(\\square)", type: "sequence", sequence: [                    // R4C1
-                { type: "write", cmd: "(" }, { type: "write", cmd: ")" },
-                { type: "keystroke", cmd: "Left" }
-            ]},
-            { label: "[\\square]", type: "sequence", sequence: [                 // R4C2
-                { type: "write", cmd: "[" }, { type: "write", cmd: "]" },
-                { type: "keystroke", cmd: "Left" }
-            ]},
-            { label: "|\\square|", type: "sequence", sequence: [                 // R4C3
-                { type: "write", cmd: "|" }, { type: "write", cmd: "|" },
-                { type: "keystroke", cmd: "Left" }
-            ]},
+            { label: "(\\square)", cmd: "(", type: "typedText" },                   // R4C1
+            { label: "[\\square]", cmd: "[", type: "typedText" },                   // R4C2
+            { label: "|\\square|", cmd: "|", type: "typedText" },                   // R4C3
             { label: "\\pi", cmd: "\\pi", type: "cmd" },                        // R4C4
             { label: "\\ln", cmd: "\\ln", type: "cmd" },                        // R5C1
             { label: "\\log", cmd: "\\log", type: "cmd" },                      // R5C2
@@ -4399,7 +4390,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                         if (step.type === "cmd") f.cmd(step.cmd);
                         else if (step.type === "write") f.write(step.cmd);
                         else if (step.type === "keystroke") f.keystroke(step.cmd);
+                        else if (step.type === "typedText") f.typedText(step.cmd);
                     });
+                } else if (k.type === "typedText") {
+                    f.typedText(k.cmd);
                 } else if (k.type === "cmd") {
                     f.cmd(k.cmd);
                 } else if (k.type === "keystroke") {
