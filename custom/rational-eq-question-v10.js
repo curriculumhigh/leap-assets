@@ -782,8 +782,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var self = this;
         var method = inputSpec.method || "equivSymbolic";
         if (method === "equivLiteral") method = "equiLiteral"; // normalize alias
-        // \pm cannot be evaluated symbolically — fall back to literal comparison
-        if (inputSpec.answer && inputSpec.answer.indexOf("\\pm") >= 0) method = "equiLiteral";
+        // \pm: expand into two values and compare as unordered set
+        if (inputSpec.answer && inputSpec.answer.indexOf("\\pm") >= 0) {
+            return this.checkPlusMinus(studentLatex, inputSpec.answer);
+        }
         var constraints = inputSpec.constraints || {};
         var studentNerd = this.latexToNerdamer(studentLatex);
         if (!studentNerd.trim()) return false;
@@ -949,6 +951,29 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             return s.trim().toLowerCase();
         };
         return normalize(studentLatex) === normalize(expected);
+    };
+
+    /**
+     * Handle ±: expand a \pm b into {a+b, a-b} and compare as unordered set.
+     * Falls back to equiLiteral if expansion or nerdamer fails.
+     */
+    Question.prototype.checkPlusMinus = function (studentLatex, expectedAnswer) {
+        var self = this;
+        function expandPM(latex) {
+            var plus = latex.replace(/\\pm/g, "+");
+            var minus = latex.replace(/\\pm/g, "-");
+            return [self.latexToNerdamer(plus), self.latexToNerdamer(minus)];
+        }
+        try {
+            var sPair = expandPM(studentLatex);
+            var ePair = expandPM(expectedAnswer);
+            // Compare as unordered pair: {s+,s-} must match {e+,e-}
+            var match1 = (this.checkEquivSymbolic(sPair[0], ePair[0]) && this.checkEquivSymbolic(sPair[1], ePair[1]));
+            var match2 = (this.checkEquivSymbolic(sPair[0], ePair[1]) && this.checkEquivSymbolic(sPair[1], ePair[0]));
+            return match1 || match2;
+        } catch (e) {
+            return this.checkEquiLiteral(studentLatex, expectedAnswer);
+        }
     };
 
     // ═══════════════════════════════════════════════════
