@@ -2782,6 +2782,49 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         self.events.trigger("changed", self.getResponse());
     };
 
+    // ── v11: Active step detection ──
+
+    /**
+     * Returns { key, status } for the current active step.
+     *   key:    stepKey string (e.g. "sec3" for TWI/SC/MC, "sec2-3" for equation-table row 3)
+     *           null when all steps are complete.
+     *   status: "ready"     — waiting for student input
+     *           "incorrect" — just failed, can retry (retryMode)
+     *           "locked"    — 2 failures, needs teacher unlock
+     *           "complete"  — all steps done
+     */
+    Question.prototype._getActiveStep = function () {
+        var self = this;
+        var sections = self.question.sections || [];
+
+        for (var si = 0; si < sections.length; si++) {
+            var sec = sections[si];
+            if (sec.type === "text") continue;
+
+            if (sec.type === "equation-table") {
+                for (var ri = 0; ri < sec.rows.length; ri++) {
+                    var row = sec.rows[ri];
+                    if (!row.inputs || row.inputs.length === 0) continue;
+                    if (self.completedRows[sec.id] && self.completedRows[sec.id][ri]) continue;
+                    // This row is the current active step
+                    var stepKey = sec.id + "-" + ri;
+                    var status = self.lockedSteps[stepKey] ? "locked"
+                        : self.retryMode[stepKey] ? "incorrect"
+                        : "ready";
+                    return { key: stepKey, status: status };
+                }
+            } else {
+                if (self.completedSections[sec.id]) continue;
+                var status2 = self.lockedSteps[sec.id] ? "locked"
+                    : self.retryMode[sec.id] ? "incorrect"
+                    : "ready";
+                return { key: sec.id, status: status2 };
+            }
+        }
+
+        return { key: null, status: "complete" };
+    };
+
     // ── Check Answer handler (fired by Learnosity's validate event) ──
     Question.prototype.validateCurrentStep = function () {
         var self = this;
@@ -2921,10 +2964,14 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             }
         }
 
+        var active = self._getActiveStep();
+
         return {
             value: completedSteps + "/" + totalSteps,
             type: "object",
             apiVersion: "v4",
+            activeStep: active.key,
+            stepStatus: active.status,
             inputs: self.collectAllInputValues(),
             completedSections: $.extend({}, self.completedSections),
             completedRows: serCompleted,
