@@ -111,9 +111,18 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Wire Learnosity's "Check Answer" button validate event
         var self = this;
         init.events.on("validate", function () { self.validateCurrentStep(); });
-        init.events.on("allowRetry", function (data) {
+
+        // Bind allowRetry on both init.events (widget-private bus) and the
+        // public facade. Outer worksheet code can only reach the facade —
+        // init.events is not exposed by Learnosity's Questions API.
+        var allowRetryHandler = function (data) {
             if (data && data.stepKey) self._teacherAllowRetry(data.stepKey);
-        });
+        };
+        init.events.on("allowRetry", allowRetryHandler);
+        var facadeForEvents = init.getFacade && init.getFacade();
+        if (facadeForEvents && facadeForEvents.on) {
+            facadeForEvents.on("allowRetry", allowRetryHandler);
+        }
 
         loadDeps().then(function () {
             self.MQ = MathQuill.getInterface(2);
