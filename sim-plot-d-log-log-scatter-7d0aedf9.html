@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plot D - Log-Log Scatter</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.15, 2.2, 1.15, -0.2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var intermediateColor = '#EBEBEB';
+        var intermediateWidth = 0.3;
+        var i, logVal;
+
+        for (i = 2; i <= 9; i++) {
+            logVal = Math.log10(i);
+            board.create('segment', [[logVal, 0], [logVal, 2]], {
+                strokeColor: intermediateColor, strokeWidth: intermediateWidth,
+                fixed: true, highlight: false, dash: 0
+            });
+        }
+
+        for (i = 2; i <= 9; i++) {
+            logVal = Math.log10(i);
+            board.create('segment', [[0, logVal], [1, logVal]], {
+                strokeColor: intermediateColor, strokeWidth: intermediateWidth,
+                fixed: true, highlight: false, dash: 0
+            });
+        }
+        for (i = 2; i <= 9; i++) {
+            logVal = Math.log10(i * 10);
+            board.create('segment', [[0, logVal], [1, logVal]], {
+                strokeColor: intermediateColor, strokeWidth: intermediateWidth,
+                fixed: true, highlight: false, dash: 0
+            });
+        }
+
+        var majorColor = '#D1D5DB';
+        var majorWidth = 0.5;
+
+        board.create('segment', [[0, 1], [1, 1]], {
+            strokeColor: majorColor, strokeWidth: majorWidth, fixed: true, highlight: false
+        });
+        board.create('segment', [[0, 2], [1, 2]], {
+            strokeColor: majorColor, strokeWidth: majorWidth, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[0, 0], [1, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[0, 0], [0, 2]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        var xTicks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        for (i = 0; i < xTicks.length; i++) {
+            var xVal = xTicks[i];
+            var xLog = Math.log10(xVal);
+            board.create('segment', [[xLog, -0.02], [xLog, 0.02]], {
+                strokeColor: '#444444', strokeWidth: 0.8, fixed: true, highlight: false
+            });
+            if (xVal === 1 || xVal === 5 || xVal === 10) {
+                board.create('text', [xLog, -0.09, String(xVal)], {
+                    fontSize: 10, anchorX: 'middle', anchorY: 'top',
+                    color: '#444444', fixed: true, highlight: false
+                });
+            }
+        }
+
+        var yTicks = [1, 10, 100];
+        for (i = 0; i < yTicks.length; i++) {
+            var yVal = yTicks[i];
+            var yLog = Math.log10(yVal);
+            board.create('segment', [[-0.015, yLog], [0.015, yLog]], {
+                strokeColor: '#444444', strokeWidth: 0.8, fixed: true, highlight: false
+            });
+            board.create('text', [-0.04, yLog, String(yVal)], {
+                fontSize: 10, anchorX: 'right', anchorY: 'middle',
+                color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        var data = [
+            [1, 1.5],
+            [2, 3],
+            [4, 12],
+            [6, 45],
+            [9, 90]
+        ];
+
+        for (i = 0; i < data.length; i++) {
+            var px = Math.log10(data[i][0]);
+            var py = Math.log10(data[i][1]);
+            board.create('point', [px, py], {
+                name: '', size: 4, color: '#222222',
+                fixed: true, highlight: false, showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
