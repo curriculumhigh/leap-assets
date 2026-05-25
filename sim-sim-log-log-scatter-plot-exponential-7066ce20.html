@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log-Log Scatter Plot — y = 5·3^x</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.35, 3.4, 1.4, -0.25],
+            axis: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var i, j, logVal, sw, sc;
+
+        // Vertical grid lines (x-axis: from 1 to ~20)
+        for (i = 0; i <= 1; i++) {
+            for (j = 1; j <= 10; j++) {
+                logVal = i + Math.log10(j);
+                if (logVal > 1.35) break;
+                sw = (j === 1) ? 1.0 : 0.4;
+                sc = (j === 1) ? '#444444' : '#D1D5DB';
+                board.create('segment', [[logVal, -0.25], [logVal, 3.4]], {
+                    strokeColor: sc, strokeWidth: sw,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // Horizontal grid lines (y-axis: from 1 to 1000)
+        for (i = 0; i <= 3; i++) {
+            for (j = 1; j <= 9; j++) {
+                logVal = i + Math.log10(j);
+                if (logVal > 3.4) break;
+                sw = (j === 1) ? 1.0 : 0.4;
+                sc = (j === 1) ? '#444444' : '#D1D5DB';
+                board.create('segment', [[-0.35, logVal], [1.4, logVal]], {
+                    strokeColor: sc, strokeWidth: sw,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // Draw axes
+        board.create('segment', [[0, -0.25], [0, 3.4]], {
+            strokeColor: '#444444', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[-0.35, 0], [1.4, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // X-axis labels (actual values)
+        board.create('text', [0, -0.15, '1'], { fontSize: 12, fixed: true, highlight: false, anchorX: 'middle', color: '#222222' });
+        board.create('text', [1, -0.15, '10'], { fontSize: 12, fixed: true, highlight: false, anchorX: 'middle', color: '#222222' });
+
+        // Y-axis labels (actual values) — positioned with enough left margin
+        board.create('text', [-0.06, 0, '1'], { fontSize: 12, fixed: true, highlight: false, anchorX: 'right', color: '#222222' });
+        board.create('text', [-0.06, 1, '10'], { fontSize: 12, fixed: true, highlight: false, anchorX: 'right', color: '#222222' });
+        board.create('text', [-0.06, 2, '100'], { fontSize: 12, fixed: true, highlight: false, anchorX: 'right', color: '#222222' });
+        board.create('text', [-0.06, 3, '1000'], { fontSize: 12, fixed: true, highlight: false, anchorX: 'right', color: '#222222' });
+
+        // Data points from y = 5·3^x plotted on log-log scale
+        var data = [
+            [1, 15],
+            [2, 45],
+            [3, 135],
+            [4, 405],
+            [5, 1215]
+        ];
+
+        for (var k = 0; k < data.length; k++) {
+            var lx = Math.log10(data[k][0]);
+            var ly = Math.log10(data[k][1]);
+            board.create('point', [lx, ly], {
+                name: '',
+                size: 5,
+                color: '#222222',
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
