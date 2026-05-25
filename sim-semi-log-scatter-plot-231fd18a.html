@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semi-Log Scatter Plot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 4.8, 12.5, -0.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        // ── Grid lines ──────────────────────────────────────────────────
+
+        // Horizontal grid lines at each power of 10 (log10 values 0,1,2,3,4)
+        var yGridValues = [0, 1, 2, 3, 4];
+        for (var i = 0; i < yGridValues.length; i++) {
+            board.create('line', [[0, yGridValues[i]], [1, yGridValues[i]]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                straightFirst: true, straightLast: true,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Vertical grid lines at x = 1, 3, 5, 7, 9, 11
+        var xGridValues = [1, 3, 5, 7, 9, 11];
+        for (var i = 0; i < xGridValues.length; i++) {
+            board.create('line', [[xGridValues[i], 0], [xGridValues[i], 1]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                straightFirst: true, straightLast: true,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Axes ────────────────────────────────────────────────────────
+
+        // X-axis
+        board.create('arrow', [[-1, 0], [12.2, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Y-axis
+        board.create('arrow', [[0, -0.3], [0, 4.6]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // ── X-axis tick marks and labels ────────────────────────────────
+
+        for (var i = 0; i < xGridValues.length; i++) {
+            var xv = xGridValues[i];
+            // Tick mark
+            board.create('segment', [[xv, -0.08], [xv, 0.08]], {
+                strokeColor: '#444444', strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            // Label
+            board.create('text', [xv, -0.3, String(xv)], {
+                fontSize: 11, color: '#333333', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Y-axis tick marks and labels ────────────────────────────────
+
+        var yLabels = ['1', '10', '100', '1,000', '10,000'];
+        for (var i = 0; i < yGridValues.length; i++) {
+            var yv = yGridValues[i];
+            // Tick mark
+            board.create('segment', [[-0.15, yv], [0.15, yv]], {
+                strokeColor: '#444444', strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            // Label
+            board.create('text', [-0.3, yv, yLabels[i]], {
+                fontSize: 11, color: '#333333', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Axis name labels ────────────────────────────────────────────
+
+        board.create('text', [11.9, -0.3, '<i>x</i>'], {
+            fontSize: 14, color: '#333333', fixed: true, highlight: false
+        });
+        board.create('text', [0.25, 4.5, '<i>y</i>'], {
+            fontSize: 14, color: '#333333', fixed: true, highlight: false
+        });
+
+        // ── Data points (plotted in log space) ──────────────────────────
+
+        var data = [
+            [1, 5],
+            [3, 40],
+            [5, 150],
+            [7, 800],
+            [9, 2500],
+            [11, 9000]
+        ];
+
+        for (var i = 0; i < data.length; i++) {
+            var xVal = data[i][0];
+            var yVal = Math.log10(data[i][1]);
+            board.create('point', [xVal, yVal], {
+                name: '', size: 5, color: '#2563EB',
+                strokeColor: '#2563EB', fillColor: '#2563EB',
+                fixed: true, highlight: false, showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
