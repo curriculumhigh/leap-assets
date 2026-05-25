@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semi-Log Grid</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; }
+        .container { padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.3, 10.3, 10.3, -0.3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var i, j, pos;
+
+        // --- X-axis: Linear subdivisions (5 per major cell) ---
+        for (i = 0; i <= 10; i++) {
+            // Major vertical lines
+            board.create('segment', [[i, 0], [i, 10]], {
+                strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            // Minor vertical lines (5 subdivisions per cell)
+            if (i < 10) {
+                for (j = 1; j <= 4; j++) {
+                    pos = i + j * 0.2;
+                    board.create('segment', [[pos, 0], [pos, 10]], {
+                        strokeColor: '#999999', strokeWidth: 0.4, fixed: true, highlight: false
+                    });
+                }
+            }
+        }
+
+        // --- Y-axis: Logarithmic subdivisions (10 decades) ---
+        for (i = 0; i <= 10; i++) {
+            // Major horizontal lines (decade boundaries)
+            board.create('segment', [[0, i], [10, i]], {
+                strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            // Minor horizontal lines (logarithmic spacing within each decade)
+            if (i < 10) {
+                for (j = 2; j <= 9; j++) {
+                    pos = i + Math.log10(j);
+                    board.create('segment', [[0, pos], [10, pos]], {
+                        strokeColor: '#999999', strokeWidth: 0.4, fixed: true, highlight: false
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>
