@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Semi-log line</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<style>
+html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; position: relative; }
+.wrap { padding: 6px; }
+.board-card { background: white; border-radius: 6px; padding: 6px; }
+.caption { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #555; text-align: center; margin: 0 0 4px 0; }
+#tooltip { position: absolute; background: rgba(34, 34, 34, 0.92); color: #fff; padding: 4px 9px; border-radius: 4px; font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace; pointer-events: none; opacity: 0; transition: opacity 0.12s; z-index: 1000; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap"><div class="caption">Semi-log Plot</div><div class="board-card"><div id="board" style="width:480px; height:340px;"></div></div></div>
+<div id="tooltip"></div>
+<script>
+function drawSemiLogPaper(board, opts) {
+    var COL_MAJOR = '#000000';
+    var COL_MINOR = '#777777';
+    var SUP = ['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹'];
+
+    // Major horizontal lines at log10 = 0, 1, ..., yMaxDecade
+    for (var i = 0; i <= opts.yMaxDecade; i++) {
+        board.create('line', [[opts.xmin, i], [opts.xmax, i]], {
+            straightFirst: false, straightLast: false,
+            strokeColor: COL_MAJOR, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+    }
+    // Minor horizontal lines at log10(2..9) within each decade
+    for (var dec = 0; dec < opts.yMaxDecade; dec++) {
+        for (var k = 2; k <= 9; k++) {
+            board.create('line', [[opts.xmin, dec + Math.log(k) / Math.LN10], [opts.xmax, dec + Math.log(k) / Math.LN10]], {
+                straightFirst: false, straightLast: false,
+                strokeColor: COL_MINOR, strokeWidth: 0.35, fixed: true, highlight: false
+            });
+        }
+    }
+    // Major vertical lines at every xstep
+    for (var x = opts.xmin; x <= opts.xmax + 0.0001; x += opts.xstep) {
+        board.create('line', [[x, 0], [x, opts.yMaxDecade]], {
+            straightFirst: false, straightLast: false,
+            strokeColor: COL_MAJOR, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+    }
+    // Y-axis labels: 10^k using Unicode superscripts
+    for (var i = 0; i <= opts.yMaxDecade; i++) {
+        var labelOffset = (opts.xmax - opts.xmin) * 0.04;
+        var label = '10' + SUP[i];
+        board.create('text', [opts.xmin - labelOffset, i, label], {
+            fontSize: 14, color: '#000', anchorX: 'right', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    }
+    // X-axis number labels just below bottom edge
+    for (var x = opts.xmin; x <= opts.xmax + 0.0001; x += opts.xstep) {
+        var yOffset = opts.yMaxDecade * 0.04;
+        board.create('text', [x, -yOffset, String(Math.round(x * 100) / 100)], {
+            fontSize: 13, color: '#000', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+    }
+    // Data points (plotted at (x, log10 y)); tooltip support if opts.tooltips
+    var tooltipEl = document.getElementById('tooltip');
+    if (opts.dataPts) {
+        opts.dataPts.forEach(function(p) {
+            var pt = board.create('point', [p.x, Math.log(p.y) / Math.LN10], {
+                name: p.label || '', size: 4,
+                fillColor: p.color || '#000', strokeColor: p.color || '#000',
+                fixed: true, highlight: true, showInfobox: false,
+                label: p.label ? { offset: [10, 0], fontSize: 14, color: p.color || '#000', fontWeight: 'bold' } : undefined
+            });
+            if (opts.tooltips && tooltipEl) {
+                var displayY = (p.y >= 1 && p.y < 1000 && Math.abs(p.y - Math.round(p.y)) < 0.01) ? Math.round(p.y) : p.y.toPrecision(3);
+                pt.rendNode.style.cursor = 'pointer';
+                pt.on('over', function(e) {
+                    tooltipEl.textContent = '(' + p.x + ', ' + displayY + ')';
+                    tooltipEl.style.opacity = '1';
+                });
+                pt.on('move', function(e) {
+                    var clientX = e.clientX || (e.touches && e.touches[0] && e.touches[0].clientX) || 0;
+                    var clientY = e.clientY || (e.touches && e.touches[0] && e.touches[0].clientY) || 0;
+                    tooltipEl.style.left = (clientX + 12) + 'px';
+                    tooltipEl.style.top = (clientY - 28) + 'px';
+                });
+                pt.on('out', function() { tooltipEl.style.opacity = '0'; });
+            }
+        });
+    }
+    // Optional connecting line (function on actual y)
+    if (opts.lineFunc) {
+        board.create('functiongraph', [function(x) { return Math.log(opts.lineFunc(x)) / Math.LN10; }, opts.xmin, opts.xmax], {
+            strokeColor: '#2563EB', strokeWidth: 1.4, fixed: true, highlight: false
+        });
+    }
+}
+
+
+var dataPts = [{x:0,y:100},{x:1,y:200},{x:2,y:400},{x:3,y:800}];
+var b = JXG.JSXGraph.initBoard('board', {
+    boundingbox: [-0.9, 3.3, 3.7, -0.3],
+    axis: false, showNavigation: false, showCopyright: false,
+    pan: { enabled: false }, zoom: { enabled: false }, keepAspectRatio: false
+});
+drawSemiLogPaper(b, {
+    xmin: 0, xmax: 3, xstep: 1, yMaxDecade: 3,
+    dataPts: dataPts,
+    lineFunc: function(x) { return 100 * Math.pow(2, x); }
+});
+
+</script>
+</body>
+</html>

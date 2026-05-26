@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bacterial growth — linear vs semi-log</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<style>
+html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; position: relative; }
+.wrap { padding: 6px; }
+.board-card { background: white; border-radius: 6px; padding: 6px; }
+.caption { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #555; text-align: center; margin: 0 0 4px 0; }
+#tooltip { position: absolute; background: rgba(34, 34, 34, 0.92); color: #fff; padding: 4px 9px; border-radius: 4px; font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace; pointer-events: none; opacity: 0; transition: opacity 0.12s; z-index: 1000; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div style="display:flex; gap:10px;">
+    <div style="flex:1;">
+      <div class="caption">Linear scale</div>
+      <div class="board-card"><div id="board_lin" style="width:330px; height:340px;"></div></div>
+    </div>
+    <div style="flex:1;">
+      <div class="caption">Semi-log scale</div>
+      <div class="board-card"><div id="board_log" style="width:330px; height:340px;"></div></div>
+    </div>
+  </div>
+</div>
+<div id="tooltip"></div>
+<script>
+
+function drawSemiLogPaper(board, opts) {
+    var COL_MAJOR = '#000000';
+    var COL_MINOR = '#777777';
+    var SUP = ['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹'];
+    var yMin = opts.yMinDecade || 0;
+    for (var i = yMin; i <= opts.yMaxDecade; i++) {
+        board.create('line', [[opts.xmin, i], [opts.xmax, i]], {
+            straightFirst: false, straightLast: false,
+            strokeColor: COL_MAJOR, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+    }
+    for (var dec = yMin; dec < opts.yMaxDecade; dec++) {
+        for (var k = 2; k <= 9; k++) {
+            board.create('line', [[opts.xmin, dec + Math.log(k) / Math.LN10], [opts.xmax, dec + Math.log(k) / Math.LN10]], {
+                straightFirst: false, straightLast: false,
+                strokeColor: COL_MINOR, strokeWidth: 0.35, fixed: true, highlight: false
+            });
+        }
+    }
+    for (var x = opts.xmin; x <= opts.xmax + 0.0001; x += opts.xstep) {
+        board.create('line', [[x, yMin], [x, opts.yMaxDecade]], {
+            straightFirst: false, straightLast: false,
+            strokeColor: COL_MAJOR, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+    }
+    for (var i = yMin; i <= opts.yMaxDecade; i++) {
+        var labelOffset = (opts.xmax - opts.xmin) * 0.04;
+        var label = '10' + SUP[i];
+        board.create('text', [opts.xmin - labelOffset, i, label], {
+            fontSize: 14, color: '#000', anchorX: 'right', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    }
+    for (var x = opts.xmin; x <= opts.xmax + 0.0001; x += opts.xstep) {
+        var yOffset = (opts.yMaxDecade - yMin) * 0.04;
+        board.create('text', [x, yMin - yOffset, String(Math.round(x * 100) / 100)], {
+            fontSize: 13, color: '#000', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+    }
+    var tooltipEl = document.getElementById('tooltip');
+    if (opts.dataPts) {
+        opts.dataPts.forEach(function(p) {
+            var pt = board.create('point', [p.x, Math.log(p.y) / Math.LN10], {
+                name: p.label || '', size: 4,
+                fillColor: p.color || '#000', strokeColor: p.color || '#000',
+                fixed: true, highlight: true, showInfobox: false,
+                label: p.label ? { offset: [10, 0], fontSize: 14, color: p.color || '#000', fontWeight: 'bold' } : undefined
+            });
+            if (opts.tooltips && tooltipEl) {
+                var displayY = (p.y >= 1 && Math.abs(p.y - Math.round(p.y)) < 0.01) ? Math.round(p.y).toLocaleString() : p.y.toPrecision(3);
+                pt.rendNode.style.cursor = 'pointer';
+                pt.on('over', function(e) { tooltipEl.textContent = '(' + p.x + ', ' + displayY + ')'; tooltipEl.style.opacity = '1'; });
+                pt.on('move', function(e) {
+                    var cx = e.clientX || (e.touches && e.touches[0] && e.touches[0].clientX) || 0;
+                    var cy = e.clientY || (e.touches && e.touches[0] && e.touches[0].clientY) || 0;
+                    tooltipEl.style.left = (cx + 12) + 'px'; tooltipEl.style.top = (cy - 28) + 'px';
+                });
+                pt.on('out', function() { tooltipEl.style.opacity = '0'; });
+            }
+        });
+    }
+    if (opts.lineFunc) {
+        board.create('functiongraph', [function(x) { return Math.log(opts.lineFunc(x)) / Math.LN10; }, opts.xmin, opts.xmax], {
+            strokeColor: '#2563EB', strokeWidth: 1.4, fixed: true, highlight: false
+        });
+    }
+}
+
+function drawLinearPaper(board, opts) {
+    var COL_MAJOR = '#000000';
+    // Horizontal lines at y-ticks
+    opts.yTicks.forEach(function(yv) {
+        board.create('line', [[opts.xmin, yv], [opts.xmax, yv]], {
+            straightFirst: false, straightLast: false,
+            strokeColor: COL_MAJOR, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [opts.xmin - (opts.xmax - opts.xmin) * 0.04, yv, opts.yLabelFn ? opts.yLabelFn(yv) : String(yv)], {
+            fontSize: 13, color: '#000', anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false
+        });
+    });
+    // Vertical lines at x-ticks
+    for (var x = opts.xmin; x <= opts.xmax + 0.0001; x += opts.xstep) {
+        board.create('line', [[x, opts.yMin], [x, opts.yMax]], {
+            straightFirst: false, straightLast: false,
+            strokeColor: COL_MAJOR, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        var yOffset = (opts.yMax - opts.yMin) * 0.04;
+        board.create('text', [x, opts.yMin - yOffset, String(Math.round(x * 100) / 100)], {
+            fontSize: 13, color: '#000', anchorX: 'middle', anchorY: 'top', fixed: true, highlight: false
+        });
+    }
+    var tooltipEl = document.getElementById('tooltip');
+    if (opts.dataPts) {
+        opts.dataPts.forEach(function(p) {
+            var pt = board.create('point', [p.x, p.y], {
+                name: '', size: 4,
+                fillColor: '#000', strokeColor: '#000',
+                fixed: true, highlight: true, showInfobox: false
+            });
+            if (opts.tooltips && tooltipEl) {
+                var displayY = (Math.abs(p.y - Math.round(p.y)) < 0.01) ? Math.round(p.y).toLocaleString() : p.y;
+                pt.rendNode.style.cursor = 'pointer';
+                pt.on('over', function(e) { tooltipEl.textContent = '(' + p.x + ', ' + displayY + ')'; tooltipEl.style.opacity = '1'; });
+                pt.on('move', function(e) {
+                    var cx = e.clientX || (e.touches && e.touches[0] && e.touches[0].clientX) || 0;
+                    var cy = e.clientY || (e.touches && e.touches[0] && e.touches[0].clientY) || 0;
+                    tooltipEl.style.left = (cx + 12) + 'px'; tooltipEl.style.top = (cy - 28) + 'px';
+                });
+                pt.on('out', function() { tooltipEl.style.opacity = '0'; });
+            }
+        });
+    }
+    if (opts.lineFunc) {
+        board.create('functiongraph', [opts.lineFunc, opts.xmin, opts.xmax], {
+            strokeColor: '#2563EB', strokeWidth: 1.4, fixed: true, highlight: false
+        });
+    }
+}
+
+var dataPts = [];
+for (var t = 0; t <= 10; t++) { dataPts.push({x: t, y: 100 * Math.pow(2, t)}); }
+
+// Linear board
+var bL = JXG.JSXGraph.initBoard('board_lin', {
+    boundingbox: [-1.7, 118000, 11, -8000],
+    axis: false, showNavigation: false, showCopyright: false,
+    pan: { enabled: false }, zoom: { enabled: false }, keepAspectRatio: false
+});
+drawLinearPaper(bL, {
+    xmin: 0, xmax: 10, xstep: 1,
+    yMin: 0, yMax: 110000,
+    yTicks: [0, 20000, 40000, 60000, 80000, 100000],
+    yLabelFn: function(v) { return v >= 1000 ? (v/1000) + 'k' : String(v); },
+    dataPts: dataPts,
+    lineFunc: function(x) { return 100 * Math.pow(2, x); },
+    tooltips: true
+});
+
+// Semi-log board: log10(y) from 1 to 6
+var bS = JXG.JSXGraph.initBoard('board_log', {
+    boundingbox: [-1.7, 6.3, 11, 0.6],
+    axis: false, showNavigation: false, showCopyright: false,
+    pan: { enabled: false }, zoom: { enabled: false }, keepAspectRatio: false
+});
+drawSemiLogPaper(bS, {
+    xmin: 0, xmax: 10, xstep: 1,
+    yMinDecade: 1, yMaxDecade: 6,
+    dataPts: dataPts,
+    lineFunc: function(x) { return 100 * Math.pow(2, x); },
+    tooltips: true
+});
+</script>
+</body>
+</html>

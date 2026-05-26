@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>E2 — semi-log plot of g</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<style>html,body{margin:0;padding:0;background:transparent;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}</style>
+</head>
+<body>
+<div id="board" style="width:540px;height:440px;background:white;"></div>
+
+<script>
+var SUP=['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁵'];
+SUP=['⁰','¹','²','³','⁴'];
+var b=JXG.JSXGraph.initBoard('board',{boundingbox:[-9,4.45,55,-0.55],axis:false,showNavigation:false,showCopyright:false,pan:{enabled:false},zoom:{enabled:false},keepAspectRatio:false});
+var xmin=0,xmax=50,xstep=10,yMinDec=0,yMaxDec=4;
+for(var i=yMinDec;i<=yMaxDec;i++){b.create('line',[[xmin,i],[xmax,i]],{straightFirst:false,straightLast:false,strokeColor:'#000',strokeWidth:1,fixed:true,highlight:false});}
+for(var dec=yMinDec;dec<yMaxDec;dec++){for(var k=2;k<=9;k++){b.create('line',[[xmin,dec+Math.log(k)/Math.LN10],[xmax,dec+Math.log(k)/Math.LN10]],{straightFirst:false,straightLast:false,strokeColor:'#888',strokeWidth:0.35,fixed:true,highlight:false});}}
+for(var x=xmin;x<=xmax+0.0001;x+=xstep){b.create('line',[[x,yMinDec],[x,yMaxDec]],{straightFirst:false,straightLast:false,strokeColor:'#000',strokeWidth:1,fixed:true,highlight:false});}
+for(var i=yMinDec;i<=yMaxDec;i++){b.create('text',[xmin-2,i,'10'+SUP[i]],{fontSize:14,color:'#000',anchorX:'right',anchorY:'middle',fixed:true,highlight:false,cssStyle:'font-weight:700;'});}
+for(var x=xmin;x<=xmax+0.0001;x+=xstep){b.create('text',[x,yMinDec-0.16,String(x)],{fontSize:12,color:'#000',anchorX:'middle',anchorY:'top',fixed:true,highlight:false});}
+
+// All 5 data points (unlabeled by default)
+var pts=[{x:10,y:30,label:'(10, 30)'},{x:20,y:90,label:'(20, 90)'},{x:30,y:270},{x:40,y:810},{x:50,y:2430}];
+pts.forEach(function(p){
+  if(p.label){
+    b.create('point',[p.x,Math.log(p.y)/Math.LN10],{name:p.label,size:4,fillColor:'#000',strokeColor:'#000',fixed:true,highlight:false,showInfobox:false,label:{offset:[10,2],fontSize:14,color:'#000',cssStyle:'font-weight:700;'}});
+  } else {
+    b.create('point',[p.x,Math.log(p.y)/Math.LN10],{name:'',size:4,fillColor:'#000',strokeColor:'#000',fixed:true,highlight:false,showInfobox:false});
+  }
+});
+</script>
+</body></html>
