@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parabola and Exponential Intersection</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 10px; height: 100%; }
+        .left-panel {
+            width: 160px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 14px;
+            display: flex; flex-direction: column; gap: 12px;
+            justify-content: center;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 4px;
+        }
+        .curve-row {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+        }
+        .curve-swatch {
+            width: 18px; height: 3px; border-radius: 2px; flex-shrink: 0;
+        }
+        .curve-eq { font-size: 12px; min-height: 20px; }
+        .hover-msg {
+            font-size: 11px; color: #777; line-height: 1.5;
+            border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: 4px;
+        }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 8px; position: relative; }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 13px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div>
+                    <div class="panel-label">Curves</div>
+                    <div class="curve-row">
+                        <div class="curve-swatch" style="background: #222222;"></div>
+                        <div class="curve-eq" id="eq1"></div>
+                    </div>
+                    <div class="curve-row">
+                        <div class="curve-swatch" style="background: #2563EB;"></div>
+                        <div class="curve-eq" id="eq2"></div>
+                    </div>
+                </div>
+                <div class="hover-msg">
+                    Hover over the marked intersection points to read their coordinates.
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+                <div class="coord-tooltip" id="tooltip"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Render panel equations
+        katex.render('y = -x^2 + 4x + 7', document.getElementById('eq1'), { throwOnError: false });
+        katex.render('y = 2^x + 3', document.getElementById('eq2'), { throwOnError: false });
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 13, 8, -3],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        majorHeight: 0, minorHeight: 0,
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 2
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        majorHeight: 0, minorHeight: 0,
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 2
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [7.5, -0.5, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.3, 12.5, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Colors
+        var COL_PARA = '#222222';
+        var COL_EXP = '#2563EB';
+
+        // Parabola: y = -x^2 + 4x + 7
+        board.create('functiongraph', [
+            function(x) { return -x * x + 4 * x + 7; }
+        ], { strokeColor: COL_PARA, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Exponential: y = 2^x + 3
+        board.create('functiongraph', [
+            function(x) { return Math.pow(2, x) + 3; }
+        ], { strokeColor: COL_EXP, strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // Compute intersections numerically using Newton's method
+        function diff(x) { return -x * x + 4 * x + 4 - Math.pow(2, x); }
+        function diffPrime(x) { return -2 * x + 4 - Math.pow(2, x) * Math.log(2); }
+
+        function newton(x0, iters) {
+            var x = x0;
+            for (var i = 0; i < iters; i++) {
+                var fx = diff(x);
+                var fpx = diffPrime(x);
+                if (Math.abs(fpx) < 1e-12) break;
+                x = x - fx / fpx;
+            }
+            return x;
+        }
+
+        var ix1 = newton(-1, 50);
+        var ix2 = newton(4, 50);
+        var iy1 = -ix1 * ix1 + 4 * ix1 + 7;
+        var iy2 = -ix2 * ix2 + 4 * ix2 + 7;
+
+        // Tooltip logic
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function showTooltip(pt, color) {
+            var xCoord = pt.X();
+            var yCoord = pt.Y();
+            var xStr = xCoord.toFixed(2);
+            var yStr = yCoord.toFixed(2);
+            var latex = '\\color{' + color + '}{(' + xStr + ',\\,' + yStr + ')}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xCoord, yCoord], board);
+            var sx = coords.scrCoords[1];
+            var sy = coords.scrCoords[2];
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 32) + 'px';
+        }
+
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+        // Intersection points
+        var pt1 = board.create('point', [ix1, iy1], {
+            name: '', size: 5, color: '#DC2626', fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: '#DC2626', highlightStrokeColor: '#DC2626'
+        });
+        pt1.on('over', function() { showTooltip(pt1, '#DC2626'); });
+        pt1.on('out', function() { hideTooltip(); });
+
+        var pt2 = board.create('point', [ix2, iy2], {
+            name: '', size: 5, color: '#DC2626', fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: '#DC2626', highlightStrokeColor: '#DC2626'
+        });
+        pt2.on('over', function() { showTooltip(pt2, '#DC2626'); });
+        pt2.on('out', function() { hideTooltip(); });
+    </script>
+</body>
+</html>
