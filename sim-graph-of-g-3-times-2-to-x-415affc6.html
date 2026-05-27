@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>g(x) = 3 · 2^x Reference Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 380px;
+            margin: 0;
+            padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            height: calc(100% - 20px);
+            position: relative;
+        }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #222222;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="board-wrapper">
+        <div id="board"></div>
+        <div class="coord-tooltip" id="tooltip"></div>
+    </div>
+</div>
+<script>
+    var COL_PRIMARY = '#222222';
+    var COL_AXIS    = '#444444';
+    var COL_GRID    = '#D1D5DB';
+
+    var BB = [-2.5, 28, 3.5, -3];
+
+    var board = JXG.JSXGraph.initBoard('board', {
+        boundingbox: BB,
+        axis: false,
+        grid: false,
+        showNavigation: false,
+        showCopyright: false,
+        pan: { enabled: false },
+        zoom: { enabled: false }
+    });
+
+    // ── Manual grid lines ──────────────────────────────────────
+    for (var xi = -2; xi <= 3; xi++) {
+        board.create('segment', [[xi, BB[3]], [xi, BB[1]]], {
+            strokeColor: COL_GRID, strokeWidth: 0.4,
+            fixed: true, highlight: false, layer: 0
+        });
+    }
+    for (var yi = 0; yi <= 28; yi += 4) {
+        board.create('segment', [[BB[0], yi], [BB[2], yi]], {
+            strokeColor: COL_GRID, strokeWidth: 0.4,
+            fixed: true, highlight: false, layer: 0
+        });
+    }
+
+    // ── Manual axes ────────────────────────────────────────────
+    board.create('arrow', [[BB[0], 0], [BB[2], 0]], {
+        strokeColor: COL_AXIS, strokeWidth: 1.2,
+        lastArrow: { type: 2, size: 6 },
+        fixed: true, highlight: false, layer: 1
+    });
+    board.create('arrow', [[0, BB[3]], [0, BB[1]]], {
+        strokeColor: COL_AXIS, strokeWidth: 1.2,
+        lastArrow: { type: 2, size: 6 },
+        fixed: true, highlight: false, layer: 1
+    });
+
+    // X-axis ticks and labels at integers
+    for (var xt = -2; xt <= 3; xt++) {
+        if (xt === 0) continue;
+        board.create('segment', [[xt, -0.4], [xt, 0.4]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.0,
+            fixed: true, highlight: false, layer: 1
+        });
+        board.create('text', [xt, -1.2, String(xt)], {
+            fontSize: 11, color: COL_AXIS, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    }
+
+    // Y-axis ticks and labels at multiples of 4
+    for (var yt = 4; yt <= 24; yt += 4) {
+        board.create('segment', [[-0.12, yt], [0.12, yt]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.0,
+            fixed: true, highlight: false, layer: 1
+        });
+        board.create('text', [-0.35, yt, String(yt)], {
+            fontSize: 11, color: COL_AXIS, anchorX: 'right', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    }
+
+    // Axis labels near arrow tips
+    board.create('text', [3.3, -1.0, '<i>x</i>'], {
+        fontSize: 14, fixed: true, highlight: false
+    });
+    board.create('text', [0.25, 27, '<i>y</i>'], {
+        fontSize: 14, fixed: true, highlight: false
+    });
+
+    // ── Curve g(x) = 3 * 2^x ──────────────────────────────────
+    var gFunc = function(x) { return 3 * Math.pow(2, x); };
+    board.create('functiongraph', [gFunc, -2.5, 3.5], {
+        strokeColor: COL_PRIMARY, strokeWidth: 1.8, fixed: true, highlight: false
+    });
+
+    // Function label
+    board.create('text', [-1.7, 22, 'g(x) = 3 \\cdot 2^x'], {
+        fontSize: 13, color: COL_PRIMARY, fixed: true, highlight: false, useKatex: true
+    });
+
+    // ── 6 key points with hover tooltips ───────────────────────
+    var xVals = [-2, -1, 0, 1, 2, 3];
+    var points = [];
+    xVals.forEach(function(xv) {
+        var yv = gFunc(xv);
+        var pt = board.create('point', [xv, yv], {
+            name: '', size: 5, color: COL_PRIMARY, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_PRIMARY, highlightStrokeColor: COL_PRIMARY
+        });
+        points.push(pt);
+    });
+
+    // ── Custom KaTeX tooltip ───────────────────────────────────
+    var tooltip = document.getElementById('tooltip');
+    var boardEl = document.getElementById('board');
+    var wrapperEl = boardEl.parentElement;
+
+    function formatValKatex(v) {
+        if (Math.abs(v - 0.75) < 0.001) return '\\tfrac{3}{4}';
+        if (Math.abs(v - 1.5) < 0.001)  return '\\tfrac{3}{2}';
+        if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+        return v.toFixed(2);
+    }
+
+    function showTooltip(pt) {
+        var x = pt.X();
+        var y = pt.Y();
+        var latex = '\\color{' + COL_PRIMARY + '}{\\left('
+                  + formatValKatex(x) + ',\\,'
+                  + formatValKatex(y) + '\\right)}';
+        katex.render(latex, tooltip, { throwOnError: false });
+        tooltip.style.display = 'block';
+
+        var boardRect = boardEl.getBoundingClientRect();
+        var wrapperRect = wrapperEl.getBoundingClientRect();
+        var coords = new JXG.Coords(JXG.COORDS_BY_USER, [x, y], board);
+        var px = coords.scrCoords[1];
+        var py = coords.scrCoords[2];
+
+        var offsetX = boardRect.left - wrapperRect.left;
+        var offsetY = boardRect.top - wrapperRect.top;
+
+        var tipX = px + offsetX;
+        var tipY = py + offsetY;
+
+        var tw = tooltip.offsetWidth;
+        var th = tooltip.offsetHeight;
+        var ww = wrapperEl.offsetWidth;
+        var wh = wrapperEl.offsetHeight;
+
+        var left;
+        if (tipX + 14 + tw + 4 > ww) {
+            left = tipX - tw - 14;
+        } else {
+            left = tipX + 14;
+        }
+
+        var top;
+        if (tipY - 28 - th < 0) {
+            top = tipY + 10;
+        } else {
+            top = tipY - 28;
+        }
+
+        if (left < 4) left = 4;
+        if (left + tw > ww - 4) left = ww - tw - 4;
+        if (top < 4) top = 4;
+        if (top + th > wh - 4) top = wh - th - 4;
+
+        tooltip.style.left = left + 'px';
+        tooltip.style.top  = top + 'px';
+    }
+
+    function hideTooltip() { tooltip.style.display = 'none'; }
+
+    points.forEach(function(pt) {
+        pt.on('over', function() { showTooltip(pt); });
+        pt.on('out',  function() { hideTooltip(); });
+    });
+</script>
+</body>
+</html>
