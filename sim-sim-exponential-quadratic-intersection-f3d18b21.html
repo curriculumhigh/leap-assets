@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphs of y = 2^x + 1 and y = -x² + 6</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; height: 100%; overflow: hidden;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 560px; margin: 0;
+            padding: 6px; height: calc(100% - 12px);
+        }
+        .sim-layout {
+            display: flex; gap: 12px; height: 100%;
+        }
+        .left-panel {
+            width: 180px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 14px;
+            display: flex; flex-direction: column; gap: 14px;
+            box-sizing: border-box;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 6px;
+        }
+        .func-row { min-height: 22px; margin-bottom: 6px; }
+        .tip-section { border-top: 1px solid #e5e7eb; padding-top: 12px; }
+        .tip-text {
+            font-size: 11px; color: #666; line-height: 1.5;
+        }
+        .board-wrapper {
+            flex: 1; background: white; border-radius: 8px; padding: 10px;
+            box-sizing: border-box;
+        }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 13px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-section">
+                    <div class="panel-label">Functions</div>
+                    <div class="func-row" id="func-1"></div>
+                    <div class="func-row" id="func-2"></div>
+                </div>
+                <div class="panel-section tip-section">
+                    <div class="panel-label">Tip</div>
+                    <div class="tip-text">
+                        Hover over the marked intersection points to read their coordinates.
+                    </div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+
+    <script>
+        var COL_F1 = '#222222';
+        var COL_F2 = '#2563EB';
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4.5, 8.5, 4.5, -2.5],
+            axis: true,
+            grid: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11, offset: [0, -2] },
+                        majorHeight: 0,
+                        minorHeight: 0,
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        drawZero: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11, offset: [-8, 0] },
+                        majorHeight: 0,
+                        minorHeight: 0,
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        drawZero: false
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        board.create('text', [4.15, -0.45, '<i>x</i>'], {
+            fontSize: 14, fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [0.3, 8.15, '<i>y</i>'], {
+            fontSize: 14, fixed: true, highlight: false, anchorX: 'left'
+        });
+
+        var f1 = function(x) { return Math.pow(2, x) + 1; };
+        var curve1 = board.create('functiongraph', [f1, -4.5, 4.5], {
+            strokeColor: COL_F1, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        var f2 = function(x) { return -x*x + 6; };
+        var curve2 = board.create('functiongraph', [f2, -4.5, 4.5], {
+            strokeColor: COL_F2, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        var int1 = board.create('intersection', [curve1, curve2, 0], {
+            name: '', size: 4, color: '#222222', fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: '#222222', highlightStrokeColor: '#222222'
+        });
+        var int2 = board.create('intersection', [curve1, curve2, 1], {
+            name: '', size: 4, color: '#222222', fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: '#222222', highlightStrokeColor: '#222222'
+        });
+
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function fmt(v) {
+            if (Math.abs(v - Math.round(v)) < 0.005) return String(Math.round(v));
+            return v.toFixed(2);
+        }
+
+        function showTooltip(pt) {
+            var x = pt.X(), y = pt.Y();
+            var latex = '\\left(' + fmt(x) + ',\\,' + fmt(y) + '\\right)';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [x, y], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 30) + 'px';
+        }
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+        int1.on('over', function() { showTooltip(int1); });
+        int1.on('out', hideTooltip);
+        int2.on('over', function() { showTooltip(int2); });
+        int2.on('out', hideTooltip);
+
+        katex.render(
+            '\\color{' + COL_F1 + '}{y = 2^{x} + 1}',
+            document.getElementById('func-1'),
+            { throwOnError: false }
+        );
+        katex.render(
+            '\\color{' + COL_F2 + '}{y = -x^{2} + 6}',
+            document.getElementById('func-2'),
+            { throwOnError: false }
+        );
+    </script>
+</body>
+</html>
