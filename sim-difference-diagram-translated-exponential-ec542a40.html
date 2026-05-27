@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Difference Diagram — Translated Exponential</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 550px;
+            margin: 0 auto;
+            padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            height: calc(100% - 20px);
+        }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="board-wrapper">
+        <div id="board"></div>
+    </div>
+</div>
+<script>
+    // ── Colors ──
+    var COL_TEXT    = '#222222';
+    var COL_LABEL  = '#555555';
+    var COL_DIFF   = '#2563EB';
+    var COL_BORDER = '#D1D5DB';
+    var COL_FILL   = '#F9FAFB';
+    var COL_LINE   = '#a3a3a3';
+
+    // ── Board ──
+    var board = JXG.JSXGraph.initBoard('board', {
+        boundingbox: [-1.2, 4.2, 12.2, -0.8],
+        axis: false,
+        grid: false,
+        keepAspectRatio: false,
+        showNavigation: false,
+        showCopyright: false,
+        pan:  { enabled: false },
+        zoom: { enabled: false }
+    });
+
+    // ── Data ──
+    var xVals  = [0, 1, 2, 3, 4];
+    var fVals  = [7, 10, 16, 28, 52];
+    var dfVals = [3, 6, 12, 24];
+
+    // ── Layout constants ──
+    var cellW  = 1.6;
+    var cellH  = 0.8;
+    var colGap = 2.0;
+    var cols   = [];
+    var dfCols = [];
+
+    var startX = 1.8;
+    for (var i = 0; i < 5; i++) {
+        cols.push(startX + i * colGap);
+    }
+    for (var i = 0; i < 4; i++) {
+        dfCols.push((cols[i] + cols[i + 1]) / 2);
+    }
+
+    var Y_X  = 3.4;
+    var Y_F  = 2.0;
+    var Y_DF = 0.4;
+
+    // ── Helper: draw a cell (rectangle) ──
+    function drawCell(cx, cy, w, h, opts) {
+        var x1 = cx - w / 2;
+        var x2 = cx + w / 2;
+        var y1 = cy - h / 2;
+        var y2 = cy + h / 2;
+
+        var dash = opts.dash || 0;
+        var fill = opts.fill || 'none';
+        var fillOp = opts.fillOpacity || 0;
+        var stroke = opts.stroke || COL_BORDER;
+        var sw = opts.strokeWidth || 1.2;
+
+        var p1 = board.create('point', [x1, y2], { visible: false, fixed: true, name: '' });
+        var p2 = board.create('point', [x2, y2], { visible: false, fixed: true, name: '' });
+        var p3 = board.create('point', [x2, y1], { visible: false, fixed: true, name: '' });
+        var p4 = board.create('point', [x1, y1], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [p1, p2, p3, p4], {
+            fillColor: fill,
+            fillOpacity: fillOp,
+            borders: {
+                strokeColor: stroke,
+                strokeWidth: sw,
+                dash: dash
+            },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+    }
+
+    // ── Helper: place KaTeX text ──
+    function placeText(cx, cy, latex, color, fontSize) {
+        board.create('text', [cx, cy, latex], {
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fontSize: fontSize || 15,
+            color: color || COL_TEXT,
+            fixed: true,
+            highlight: false,
+            useKatex: true
+        });
+    }
+
+    // ── Row labels ──
+    placeText(0.4, Y_X, 'x', COL_LABEL, 15);
+    placeText(0.4, Y_F, 'f(x)', COL_LABEL, 15);
+    placeText(0.4, Y_DF, '\\Delta f', COL_LABEL, 15);
+
+    // ── x row: solid cells ──
+    for (var i = 0; i < 5; i++) {
+        drawCell(cols[i], Y_X, cellW, cellH, {
+            fill: COL_FILL, fillOpacity: 0.8, stroke: COL_BORDER
+        });
+        placeText(cols[i], Y_X, xVals[i].toString(), COL_TEXT, 15);
+    }
+
+    // ── f(x) row: solid cells ──
+    for (var i = 0; i < 5; i++) {
+        drawCell(cols[i], Y_F, cellW, cellH, {
+            fill: COL_FILL, fillOpacity: 0.8, stroke: COL_BORDER
+        });
+        placeText(cols[i], Y_F, fVals[i].toString(), COL_TEXT, 15);
+    }
+
+    // ── Diagonal connectors (solid lines, behind Δf cells) ──
+    for (var i = 0; i < 4; i++) {
+        board.create('segment', [
+            [cols[i], Y_F - cellH / 2],
+            [dfCols[i], Y_DF + cellH / 2]
+        ], {
+            strokeColor: COL_LINE, strokeWidth: 1,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [
+            [cols[i + 1], Y_F - cellH / 2],
+            [dfCols[i], Y_DF + cellH / 2]
+        ], {
+            strokeColor: COL_LINE, strokeWidth: 1,
+            fixed: true, highlight: false
+        });
+    }
+
+    // ── Δf row: dashed cells with blue values ──
+    for (var i = 0; i < 4; i++) {
+        drawCell(dfCols[i], Y_DF, cellW, cellH, {
+            fill: 'none', fillOpacity: 0, stroke: COL_BORDER, dash: 3
+        });
+        placeText(dfCols[i], Y_DF, dfVals[i].toString(), COL_DIFF, 15);
+    }
+</script>
+</body>
+</html>
