@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scatter plot of (x, ln y)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<style>
+html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; position: relative; }
+.wrap { padding: 6px; }
+.board-card { background: white; border-radius: 6px; padding: 6px; }
+#tooltip { position: absolute; background: rgba(34, 34, 34, 0.92); color: #fff; padding: 4px 9px; border-radius: 4px; font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace; pointer-events: none; opacity: 0; transition: opacity 0.12s; z-index: 1000; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="board-card"><div id="board" style="width:520px; height:400px;"></div></div>
+</div>
+<div id="tooltip"></div>
+<script>
+var b = JXG.JSXGraph.initBoard('board', {
+    boundingbox: [-1.4, 6.4, 16, -0.9],
+    axis: false, showNavigation: false, showCopyright: false,
+    pan: { enabled: false }, zoom: { enabled: false }, keepAspectRatio: false
+});
+
+// Grid lines
+for (var x = 0; x <= 16; x++) {
+    b.create('line', [[x, 0], [x, 6]], { straightFirst: false, straightLast: false,
+        strokeColor: '#cccccc', strokeWidth: 0.5, fixed: true, highlight: false });
+}
+for (var y = 0; y <= 6; y++) {
+    b.create('line', [[0, y], [16, y]], { straightFirst: false, straightLast: false,
+        strokeColor: '#cccccc', strokeWidth: 0.5, fixed: true, highlight: false });
+}
+
+// Axes (bold)
+b.create('line', [[0, 0], [16, 0]], { straightFirst: false, straightLast: false,
+    strokeColor: '#000', strokeWidth: 1.5, fixed: true, highlight: false });
+b.create('line', [[0, 0], [0, 6]], { straightFirst: false, straightLast: false,
+    strokeColor: '#000', strokeWidth: 1.5, fixed: true, highlight: false });
+
+// Axis tick labels
+for (var x = 0; x <= 16; x += 2) {
+    b.create('text', [x, -0.25, String(x)], { fontSize: 12, color: '#000',
+        anchorX: 'middle', anchorY: 'top', fixed: true, highlight: false });
+}
+for (var y = 0; y <= 6; y++) {
+    b.create('text', [-0.25, y, String(y)], { fontSize: 12, color: '#000',
+        anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false });
+}
+
+// Axis labels
+b.create('text', [15.8, -0.6, 'x'], { fontSize: 14, color: '#000',
+    anchorX: 'right', anchorY: 'top', fixed: true, highlight: false,
+    cssStyle: 'font-style: italic; font-weight: 600;' });
+b.create('text', [-0.9, 6.2, 'ln y'], { fontSize: 14, color: '#000',
+    anchorX: 'left', anchorY: 'bottom', fixed: true, highlight: false,
+    cssStyle: 'font-style: italic; font-weight: 600;' });
+
+// Data points
+var pts = [
+    {x: 2, y: 0.74}, {x: 5, y: 1.84}, {x: 8, y: 2.94},
+    {x: 11, y: 4.04}, {x: 14, y: 5.14}
+];
+var tooltipEl = document.getElementById('tooltip');
+pts.forEach(function(p) {
+    var pt = b.create('point', [p.x, p.y], {
+        name: '', size: 4, fillColor: '#000', strokeColor: '#000',
+        fixed: true, highlight: true, showInfobox: false
+    });
+    pt.rendNode.style.cursor = 'pointer';
+    pt.on('over', function(e) {
+        tooltipEl.textContent = '(' + p.x + ', ' + p.y + ')';
+        tooltipEl.style.opacity = '1';
+    });
+    pt.on('move', function(e) {
+        var cx = e.clientX || (e.touches && e.touches[0] && e.touches[0].clientX) || 0;
+        var cy = e.clientY || (e.touches && e.touches[0] && e.touches[0].clientY) || 0;
+        tooltipEl.style.left = (cx + 12) + 'px';
+        tooltipEl.style.top = (cy - 28) + 'px';
+    });
+    pt.on('out', function() { tooltipEl.style.opacity = '0'; });
+});
+</script>
+</body>
+</html>
