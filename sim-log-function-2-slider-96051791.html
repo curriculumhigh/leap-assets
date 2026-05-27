@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logarithmic Function with a, b Sliders</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel { width: 210px; flex-shrink: 0; background: white; border-radius: 8px; padding: 16px; box-sizing: border-box; font-size: 13px; }
+        .panel-header { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #888; margin: 0 0 10px 0; }
+        .slider-block { margin-bottom: 14px; }
+        .slider-label { font-size: 14px; color: #2563EB; margin-bottom: 4px; min-height: 20px; }
+        .slider-block input[type="range"] { width: 100%; accent-color: #2563EB; cursor: pointer; }
+        .divider { height: 1px; background: #e5e7eb; margin: 14px 0 12px 0; }
+        .equation-label { font-size: 10px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+        .equation { font-size: 15px; color: #222222; min-height: 24px; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; min-width: 0; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="sim-layout">
+        <div class="left-panel">
+            <div class="panel-header">Parameters</div>
+            <div class="slider-block">
+                <div class="slider-label" id="label-a"></div>
+                <input type="range" id="slider-a" min="-3" max="3" step="0.5" value="1">
+            </div>
+            <div class="slider-block">
+                <div class="slider-label" id="label-b"></div>
+                <input type="range" id="slider-b" min="0.2" max="4" step="0.1" value="2">
+            </div>
+            <div class="divider"></div>
+            <div class="equation-label">Function</div>
+            <div class="equation" id="equation"></div>
+        </div>
+        <div class="board-wrapper"><div id="board"></div></div>
+    </div>
+</div>
+<script>
+    var COL_PRIMARY = '#222222', COL_AXIS = '#444444', COL_GRID = '#D1D5DB', COL_ASYMP = '#888888';
+    var aVal = 1, bVal = 2, prevA = 1, prevB = 2;
+    var board = JXG.JSXGraph.initBoard('board', {
+        boundingbox: [-1, 6, 8, -6], axis: true, keepAspectRatio: false,
+        showNavigation: false, showCopyright: false,
+        pan: { enabled: false }, zoom: { enabled: false },
+        defaultAxes: {
+            x: { strokeColor: COL_AXIS, strokeWidth: 1.2, lastArrow: { type: 2, size: 6 }, ticks: { strokeColor: COL_AXIS, label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 } },
+            y: { strokeColor: COL_AXIS, strokeWidth: 1.2, lastArrow: { type: 2, size: 6 }, ticks: { strokeColor: COL_AXIS, label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 } }
+        },
+        grid: { strokeColor: COL_GRID, strokeWidth: 0.4 }
+    });
+    board.create('text', [7.6, -0.45, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+    board.create('text', [0.18, 5.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+    board.create('line', [[0, -6], [0, 6]], { straightFirst: false, straightLast: false, strokeColor: COL_ASYMP, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+    var fFunc = function(x) { if (x <= 0) return NaN; return aVal * Math.log(x) / Math.log(bVal); };
+    board.create('functiongraph', [fFunc, 0.001, 8], { strokeColor: COL_PRIMARY, strokeWidth: 1.8, fixed: true, highlight: false });
+    function formatNum(v) { if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v)); return v.toFixed(1); }
+    function renderPanel() {
+        if (typeof katex === 'undefined') return;
+        katex.render('a = ' + formatNum(aVal), document.getElementById('label-a'), { throwOnError: false });
+        katex.render('b = ' + formatNum(bVal), document.getElementById('label-b'), { throwOnError: false });
+        katex.render('f(x) = ' + formatNum(aVal) + ' \\log_{' + formatNum(bVal) + '} x', document.getElementById('equation'), { throwOnError: false });
+    }
+    document.getElementById('slider-a').addEventListener('input', function(e) {
+        var newA = parseFloat(e.target.value);
+        if (Math.abs(newA) < 0.01) { newA = (prevA > 0) ? -0.5 : 0.5; e.target.value = newA; }
+        aVal = newA; prevA = newA; board.update(); renderPanel();
+    });
+    document.getElementById('slider-b').addEventListener('input', function(e) {
+        var newB = parseFloat(e.target.value);
+        if (Math.abs(newB - 1) < 0.01) { newB = (prevB > 1) ? 0.9 : 1.1; e.target.value = newB; }
+        bVal = newB; prevB = newB; board.update(); renderPanel();
+    });
+    if (typeof katex !== 'undefined') { renderPanel(); }
+    else { var pollKatex = setInterval(function() { if (typeof katex !== 'undefined') { clearInterval(pollKatex); renderPanel(); } }, 50); }
+</script>
+</body>
+</html>
