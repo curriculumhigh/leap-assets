@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power as vertical dilation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel { width: 220px; flex-shrink: 0; background: white; border-radius: 8px; padding: 16px; box-sizing: border-box; font-size: 13px; }
+        .panel-header { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #888; margin: 0 0 10px 0; }
+        .slider-block { margin-bottom: 14px; }
+        .slider-label { font-size: 14px; color: #2563EB; margin-bottom: 4px; min-height: 20px; }
+        .slider-block input[type="range"] { width: 100%; accent-color: #2563EB; cursor: pointer; }
+        .divider { height: 1px; background: #e5e7eb; margin: 14px 0 12px 0; }
+        .readout-label { font-size: 10px; color: #888; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.4px; }
+        .readout { font-size: 14px; color: #222222; min-height: 22px; margin-bottom: 10px; }
+        .readout-blue { color: #2563EB; }
+        .readout-red { color: #DC2626; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; min-width: 0; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="sim-layout">
+        <div class="left-panel">
+            <div class="panel-header">Parameter</div>
+            <div class="slider-block">
+                <div class="slider-label" id="label-k"></div>
+                <input type="range" id="slider-k" min="-3" max="3" step="0.25" value="2">
+            </div>
+            <div class="divider"></div>
+            <div class="readout-label">Power (blue)</div>
+            <div class="readout readout-blue" id="readout-g"></div>
+            <div class="readout-label">Equivalent dilation</div>
+            <div class="readout readout-red" id="readout-h"></div>
+        </div>
+        <div class="board-wrapper"><div id="board"></div></div>
+    </div>
+</div>
+<script>
+    var COL_F = '#888888';
+    var COL_G = '#2563EB';
+    var COL_H = '#DC2626';
+    var COL_AXIS = '#444444', COL_GRID = '#D1D5DB';
+
+    var kVal = 2;
+    var prevK = 2;
+
+    function log2(x) { return Math.log(x) / Math.log(2); }
+
+    var board = JXG.JSXGraph.initBoard('board', {
+        boundingbox: [-0.5, 8, 8, -6],
+        axis: true, keepAspectRatio: false,
+        showNavigation: false, showCopyright: false,
+        pan: { enabled: false }, zoom: { enabled: false },
+        defaultAxes: {
+            x: { strokeColor: COL_AXIS, strokeWidth: 1.2, lastArrow: { type: 2, size: 6 },
+                 ticks: { strokeColor: COL_AXIS, label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 } },
+            y: { strokeColor: COL_AXIS, strokeWidth: 1.2, lastArrow: { type: 2, size: 6 },
+                 ticks: { strokeColor: COL_AXIS, label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 2 } }
+        },
+        grid: { strokeColor: COL_GRID, strokeWidth: 0.4 }
+    });
+
+    board.create('text', [7.55, -0.5, '<i>x</i>'], { fontSize: 13, fixed: true, highlight: false });
+    board.create('text', [0.2, 7.5, '<i>y</i>'], { fontSize: 13, fixed: true, highlight: false });
+
+    board.create('line', [[0, -6], [0, 8]], {
+        straightFirst: false, straightLast: false, strokeColor: '#888888', strokeWidth: 1.0, dash: 2,
+        fixed: true, highlight: false
+    });
+
+    // f(x) = log_2(x) — gray reference
+    board.create('functiongraph', [function(x) { return log2(x); }, 0.01, 8], {
+        strokeColor: COL_F, strokeWidth: 1.5, fixed: true, highlight: false
+    });
+    // g(x) = log_2(x^k) — solid blue. For x>0, x^k is well-defined for any real k.
+    board.create('functiongraph', [function(x) { return log2(Math.pow(x, kVal)); }, 0.01, 8], {
+        strokeColor: COL_G, strokeWidth: 1.8, fixed: true, highlight: false
+    });
+    // h(x) = k * log_2(x) — dashed red, overlays g
+    board.create('functiongraph', [function(x) { return kVal * log2(x); }, 0.01, 8], {
+        strokeColor: COL_H, strokeWidth: 1.8, fixed: true, highlight: false, dash: 2
+    });
+
+    function formatNum(v) {
+        if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+        return v.toFixed(2);
+    }
+
+    function renderPanel() {
+        if (typeof katex === 'undefined') return;
+        katex.render('k = ' + formatNum(kVal),
+            document.getElementById('label-k'), { throwOnError: false });
+        katex.render('g(x) = \\log_2\\!\\left(x^{' + formatNum(kVal) + '}\\right)',
+            document.getElementById('readout-g'), { throwOnError: false });
+        katex.render('h(x) = ' + formatNum(kVal) + ' \\cdot \\log_2 x',
+            document.getElementById('readout-h'), { throwOnError: false });
+    }
+
+    document.getElementById('slider-k').addEventListener('input', function(e) {
+        var newK = parseFloat(e.target.value);
+        if (Math.abs(newK) < 0.05) {
+            // snap to nearest non-zero (k=0 makes g constant 0 — uninteresting)
+            newK = prevK > 0 ? 0.25 : -0.25;
+            e.target.value = newK;
+        }
+        kVal = newK;
+        prevK = newK;
+        board.update();
+        renderPanel();
+    });
+
+    if (typeof katex !== 'undefined') { renderPanel(); }
+    else {
+        var poll = setInterval(function() {
+            if (typeof katex !== 'undefined') { clearInterval(poll); renderPanel(); }
+        }, 50);
+    }
+</script>
+</body>
+</html>
