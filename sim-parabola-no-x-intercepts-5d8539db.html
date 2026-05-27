@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parabola — No X-Intercepts</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; }
+        .container { height: 100%; padding: 0; }
+        .board-wrapper { background: white; border-radius: 8px; height: 100%; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 5.5, 5, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Axes — manual for clean look with no ticks
+        var xAxis = board.create('arrow', [[-4.8, 0], [4.8, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        var yAxis = board.create('arrow', [[0, -2.2], [0, 5.2]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Axis labels
+        board.create('text', [4.5, -0.5, '<i>x</i>'], {
+            fontSize: 14, fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [0.35, 5.0, '<i>y</i>'], {
+            fontSize: 14, fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Parabola: y = 0.5x^2 + 1 (vertex at (0,1), above x-axis)
+        var curve = board.create('functiongraph', [
+            function(x) { return 0.5 * x * x + 1; }
+        ], {
+            strokeColor: '#2563EB',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false,
+            firstArrow: { type: 2, size: 6 },
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // Vertex marker — red point
+        board.create('point', [0, 1], {
+            name: '',
+            size: 4,
+            color: '#DC2626',
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
