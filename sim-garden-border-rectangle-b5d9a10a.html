@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garden with Border</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var iw = 10;
+        var ih = 8;
+        var bw = 1.6;
+
+        var ix = 3.5;
+        var iy = 2.5;
+
+        var ox = ix - bw;
+        var oy = iy - bw;
+        var oW = iw + 2 * bw;
+        var oH = ih + 2 * bw;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [ox - 5, oy + oH + 3, ox + oW + 3.5, oy - 5.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Outer rectangle ─────────────────────────────────────── */
+        var outerPts = [
+            board.create('point', [ox, oy], { visible: false, name: '' }),
+            board.create('point', [ox + oW, oy], { visible: false, name: '' }),
+            board.create('point', [ox + oW, oy + oH], { visible: false, name: '' }),
+            board.create('point', [ox, oy + oH], { visible: false, name: '' })
+        ];
+        board.create('polygon', outerPts, {
+            fillColor: '#D1D5DB', fillOpacity: 0.3,
+            borders: { strokeColor: '#222222', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        /* ── Inner rectangle (garden) ────────────────────────────── */
+        var innerPts = [
+            board.create('point', [ix, iy], { visible: false, name: '' }),
+            board.create('point', [ix + iw, iy], { visible: false, name: '' }),
+            board.create('point', [ix + iw, iy + ih], { visible: false, name: '' }),
+            board.create('point', [ix, iy + ih], { visible: false, name: '' })
+        ];
+        board.create('polygon', innerPts, {
+            fillColor: '#059669', fillOpacity: 0.10,
+            borders: { strokeColor: '#059669', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('text', [ix + iw / 2, iy + ih / 2, 'Garden'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 16, color: '#059669',
+            cssStyle: 'font-weight:600; font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;',
+            fixed: true, highlight: false
+        });
+
+        /* ── Inner dimension labels ──────────────────────────────── */
+        board.create('text', [ix + iw / 2, iy + ih + 0.5, '10 ft'], {
+            anchorX: 'middle', anchorY: 'bottom',
+            fontSize: 13, color: '#059669',
+            cssStyle: 'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif; font-weight:600;',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [ix + iw + 0.5, iy + ih / 2, '8 ft'], {
+            anchorX: 'left', anchorY: 'middle',
+            fontSize: 13, color: '#059669',
+            cssStyle: 'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif; font-weight:600;',
+            fixed: true, highlight: false
+        });
+
+        /* ── Border width dimension lines and labels ─────────────── */
+        var wColor = '#555555';
+
+        function dimLine(p1, p2, tickDir, tickLen, attrs) {
+            board.create('segment', [p1, p2], JXG.merge({
+                strokeColor: wColor, strokeWidth: 1.0,
+                fixed: true, highlight: false,
+                lastArrow: { type: 2, size: 4 },
+                firstArrow: { type: 2, size: 4 }
+            }, attrs || {}));
+            var dx = tickDir[0] * tickLen;
+            var dy = tickDir[1] * tickLen;
+            board.create('segment', [[p1[0] - dx, p1[1] - dy], [p1[0] + dx, p1[1] + dy]], {
+                strokeColor: wColor, strokeWidth: 0.8, fixed: true, highlight: false
+            });
+            board.create('segment', [[p2[0] - dx, p2[1] - dy], [p2[0] + dx, p2[1] + dy]], {
+                strokeColor: wColor, strokeWidth: 0.8, fixed: true, highlight: false
+            });
+        }
+
+        /* Right side w labels */
+        var wDimX = ix + iw + 2.2;
+        dimLine([wDimX, iy + ih], [wDimX, oy + oH], [1, 0], 0.35);
+        board.create('text', [wDimX + 0.6, iy + ih + bw / 2, '<i>w</i>'], {
+            anchorX: 'left', anchorY: 'middle',
+            fontSize: 14, color: wColor,
+            cssStyle: 'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif; font-weight:600;',
+            fixed: true, highlight: false
+        });
+
+        dimLine([wDimX, oy], [wDimX, iy], [1, 0], 0.35);
+        board.create('text', [wDimX + 0.6, oy + bw / 2, '<i>w</i>'], {
+            anchorX: 'left', anchorY: 'middle',
+            fontSize: 14, color: wColor,
+            cssStyle: 'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif; font-weight:600;',
+            fixed: true, highlight: false
+        });
+
+        /* Top side w labels */
+        var wDimY = iy + ih + 2.0;
+        dimLine([ox, wDimY], [ix, wDimY], [0, 1], 0.35);
+        board.create('text', [ox + bw / 2, wDimY + 0.6, '<i>w</i>'], {
+            anchorX: 'middle', anchorY: 'bottom',
+            fontSize: 14, color: wColor,
+            cssStyle: 'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif; font-weight:600;',
+            fixed: true, highlight: false
+        });
+
+        dimLine([ix + iw, wDimY], [ox + oW, wDimY], [0, 1], 0.35);
+        board.create('text', [ix + iw + bw / 2, wDimY + 0.6, '<i>w</i>'], {
+            anchorX: 'middle', anchorY: 'bottom',
+            fontSize: 14, color: wColor,
+            cssStyle: 'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif; font-weight:600;',
+            fixed: true, highlight: false
+        });
+
+        /* ── Outer dimension labels ──────────────────────────────── */
+        var outerColor = '#222222';
+
+        /* Bottom: (10 + 2w) ft */
+        var outerBottomY = oy - 2.5;
+        dimLine([ox, outerBottomY], [ox + oW, outerBottomY], [0, 1], 0.4, {
+            strokeColor: outerColor, strokeWidth: 1.2
+        });
+        board.create('text', [ox + oW / 2, outerBottomY - 0.7, '(10 + 2<i>w</i>) ft'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: outerColor,
+            cssStyle: 'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif; font-weight:600;',
+            fixed: true, highlight: false
+        });
+
+        /* Left: (8 + 2w) ft */
+        var outerLeftX = ox - 2.5;
+        dimLine([outerLeftX, oy], [outerLeftX, oy + oH], [1, 0], 0.4, {
+            strokeColor: outerColor, strokeWidth: 1.2
+        });
+        board.create('text', [outerLeftX - 0.5, oy + oH / 2,
+            '<div style="writing-mode:vertical-rl; transform:rotate(180deg); white-space:nowrap; font-weight:600; font-size:14px; font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif; color:#222222;">(8 + 2<i>w</i>) ft</div>'
+        ], {
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
