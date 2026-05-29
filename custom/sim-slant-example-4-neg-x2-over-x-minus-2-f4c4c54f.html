@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>{label}</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<style>html,body{margin:0;padding:0;background:transparent;overflow:hidden;font-family:-apple-system,sans-serif;}#board{background:white;}</style>
+</head><body>
+<div id="board" style="width:260px;height:220px;"></div>
+<script>
+var b = JXG.JSXGraph.initBoard('board', {
+    boundingbox: [-4, 6, 7, -10],
+    axis: true, showNavigation: false, showCopyright: false,
+    pan: { enabled: false }, zoom: { enabled: false }, keepAspectRatio: false
+});
+// Vertical asymptote (dashed red)
+b.create('line', [[2, -10], [2, 6]], {
+    strokeColor: '#dc2626', strokeWidth: 1.5, dash: 2,
+    straightFirst: false, straightLast: false, fixed: true, highlight: false
+});
+// Slant asymptote (dashed blue)
+b.create('functiongraph', [function(x) { return -1 * x + -2; }, -4, 7], {
+    strokeColor: '#2563eb', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+});
+// Rational function curve — plot two segments split by the VA
+var eps = 0.02;
+b.create('functiongraph', [function(x) { return (-x*x) / (x - 2); }, -4, 2 - eps], {
+    strokeColor: '#000', strokeWidth: 2, fixed: true, highlight: false
+});
+b.create('functiongraph', [function(x) { return (-x*x) / (x - 2); }, 2 + eps, 7], {
+    strokeColor: '#000', strokeWidth: 2, fixed: true, highlight: false
+});
+</script>
+</body></html>
