@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>{label}</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<style>html,body{margin:0;padding:0;background:transparent;overflow:hidden;font-family:-apple-system,sans-serif;}#board{background:white;}</style>
+</head><body>
+<div id="board" style="width:260px;height:220px;"></div>
+<script>
+var b = JXG.JSXGraph.initBoard('board', {
+    boundingbox: [-5, 12, 5, -12],
+    axis: true,
+    showNavigation: false, showCopyright: false,
+    pan: { enabled: false }, zoom: { enabled: false },
+    keepAspectRatio: false,
+    defaultAxes: {
+        x: { ticks: { minorTicks: 0, drawZero: true } },
+        y: { ticks: { minorTicks: 0, drawZero: true } }
+    }
+});
+
+// Vertical asymptotes (dashed red)
+b.create('line', [[-1, -12], [-1, 12]], { strokeColor: '#dc2626', strokeWidth: 1.5, dash: 2, straightFirst: false, straightLast: false, fixed: true, highlight: false });
+
+// Slant asymptote (dashed blue)
+b.create('functiongraph', [function(x) { return 2 * x + 0; }, -5, 5], {
+    strokeColor: '#2563eb', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+});
+
+// Rational function curve — plot split into pieces at each VA
+b.create('functiongraph', [function(x) { return (2 * x*x*x*x) / (x*x*x + 1); }, -5, -1.04], { strokeColor: '#000', strokeWidth: 2, fixed: true, highlight: false });
+b.create('functiongraph', [function(x) { return (2 * x*x*x*x) / (x*x*x + 1); }, -0.96, 5], { strokeColor: '#000', strokeWidth: 2, fixed: true, highlight: false });
+</script>
+</body></html>
