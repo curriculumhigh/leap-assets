@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rational Function Sign Reading</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+  html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  .container { margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+  .board-wrapper { position: relative; background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+  #board { width: 100%; height: 100%; }
+  .coord-tooltip {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 14px;
+    pointer-events: none;
+    display: none;
+    z-index: 100;
+    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="board-wrapper" id="board-wrapper">
+    <div id="board"></div>
+    <div class="coord-tooltip" id="tooltip"></div>
+  </div>
+</div>
+<script>
+  var COL_PRIMARY = '#222222';
+  var COL_VA = '#0EA5E9';
+
+  var board = JXG.JSXGraph.initBoard('board', {
+    boundingbox: [-6, 15, 6, -9],
+    axis: true,
+    grid: true,
+    keepAspectRatio: false,
+    showNavigation: false,
+    showCopyright: false,
+    pan: { enabled: false },
+    zoom: { enabled: false },
+    defaultAxes: {
+      x: {
+        strokeColor: '#444444', strokeWidth: 1.2,
+        lastArrow: { type: 2, size: 6 },
+        ticks: {
+          strokeColor: '#444444', label: { fontSize: 11 },
+          minorTicks: 0,
+          ticksDistance: 1
+        }
+      },
+      y: {
+        strokeColor: '#444444', strokeWidth: 1.2,
+        lastArrow: { type: 2, size: 6 },
+        ticks: {
+          strokeColor: '#444444', label: { fontSize: 11 },
+          minorTicks: 0,
+          ticksDistance: 2
+        }
+      }
+    },
+    grid: {
+      strokeColor: '#D1D5DB',
+      strokeWidth: 0.4
+    }
+  });
+
+  board.create('text', [5.5, -0.7, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+  board.create('text', [0.3, 14.3, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+  function f(x) {
+    return ((x - 1) * (x + 3)) / (x - 2);
+  }
+
+  var EPS = 0.02;
+
+  board.create('functiongraph', [f, -6, 2 - EPS], {
+    strokeColor: COL_PRIMARY, strokeWidth: 1.8, fixed: true, highlight: false
+  });
+  board.create('functiongraph', [f, 2 + EPS, 6], {
+    strokeColor: COL_PRIMARY, strokeWidth: 1.8, fixed: true, highlight: false
+  });
+
+  board.create('line', [[2, -9], [2, 15]], {
+    straightFirst: false, straightLast: false,
+    strokeColor: COL_VA, strokeWidth: 1.0, dash: 2,
+    fixed: true, highlight: false
+  });
+  board.create('text', [2.25, 14.0, 'x = 2'], {
+    fontSize: 13, color: COL_VA, useKatex: true, fixed: true, highlight: false
+  });
+
+  var tooltip = document.getElementById('tooltip');
+  var boardWrapper = document.getElementById('board-wrapper');
+
+  function showTooltip(pt, latexCoords, color) {
+    var latex = '\\color{' + color + '}{' + latexCoords + '}';
+    if (typeof katex !== 'undefined') {
+      katex.render(latex, tooltip, { throwOnError: false });
+    } else {
+      tooltip.textContent = latexCoords;
+    }
+    tooltip.style.borderColor = color;
+    tooltip.style.display = 'block';
+    var coords = new JXG.Coords(JXG.COORDS_BY_USER, [pt.X(), pt.Y()], board);
+    tooltip.style.left = (coords.scrCoords[1] + 14) + 'px';
+    tooltip.style.top = (coords.scrCoords[2] - 28) + 'px';
+  }
+
+  function hideTooltip() {
+    tooltip.style.display = 'none';
+  }
+
+  var zeroNeg3 = board.create('point', [-3, 0], {
+    name: '', size: 5,
+    fillColor: COL_PRIMARY, strokeColor: COL_PRIMARY, strokeWidth: 1.5,
+    fixed: true, showInfobox: false, highlight: true,
+    highlightFillColor: COL_PRIMARY, highlightStrokeColor: COL_PRIMARY
+  });
+  var zero1 = board.create('point', [1, 0], {
+    name: '', size: 5,
+    fillColor: COL_PRIMARY, strokeColor: COL_PRIMARY, strokeWidth: 1.5,
+    fixed: true, showInfobox: false, highlight: true,
+    highlightFillColor: COL_PRIMARY, highlightStrokeColor: COL_PRIMARY
+  });
+
+  zeroNeg3.on('over', function() { showTooltip(zeroNeg3, '\\left(-3,\\,0\\right)', COL_PRIMARY); });
+  zeroNeg3.on('out', function() { hideTooltip(); });
+  zero1.on('over', function() { showTooltip(zero1, '\\left(1,\\,0\\right)', COL_PRIMARY); });
+  zero1.on('out', function() { hideTooltip(); });
+</script>
+</body>
+</html>
