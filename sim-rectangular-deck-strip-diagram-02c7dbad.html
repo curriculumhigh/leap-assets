@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangular Deck with Strip</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 8.5, 14, -4.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: true
+        });
+
+        // Layout constants
+        var OX = 0;
+        var OY = 0;
+        var W = 9;     // deck length (longer side)
+        var H = 5;     // deck width (shorter side)
+        var S = 1.8;   // visual size of strip x
+
+        // ── Original deck (light blue fill) ─────────────────────────────
+        var deckPts = [
+            board.create('point', [OX, OY], {visible: false, fixed: true, name: ''}),
+            board.create('point', [OX + W, OY], {visible: false, fixed: true, name: ''}),
+            board.create('point', [OX + W, OY + H], {visible: false, fixed: true, name: ''}),
+            board.create('point', [OX, OY + H], {visible: false, fixed: true, name: ''})
+        ];
+        board.create('polygon', deckPts, {
+            fillColor: '#DBEAFE', fillOpacity: 0.6,
+            borders: { strokeColor: '#222222', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            fixed: true, hasInnerPoints: false
+        });
+
+        // ── Strip along bottom (longer side, width x) — light green ─────
+        var stripBottomPts = [
+            board.create('point', [OX, OY - S], {visible: false, fixed: true, name: ''}),
+            board.create('point', [OX + W, OY - S], {visible: false, fixed: true, name: ''}),
+            board.create('point', [OX + W, OY], {visible: false, fixed: true, name: ''}),
+            board.create('point', [OX, OY], {visible: false, fixed: true, name: ''})
+        ];
+        board.create('polygon', stripBottomPts, {
+            fillColor: '#D1FAE5', fillOpacity: 0.6,
+            borders: { strokeColor: '#222222', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            fixed: true, hasInnerPoints: false
+        });
+
+        // ── Strip along right side (shorter side, width x) — light green ─
+        var stripRightPts = [
+            board.create('point', [OX + W, OY], {visible: false, fixed: true, name: ''}),
+            board.create('point', [OX + W + S, OY], {visible: false, fixed: true, name: ''}),
+            board.create('point', [OX + W + S, OY + H], {visible: false, fixed: true, name: ''}),
+            board.create('point', [OX + W, OY + H], {visible: false, fixed: true, name: ''})
+        ];
+        board.create('polygon', stripRightPts, {
+            fillColor: '#D1FAE5', fillOpacity: 0.6,
+            borders: { strokeColor: '#222222', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            fixed: true, hasInnerPoints: false
+        });
+
+        // ── Corner square (x × x) — light green ────────────────────────
+        var cornerPts = [
+            board.create('point', [OX + W, OY - S], {visible: false, fixed: true, name: ''}),
+            board.create('point', [OX + W + S, OY - S], {visible: false, fixed: true, name: ''}),
+            board.create('point', [OX + W + S, OY], {visible: false, fixed: true, name: ''}),
+            board.create('point', [OX + W, OY], {visible: false, fixed: true, name: ''})
+        ];
+        board.create('polygon', cornerPts, {
+            fillColor: '#D1FAE5', fillOpacity: 0.6,
+            borders: { strokeColor: '#222222', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            fixed: true, hasInnerPoints: false
+        });
+
+        // ── Dashed lines separating original deck from strips ───────────
+        board.create('segment', [[OX, OY], [OX + W + S, OY]], {
+            strokeColor: '#888888', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [[OX + W, OY - S], [OX + W, OY + H]], {
+            strokeColor: '#888888', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Dimension labels ────────────────────────────────────────────
+
+        // "9" along the top of the original deck
+        board.create('text', [OX + W / 2, OY + H + 0.7, '9'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'bottom', fixed: true, highlight: false
+        });
+
+        // "5" along the left of the original deck
+        board.create('text', [OX - 0.8, OY + H / 2, '5'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // "x" label on the bottom strip (height of strip)
+        board.create('text', [OX - 0.8, OY - S / 2, 'x'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // "x" label on the right strip (width of strip, along top)
+        board.create('text', [OX + W + S / 2, OY + H + 0.7, 'x'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'bottom', fixed: true, highlight: false
+        });
+
+        // ── Dimension arrows for "9" (top) ──────────────────────────────
+        board.create('arrow', [[OX + 0.2, OY + H + 0.5], [OX + W / 2 - 0.5, OY + H + 0.5]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, firstArrow: { type: 2, size: 4 }
+        });
+        board.create('arrow', [[OX + W / 2 + 0.5, OY + H + 0.5], [OX + W - 0.2, OY + H + 0.5]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, firstArrow: { type: 2, size: 4 }
+        });
+
+        // ── Dimension arrows for "5" (left) ─────────────────────────────
+        board.create('arrow', [[OX - 0.5, OY + 0.2], [OX - 0.5, OY + H / 2 - 0.5]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, firstArrow: { type: 2, size: 4 }
+        });
+        board.create('arrow', [[OX - 0.5, OY + H / 2 + 0.5], [OX - 0.5, OY + H - 0.2]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, firstArrow: { type: 2, size: 4 }
+        });
+
+        // ── Dimension arrows for "x" (left, bottom strip) ───────────────
+        board.create('arrow', [[OX - 0.5, OY - S + 0.2], [OX - 0.5, OY - S / 2 - 0.3]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, firstArrow: { type: 2, size: 4 }
+        });
+        board.create('arrow', [[OX - 0.5, OY - S / 2 + 0.3], [OX - 0.5, OY - 0.2]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, firstArrow: { type: 2, size: 4 }
+        });
+
+        // ── Dimension arrows for "x" (top, right strip) ─────────────────
+        board.create('arrow', [[OX + W + 0.2, OY + H + 0.5], [OX + W + S / 2 - 0.2, OY + H + 0.5]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, firstArrow: { type: 2, size: 4 }
+        });
+        board.create('arrow', [[OX + W + S / 2 + 0.2, OY + H + 0.5], [OX + W + S - 0.2, OY + H + 0.5]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, firstArrow: { type: 2, size: 4 }
+        });
+    </script>
+</body>
+</html>
