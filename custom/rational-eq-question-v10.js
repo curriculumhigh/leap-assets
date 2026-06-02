@@ -4098,10 +4098,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     } else {
                         // Non-container: use per-input saved.correct flags
                         var hasInput = false;
+                        var allFilled = true;
                         row.inputs.forEach(function (inp, ii) {
                             var savedKey = sec.id + "-" + ri + "-" + ii;
                             if (savedInputs[savedKey] && (savedInputs[savedKey].latex || savedInputs[savedKey].value)) {
                                 hasInput = true;
+                            } else {
+                                allFilled = false;
                             }
                         });
                         if (hasInput) {
@@ -4112,7 +4115,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                     anyWrong = true;
                                 }
                             });
-                            if (anyWrong) {
+                            if (anyWrong || !allFilled) {
                                 $fb.html('<span style="color:#e8883a;font-size:16px;">&#10007;</span>');
                             } else {
                                 $fb.html('<span style="color:#3a9447;font-size:16px;">&#10003;</span>');
