@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polynomial Long Division</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { display: flex; align-items: center; justify-content: center; height: 100%; padding: 10px; box-sizing: border-box; }
+        .division-wrapper { background: white; border-radius: 8px; padding: 24px 20px; }
+        .top-row { display: flex; align-items: flex-end; margin-bottom: 0; }
+        .divisor-cell { padding-right: 2px; }
+        .paren-cell { font-size: 18px; color: #444; padding-right: 2px; font-weight: 500; }
+        .dividend-cell { position: relative; padding-top: 28px; }
+        .quotient-line { position: absolute; top: 0; left: 0; right: 0; white-space: nowrap; }
+        .division-bar { height: 2px; background: #444; margin-top: 4px; margin-bottom: 6px; }
+        .work-area { padding-left: 0; margin-left: 0; }
+        .step-row { white-space: nowrap; margin-bottom: 3px; min-height: 22px; line-height: 1.5; }
+        .subtraction-row { display: inline-block; border-bottom: 1.5px solid #444; padding-bottom: 3px; margin-bottom: 5px; }
+        .result-row { margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="division-wrapper">
+            <div class="top-row">
+                <div class="divisor-cell" id="divisor"></div>
+                <div class="paren-cell">)</div>
+                <div class="dividend-cell">
+                    <div class="quotient-line" id="quotient"></div>
+                    <div id="dividend"></div>
+                </div>
+            </div>
+            <div class="division-bar"></div>
+            <div class="work-area">
+                <div class="step-row subtraction-row" id="sub1"></div>
+                <div class="step-row result-row" id="result1"></div>
+                <div class="step-row subtraction-row" id="sub2"></div>
+                <div class="step-row result-row" id="remainder"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var COL_DIVISOR = '#2563EB';
+        var COL_Q1 = '#059669';
+        var COL_Q2 = '#D97706';
+        var COL_DARK = '#222222';
+
+        function render(id, latex) {
+            katex.render(latex, document.getElementById(id), { throwOnError: false, displayMode: false });
+        }
+
+        render('divisor', '\\color{' + COL_DIVISOR + '}{2x^3 - 3x^2 + 1}');
+        render('quotient', '\\color{' + COL_Q1 + '}{4x} \\color{' + COL_DARK + '}{+} \\color{' + COL_Q2 + '}{9}');
+        render('dividend', '8x^4 + 6x^3 - x^2 + 5');
+        render('sub1', '\\color{' + COL_Q1 + '}{-(8x^4 - 12x^3 + 4x)}');
+        render('result1', '18x^3 - x^2 - 4x + 5');
+        render('sub2', '\\color{' + COL_Q2 + '}{-(18x^3 - 27x^2 + 9)}');
+        render('remainder', '\\color{' + COL_DARK + '}{26x^2 - 4x - 4}');
+    </script>
+</body>
+</html>
