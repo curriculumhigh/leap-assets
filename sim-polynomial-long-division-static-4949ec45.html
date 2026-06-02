@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polynomial Long Division</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .division-box { background: white; border-radius: 8px; padding: 30px 24px; }
+        .division-layout { position: relative; display: inline-block; }
+        .top-section { display: flex; align-items: flex-end; margin-bottom: 0; }
+        .divisor { padding-right: 8px; padding-bottom: 6px; }
+        .dividend-area { position: relative; }
+        .quotient { padding-bottom: 6px; padding-left: 4px; }
+        .dividend { padding: 6px 4px 8px 8px; border-left: 2px solid #222222; border-top: 2px solid #222222; border-top-left-radius: 6px; }
+        .work-area { margin-left: auto; padding-left: 0; }
+        .step-row { padding: 3px 0 3px 8px; white-space: nowrap; }
+        .step-indent-0 { margin-left: 0; }
+        .step-indent-1 { margin-left: 36px; }
+        .step-indent-2 { margin-left: 72px; }
+        .subtraction-line { border-bottom: 1px solid #222222; margin: 2px 0; }
+        .sub-line-0 { margin-left: 0; width: 220px; }
+        .sub-line-1 { margin-left: 36px; width: 200px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="division-box">
+            <div class="division-layout">
+                <div class="top-section">
+                    <div class="divisor" id="divisor"></div>
+                    <div class="dividend-area">
+                        <div class="quotient" id="quotient"></div>
+                        <div class="dividend" id="dividend"></div>
+                    </div>
+                </div>
+                <div class="work-area">
+                    <div class="step-row step-indent-0" id="sub1"></div>
+                    <div class="subtraction-line sub-line-0"></div>
+                    <div class="step-row step-indent-1" id="result1"></div>
+                    <div class="step-row step-indent-1" id="sub2"></div>
+                    <div class="subtraction-line sub-line-1"></div>
+                    <div class="step-row step-indent-2" id="remainder"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function render(id, latex, color) {
+            var el = document.getElementById(id);
+            katex.render(latex, el, { throwOnError: false, displayMode: false });
+            if (color) { el.style.color = color; }
+        }
+        render('quotient', '3x + 5', '#2563EB');
+        render('divisor', '2x^2 - x + 3', '#222222');
+        render('dividend', '6x^3 + 7x^2 - 4x + 5', '#222222');
+        render('sub1', '\\mathllap{-}(6x^3 - 3x^2 + 9x)', '#555555');
+        render('result1', '10x^2 - 13x + 5', '#222222');
+        render('sub2', '\\mathllap{-}(10x^2 - 5x + 15)', '#555555');
+        render('remainder', '-8x - 10', '#D97706');
+    </script>
+</body>
+</html>
