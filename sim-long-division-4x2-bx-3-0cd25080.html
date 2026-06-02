@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Long Division: (4x² + bx − 3) ÷ (x + 2)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            width: 300px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .division-wrapper {
+            background: white;
+            border-radius: 8px;
+            padding: 20px 16px;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .division-layout {
+            display: grid;
+            grid-template-columns: auto auto;
+            grid-template-rows: auto auto auto auto auto auto;
+            row-gap: 0;
+            column-gap: 0;
+            align-items: end;
+        }
+        .divisor {
+            grid-column: 1;
+            grid-row: 2;
+            padding-right: 4px;
+            padding-bottom: 4px;
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+        .quotient {
+            grid-column: 2;
+            grid-row: 1;
+            border-bottom: 1.5px solid #222222;
+            padding-bottom: 4px;
+            padding-left: 6px;
+        }
+        .dividend {
+            grid-column: 2;
+            grid-row: 2;
+            border-left: 1.5px solid #222222;
+            border-top-left-radius: 8px;
+            padding: 5px 6px;
+        }
+        .step-row {
+            grid-column: 2;
+            padding: 3px 6px 3px 6px;
+        }
+        .subtract-row {
+            border-bottom: 1px solid #222222;
+            padding-bottom: 5px;
+        }
+        .result-row {
+            padding-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="division-wrapper">
+            <div class="division-layout">
+                <div class="quotient" id="quotient"></div>
+                <div class="divisor" id="divisor"></div>
+                <div class="dividend" id="dividend"></div>
+                <div class="step-row subtract-row" id="step1-sub"></div>
+                <div class="step-row result-row" id="step1-result"></div>
+                <div class="step-row subtract-row" id="step2-sub"></div>
+                <div class="step-row result-row" id="step2-result"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function render(id, latex) {
+            katex.render(latex, document.getElementById(id), {
+                throwOnError: false,
+                displayMode: false
+            });
+        }
+
+        render('quotient', '4x + (b - 8)');
+        render('divisor', 'x + 2');
+        render('dividend', '4x^2 + bx - 3');
+        render('step1-sub', '-(4x^2 + 8x)');
+        render('step1-result', '(b-8)x - 3');
+        render('step2-sub', '-\\!\\left((b-8)x + 2(b-8)\\right)');
+        render('step2-result', '13 - 2b');
+    </script>
+</body>
+</html>
