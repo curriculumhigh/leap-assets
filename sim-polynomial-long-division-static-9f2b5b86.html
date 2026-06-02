@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polynomial Long Division</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .division-box { background: white; border-radius: 8px; padding: 20px 16px; }
+        .division-grid { display: grid; grid-template-columns: auto auto; row-gap: 4px; align-items: baseline; }
+        .quotient-row { grid-column: 2; padding-bottom: 4px; margin-bottom: 2px; border-bottom: 2px solid #222222; }
+        .divisor-cell { padding-right: 6px; text-align: right; }
+        .work-cell { padding-left: 2px; }
+        .subtract-row { grid-column: 2; padding-left: 2px; }
+        .line-row { grid-column: 2; border-bottom: 1px solid #222222; height: 2px; margin: 2px 0; }
+        .remainder-row { grid-column: 2; padding-left: 2px; margin-top: 2px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="division-box">
+            <div class="division-grid">
+                <!-- Quotient -->
+                <div style="grid-column:1;"></div>
+                <div class="quotient-row" id="quotient"></div>
+                <!-- Dividend row -->
+                <div class="divisor-cell" id="divisor"></div>
+                <div class="work-cell" id="dividend"></div>
+                <!-- Subtract row 1 -->
+                <div style="grid-column:1;"></div>
+                <div class="subtract-row" id="sub1"></div>
+                <!-- Line 1 -->
+                <div style="grid-column:1;"></div>
+                <div class="line-row"></div>
+                <!-- Result 1 -->
+                <div style="grid-column:1;"></div>
+                <div class="work-cell" id="result1"></div>
+                <!-- Subtract row 2 -->
+                <div style="grid-column:1;"></div>
+                <div class="subtract-row" id="sub2"></div>
+                <!-- Line 2 -->
+                <div style="grid-column:1;"></div>
+                <div class="line-row"></div>
+                <!-- Remainder -->
+                <div style="grid-column:1;"></div>
+                <div class="remainder-row" id="remainder"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function render(id, latex, color) {
+            katex.render(latex, document.getElementById(id), { throwOnError: false, displayMode: false });
+            if (color) { document.getElementById(id).style.color = color; }
+        }
+        render('quotient', '3x + 5', '#2563EB');
+        render('divisor', '2x^2 - x + 3\;\Big)', '#222222');
+        render('dividend', '6x^3 + 7x^2 - 4x + 5', '#222222');
+        render('sub1', '-(6x^3 - 3x^2 + 9x)', '#222222');
+        render('result1', '10x^2 - 13x + 5', '#222222');
+        render('sub2', '-(10x^2 - 5x + 15)', '#222222');
+        render('remainder', '-8x - 10', '#D97706');
+    </script>
+</body>
+</html>
