@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph of y = x/2</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; width: 100%; height: 100%; background: transparent; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div id="board"></div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.2, 5.8, 10.2, -1.2],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2, lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: 'transparent', strokeWidth: 0, tickEndings: [0, 0], majorHeight: 0, minorHeight: 0, minorTicks: 0, ticksDistance: 2, label: { fontSize: 11, color: '#222222', offset: [0, -12] }, drawZero: false }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2, lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: 'transparent', strokeWidth: 0, tickEndings: [0, 0], majorHeight: 0, minorHeight: 0, minorTicks: 0, ticksDistance: 1, label: { fontSize: 11, color: '#222222', offset: [-12, 0] }, drawZero: false }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        board.create('text', [9.8, -0.55, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false, color: '#222222' });
+        board.create('text', [0.25, 5.4, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false, color: '#222222' });
+
+        board.create('functiongraph', [function(x) { return x / 2; }, -1, 10.2], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        var keyPts = [[0, 0], [4, 2], [6, 3], [8, 4]];
+        for (var i = 0; i < keyPts.length; i++) {
+            board.create('point', keyPts[i], {
+                name: '', size: 4, color: '#222222', fixed: true, highlight: false, showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
