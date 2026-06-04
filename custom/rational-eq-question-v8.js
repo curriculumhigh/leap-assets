@@ -98,6 +98,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         this.uid = "req-" + Math.random().toString(36).slice(2, 8);
         this._disabled = false;
         this._changedTimer = null;
+        this.attemptCounts = {};  // stepKey → consecutive incorrect count
+        this.lockedSteps = {};    // stepKey → true when locked after 2 failures
+        this.retryMode = {};      // stepKey → true when showing Retry button
 
         // Fire ready immediately so Learnosity doesn't time out
         init.events.trigger("ready");
@@ -105,6 +108,18 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Wire Learnosity's "Check Answer" button validate event
         var self = this;
         init.events.on("validate", function () { self.validateCurrentStep(); });
+
+        // Bind allowRetry on both init.events (widget-private bus) and the
+        // public facade. Outer worksheet code can only reach the facade —
+        // init.events is not exposed by Learnosity's Questions API.
+        var allowRetryHandler = function (data) {
+            if (data && data.stepKey) self._teacherAllowRetry(data.stepKey);
+        };
+        init.events.on("allowRetry", allowRetryHandler);
+        var facadeForEvents = init.getFacade && init.getFacade();
+        if (facadeForEvents && facadeForEvents.on) {
+            facadeForEvents.on("allowRetry", allowRetryHandler);
+        }
 
         loadDeps().then(function () {
             self.MQ = MathQuill.getInterface(2);
@@ -1452,9 +1467,16 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 var $tdE = $("<td colspan='3'></td>");
                 var $actions = $('<div class="req-actions"></div>');
 
-                var $btn = $('<button class="req-check-btn">Next</button>');
+                var $btn = $('<button class="req-check-btn">Check</button>');
                 (function (secRef, rowIdx) {
-                    $btn.on("click", function () { self.checkRowAnswer(secRef, rowIdx); });
+                    $btn.on("click", function () {
+                        var stepKey = secRef.id + "-" + rowIdx;
+                        if (self.retryMode[stepKey]) {
+                            self._handleRetry(secRef, rowIdx);
+                        } else {
+                            self.checkRowAnswer(secRef, rowIdx);
+                        }
+                    });
                 })(sec, ri);
                 $actions.append($btn);
 
@@ -1570,9 +1592,15 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var hasInputs = sec.inputs && sec.inputs.length > 0;
         if (hasInputs) {
             var $actions = $('<div class="req-actions" id="' + self.uid + '-actions-' + sec.id + '"></div>');
-            var $btn = $('<button class="req-check-btn">Next</button>');
+            var $btn = $('<button class="req-check-btn">Check</button>');
             (function (secRef) {
-                $btn.on("click", function () { self.checkSectionAnswer(secRef); });
+                $btn.on("click", function () {
+                    if (self.retryMode[secRef.id]) {
+                        self._handleSectionRetry(secRef);
+                    } else {
+                        self.checkSectionAnswer(secRef);
+                    }
+                });
             })(sec);
             $actions.append($btn);
             $actions.append($('<span class="req-fb" id="' + self.uid + '-fbpill-' + sec.id + '"></span>'));
@@ -2197,6 +2225,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             : '<span style="color:#e8883a;font-size:16px;">&#10007;</span>');
 
         if (allCorrect) {
+            delete self.attemptCounts[sec.id + "-" + rowIdx];
+            delete self.lockedSteps[sec.id + "-" + rowIdx];
+            delete self.retryMode[sec.id + "-" + rowIdx];
+
             self.completedRows[sec.id][rowIdx] = true;
 
             // Disable inputs
@@ -2234,6 +2266,22 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 self.completedSections[sec.id] = true;
                 var secIdx = self.getSectionIndex(sec.id);
                 self.unlockSection(secIdx + 1);
+            }
+        } else {
+            var stepKey = sec.id + "-" + rowIdx;
+            if (!self.attemptCounts[stepKey]) self.attemptCounts[stepKey] = 0;
+            self.attemptCounts[stepKey]++;
+
+            // Lock all inputs in this row
+            self._lockRowInputs(sec, rowIdx);
+
+            var $btn = self._findStepButton(sec.id, rowIdx);
+            if (self.attemptCounts[stepKey] >= 2) {
+                self.lockedSteps[stepKey] = true;
+                $btn.text("Retry").prop("disabled", true).addClass("req-retry-locked");
+            } else {
+                self.retryMode[stepKey] = true;
+                $btn.text("Retry");
             }
         }
 
@@ -2332,6 +2380,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         }
 
         if (allCorrect) {
+            delete self.attemptCounts[sec.id];
+            delete self.lockedSteps[sec.id];
+            delete self.retryMode[sec.id];
+
             self.completedSections[sec.id] = true;
 
             // Hide actions, show tick on right edge
@@ -2351,9 +2403,197 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
             var secIdx = self.getSectionIndex(sec.id);
             self.unlockSection(secIdx + 1);
+        } else {
+            if (!self.attemptCounts[sec.id]) self.attemptCounts[sec.id] = 0;
+            self.attemptCounts[sec.id]++;
+
+            self._lockSectionInputs(sec);
+
+            var $btnTWI = self._findSectionButton(sec.id);
+            if (self.attemptCounts[sec.id] >= 2) {
+                self.lockedSteps[sec.id] = true;
+                $btnTWI.text("Retry").prop("disabled", true).addClass("req-retry-locked");
+            } else {
+                self.retryMode[sec.id] = true;
+                $btnTWI.text("Retry");
+            }
         }
 
         self.events.trigger("changed", self.getResponse());
+    };
+
+    // ── Check/Retry helper methods ──
+
+    Question.prototype._findStepButton = function (secId, rowIdx) {
+        return $("#" + this.uid + "-rowbtn-" + secId + "-" + rowIdx + " .req-check-btn");
+    };
+
+    Question.prototype._findSectionButton = function (secId) {
+        return $("#" + this.uid + "-actions-" + secId + " .req-check-btn");
+    };
+
+    Question.prototype._lockRowInputs = function (sec, rowIdx) {
+        var self = this;
+        var row = sec.rows[rowIdx];
+        row.inputs.forEach(function (inp, ii) {
+            var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + rowIdx + "-" + ii);
+            if (slot) slot.style.pointerEvents = "none";
+        });
+    };
+
+    Question.prototype._unlockRowInputs = function (sec, rowIdx) {
+        var self = this;
+        var row = sec.rows[rowIdx];
+        row.inputs.forEach(function (inp, ii) {
+            var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + rowIdx + "-" + ii);
+            if (slot) slot.style.pointerEvents = "";
+        });
+    };
+
+    Question.prototype._lockSectionInputs = function (sec) {
+        var self = this;
+        if (sec.inputs) {
+            sec.inputs.forEach(function (inp, ii) {
+                if (inp.type === "dropdown") {
+                    var dd = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
+                    if (dd && dd.setDisabled) dd.setDisabled(true);
+                } else {
+                    var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ii);
+                    if (slot) slot.style.pointerEvents = "none";
+                }
+            });
+        }
+    };
+
+    Question.prototype._unlockSectionInputs = function (sec) {
+        var self = this;
+        if (sec.inputs) {
+            sec.inputs.forEach(function (inp, ii) {
+                if (inp.type === "dropdown") {
+                    var dd = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
+                    if (dd && dd.setDisabled) dd.setDisabled(false);
+                } else {
+                    var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ii);
+                    if (slot) slot.style.pointerEvents = "";
+                }
+            });
+        }
+    };
+
+    Question.prototype._clearRowFeedback = function (secId, rowIdx) {
+        var self = this;
+        $("#" + self.uid + "-fbpill-" + secId + "-" + rowIdx).attr("class", "req-fb").text("");
+        $("#" + self.uid + "-fb-" + secId + "-" + rowIdx).html("");
+        var sec = self.findSectionById(secId);
+        if (sec && sec.rows && sec.rows[rowIdx]) {
+            sec.rows[rowIdx].inputs.forEach(function (inp, ii) {
+                var slot = document.getElementById(self.uid + "-mq-" + secId + "-" + rowIdx + "-" + ii);
+                if (slot) $(slot).removeClass("correct incorrect");
+            });
+        }
+        // Hide comma-hint (but keep hint visible until step is completed correctly)
+        $("#" + self.uid + "-commahint-" + secId + "-" + rowIdx).hide();
+    };
+
+    Question.prototype._clearSectionFeedback = function (secId) {
+        var self = this;
+        var sec = self.findSectionById(secId);
+        $("#" + self.uid + "-fbpill-" + secId).attr("class", "req-fb").text("");
+        if (sec && sec.inputs) {
+            sec.inputs.forEach(function (inp, ii) {
+                if (inp.type === "dropdown") {
+                    var dd = document.getElementById(self.uid + "-dd-" + secId + "-" + ii);
+                    if (dd) $(dd).removeClass("correct incorrect");
+                } else {
+                    var slot = document.getElementById(self.uid + "-mq-" + secId + "-" + ii);
+                    if (slot) $(slot).removeClass("correct incorrect");
+                }
+            });
+        }
+        // Hide comma-hint (but keep hint visible until step is completed correctly)
+        $("#" + self.uid + "-commahint-" + secId).hide();
+    };
+
+    Question.prototype._handleRetry = function (sec, rowIdx) {
+        var self = this;
+        var stepKey = sec.id + "-" + rowIdx;
+        delete self.retryMode[stepKey];
+        self._clearRowFeedback(sec.id, rowIdx);
+        self._unlockRowInputs(sec, rowIdx);
+        var $btn = self._findStepButton(sec.id, rowIdx);
+        $btn.text("Check");
+    };
+
+    Question.prototype._handleSectionRetry = function (sec) {
+        var self = this;
+        delete self.retryMode[sec.id];
+        self._clearSectionFeedback(sec.id);
+        self._unlockSectionInputs(sec);
+        var $btn = self._findSectionButton(sec.id);
+        $btn.text("Check");
+    };
+
+    // ── Teacher "Allow Retry" ──
+
+    Question.prototype._teacherAllowRetry = function (stepKey) {
+        var self = this;
+        if (!self.lockedSteps[stepKey]) return;
+        delete self.lockedSteps[stepKey];
+        delete self.retryMode[stepKey];
+
+        var sec = self.findSectionById(stepKey);
+        if (sec) {
+            self._clearSectionFeedback(stepKey);
+            self._unlockSectionInputs(sec);
+            var $btn = self._findSectionButton(stepKey);
+            $btn.text("Check").prop("disabled", false).removeClass("req-retry-locked");
+        } else {
+            var lastDash = stepKey.lastIndexOf("-");
+            var secId = stepKey.substring(0, lastDash);
+            var rowIdx = parseInt(stepKey.substring(lastDash + 1));
+            sec = self.findSectionById(secId);
+            if (sec) {
+                self._clearRowFeedback(secId, rowIdx);
+                self._unlockRowInputs(sec, rowIdx);
+                var $btn2 = self._findStepButton(secId, rowIdx);
+                $btn2.text("Check").prop("disabled", false).removeClass("req-retry-locked");
+            }
+        }
+
+        self.events.trigger("changed", self.getResponse());
+    };
+
+    // ── Active step detection ──
+
+    Question.prototype._getActiveStep = function () {
+        var self = this;
+        var sections = self.question.sections || [];
+
+        for (var si = 0; si < sections.length; si++) {
+            var sec = sections[si];
+            if (sec.type === "text") continue;
+
+            if (sec.type === "equation-table") {
+                for (var ri = 0; ri < sec.rows.length; ri++) {
+                    var row = sec.rows[ri];
+                    if (!row.inputs || row.inputs.length === 0) continue;
+                    if (self.completedRows[sec.id] && self.completedRows[sec.id][ri]) continue;
+                    var stepKey = sec.id + "-" + ri;
+                    var status = self.lockedSteps[stepKey] ? "locked"
+                        : self.retryMode[stepKey] ? "incorrect"
+                        : "ready";
+                    return { key: stepKey, status: status };
+                }
+            } else {
+                if (self.completedSections[sec.id]) continue;
+                var status2 = self.lockedSteps[sec.id] ? "locked"
+                    : self.retryMode[sec.id] ? "incorrect"
+                    : "ready";
+                return { key: sec.id, status: status2 };
+            }
+        }
+
+        return { key: null, status: "complete" };
     };
 
     // ── Check Answer handler (fired by Learnosity's validate event) ──
@@ -2486,14 +2726,20 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             }
         }
 
+        var active = self._getActiveStep();
+
         return {
             value: completedSteps + "/" + totalSteps,
             type: "object",
             apiVersion: "v4",
+            activeStep: active.key,
+            stepStatus: active.status,
             inputs: self.collectAllInputValues(),
             completedSections: $.extend({}, self.completedSections),
             completedRows: serCompleted,
-            unlockedRows: serUnlocked
+            unlockedRows: serUnlocked,
+            attemptCounts: $.extend({}, self.attemptCounts),
+            lockedSteps: $.extend({}, self.lockedSteps)
         };
     };
 
@@ -2521,6 +2767,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 if (savedCompletedRows[sid][r]) self.completedRows[sid][r] = true;
             }
         }
+
+        // Restore attempt/lock state
+        self.attemptCounts = $.extend({}, response.attemptCounts || {});
+        self.lockedSteps = $.extend({}, response.lockedSteps || {});
 
         // Populate fields from saved inputs
         self.populateFieldsFromSaved(savedInputs);
@@ -2606,6 +2856,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     } else {
                         // First incomplete input row: unlock it (active) and stop
                         self.unlockedRows[sec.id][ri] = true;
+                        // If this step is locked, show disabled Retry button
+                        var rowStepKey = sec.id + "-" + ri;
+                        if (self.lockedSteps[rowStepKey]) {
+                            self._lockRowInputs(sec, ri);
+                            var $lockedBtn = self._findStepButton(sec.id, ri);
+                            $lockedBtn.text("Retry").prop("disabled", true).addClass("req-retry-locked");
+                        }
                         tableFullyCompleted = false;
                         break;
                     }
@@ -2640,6 +2897,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     continue; // Move to next section
                 } else {
                     // Not completed — stop cascade here (student continues from this point)
+                    // If this step is locked, show disabled Retry button
+                    if (self.lockedSteps[sec.id]) {
+                        self._lockSectionInputs(sec);
+                        var $lockedBtn = self._findSectionButton(sec.id);
+                        $lockedBtn.text("Retry").prop("disabled", true).addClass("req-retry-locked");
+                    }
                     self.events.trigger("changed", self.getResponse());
                     return;
                 }

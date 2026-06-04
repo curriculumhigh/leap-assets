@@ -2708,8 +2708,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 if (slot) $(slot).removeClass("correct incorrect");
             });
         }
-        // Hide hint and comma-hint
-        $("#" + self.uid + "-hint-" + secId + "-" + rowIdx).removeClass("visible");
+        // Hide comma-hint (but keep hint visible until step is completed correctly)
         $("#" + self.uid + "-commahint-" + secId + "-" + rowIdx).hide();
     };
 
@@ -2733,8 +2732,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 }
             });
         }
-        // Hide hint and comma-hint
-        $("#" + self.uid + "-hint-" + secId).removeClass("visible");
+        // Hide comma-hint (but keep hint visible until step is completed correctly)
         $("#" + self.uid + "-commahint-" + secId).hide();
     };
 

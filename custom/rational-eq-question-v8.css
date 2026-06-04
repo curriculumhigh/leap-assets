@@ -293,22 +293,36 @@
     vertical-align: middle;
 }
 
-/* ── Check button ── */
-.req-check-btn {
-    display: inline-block;
-    padding: 7px 20px;
+/* ── Check button (matches LEAP native style) ── */
+.req-widget .req-check-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    padding: 0 30px;
     font-size: 13px;
-    font-weight: 600;
-    color: #fff;
-    background: #1565C0;
-    border: none;
-    border-radius: 6px;
+    font-weight: 400;
+    color: #000 !important;
+    background: #ffb700 !important;
+    border: 1px solid #2b2b2b !important;
+    border-radius: 24px !important;
     cursor: pointer;
     transition: background 0.2s;
 }
 
-.req-check-btn:hover:not(:disabled) { background: #0d47a1; }
-.req-check-btn:disabled { background: #bbb; cursor: default; }
+.req-widget .req-check-btn:hover:not(:disabled) { background: #e6a500 !important; }
+.req-widget .req-check-btn:disabled { background: #bbb !important; border-color: #bbb !important; cursor: default; }
+
+/* Locked Retry button (after 2 consecutive failures) */
+.req-widget .req-check-btn.req-retry-locked {
+    background: #ccc !important;
+    color: #888 !important;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+.req-widget .req-check-btn.req-retry-locked:hover {
+    background: #ccc !important;
+}
 
 /* ── Actions row ── */
 .req-actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
