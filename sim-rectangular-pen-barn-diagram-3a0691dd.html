@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangular Pen Against Barn</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 11, 12, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Barn dimensions
+        var barnLeft = 1;
+        var barnRight = 9;
+        var barnTop = 9.5;
+        var barnBottom = 8.2;
+
+        // Pen dimensions
+        var penTop = barnBottom;
+        var penBottom = 2.5;
+        var penLeft = barnLeft + 0.5;
+        var penRight = barnRight - 0.5;
+
+        // ── Barn rectangle ──────────────────────────────────────────────
+        var bP1 = board.create('point', [barnLeft, barnTop], { visible: false, name: '' });
+        var bP2 = board.create('point', [barnRight, barnTop], { visible: false, name: '' });
+        var bP3 = board.create('point', [barnRight, barnBottom], { visible: false, name: '' });
+        var bP4 = board.create('point', [barnLeft, barnBottom], { visible: false, name: '' });
+
+        board.create('polygon', [bP1, bP2, bP3, bP4], {
+            fillColor: '#8B7355',
+            fillOpacity: 0.55,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true,
+            highlight: false,
+            hasInnerPoints: false
+        });
+
+        // Barn hatching lines (diagonal lines to indicate wall)
+        var hatchSpacing = 0.7;
+        for (var i = 0; i < 14; i++) {
+            var xStart = barnLeft + i * hatchSpacing - 1;
+            var xEnd = xStart + (barnTop - barnBottom);
+            var x1 = Math.max(barnLeft, xStart);
+            var y1 = (x1 === barnLeft) ? barnTop - (x1 - xStart) : barnTop;
+            var x2 = Math.min(barnRight, xEnd);
+            var y2 = (x2 === barnRight) ? barnBottom + (xEnd - x2) : barnBottom;
+            if (x1 < barnRight && x2 > barnLeft) {
+                board.create('segment', [[x1, y1], [x2, y2]], {
+                    strokeColor: '#6B5A45',
+                    strokeWidth: 0.8,
+                    fixed: true,
+                    highlight: false
+                });
+            }
+        }
+
+        // "Barn" label
+        board.create('text', [(barnLeft + barnRight) / 2, (barnTop + barnBottom) / 2, 'Barn'], {
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fontSize: 15,
+            color: '#ffffff',
+            cssStyle: 'font-weight:bold;',
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Pen (three fenced sides) ────────────────────────────────────
+        // Left side
+        board.create('segment', [[penLeft, penTop], [penLeft, penBottom]], {
+            strokeColor: '#222222',
+            strokeWidth: 2.0,
+            fixed: true,
+            highlight: false
+        });
+
+        // Right side
+        board.create('segment', [[penRight, penTop], [penRight, penBottom]], {
+            strokeColor: '#222222',
+            strokeWidth: 2.0,
+            fixed: true,
+            highlight: false
+        });
+
+        // Bottom side
+        board.create('segment', [[penLeft, penBottom], [penRight, penBottom]], {
+            strokeColor: '#222222',
+            strokeWidth: 2.0,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Dimension labels ────────────────────────────────────────────
+        // Left side label: x
+        board.create('text', [penLeft - 0.9, (penTop + penBottom) / 2, 'x'], {
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fontSize: 15,
+            color: '#222222',
+            useKatex: true,
+            fixed: true,
+            highlight: false
+        });
+
+        // Right side label: x
+        board.create('text', [penRight + 0.9, (penTop + penBottom) / 2, 'x'], {
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fontSize: 15,
+            color: '#222222',
+            useKatex: true,
+            fixed: true,
+            highlight: false
+        });
+
+        // Bottom side label: 150 - 2x
+        board.create('text', [(penLeft + penRight) / 2, penBottom - 1.0, '150 - 2x'], {
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fontSize: 15,
+            color: '#222222',
+            useKatex: true,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
