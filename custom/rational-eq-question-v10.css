@@ -450,6 +450,7 @@
 .req-fb { font-size: 13px; border-radius: 6px; padding: 4px 10px; display: none; }
 .req-fb.correct { display: inline-block; background: #e8f5e9; color: #3a9447; }
 .req-fb.wrong { display: inline-block; background: #fde8d8; color: #e8883a; }
+.req-fb.locked-msg { display: inline-block; background: #f0f0f0; color: #666; font-style: italic; }
 
 /* ── Done banner ── */
 .req-done {
