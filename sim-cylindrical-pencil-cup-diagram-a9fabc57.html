@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cylindrical Pencil Cup Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 14, 24, -3],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var TAN_FILL = '#C8A87C';
+        var TAN_DARK = '#A58B5E';
+        var OUTLINE = '#555555';
+        var LABEL_COL = '#222222';
+
+        // ============================================================
+        // 3D PERSPECTIVE CYLINDER (left, centered around x=3)
+        // ============================================================
+        var cx3d = 3, cy3d = 6.5;
+        var rOuter3d = 2.0;
+        var cupH3d = 6.0;
+        var eRatio = 0.28;
+
+        var botY = cy3d - cupH3d / 2;
+        var topY = cy3d + cupH3d / 2;
+
+        // Bottom ellipse FILL
+        var botFillPts = [];
+        for (var i = 0; i <= 60; i++) {
+            var t = 2 * Math.PI * i / 60;
+            botFillPts.push([cx3d + rOuter3d * Math.cos(t), botY + rOuter3d * eRatio * Math.sin(t)]);
+        }
+        board.create('polygon', botFillPts, {
+            fillColor: TAN_FILL, fillOpacity: 0.9,
+            borders: { strokeColor: 'none', strokeWidth: 0 },
+            vertices: { visible: false }, fixed: true, highlight: false
+        });
+
+        // Body fill
+        board.create('polygon', [
+            [cx3d - rOuter3d, botY],
+            [cx3d + rOuter3d, botY],
+            [cx3d + rOuter3d, topY],
+            [cx3d - rOuter3d, topY]
+        ], {
+            fillColor: TAN_FILL, fillOpacity: 0.85,
+            borders: { strokeColor: 'none', strokeWidth: 0 },
+            vertices: { visible: false }, fixed: true, highlight: false
+        });
+
+        // Bottom ellipse outline
+        board.create('curve', [
+            function(t) { return cx3d + rOuter3d * Math.cos(t); },
+            function(t) { return botY + rOuter3d * eRatio * Math.sin(t); },
+            0, 2 * Math.PI
+        ], {
+            strokeColor: OUTLINE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Side walls
+        board.create('segment', [[cx3d - rOuter3d, botY], [cx3d - rOuter3d, topY]], {
+            strokeColor: OUTLINE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[cx3d + rOuter3d, botY], [cx3d + rOuter3d, topY]], {
+            strokeColor: OUTLINE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Top outer ellipse fill
+        var topOuterPts = [];
+        for (var i = 0; i <= 60; i++) {
+            var t = 2 * Math.PI * i / 60;
+            topOuterPts.push([cx3d + rOuter3d * Math.cos(t), topY + rOuter3d * eRatio * Math.sin(t)]);
+        }
+        board.create('polygon', topOuterPts, {
+            fillColor: TAN_FILL, fillOpacity: 0.9,
+            borders: { strokeColor: 'none', strokeWidth: 0 },
+            vertices: { visible: false }, fixed: true, highlight: false
+        });
+
+        // Top outer ellipse outline
+        board.create('curve', [
+            function(t) { return cx3d + rOuter3d * Math.cos(t); },
+            function(t) { return topY + rOuter3d * eRatio * Math.sin(t); },
+            0, 2 * Math.PI
+        ], {
+            strokeColor: OUTLINE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Top inner ellipse fill
+        var rInner3d = 1.4;
+        var topInnerPts = [];
+        for (var i = 0; i <= 60; i++) {
+            var t = 2 * Math.PI * i / 60;
+            topInnerPts.push([cx3d + rInner3d * Math.cos(t), topY + rInner3d * eRatio * Math.sin(t)]);
+        }
+        board.create('polygon', topInnerPts, {
+            fillColor: '#7A6545', fillOpacity: 0.5,
+            borders: { strokeColor: 'none', strokeWidth: 0 },
+            vertices: { visible: false }, fixed: true, highlight: false
+        });
+
+        // Top inner ellipse outline
+        board.create('curve', [
+            function(t) { return cx3d + rInner3d * Math.cos(t); },
+            function(t) { return topY + rInner3d * eRatio * Math.sin(t); },
+            0, 2 * Math.PI
+        ], {
+            strokeColor: OUTLINE, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ============================================================
+        // TOP VIEW (center, around x=10.5)
+        // ============================================================
+        var cxTop = 10.5, cyTop = 6.5;
+        var rOuterTop = 2.3;
+        var rInnerTop = 1.6;
+
+        // Outer circle
+        board.create('circle', [[cxTop, cyTop], rOuterTop], {
+            strokeColor: OUTLINE, strokeWidth: 1.5,
+            fillColor: TAN_FILL, fillOpacity: 0.85,
+            fixed: true, highlight: false
+        });
+
+        // Inner circle (hole)
+        board.create('circle', [[cxTop, cyTop], rInnerTop], {
+            strokeColor: OUTLINE, strokeWidth: 1.2,
+            fillColor: '#7A6545', fillOpacity: 0.4,
+            fixed: true, highlight: false
+        });
+
+        // Center dot
+        board.create('point', [cxTop, cyTop], {
+            name: '', size: 1.5, color: OUTLINE, fixed: true, highlight: false
+        });
+
+        // Radius line from center going upper-left
+        var angR = Math.PI * 0.7;
+        var rEndX = cxTop + rInnerTop * Math.cos(angR);
+        var rEndY = cyTop + rInnerTop * Math.sin(angR);
+        board.create('segment', [[cxTop, cyTop], [rEndX, rEndY]], {
+            strokeColor: OUTLINE, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        // "3 cm" label along radius
+        board.create('text', [(cxTop + rEndX) / 2 + 0.15, (cyTop + rEndY) / 2 - 0.4, '3 cm'], {
+            fontSize: 11, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Wall thickness dimension (right side)
+        board.create('segment', [[cxTop + rInnerTop, cyTop], [cxTop + rOuterTop, cyTop]], {
+            strokeColor: LABEL_COL, strokeWidth: 1.0,
+            firstArrow: { type: 2, size: 3 },
+            lastArrow: { type: 2, size: 3 },
+            fixed: true, highlight: false
+        });
+
+        // "x cm" label shifted right
+        board.create('text', [cxTop + (rInnerTop + rOuterTop) / 2 + 0.25, cyTop - 0.55, '<i>x</i> cm'], {
+            fontSize: 11, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // "Top view" label
+        board.create('text', [cxTop, cyTop - 3.8, '<b>Top view</b>'], {
+            fontSize: 12, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // ============================================================
+        // SIDE VIEW / CROSS-SECTION (right, around x=18.5)
+        // ============================================================
+        var cxSide = 18.5, cySide = 6.5;
+        var sideW = 4.6;
+        var sideH = 6.5;
+        var wallT = 0.55;
+
+        var sLeft = cxSide - sideW / 2;
+        var sRight = cxSide + sideW / 2;
+        var sBot = cySide - sideH / 2;
+        var sTop = cySide + sideH / 2;
+
+        // Outer rectangle
+        board.create('polygon', [
+            [sLeft, sBot], [sRight, sBot], [sRight, sTop], [sLeft, sTop]
+        ], {
+            fillColor: TAN_FILL, fillOpacity: 0.85,
+            borders: { strokeColor: OUTLINE, strokeWidth: 1.5 },
+            vertices: { visible: false }, fixed: true, highlight: false
+        });
+
+        // Inner rectangle (hollow)
+        var iLeft = sLeft + wallT;
+        var iRight = sRight - wallT;
+        var iBot = sBot + wallT;
+        var iTop = sTop;
+
+        board.create('polygon', [
+            [iLeft, iBot], [iRight, iBot], [iRight, iTop], [iLeft, iTop]
+        ], {
+            fillColor: '#FFFFFF', fillOpacity: 1.0,
+            borders: { strokeColor: OUTLINE, strokeWidth: 1.0 },
+            vertices: { visible: false }, fixed: true, highlight: false
+        });
+
+        // Center dashed vertical line
+        board.create('segment', [[cxSide, sBot], [cxSide, sTop]], {
+            strokeColor: '#999999', strokeWidth: 0.8, dash: 2, fixed: true, highlight: false
+        });
+
+        // Small dot at top center
+        board.create('point', [cxSide, sTop], {
+            name: '', size: 1.5, color: OUTLINE, fixed: true, highlight: false
+        });
+
+        // --- DIMENSIONS ---
+
+        // Height dimension (right side): "8 cm"
+        var dimRX = sRight + 1.0;
+        board.create('segment', [[dimRX, sBot], [dimRX, sTop]], {
+            strokeColor: LABEL_COL, strokeWidth: 1.0,
+            firstArrow: { type: 2, size: 4 },
+            lastArrow: { type: 2, size: 4 },
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[sRight + 0.4, sBot], [dimRX + 0.3, sBot]], {
+            strokeColor: LABEL_COL, strokeWidth: 0.7, fixed: true, highlight: false
+        });
+        board.create('segment', [[sRight + 0.4, sTop], [dimRX + 0.3, sTop]], {
+            strokeColor: LABEL_COL, strokeWidth: 0.7, fixed: true, highlight: false
+        });
+        board.create('text', [dimRX + 0.5, cySide, '8 cm'], {
+            fontSize: 11, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'left', anchorY: 'middle'
+        });
+
+        // Top dimensions: "3 cm" and "x cm"
+        var dimTopY1 = sTop + 1.4;
+
+        // "3 cm" from center to inner wall
+        board.create('segment', [[cxSide, dimTopY1], [iRight, dimTopY1]], {
+            strokeColor: LABEL_COL, strokeWidth: 1.0,
+            firstArrow: { type: 2, size: 3 },
+            lastArrow: { type: 2, size: 3 },
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[cxSide, sTop + 0.4], [cxSide, dimTopY1 + 0.3]], {
+            strokeColor: LABEL_COL, strokeWidth: 0.7, fixed: true, highlight: false
+        });
+        board.create('segment', [[iRight, sTop + 0.4], [iRight, dimTopY1 + 0.3]], {
+            strokeColor: LABEL_COL, strokeWidth: 0.7, fixed: true, highlight: false
+        });
+        board.create('text', [(cxSide + iRight) / 2, dimTopY1 + 0.5, '3 cm'], {
+            fontSize: 11, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // "x cm" from inner wall to outer wall - shifted right
+        board.create('segment', [[iRight, dimTopY1], [sRight, dimTopY1]], {
+            strokeColor: LABEL_COL, strokeWidth: 1.0,
+            firstArrow: { type: 2, size: 3 },
+            lastArrow: { type: 2, size: 3 },
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[sRight, sTop + 0.4], [sRight, dimTopY1 + 0.3]], {
+            strokeColor: LABEL_COL, strokeWidth: 0.7, fixed: true, highlight: false
+        });
+        board.create('text', [(iRight + sRight) / 2 + 0.3, dimTopY1 + 0.5, '<i>x</i> cm'], {
+            fontSize: 11, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Bottom dimension: "x cm" (left wall thickness)
+        var dimBotY = sBot - 0.8;
+        board.create('segment', [[sLeft, dimBotY], [iLeft, dimBotY]], {
+            strokeColor: LABEL_COL, strokeWidth: 1.0,
+            firstArrow: { type: 2, size: 3 },
+            lastArrow: { type: 2, size: 3 },
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[sLeft, sBot - 0.4], [sLeft, dimBotY - 0.3]], {
+            strokeColor: LABEL_COL, strokeWidth: 0.7, fixed: true, highlight: false
+        });
+        board.create('segment', [[iLeft, sBot - 0.4], [iLeft, dimBotY - 0.3]], {
+            strokeColor: LABEL_COL, strokeWidth: 0.7, fixed: true, highlight: false
+        });
+        board.create('text', [(sLeft + iLeft) / 2, dimBotY - 0.5, '<i>x</i> cm'], {
+            fontSize: 11, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Left side dimension: "x cm" (base thickness)
+        var dimLX = sLeft - 1.0;
+        board.create('segment', [[dimLX, sBot], [dimLX, iBot]], {
+            strokeColor: LABEL_COL, strokeWidth: 1.0,
+            firstArrow: { type: 2, size: 3 },
+            lastArrow: { type: 2, size: 3 },
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[sLeft - 0.4, sBot], [dimLX - 0.3, sBot]], {
+            strokeColor: LABEL_COL, strokeWidth: 0.7, fixed: true, highlight: false
+        });
+        board.create('segment', [[sLeft - 0.4, iBot], [dimLX - 0.3, iBot]], {
+            strokeColor: LABEL_COL, strokeWidth: 0.7, fixed: true, highlight: false
+        });
+        board.create('text', [dimLX - 0.4, (sBot + iBot) / 2, '<i>x</i> cm'], {
+            fontSize: 11, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'right', anchorY: 'middle'
+        });
+
+        // "Side view" label
+        board.create('text', [cxSide, sBot - 2.0, '<b>Side view</b>'], {
+            fontSize: 12, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+    </script>
+</body>
+</html>
