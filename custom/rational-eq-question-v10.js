@@ -1765,7 +1765,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             })(sec);
             $actions.append($btn);
             $actions.append($('<span class="req-fb" id="' + self.uid + '-fbpill-' + sec.id + '"></span>'));
-            // Comma hint — shown next to "Try again" if any input expects comma-separated values (FM only, not DN)
+            // Comma hint — shown next to "Not quite right!" if any input expects comma-separated values (FM only, not DN)
             var hasCommaAnswer = (sec.inputs || []).some(function (inp) {
                 return inp.answer && inp.answer.indexOf(",") >= 0 && inp.type !== "dropdown" && !inp.options;
             });
@@ -2374,7 +2374,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         // Feedback pill
         var $fbPill = $("#" + self.uid + "-fbpill-" + sec.id + "-" + rowIdx);
-        $fbPill.attr("class", "req-fb " + (allCorrect ? "correct" : "wrong")).text(allCorrect ? "Correct!" : "Try again");
+        $fbPill.attr("class", "req-fb " + (allCorrect ? "correct" : "wrong")).text(allCorrect ? "Correct!" : "Not quite right!");
 
         // Comma hint
         var $commaHintRow = $("#" + self.uid + "-commahint-" + sec.id + "-" + rowIdx);
@@ -2508,7 +2508,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
             // Feedback pill + hint
             var $fbPill = $("#" + self.uid + "-fbpill-" + sec.id);
-            $fbPill.attr("class", "req-fb " + (allCorrect ? "correct" : "wrong")).text(allCorrect ? "Correct!" : "Try again");
+            $fbPill.attr("class", "req-fb " + (allCorrect ? "correct" : "wrong")).text(allCorrect ? "Correct!" : "Not quite right!");
             var $hintBox = $("#" + self.uid + "-hint-" + sec.id);
             if ($hintBox.length) {
                 if (allCorrect) $hintBox.removeClass("visible"); else $hintBox.addClass("visible");
@@ -2612,7 +2612,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         }
 
         var $fbPill = $("#" + self.uid + "-fbpill-" + sec.id);
-        $fbPill.attr("class", "req-fb " + (allCorrect ? "correct" : "wrong")).text(allCorrect ? "Correct!" : "Try again");
+        $fbPill.attr("class", "req-fb " + (allCorrect ? "correct" : "wrong")).text(allCorrect ? "Correct!" : "Not quite right!");
 
         // Comma hint: show on wrong answer, hide on correct
         var $commaHint = $("#" + self.uid + "-commahint-" + sec.id);

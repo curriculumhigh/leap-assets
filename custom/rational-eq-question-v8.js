@@ -2202,7 +2202,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         // Feedback pill
         var $fbPill = $("#" + self.uid + "-fbpill-" + sec.id + "-" + rowIdx);
-        $fbPill.attr("class", "req-fb " + (allCorrect ? "correct" : "wrong")).text(allCorrect ? "Correct!" : "Try again");
+        $fbPill.attr("class", "req-fb " + (allCorrect ? "correct" : "wrong")).text(allCorrect ? "Correct!" : "Not quite right!");
 
         // Comma hint
         var $commaHintRow = $("#" + self.uid + "-commahint-" + sec.id + "-" + rowIdx);
@@ -2363,7 +2363,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         }
 
         var $fbPill = $("#" + self.uid + "-fbpill-" + sec.id);
-        $fbPill.attr("class", "req-fb " + (allCorrect ? "correct" : "wrong")).text(allCorrect ? "Correct!" : "Try again");
+        $fbPill.attr("class", "req-fb " + (allCorrect ? "correct" : "wrong")).text(allCorrect ? "Correct!" : "Not quite right!");
 
         // Comma hint
         var $commaHint = $("#" + self.uid + "-commahint-" + sec.id);
