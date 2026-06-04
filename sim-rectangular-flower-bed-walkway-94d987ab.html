@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangular Flower Bed with Walkway</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 11, 20, -5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: true
+        });
+
+        // Dimensions
+        var innerW = 16;
+        var innerH = 9;
+        var walkway = 2.2; // visual width for "x"
+
+        // Center the figure
+        var cx = innerW / 2;
+        var cy = innerH / 2;
+
+        // Outer rectangle corners
+        var ox1 = -walkway;
+        var oy1 = -walkway;
+        var ox2 = innerW + walkway;
+        var oy2 = innerH + walkway;
+
+        // Inner rectangle corners
+        var ix1 = 0;
+        var iy1 = 0;
+        var ix2 = innerW;
+        var iy2 = innerH;
+
+        // ── Outer rectangle (walkway) ───────────────────────────────────
+        var outerPts = [
+            board.create('point', [ox1, oy1], { visible: false, name: '' }),
+            board.create('point', [ox2, oy1], { visible: false, name: '' }),
+            board.create('point', [ox2, oy2], { visible: false, name: '' }),
+            board.create('point', [ox1, oy2], { visible: false, name: '' })
+        ];
+        board.create('polygon', outerPts, {
+            fillColor: '#D1D5DB', fillOpacity: 0.5,
+            borders: { strokeColor: '#555555', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── Inner rectangle (flower bed) ────────────────────────────────
+        var innerPts = [
+            board.create('point', [ix1, iy1], { visible: false, name: '' }),
+            board.create('point', [ix2, iy1], { visible: false, name: '' }),
+            board.create('point', [ix2, iy2], { visible: false, name: '' }),
+            board.create('point', [ix1, iy2], { visible: false, name: '' })
+        ];
+        board.create('polygon', innerPts, {
+            fillColor: '#059669', fillOpacity: 0.2,
+            borders: { strokeColor: '#059669', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── Dimension labels: Inner rectangle ───────────────────────────
+
+        // "16" along the top of inner rectangle — shifted right to avoid overlap with "x"
+        board.create('text', [cx + 2, iy2 + 0.6, '16'], {
+            anchorX: 'middle', anchorY: 'bottom',
+            fontSize: 14, color: '#059669', fixed: true, highlight: false,
+            cssStyle: 'font-weight:bold'
+        });
+
+        // "9" along the right side of inner rectangle
+        board.create('text', [ix2 + 0.5, cy, '9'], {
+            anchorX: 'left', anchorY: 'middle',
+            fontSize: 14, color: '#059669', fixed: true, highlight: false,
+            cssStyle: 'font-weight:bold'
+        });
+
+        // ── Dimension labels: Walkway width "x" ────────────────────────
+
+        // Top walkway "x"
+        var topMidY = (iy2 + oy2) / 2;
+        board.create('segment', [[cx - 1.5, iy2], [cx - 1.5, oy2]], {
+            strokeColor: '#222222', strokeWidth: 0.8, dash: 2, fixed: true, highlight: false
+        });
+        board.create('text', [cx - 1.0, topMidY, 'x'], {
+            anchorX: 'left', anchorY: 'middle',
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        // Bottom walkway "x"
+        var botMidY = (oy1 + iy1) / 2;
+        board.create('segment', [[cx - 1.5, iy1], [cx - 1.5, oy1]], {
+            strokeColor: '#222222', strokeWidth: 0.8, dash: 2, fixed: true, highlight: false
+        });
+        board.create('text', [cx - 1.0, botMidY, 'x'], {
+            anchorX: 'left', anchorY: 'middle',
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        // Left walkway "x"
+        var leftMidX = (ox1 + ix1) / 2;
+        board.create('segment', [[ix1, cy + 1.5], [ox1, cy + 1.5]], {
+            strokeColor: '#222222', strokeWidth: 0.8, dash: 2, fixed: true, highlight: false
+        });
+        board.create('text', [leftMidX, cy + 2.1, 'x'], {
+            anchorX: 'middle', anchorY: 'bottom',
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        // Right walkway "x"
+        var rightMidX = (ix2 + ox2) / 2;
+        board.create('segment', [[ix2, cy + 1.5], [ox2, cy + 1.5]], {
+            strokeColor: '#222222', strokeWidth: 0.8, dash: 2, fixed: true, highlight: false
+        });
+        board.create('text', [rightMidX, cy + 2.1, 'x'], {
+            anchorX: 'middle', anchorY: 'bottom',
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        // ── "Flower Bed" label in center ────────────────────────────────
+        board.create('text', [cx, cy, 'Flower Bed'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#059669', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        // "Walkway" label in walkway area
+        board.create('text', [cx, oy2 - 0.6, 'Walkway'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 11, color: '#555555', fixed: true, highlight: false,
+            cssStyle: 'font-style:italic'
+        });
+
+    </script>
+</body>
+</html>
