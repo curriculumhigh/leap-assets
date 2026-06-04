@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trapezoid Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 8.5, 10, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Trapezoid vertices (right trapezoid, left side vertical)
+        var A = board.create('point', [1, 1], { visible: false, fixed: true, name: '' });
+        var B = board.create('point', [8, 1], { visible: false, fixed: true, name: '' });
+        var C = board.create('point', [6.5, 6], { visible: false, fixed: true, name: '' });
+        var D = board.create('point', [1, 6], { visible: false, fixed: true, name: '' });
+
+        // Trapezoid polygon
+        board.create('polygon', [A, B, C, D], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Right-angle marker at bottom-left (vertex A)
+        var sqSize = 0.45;
+        var sq1 = board.create('point', [1 + sqSize, 1], { visible: false, fixed: true, name: '' });
+        var sq2 = board.create('point', [1 + sqSize, 1 + sqSize], { visible: false, fixed: true, name: '' });
+        var sq3 = board.create('point', [1, 1 + sqSize], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [sq1, sq2], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [sq2, sq3], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // Labels
+        // Bottom base: x + 6 (centered below)
+        board.create('text', [4.5, 0.2, 'x + 6'], { useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+
+        // Top base: x + 2 (centered above)
+        board.create('text', [3.75, 6.8, 'x + 2'], { useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+
+        // Height (left side): x (to the left)
+        board.create('text', [0.2, 3.5, 'x'], { useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+    </script>
+</body>
+</html>
