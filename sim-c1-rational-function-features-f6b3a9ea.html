@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rational function features</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 480px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { position: relative; background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+            <div class="coord-tooltip" id="tooltip"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-12, 12, 12, -12],
+            axis: true,
+            grid: true,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444', label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 2
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444', label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 2
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        board.create('text', [11.4, -0.6, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.4, 11.4, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        var COL_PRIMARY = '#222222';
+        var COL_ASYMPTOTE = '#0EA5E9';
+
+        function fSimplified(x) {
+            return (x * x * x - 9 * x) / (x * x - 16);
+        }
+
+        var EPS = 0.02;
+
+        board.create('functiongraph', [fSimplified, -12, -4 - EPS], {
+            strokeColor: COL_PRIMARY, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('functiongraph', [fSimplified, -4 + EPS, 4 - EPS], {
+            strokeColor: COL_PRIMARY, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('functiongraph', [fSimplified, 4 + EPS, 12], {
+            strokeColor: COL_PRIMARY, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        board.create('line', [[-4, -12], [-4, 12]], {
+            strokeColor: COL_ASYMPTOTE, strokeWidth: 1.0, dash: 2,
+            straightFirst: false, straightLast: false,
+            fixed: true, highlight: false
+        });
+        board.create('line', [[4, -12], [4, 12]], {
+            strokeColor: COL_ASYMPTOTE, strokeWidth: 1.0, dash: 2,
+            straightFirst: false, straightLast: false,
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [-5.4, 11, 'x = -4'], {
+            fontSize: 12, color: COL_ASYMPTOTE,
+            useKatex: false, fixed: true, highlight: false, anchorX: 'right'
+        });
+        board.create('text', [4.6, 11, 'x = 4'], {
+            fontSize: 12, color: COL_ASYMPTOTE,
+            useKatex: false, fixed: true, highlight: false, anchorX: 'left'
+        });
+
+        var tooltip = document.getElementById('tooltip');
+
+        function showTooltipLatex(pt, latex) {
+            if (typeof katex === 'undefined') return;
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = COL_PRIMARY;
+            tooltip.style.display = 'block';
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [pt.X(), pt.Y()], board);
+            tooltip.style.left = (coords.scrCoords[1] + 14) + 'px';
+            tooltip.style.top = (coords.scrCoords[2] - 28) + 'px';
+        }
+
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+        }
+
+        function makeZero(x, latex) {
+            var pt = board.create('point', [x, 0], {
+                name: '', size: 5,
+                fillColor: COL_PRIMARY, strokeColor: COL_PRIMARY, strokeWidth: 1.5,
+                fixed: true, showInfobox: false, highlight: true,
+                highlightFillColor: COL_PRIMARY, highlightStrokeColor: COL_PRIMARY
+            });
+            pt.on('over', function() { showTooltipLatex(pt, latex); });
+            pt.on('out', function() { hideTooltip(); });
+            return pt;
+        }
+
+        makeZero(-3, '\\left(-3,\\,0\\right)');
+        makeZero(0, '\\left(0,\\,0\\right)');
+        makeZero(3, '\\left(3,\\,0\\right)');
+
+        var holeY = 280 / 33;
+        var hole = board.create('point', [7, holeY], {
+            name: '', size: 5,
+            fillColor: '#ffffff', strokeColor: COL_PRIMARY, strokeWidth: 1.5,
+            fixed: true, showInfobox: false, highlight: true,
+            highlightFillColor: '#ffffff', highlightStrokeColor: COL_PRIMARY
+        });
+        hole.on('over', function() {
+            showTooltipLatex(hole, '\\left(7,\\,\\tfrac{280}{33}\\right)');
+        });
+        hole.on('out', function() { hideTooltip(); });
+    </script>
+</body>
+</html>
