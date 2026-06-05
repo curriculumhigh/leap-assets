@@ -681,13 +681,35 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         while (s.match(/\|([^|]+)\|/)) {
             s = s.replace(/\|([^|]+)\|/g, "abs($1)");
         }
-        // nth roots and fractions can be nested in either order; iterate both
-        // until no more matches (handles \sqrt[n]{\frac{a}{b}}, \frac{\sqrt[n]{...}}{...}, etc.)
+        // ── Log/ln BEFORE fractions: so \log_{b}(\frac{a}{c}) captures the
+        //    \frac{...} as a single token (no parens yet), then fractions
+        //    convert later.  The paren-capture [^()]+ works because \frac
+        //    uses {} not ().
+        // \ln with parens or space+arg → nerdamer's log (natural log)
+        s = s.replace(/\\ln\s*\(([^()]+)\)/g, "log($1)");
+        s = s.replace(/\\ln\s+([a-zA-Z0-9][a-zA-Z0-9.]*)/g, "log($1)");
+        s = s.replace(/\\ln\b/g, "log");
+        // \log with subscript → change of base: \log_{b}(x) → log(x)/log(b)
+        // Allow optional space between \log and _ (MathQuill may output \log _{b})
+        s = s.replace(/\\log\s*_\{([^{}]+)\}\s*\(([^()]+)\)/g, "(log($2)/log($1))");
+        s = s.replace(/\\log\s*_\{([^{}]+)\}\s*\{([^{}]+)\}/g, "(log($2)/log($1))");
+        s = s.replace(/\\log\s*_\{([^{}]+)\}\s*([a-zA-Z0-9][a-zA-Z0-9.]*)/g, "(log($2)/log($1))");
+        // \log_b without braces (single char base): \log_9 x → log(x)/log(9)
+        s = s.replace(/\\log\s*_([a-zA-Z0-9])\s*\(([^()]+)\)/g, "(log($2)/log($1))");
+        s = s.replace(/\\log\s*_([a-zA-Z0-9])\s*([a-zA-Z0-9][a-zA-Z0-9.]*)/g, "(log($2)/log($1))");
+        // Bare \log (no subscript) means base-10: \log(x) → log(x)/log(10)
+        s = s.replace(/\\log\s*\(([^()]+)\)/g, "(log($1)/log(10))");
+        s = s.replace(/\\log\s+([a-zA-Z0-9][a-zA-Z0-9.]*)/g, "(log($1)/log(10))");
+        s = s.replace(/\\log\b/g, "log"); // fallback — shouldn't normally reach here
+        // nth roots, plain sqrt, and fractions can be nested in any order;
+        // iterate all three until no more matches.
         var prev;
         do {
             prev = s;
             // \sqrt[n]{x} → ((x))^(1/(n))
             s = s.replace(/\\sqrt\[([^\[\]]+)\]\{([^{}]+)\}/g, "(($2))^(1/($1))");
+            // \sqrt{x} → sqrt(x) — must be inside loop so \frac{a}{\sqrt{b}} works
+            s = s.replace(/\\sqrt\{([^{}]+)\}/g, "sqrt($1)");
             // \frac{a}{b} (and \dfrac) → ((a)/(b))
             s = s.replace(/\\d?frac\{([^{}]+)\}\{([^{}]+)\}/g, "(($1)/($2))");
         } while (s !== prev);
@@ -695,21 +717,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         s = s.replace(/\\times/g, "*");
         s = s.replace(/\\div/g, "/");
         s = s.replace(/\\[,;:!]/g, "");
-        // \ln with parens or space+arg → nerdamer's log (natural log)
-        s = s.replace(/\\ln\s*\(([^()]+)\)/g, "log($1)");
-        s = s.replace(/\\ln\s+([a-zA-Z0-9])/g, "log($1)");
-        s = s.replace(/\\ln\b/g, "log");
-        // \log with subscript → change of base: \log_{b}(x) → log(x)/log(b)
-        s = s.replace(/\\log_\{([^{}]+)\}\s*\(([^()]+)\)/g, "(log($2)/log($1))");
-        s = s.replace(/\\log_\{([^{}]+)\}\s*([a-zA-Z0-9])/g, "(log($2)/log($1))");
-        // Bare \log (no subscript) means base-10: \log(x) → log(x)/log(10)
-        s = s.replace(/\\log\s*\(([^()]+)\)/g, "(log($1)/log(10))");
-        s = s.replace(/\\log\s+([a-zA-Z0-9])/g, "(log($1)/log(10))");
-        s = s.replace(/\\log\b/g, "log"); // fallback — shouldn't normally reach here
         s = s.replace(/\^{([^{}]+)}/g, "^($1)");
         s = s.replace(/_\{([^{}]+)\}/g, "_($1)");
         s = s.replace(/(\d)([a-zA-Z])/g, "$1*$2");
-        s = s.replace(/\\sqrt\{([^{}]+)\}/g, "sqrt($1)");
         s = s.replace(/\\sqrt\s*([a-zA-Z0-9])/g, "sqrt($1)");
         s = s.replace(/\\(?!pi|e|sqrt|ln|log|sin|cos|tan|infty)/g, "");
         // Implicit multiplication between adjacent single-letter variables.
@@ -793,6 +803,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var self = this;
         var method = inputSpec.method || "equivSymbolic";
         if (method === "equivLiteral") method = "equiLiteral"; // normalize alias
+        // \pm: expand into two values and compare as unordered set
+        if (inputSpec.answer && inputSpec.answer.indexOf("\\pm") >= 0) {
+            return this.checkPlusMinus(studentLatex, inputSpec.answer);
+        }
         var constraints = inputSpec.constraints || {};
         var studentNerd = this.latexToNerdamer(studentLatex);
         if (!studentNerd.trim()) return false;
@@ -945,6 +959,35 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     // ═══════════════════════════════════════════════════
     // v5: EQUILITERAL — exact form match
     // ═══════════════════════════════════════════════════
+
+    /**
+     * Handle ±: expand a \pm b into {a+b, a-b} and compare as unordered set.
+     * Falls back to equiLiteral if expansion or nerdamer fails.
+     */
+    Question.prototype.checkPlusMinus = function (studentLatex, expectedAnswer) {
+        var self = this;
+        function expandPM(latex) {
+            var plus = latex.replace(/\\pm/g, "+");
+            var minus = latex.replace(/\\pm/g, "-");
+            return [self.latexToNerdamer(plus), self.latexToNerdamer(minus)];
+        }
+        function nerdEq(a, b) {
+            var diff = nerdamer("simplify((" + a + ")-(" + b + "))");
+            if (diff.toString() === "0") return true;
+            if (diff.variables().length === 0) return Math.abs(parseFloat(diff.text("decimals"))) < 1e-9;
+            return false;
+        }
+        try {
+            var sPair = expandPM(studentLatex);
+            var ePair = expandPM(expectedAnswer);
+            // Compare as unordered pair: {s+,s-} must match {e+,e-}
+            var match1 = (nerdEq(sPair[0], ePair[0]) && nerdEq(sPair[1], ePair[1]));
+            var match2 = (nerdEq(sPair[0], ePair[1]) && nerdEq(sPair[1], ePair[0]));
+            return match1 || match2;
+        } catch (e) {
+            return this.checkEquiLiteral(studentLatex, expectedAnswer);
+        }
+    };
 
     /**
      * Check if student's LaTeX matches the expected form exactly.
@@ -1854,6 +1897,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     Question.prototype._normalizeToContent = function (row) {
         if (row.content) return row.content;
         if (row.template) return "$" + row.template + "$";
+        if (row.expression) {
+            if (row.inputs && row.inputs.length > 0) {
+                return '<span style="color:#c00;font-size:12px;background:#fff3f3;padding:2px 6px;border-radius:3px;">⚠ This row has ' + row.inputs.length + ' input(s) but no template — input boxes cannot render here. Please fix the widget data.</span><br>' + "$" + row.expression + "$";
+            }
+            return "$" + row.expression + "$";
+        }
         return "";
     };
 
@@ -4555,26 +4604,28 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
     var KEYPAD_PRESETS = {
         algebra: [
-            { label: "x", cmd: "x", type: "write" },
-            { label: "y", cmd: "y", type: "write" },
-            { label: "x^2", cmd: "^", type: "cmd", extra: "2" },
-            { label: "\\sqrt{\\square}", cmd: "\\sqrt", type: "cmd" },
-            { label: "\\frac{x}{\\square}", cmd: "/", type: "cmd" },
-            { label: "\\frac{x^{\\square}}{\\square}", cmd: "/", type: "cmd" },
-            { label: "x^{\\square}", cmd: "^", type: "cmd" },
-            { label: "\\sqrt[\\square]{\\square}", cmd: "\\nthroot", type: "cmd" },
-            { label: "<", cmd: "<", type: "write" },
-            { label: ">", cmd: ">", type: "write" },
-            { label: "\\pm", cmd: "\\pm", type: "cmd" },
-            { label: "|\\square|", cmd: "|", type: "write", extra: "|" },
-            { label: "\\pi", cmd: "\\pi", type: "cmd" },
-            { label: "\\infty", cmd: "\\infty", type: "cmd" },
-            { label: "(\\square)", cmd: "(", type: "write", extra: ")" },
-            { label: "[\\square]", cmd: "[", type: "write", extra: "]" },
-            { label: "\\leq", cmd: "\\leq", type: "cmd" },
-            { label: "\\geq", cmd: "\\geq", type: "cmd" },
-            { label: "\\frac{\\square}{\\square}", cmd: "/", type: "cmd" },
-            { label: "\\phi", cmd: "\\phi", type: "cmd" }
+            { label: "x", cmd: "x", type: "write" },                            // R1C1
+            { label: "y", cmd: "y", type: "write" },                            // R1C2
+            { label: "x^{\\square}", cmd: "^", type: "cmd" },                   // R1C3
+            { label: "x_{\\square}", cmd: "_", type: "cmd" },                   // R1C4
+            { label: "\\frac{\\square}{\\square}", cmd: "/", type: "cmd" },      // R2C1
+            { label: "\\sqrt{\\square}", cmd: "\\sqrt", type: "cmd" },           // R2C2
+            { label: "\\sqrt[\\square]{\\square}", cmd: "\\nthroot", type: "cmd" }, // R2C3
+            { label: "\\pm", cmd: "\\pm", type: "cmd" },                        // R2C4
+            { label: "<", cmd: "<", type: "write" },                             // R3C1
+            { label: ">", cmd: ">", type: "write" },                            // R3C2
+            { label: "\\leq", cmd: "\\leq", type: "cmd" },                      // R3C3
+            { label: "\\geq", cmd: "\\geq", type: "cmd" },                      // R3C4
+            { label: "(\\square)", cmd: "(", type: "typedText" },                   // R4C1
+            { label: "[\\square]", cmd: "[", type: "typedText" },                   // R4C2
+            { label: "|\\square|", cmd: "|", type: "typedText" },                   // R4C3
+            { label: "\\pi", cmd: "\\pi", type: "cmd" },                        // R4C4
+            { label: "\\ln", cmd: "\\ln", type: "cmd" },                        // R5C1
+            { label: "\\log", cmd: "\\log", type: "cmd" },                      // R5C2
+            { label: "\\log_{\\square}", type: "sequence", sequence: [              // R5C3
+                { type: "cmd", cmd: "\\log" }, { type: "cmd", cmd: "_" }
+            ]},
+            { label: "\\infty", cmd: "\\infty", type: "cmd" }
         ],
         trig: [
             { label: "\\sin", cmd: "\\sin", type: "cmd" },
@@ -4611,7 +4662,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         logarithms: [
             { label: "\\ln", cmd: "\\ln", type: "cmd" },
             { label: "\\log", cmd: "\\log", type: "cmd" },
-            { label: "\\log_{\\square}", cmd: "\\log_", type: "cmd" },
+            { label: "\\log_{\\square}", type: "sequence", sequence: [
+                { type: "cmd", cmd: "\\log" }, { type: "cmd", cmd: "_" }
+            ]},
             { label: "i", cmd: "i", type: "write" }
         ]
     };
@@ -4701,11 +4754,14 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                         if (step.type === "cmd") f.cmd(step.cmd);
                         else if (step.type === "write") f.write(step.cmd);
                         else if (step.type === "keystroke") f.keystroke(step.cmd);
+                        else if (step.type === "typedText") f.typedText(step.cmd);
                     });
                 } else if (k.type === "cmd") {
                     f.cmd(k.cmd);
                 } else if (k.type === "keystroke") {
                     f.keystroke(k.cmd);
+                } else if (k.type === "typedText") {
+                    f.typedText(k.cmd);
                 } else {
                     f.write(k.cmd);
                 }
