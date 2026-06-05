@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph of y = x² + 6x + 5</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8, 6, 4, -6],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        strokeWidth: 0,
+                        majorHeight: 0,
+                        minorHeight: 0,
+                        minorTicks: 0,
+                        ticksDistance: 2,
+                        label: { fontSize: 11, offset: [0, -14] }
+                    }
+                },
+                y: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        strokeWidth: 0,
+                        majorHeight: 0,
+                        minorHeight: 0,
+                        minorTicks: 0,
+                        ticksDistance: 2,
+                        label: { fontSize: 11, offset: [-14, 0] }
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [3.5, -0.5, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.3, 5.5, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Bounding box edges
+        var xMin = -8, yMax = 6, xMax = 4, yMin = -6;
+
+        // Shade BELOW the parabola (outside the bowl)
+        var steps = 100;
+        var dx = (xMax - xMin) / steps;
+
+        var shadingPoints = [];
+
+        // Start at bottom-left corner
+        shadingPoints.push([xMin, yMin]);
+
+        // Along the bottom to bottom-right
+        shadingPoints.push([xMax, yMin]);
+
+        // Up the right side to parabola value at xMax
+        var yAtXMax = xMax * xMax + 6 * xMax + 5;
+        if (yAtXMax > yMax) yAtXMax = yMax;
+        shadingPoints.push([xMax, yAtXMax]);
+
+        // Along the parabola from right to left
+        for (var i = 0; i <= steps; i++) {
+            var x = xMax - i * dx;
+            var y = x * x + 6 * x + 5;
+            if (y > yMax) y = yMax;
+            if (y < yMin) y = yMin;
+            shadingPoints.push([x, y]);
+        }
+
+        // Down the left side to bottom-left
+        shadingPoints.push([xMin, yMin]);
+
+        // Create invisible points for the polygon
+        var polyPoints = [];
+        for (var j = 0; j < shadingPoints.length; j++) {
+            polyPoints.push(board.create('point', shadingPoints[j], { visible: false, fixed: true, name: '' }));
+        }
+
+        // Shaded polygon (below the parabola = outside)
+        board.create('polygon', polyPoints, {
+            fillColor: '#222222',
+            fillOpacity: 0.12,
+            borders: { strokeWidth: 0, visible: false },
+            vertices: { visible: false },
+            fixed: true,
+            highlight: false
+        });
+
+        // Parabola: y = x² + 6x + 5 (solid boundary)
+        board.create('functiongraph', [
+            function(x) { return x * x + 6 * x + 5; }
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Function rule label
+        board.create('text', [0.5, 4.5, 'y = x^2 + 6x + 5'], {
+            fontSize: 13,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            useKatex: true
+        });
+    </script>
+</body>
+</html>
