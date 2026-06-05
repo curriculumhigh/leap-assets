@@ -4697,7 +4697,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
     Question.prototype.buildKeypad = function ($container) {
         var self = this;
-        var groups = self.question.keypad || ["algebra"];
+        var groups = self.question.keypad || ["algebra", "greek"];
         // Always include "abc" in dropdown options (prepend it)
         var allGroups = ["abc"].concat(groups);
         var $keypad = $('<div class="req-keypad" id="' + self.uid + '-keypad"></div>');
