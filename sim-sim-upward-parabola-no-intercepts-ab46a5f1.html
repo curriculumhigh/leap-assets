@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upward Parabola — No Intercepts</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 5, 5, -5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // X-axis with bidirectional arrows
+        board.create('arrow', [[-4.8, 0], [4.8, 0]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }, firstArrow: { type: 2, size: 6 }
+        });
+
+        // Y-axis with bidirectional arrows
+        board.create('arrow', [[0, -4.8], [0, 4.8]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }, firstArrow: { type: 2, size: 6 }
+        });
+
+        // Axis labels
+        board.create('text', [4.4, -0.5, '<i>x</i>'], {
+            fontSize: 14, fixed: true, highlight: false, color: '#222222'
+        });
+        board.create('text', [0.25, 4.4, '<i>y</i>'], {
+            fontSize: 14, fixed: true, highlight: false, color: '#222222'
+        });
+
+        // Origin label "0"
+        board.create('text', [0.2, -0.5, '0'], {
+            fontSize: 12, fixed: true, highlight: false, color: '#222222'
+        });
+
+        // Parabola: (x + 2)^2
+        board.create('functiongraph', [
+            function(x) { return (x + 2) * (x + 2); },
+            -4.5, 4.5
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
