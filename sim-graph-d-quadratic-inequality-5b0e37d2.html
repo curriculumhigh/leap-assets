@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph D</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 7, 6, -3],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        majorHeight: 0,
+                        minorTicks: 0,
+                        ticksDistance: 2,
+                        label: { fontSize: 10, offset: [0, -10] }
+                    }
+                },
+                y: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        majorHeight: 0,
+                        minorTicks: 0,
+                        ticksDistance: 2,
+                        label: { fontSize: 10, offset: [-10, 0] }
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [5.6, -0.5, '<i>x</i>'], { fontSize: 12, fixed: true, highlight: false });
+        board.create('text', [0.2, 6.5, '<i>y</i>'], { fontSize: 12, fixed: true, highlight: false });
+
+        // Parabola function: y = -3(x - 2)^2 + 5
+        function f(x) {
+            return -3 * (x - 2) * (x - 2) + 5;
+        }
+
+        // Shaded region below the parabola (inside of downward-opening parabola)
+        var xMin = -2;
+        var xMax = 6;
+        var yMin = -3;
+
+        var shadedCurve = board.create('curve', [[], []], {
+            strokeWidth: 0,
+            fillColor: '#222222',
+            fillOpacity: 0.12,
+            fixed: true,
+            highlight: false
+        });
+
+        // Build the shaded region path
+        var dataX = [];
+        var dataY = [];
+        var step = 0.05;
+
+        // Top boundary: the parabola
+        for (var x = xMin; x <= xMax; x += step) {
+            dataX.push(x);
+            dataY.push(f(x));
+        }
+        dataX.push(xMax);
+        dataY.push(f(xMax));
+
+        // Bottom boundary: along the bottom of bounding box
+        dataX.push(xMax);
+        dataY.push(yMin);
+        dataX.push(xMin);
+        dataY.push(yMin);
+
+        // Close the path
+        dataX.push(xMin);
+        dataY.push(f(xMin));
+
+        shadedCurve.dataX = dataX;
+        shadedCurve.dataY = dataY;
+
+        // Parabola curve (solid boundary)
+        board.create('functiongraph', [f, xMin, xMax], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
