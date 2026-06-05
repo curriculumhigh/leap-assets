@@ -4273,7 +4273,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             { label: ">", cmd: ">", type: "write" },
             { label: "\\pm", cmd: "\\pm", type: "cmd" },
             { label: "|\\square|", cmd: "|", type: "write", extra: "|" },
-            { label: "\\pi", cmd: "\\pi", type: "cmd" },
+            { label: "\\neq", cmd: "\\neq", type: "cmd" },
             { label: "\\infty", cmd: "\\infty", type: "cmd" },
             { label: "(\\square)", cmd: "(", type: "write", extra: ")" },
             { label: "[\\square]", cmd: "[", type: "write", extra: "]" },
@@ -4319,6 +4319,25 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             { label: "\\log", cmd: "\\log", type: "cmd" },
             { label: "\\log_{\\square}", cmd: "\\log_", type: "cmd" },
             { label: "i", cmd: "i", type: "write" }
+        ],
+        greek: [
+            { label: "\\alpha", cmd: "\\alpha", type: "cmd" },
+            { label: "\\gamma", cmd: "\\gamma", type: "cmd" },
+            { label: "\\delta", cmd: "\\delta", type: "cmd" },
+            { label: "\\pi", cmd: "\\pi", type: "cmd" },
+            { label: "\\theta", cmd: "\\theta", type: "cmd" },
+            { label: "\\sigma", cmd: "\\sigma", type: "cmd" },
+            { label: "\\Delta", cmd: "\\Delta", type: "cmd" },
+            { label: "\\Pi", cmd: "\\Pi", type: "cmd" },
+            { label: "\\Theta", cmd: "\\Theta", type: "cmd" },
+            { label: "\\Sigma", cmd: "\\Sigma", type: "cmd" },
+            { label: "\\lambda", cmd: "\\lambda", type: "cmd" },
+            { label: "\\phi", cmd: "\\phi", type: "cmd" },
+            { label: "\\tau", cmd: "\\tau", type: "cmd" },
+            { label: "\\varepsilon", cmd: "\\varepsilon", type: "cmd" },
+            { label: "\\beta", cmd: "\\beta", type: "cmd" },
+            { label: "\\mu", cmd: "\\mu", type: "cmd" },
+            { label: "\\rho", cmd: "\\rho", type: "cmd" }
         ]
     };
 

@@ -4594,7 +4594,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             { label: "(\\square)", cmd: "(", type: "typedText" },                   // R4C1
             { label: "[\\square]", cmd: "[", type: "typedText" },                   // R4C2
             { label: "|\\square|", cmd: "|", type: "typedText" },                   // R4C3
-            { label: "\\pi", cmd: "\\pi", type: "cmd" },                        // R4C4
+            { label: "\\neq", cmd: "\\neq", type: "cmd" },                        // R4C4
             { label: "\\ln", cmd: "\\ln", type: "cmd" },                        // R5C1
             { label: "\\log", cmd: "\\log", type: "cmd" },                      // R5C2
             { label: "\\log_{\\square}", type: "sequence", sequence: [              // R5C3
@@ -4641,6 +4641,25 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 { type: "cmd", cmd: "\\log" }, { type: "cmd", cmd: "_" }
             ]},
             { label: "i", cmd: "i", type: "write" }
+        ],
+        greek: [
+            { label: "\\alpha", cmd: "\\alpha", type: "cmd" },
+            { label: "\\gamma", cmd: "\\gamma", type: "cmd" },
+            { label: "\\delta", cmd: "\\delta", type: "cmd" },
+            { label: "\\pi", cmd: "\\pi", type: "cmd" },
+            { label: "\\theta", cmd: "\\theta", type: "cmd" },
+            { label: "\\sigma", cmd: "\\sigma", type: "cmd" },
+            { label: "\\Delta", cmd: "\\Delta", type: "cmd" },
+            { label: "\\Pi", cmd: "\\Pi", type: "cmd" },
+            { label: "\\Theta", cmd: "\\Theta", type: "cmd" },
+            { label: "\\Sigma", cmd: "\\Sigma", type: "cmd" },
+            { label: "\\lambda", cmd: "\\lambda", type: "cmd" },
+            { label: "\\phi", cmd: "\\phi", type: "cmd" },
+            { label: "\\tau", cmd: "\\tau", type: "cmd" },
+            { label: "\\varepsilon", cmd: "\\varepsilon", type: "cmd" },
+            { label: "\\beta", cmd: "\\beta", type: "cmd" },
+            { label: "\\mu", cmd: "\\mu", type: "cmd" },
+            { label: "\\rho", cmd: "\\rho", type: "cmd" }
         ]
     };
 
