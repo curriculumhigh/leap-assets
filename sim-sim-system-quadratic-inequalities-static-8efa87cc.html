@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System of Quadratic Inequalities</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 175px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; justify-content: center; gap: 18px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 8px;
+        }
+        .rule-row { min-height: 28px; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div>
+                    <div class="panel-label">Boundaries</div>
+                    <div class="rule-row" id="rule1"></div>
+                    <div class="rule-row" id="rule2"></div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Render panel labels
+        katex.render('y = -2x^2', document.getElementById('rule1'), { throwOnError: false, displayMode: false });
+        document.getElementById('rule1').style.color = '#DC2626';
+
+        katex.render('y = x^2 - 3', document.getElementById('rule2'), { throwOnError: false, displayMode: false });
+        document.getElementById('rule2').style.color = '#2563EB';
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 5, 3.5, -5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: 'transparent',
+                        strokeWidth: 0,
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        label: { fontSize: 11, color: '#444444', offset: [0, -12] }
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: 'transparent',
+                        strokeWidth: 0,
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        label: { fontSize: 11, color: '#444444', offset: [-12, 0] }
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [3.1, -0.4, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 4.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Colors
+        var COL_RED = '#DC2626';
+        var COL_BLUE = '#2563EB';
+        var COL_OVERLAP = '#7C3AED';
+
+        // Draw boundary curves (no inequality shading)
+        // Red: y = -2x^2 (solid)
+        board.create('functiongraph', [function(x) { return -2 * x * x; }], {
+            strokeColor: COL_RED, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Blue: y = x^2 - 3 (dashed)
+        board.create('functiongraph', [function(x) { return x * x - 3; }], {
+            strokeColor: COL_BLUE, strokeWidth: 1.8, dash: 2, fixed: true, highlight: false
+        });
+
+        // Shade the common/overlap region:
+        // y >= -2x^2 AND y < x^2 - 3
+        // Intersection: -2x^2 = x^2 - 3 => 3x^2 = 3 => x = ±1
+        // Between x = -1 and x = 1: lower bound is y = -2x^2, upper bound is y = x^2 - 3
+        var N = 200;
+        var xMin = -1;
+        var xMax = 1;
+
+        var overlapX = [];
+        var overlapY = [];
+
+        for (var i = 0; i <= N; i++) {
+            var x = xMin + (xMax - xMin) * i / N;
+            overlapX.push(x);
+            overlapY.push(x * x - 3); // top boundary
+        }
+        for (var i = N; i >= 0; i--) {
+            var x = xMin + (xMax - xMin) * i / N;
+            overlapX.push(x);
+            overlapY.push(-2 * x * x); // bottom boundary
+        }
+
+        board.create('curve', [overlapX, overlapY], {
+            strokeWidth: 0,
+            fillColor: COL_OVERLAP,
+            fillOpacity: 0.18,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
