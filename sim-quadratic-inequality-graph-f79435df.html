@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph of y = -x² + 3x - 2</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 1.8, 4.5, -2.5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        strokeWidth: 0,
+                        majorHeight: 0,
+                        minorHeight: 0,
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        label: { fontSize: 11, offset: [0, -14] }
+                    }
+                },
+                y: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        strokeWidth: 0,
+                        majorHeight: 0,
+                        minorHeight: 0,
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        label: { fontSize: 11, offset: [-14, 0] }
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [4.1, -0.25, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.15, 1.55, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Function: y = -x^2 + 3x - 2
+        function f(x) {
+            return -x * x + 3 * x - 2;
+        }
+
+        // Shaded region inside (concave side/below) the parabola
+        var xMin = -1.5;
+        var xMax = 4.5;
+        var yMin = -2.5;
+        var nPoints = 200;
+        var xData = [];
+        var yData = [];
+
+        // Trace parabola from left to right
+        for (var i = 0; i <= nPoints; i++) {
+            var x = xMin + (xMax - xMin) * i / nPoints;
+            xData.push(x);
+            yData.push(f(x));
+        }
+        // Close along bottom of bounding box
+        xData.push(xMax);
+        yData.push(yMin);
+        xData.push(xMin);
+        yData.push(yMin);
+        xData.push(xMin);
+        yData.push(f(xMin));
+
+        board.create('polygon', 
+            xData.map(function(xi, idx) {
+                return board.create('point', [xi, yData[idx]], { visible: false, fixed: true, name: '' });
+            }), {
+            fillColor: '#222222',
+            fillOpacity: 0.12,
+            borders: { strokeWidth: 0, visible: false },
+            vertices: { visible: false },
+            fixed: true,
+            highlight: false,
+            hasInnerPoints: false
+        });
+
+        // Parabola curve (solid boundary)
+        board.create('functiongraph', [f, -1.5, 4.5], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Function label
+        board.create('text', [3.2, -1.8, 'y = -x^2 + 3x - 2'], {
+            useKatex: true,
+            fontSize: 13,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            anchorX: 'middle'
+        });
+    </script>
+</body>
+</html>
