@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadratic Inequality Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 6, 6, -4],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: 'transparent',
+                        strokeWidth: 0,
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        label: { fontSize: 11, offset: [0, -14] }
+                    }
+                },
+                y: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: 'transparent',
+                        strokeWidth: 0,
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        label: { fontSize: 11, offset: [-14, 0] }
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [5.6, -0.4, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 5.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Define the quadratic function
+        function f(x) {
+            return -x * x + 4 * x - 1;
+        }
+
+        // Shaded region above the parabola
+        var shadeCurveTop = board.create('curve', [[], []], {
+            strokeWidth: 0,
+            fillColor: '#222222',
+            fillOpacity: 0.12,
+            fixed: true,
+            highlight: false
+        });
+
+        shadeCurveTop.updateDataArray = function() {
+            var xMin = -2;
+            var xMax = 6;
+            var yMax = 6;
+            var steps = 200;
+            var dx = (xMax - xMin) / steps;
+
+            this.dataX = [];
+            this.dataY = [];
+
+            this.dataX.push(xMin);
+            this.dataY.push(yMax);
+            this.dataX.push(xMax);
+            this.dataY.push(yMax);
+
+            for (var i = steps; i >= 0; i--) {
+                var x = xMin + i * dx;
+                var y = f(x);
+                this.dataX.push(x);
+                this.dataY.push(y);
+            }
+
+            this.dataX.push(xMin);
+            this.dataY.push(yMax);
+        };
+        board.update();
+
+        // Parabola - dashed boundary
+        board.create('functiongraph', [f, -2, 6], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        // Function label - in the shaded region above the parabola
+        board.create('text', [1.2, 4.8, '<span style="white-space:nowrap; font-style:italic; font-size:13px;">y = &minus;x&sup2; + 4x &minus; 1</span>'], {
+            fontSize: 13,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            anchorX: 'left'
+        });
+    </script>
+</body>
+</html>
