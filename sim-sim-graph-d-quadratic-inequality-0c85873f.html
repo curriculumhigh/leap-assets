@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph D - Quadratic Inequality</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+        .jxgbox text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 7, 6.5, -3.5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: 'transparent',
+                        strokeWidth: 0,
+                        minorTicks: 0,
+                        ticksDistance: 2,
+                        label: { fontSize: 9, color: '#444444', offset: [0, -10] }
+                    }
+                },
+                y: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: 'transparent',
+                        strokeWidth: 0,
+                        minorTicks: 0,
+                        ticksDistance: 2,
+                        label: { fontSize: 9, color: '#444444', offset: [-12, 0] }
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [6.1, -0.4, '<i>x</i>'], { fontSize: 11, fixed: true, highlight: false });
+        board.create('text', [0.2, 6.6, '<i>y</i>'], { fontSize: 11, fixed: true, highlight: false });
+
+        // Parabola function: y = -3(x-2)^2 + 5
+        function f(x) {
+            return -3 * (x - 2) * (x - 2) + 5;
+        }
+
+        // x-intercepts: -3(x-2)^2 + 5 = 0 => (x-2)^2 = 5/3 => x = 2 +/- sqrt(5/3)
+        var sqrtVal = Math.sqrt(5 / 3);
+        var xLeft = 2 - sqrtVal;
+        var xRight = 2 + sqrtVal;
+
+        // Shaded region: entire inner region of the parabola (below curve, down to bottom of bounding box)
+        var shadedCurve = board.create('curve', [[], []], {
+            strokeWidth: 0,
+            fillColor: '#222222',
+            fillOpacity: 0.12,
+            fixed: true,
+            highlight: false
+        });
+
+        // Build shaded region: along the parabola from left edge to right edge, closed at bottom
+        var xCoords = [];
+        var yCoords = [];
+        var numPts = 100;
+        var xMin = -2.5;
+        var xMax = 6.5;
+        var yMin = -3.5;
+        var stepSize = (xMax - xMin) / numPts;
+
+        // Trace along the parabola from left edge to right edge
+        for (var i = 0; i <= numPts; i++) {
+            var xi = xMin + i * stepSize;
+            xCoords.push(xi);
+            yCoords.push(f(xi));
+        }
+        // Close the region along the bottom of the bounding box
+        xCoords.push(xMax);
+        yCoords.push(yMin);
+        xCoords.push(xMin);
+        yCoords.push(yMin);
+
+        shadedCurve.dataX = xCoords;
+        shadedCurve.dataY = yCoords;
+
+        // Dashed parabola curve with tighter dash pattern
+        board.create('functiongraph', [f, -2.5, 6.5], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
