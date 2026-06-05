@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph D - Quadratic Inequality</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 7, 6, -3],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 10 },
+                        minorTicks: 0,
+                        ticksDistance: 2,
+                        majorHeight: 0,
+                        minorHeight: 0
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 10 },
+                        minorTicks: 0,
+                        ticksDistance: 2,
+                        majorHeight: 0,
+                        minorHeight: 0
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [5.6, -0.4, '<i>x</i>'], { fontSize: 12, fixed: true, highlight: false });
+        board.create('text', [0.2, 6.6, '<i>y</i>'], { fontSize: 12, fixed: true, highlight: false });
+
+        // Parabola function: y = -3(x-2)^2 + 5
+        function f(x) {
+            return -3 * (x - 2) * (x - 2) + 5;
+        }
+
+        // Shading: region ABOVE the parabola (outside for downward-opening)
+        var shadingAbove = board.create('curve', [[], []], {
+            strokeWidth: 0,
+            fillColor: '#222222',
+            fillOpacity: 0.12,
+            fixed: true,
+            highlight: false
+        });
+
+        (function() {
+            var xMin = -2, xMax = 6, yMax = 7;
+            var numPts = 100;
+            var dx = (xMax - xMin) / numPts;
+            var dataX = [];
+            var dataY = [];
+
+            // Top-left corner
+            dataX.push(xMin);
+            dataY.push(yMax);
+
+            // Along the parabola from left to right
+            for (var i = 0; i <= numPts; i++) {
+                var x = xMin + i * dx;
+                dataX.push(x);
+                dataY.push(f(x));
+            }
+
+            // Top-right corner
+            dataX.push(xMax);
+            dataY.push(yMax);
+
+            // Close back to top-left
+            dataX.push(xMin);
+            dataY.push(yMax);
+
+            shadingAbove.dataX = dataX;
+            shadingAbove.dataY = dataY;
+        })();
+
+        // Dashed parabola curve
+        board.create('functiongraph', [f, -2, 6], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        board.update();
+    </script>
+</body>
+</html>
