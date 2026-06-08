@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph of y = x² - 5x + 3</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { width: 300px; height: 300px; margin: 0; padding: 0; }
+        #board { width: 300px; height: 300px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="board"></div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.8, 5.8, 7.2, -5.8],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    firstArrow: { type: 2, size: 5 },
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 10 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    firstArrow: { type: 2, size: 5 },
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 10 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [6.8, -0.5, '<i>x</i>'], { fontSize: 12, fixed: true, highlight: false });
+        board.create('text', [0.2, 5.4, '<i>y</i>'], { fontSize: 12, fixed: true, highlight: false });
+
+        // X-intercepts: (5 ± sqrt(13)) / 2
+        var r1 = (5 - Math.sqrt(13)) / 2;
+        var r2 = (5 + Math.sqrt(13)) / 2;
+
+        // Blue rays extending outward from the intercepts along y = 0
+        // Left ray: from r1 going left
+        board.create('arrow', [[r1, 0], [-3.8, 0]], {
+            strokeColor: '#2563EB', strokeWidth: 2.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        // Right ray: from r2 going right
+        board.create('arrow', [[r2, 0], [7.2, 0]], {
+            strokeColor: '#2563EB', strokeWidth: 2.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // Parabola: y = x^2 - 5x + 3
+        board.create('functiongraph', [
+            function(x) { return x * x - 5 * x + 3; }
+        ], { strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Intercept points
+        board.create('point', [r1, 0], {
+            name: '', size: 2.5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [r2, 0], {
+            name: '', size: 2.5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Intercept labels
+        board.create('text', [r1 + 0.15, 0.4, '(0.7, 0)'], {
+            fontSize: 9, color: '#222222', fixed: true, highlight: false, anchorX: 'left', anchorY: 'bottom'
+        });
+        board.create('text', [r2 + 0.15, 0.4, '(4.3, 0)'], {
+            fontSize: 9, color: '#222222', fixed: true, highlight: false, anchorX: 'left', anchorY: 'bottom'
+        });
+
+        // Equation label
+        board.create('text', [2.5, -3.5, 'x\u00B2 \u2212 5x + 3 = y'], {
+            fontSize: 11, color: '#222222', fixed: true, highlight: false, anchorX: 'middle'
+        });
+    </script>
+</body>
+</html>
