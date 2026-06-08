@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System of Quadratic Inequalities</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 6, 9, -6],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [8.5, -0.5, '<i>x</i>'], { fontSize: 12, fixed: true, highlight: false });
+        board.create('text', [0.3, 5.5, '<i>y</i>'], { fontSize: 12, fixed: true, highlight: false });
+
+        // Inequality 1: y < -x^2 + 6x - 5 (downward-opening, shade below)
+        var f1 = function(x) { return -x * x + 6 * x - 5; };
+
+        // Inequality 2: y > x^2 - 6x + 5 (upward-opening, shade above)
+        var f2 = function(x) { return x * x - 6 * x + 5; };
+
+        var xMin = -3, xMax = 9, yMin = -6, yMax = 6;
+        var step = 0.05;
+
+        // Shading for Inequality 1: y < f1(x) — below black parabola down to bottom
+        var shade1X = [];
+        var shade1Y = [];
+        for (var x = xMin; x <= xMax; x += step) {
+            shade1X.push(x);
+            shade1Y.push(f1(x));
+        }
+        shade1X.push(xMax);
+        shade1Y.push(f1(xMax));
+        shade1X.push(xMax);
+        shade1Y.push(yMin);
+        shade1X.push(xMin);
+        shade1Y.push(yMin);
+
+        board.create('curve', [shade1X, shade1Y], {
+            strokeWidth: 0,
+            fillColor: '#999999',
+            fillOpacity: 0.15,
+            fixed: true,
+            highlight: false,
+            layer: 1
+        });
+
+        // Shading for Inequality 2: y > f2(x) — above blue parabola up to top
+        var shade2X = [];
+        var shade2Y = [];
+        for (var x = xMin; x <= xMax; x += step) {
+            shade2X.push(x);
+            shade2Y.push(f2(x));
+        }
+        shade2X.push(xMax);
+        shade2Y.push(f2(xMax));
+        shade2X.push(xMax);
+        shade2Y.push(yMax);
+        shade2X.push(xMin);
+        shade2Y.push(yMax);
+
+        board.create('curve', [shade2X, shade2Y], {
+            strokeWidth: 0,
+            fillColor: '#2563EB',
+            fillOpacity: 0.15,
+            fixed: true,
+            highlight: false,
+            layer: 1
+        });
+
+        // Dashed parabola 1: y = -x^2 + 6x - 5
+        board.create('functiongraph', [f1, -3, 9], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        // Dashed parabola 2: y = x^2 - 6x + 5
+        board.create('functiongraph', [f2, -3, 9], {
+            strokeColor: '#2563EB',
+            strokeWidth: 1.5,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        // Label: Inequality 1 at (5.5, -1.2)
+        board.create('text', [5.5, -1.2, 'Inequality 1'], {
+            fontSize: 10, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Label: Inequality 2 at (5.5, 1.2)
+        board.create('text', [5.5, 1.2, 'Inequality 2'], {
+            fontSize: 10, color: '#2563EB', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
