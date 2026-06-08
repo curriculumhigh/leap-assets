@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System of Quadratic Inequalities</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-12, 12, 12, -12],
+            axis: true,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 8 },
+                        minorTicks: 0,
+                        ticksDistance: 4
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 8 },
+                        minorTicks: 0,
+                        ticksDistance: 4
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [11.2, -0.9, '<i>x</i>'], { fontSize: 10, fixed: true, highlight: false });
+        board.create('text', [0.4, 11.2, '<i>y</i>'], { fontSize: 10, fixed: true, highlight: false });
+
+        // Colors
+        var COL1 = '#222222';
+        var COL2 = '#2563EB';
+        var COL_OVERLAP = '#7C3AED';
+
+        // Functions
+        function f1(x) { return 2 * x * x + 3 * x - 5; }
+        function f2(x) { return -x * x + 4 * x + 7; }
+
+        // Intersection: 3x²-x-12=0
+        var sqr145 = Math.sqrt(145);
+        var xInt1 = (1 - sqr145) / 6;
+        var xInt2 = (1 + sqr145) / 6;
+
+        var XMIN = -12, XMAX = 12, YMIN = -12, YMAX = 12;
+        var nPts = 100;
+
+        // Shading for Inequality 1 (y ≥ f1): above parabola 1
+        var shade1Coords = [];
+        for (var i = 0; i <= nPts; i++) {
+            var xi = XMIN + ((XMAX - XMIN) * i / nPts);
+            var yi = f1(xi);
+            shade1Coords.push([xi, Math.min(Math.max(yi, YMIN), YMAX)]);
+        }
+        shade1Coords.push([XMAX, YMAX]);
+        shade1Coords.push([XMIN, YMAX]);
+
+        board.create('polygon', shade1Coords, {
+            fillColor: COL1, fillOpacity: 0.08,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false,
+            hasInnerPoints: false
+        });
+
+        // Shading for Inequality 2 (y ≤ f2): below parabola 2
+        var shade2Coords = [];
+        for (var i = 0; i <= nPts; i++) {
+            var xi = XMIN + ((XMAX - XMIN) * i / nPts);
+            var yi = f2(xi);
+            shade2Coords.push([xi, Math.min(Math.max(yi, YMIN), YMAX)]);
+        }
+        shade2Coords.push([XMAX, YMIN]);
+        shade2Coords.push([XMIN, YMIN]);
+
+        board.create('polygon', shade2Coords, {
+            fillColor: COL2, fillOpacity: 0.08,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false,
+            hasInnerPoints: false
+        });
+
+        // Overlap region
+        var overlapCoords = [];
+        var nOvl = 80;
+        for (var i = 0; i <= nOvl; i++) {
+            var xi = xInt1 + ((xInt2 - xInt1) * i / nOvl);
+            overlapCoords.push([xi, f1(xi)]);
+        }
+        for (var i = nOvl; i >= 0; i--) {
+            var xi = xInt1 + ((xInt2 - xInt1) * i / nOvl);
+            overlapCoords.push([xi, f2(xi)]);
+        }
+
+        board.create('polygon', overlapCoords, {
+            fillColor: COL_OVERLAP, fillOpacity: 0.25,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false,
+            hasInnerPoints: false
+        });
+
+        // Parabola 1: y = 2x² + 3x − 5 (solid)
+        board.create('functiongraph', [f1, XMIN, XMAX], {
+            strokeColor: COL1, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Parabola 2: y = −x² + 4x + 7 (solid)
+        board.create('functiongraph', [f2, XMIN, XMAX], {
+            strokeColor: COL2, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Label for Parabola 1: top-right corner — no curves here
+        board.create('text', [4, 10.5, 'y = 2x^2 + 3x - 5'], {
+            fontSize: 9, color: COL1, useKatex: true, fixed: true, highlight: false,
+            anchorX: 'left'
+        });
+
+        // Label for Parabola 2: bottom-left corner — no curves here
+        board.create('text', [-11.5, -10.5, 'y = -x^2 + 4x + 7'], {
+            fontSize: 9, color: COL2, useKatex: true, fixed: true, highlight: false,
+            anchorX: 'left'
+        });
+
+    </script>
+</body>
+</html>
