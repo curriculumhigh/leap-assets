@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Left Riemann Sum (Under-estimate)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 480px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [0, 5.7, 5.8, -0.5],
+            axis: true,
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 },
+            keepAspectRatio: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444', label: { fontSize: 11 },
+                        minorTicks: 0, ticksDistance: 1,
+                        drawZero: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444', label: { fontSize: 11 },
+                        minorTicks: 0, ticksDistance: 1
+                    }
+                }
+            }
+        });
+
+        var COL = '#2563EB';
+
+        // Increasing curve, positive over [1,5]: f(x) = 0.4x + 1 + 0.12(x-1)^2
+        function f(x) { return 0.4 * x + 1 + 0.12 * (x - 1) * (x - 1); }
+
+        // Left Riemann sum: rectangles with height = f(left endpoint)
+        var lefts = [1, 2, 3, 4];
+        var i, xl, h, rect, dot;
+        for (i = 0; i < lefts.length; i++) {
+            xl = lefts[i];
+            h = f(xl);
+            // Rectangle from (xl,0) to (xl+1,h)
+            board.create('polygon',
+                [[xl, 0], [xl + 1, 0], [xl + 1, h], [xl, h]],
+                {
+                    fillColor: COL, fillOpacity: 0.12,
+                    borders: { strokeColor: COL, strokeWidth: 1.0, highlight: false },
+                    vertices: { visible: false },
+                    fixed: true, highlight: false, withLines: true
+                }
+            );
+        }
+
+        // Curve on top of rectangles
+        board.create('functiongraph', [f, 1, 5], {
+            strokeColor: COL, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Left-endpoint contact dots on the curve
+        for (i = 0; i < lefts.length; i++) {
+            xl = lefts[i];
+            board.create('point', [xl, f(xl)], {
+                name: '', size: 2.5, fillColor: COL, strokeColor: COL,
+                fixed: true, highlight: false, showInfobox: false
+            });
+        }
+
+        // Axis labels near arrow tips
+        board.create('text', [5.55, -0.32, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.12, 5.45, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+    </script>
+</body>
+</html>
