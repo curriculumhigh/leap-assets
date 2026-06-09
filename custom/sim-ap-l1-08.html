@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Increasing line with bounding rectangles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); box-sizing: border-box; }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); box-sizing: border-box; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+<div class="container"><div class="board-wrapper"><div id="board"></div></div></div>
+<script>
+var board = JXG.JSXGraph.initBoard('board', {
+    boundingbox: [-0.5, 15, 4.6, -1], axis: true,
+    showNavigation: false, showCopyright: false,
+    pan: { enabled: false }, zoom: { enabled: false },
+    defaultAxes: {
+        x: { strokeColor: '#444444', strokeWidth: 1.2, lastArrow: { type: 2, size: 6 },
+             ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 } },
+        y: { strokeColor: '#444444', strokeWidth: 1.2, lastArrow: { type: 2, size: 6 },
+             ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 2 } }
+    },
+    grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+});
+
+// Lower (under) reference rectangle at height 5 over [0,4] -> min estimate 5*4 = 20
+board.create('polygon', [[0, 0], [0, 5], [4, 5], [4, 0]], {
+    fillColor: 'none', fillOpacity: 0, highlight: false,
+    borders: { strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2, highlight: false },
+    vertices: { visible: false }, fixed: true
+});
+
+// Upper (over) reference rectangle at height 13 over [0,4] -> max estimate 13*4 = 52
+board.create('polygon', [[0, 0], [0, 13], [4, 13], [4, 0]], {
+    fillColor: 'none', fillOpacity: 0, highlight: false,
+    borders: { strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2, highlight: false },
+    vertices: { visible: false }, fixed: true
+});
+
+// Primary solid velocity segment (0,5) -> (4,13)
+board.create('segment', [[0, 5], [4, 13]], { strokeColor: '#2563EB', strokeWidth: 1.8, fixed: true, highlight: false });
+board.create('point', [0, 5],  { name: '', size: 2.5, color: '#2563EB', fixed: true, highlight: false, showInfobox: false });
+board.create('point', [4, 13], { name: '', size: 2.5, color: '#2563EB', fixed: true, highlight: false, showInfobox: false });
+
+// Axis labels with units
+board.create('text', [4.5, -0.7, 't (s)'], { fontSize: 13, fixed: true, highlight: false, anchorX: 'right' });
+board.create('text', [0.12, 14.4, 'v (ft/s)'], { fontSize: 13, fixed: true, highlight: false });
+</script>
+</body>
+</html>
