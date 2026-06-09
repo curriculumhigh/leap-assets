@@ -761,6 +761,116 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         } catch (e) { return false; }
     };
 
+    // ── Inequality support (single & compound) ──────────────────────────────
+    // Splits LaTeX on TOP-LEVEL relation operators WITHOUT first running the
+    // expression mangler (so \leq/\le/etc. survive instead of becoming l*e*q).
+    // Returns { operands:[...], ops:[...] } or null when no relation is present.
+    Question.prototype._parseRelation = function (latex) {
+        var s = latex || "";
+        var operands = [], ops = [], buf = "", depth = 0, i = 0;
+        var toks = ["\\leqslant", "\\geqslant", "\\leq", "\\geq", "\\le", "\\ge", "<=", ">=", "<", ">"];
+        while (i < s.length) {
+            var ch = s[i];
+            if (ch === "{" || ch === "(" || ch === "[") { depth++; buf += ch; i++; continue; }
+            if (ch === "}" || ch === ")" || ch === "]") { depth--; buf += ch; i++; continue; }
+            var matched = null;
+            if (depth === 0) {
+                for (var t = 0; t < toks.length; t++) {
+                    if (s.substr(i, toks[t].length) === toks[t]) {
+                        // \le / \ge must not be the prefix of a longer command (e.g. \left)
+                        if (toks[t] === "\\le" || toks[t] === "\\ge") {
+                            var after = s[i + toks[t].length];
+                            if (after && /[a-zA-Z]/.test(after)) continue;
+                        }
+                        matched = toks[t]; break;
+                    }
+                }
+            }
+            if (matched) { operands.push(buf.trim()); ops.push(matched); buf = ""; i += matched.length; }
+            else { buf += ch; i++; }
+        }
+        operands.push(buf.trim());
+        if (ops.length === 0) return null;
+        return { operands: operands, ops: ops };
+    };
+
+    Question.prototype._normOp = function (op) {
+        if (op === "\\leq" || op === "\\le" || op === "\\leqslant" || op === "<=") return "le";
+        if (op === "\\geq" || op === "\\ge" || op === "\\geqslant" || op === ">=") return "ge";
+        if (op === "<") return "lt";
+        if (op === ">") return "gt";
+        return op;
+    };
+    Question.prototype._flipOp = function (n) {
+        return { lt: "gt", gt: "lt", le: "ge", ge: "le" }[n] || n;
+    };
+
+    // True when the answer is a full inequality (>=1 inequality operator with
+    // operands) — NOT an operator-only "pick the sign" blank, equation, or expression.
+    Question.prototype._isInequalityAnswer = function (answer) {
+        if (!answer) return false;
+        var trimmed = answer.trim();
+        if (["<", ">", "<=", ">=", "\\le", "\\ge", "\\leq", "\\geq", "\\leqslant", "\\geqslant"].indexOf(trimmed) >= 0) return false;
+        var parsed = this._parseRelation(answer);
+        return !!(parsed && parsed.ops.length >= 1);
+    };
+
+    // Symbolic equivalence of two operand LaTeX strings (no relation operators).
+    Question.prototype._operandEquiv = function (aLatex, bLatex) {
+        try {
+            var a = this.latexToNerdamer(aLatex);
+            var b = this.latexToNerdamer(bLatex);
+            if (!a.trim() || !b.trim()) return false;
+            var diff = nerdamer("simplify((" + a + ")-(" + b + "))");
+            if (diff.toString() === "0") return true;
+            if (diff.variables().length === 0) {
+                return Math.abs(parseFloat(diff.text("decimals"))) < 1e-9;
+            }
+            return false;
+        } catch (e) { return false; }
+    };
+
+    // Normalize a compound (2-operator) relation to ascending form
+    // { lo, loOp, mid, hiOp, hi } with loOp/hiOp in {lt, le}. Null if mixed/invalid.
+    Question.prototype._normalizeCompound = function (p) {
+        var o1 = this._normOp(p.ops[0]), o2 = this._normOp(p.ops[1]);
+        var asc = (o1 === "lt" || o1 === "le") && (o2 === "lt" || o2 === "le");
+        var desc = (o1 === "gt" || o1 === "ge") && (o2 === "gt" || o2 === "ge");
+        if (asc) return { lo: p.operands[0], loOp: o1, mid: p.operands[1], hiOp: o2, hi: p.operands[2] };
+        if (desc) return { lo: p.operands[2], loOp: this._flipOp(o2), mid: p.operands[1], hiOp: this._flipOp(o1), hi: p.operands[0] };
+        return null; // mixed direction (e.g. a <= x >= b) — not a valid compound
+    };
+
+    // Compare two inequalities (single or compound) for mathematical equivalence.
+    // Accepts operator aliases (\le/\leq), reversed direction (3>=x>=-1), swapped
+    // sides (3/8<x), and equivalent bounds (0.375 vs 3/8). Strictness must match.
+    Question.prototype.checkInequality = function (studentLatex, answerLatex) {
+        var sp = this._parseRelation(studentLatex);
+        var ap = this._parseRelation(answerLatex);
+        if (!sp || !ap || sp.ops.length !== ap.ops.length) return false;
+
+        if (sp.ops.length === 1) {
+            var sOp = this._normOp(sp.ops[0]), aOp = this._normOp(ap.ops[0]);
+            try {
+                var sd = "(" + this.latexToNerdamer(sp.operands[0]) + ")-(" + this.latexToNerdamer(sp.operands[1]) + ")";
+                var ad = "(" + this.latexToNerdamer(ap.operands[0]) + ")-(" + this.latexToNerdamer(ap.operands[1]) + ")";
+                if (nerdamer("simplify((" + sd + ")-(" + ad + "))").toString() === "0") return sOp === aOp;
+                if (nerdamer("simplify((" + sd + ")+(" + ad + "))").toString() === "0") return sOp === this._flipOp(aOp);
+            } catch (e) { return false; }
+            return false;
+        }
+
+        if (sp.ops.length === 2) {
+            var sn = this._normalizeCompound(sp), an = this._normalizeCompound(ap);
+            if (!sn || !an) return false;
+            return this._operandEquiv(sn.lo, an.lo) &&
+                   this._operandEquiv(sn.mid, an.mid) &&
+                   this._operandEquiv(sn.hi, an.hi) &&
+                   sn.loOp === an.loOp && sn.hiOp === an.hiOp;
+        }
+        return false;
+    };
+
     Question.prototype.checkSetEquiv = function (studentLatex, expectedStr) {
         try {
             var self = this;
@@ -800,6 +910,12 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // \pm: expand into two values and compare as unordered set
         if (inputSpec.answer && inputSpec.answer.indexOf("\\pm") >= 0) {
             return this.checkPlusMinus(studentLatex, inputSpec.answer);
+        }
+        // Inequalities (single or compound): route to the relation comparator
+        // regardless of method. Operator-only blanks (>, <, \ge), equations (=),
+        // and expressions are NOT matched by _isInequalityAnswer and fall through.
+        if (this._isInequalityAnswer(inputSpec.answer)) {
+            return this.checkInequality(studentLatex, inputSpec.answer);
         }
         var constraints = inputSpec.constraints || {};
         var studentNerd = this.latexToNerdamer(studentLatex);
@@ -1009,6 +1125,19 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
      * @returns {boolean} whether the assembled expression is valid
      */
     Question.prototype.validateContainer = function (container, boxValues) {
+        // Compound inequality (2 relation ops): assemble from RAW latex (so \leq
+        // survives) and route to the comparator. Single-relation and expression
+        // containers fall through to the existing logic below, unchanged.
+        if (this._isInequalityAnswer(container.answer)) {
+            var rel = this._parseRelation(container.answer);
+            if (rel && rel.ops.length >= 2) {
+                var raw = container.assembleTemplate;
+                for (var ri = 0; ri < boxValues.length; ri++) {
+                    raw = raw.replace("{{" + ri + "}}", "(" + boxValues[ri] + ")");
+                }
+                return this.checkInequality(raw, container.answer);
+            }
+        }
         // Step 1: Assemble student expression from template
         var assembled = container.assembleTemplate;
         for (var i = 0; i < boxValues.length; i++) {
