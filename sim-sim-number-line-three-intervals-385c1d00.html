@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Line — Three Intervals</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .sim-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); display: flex; align-items: center; justify-content: center; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7.5, 3.8, 5.5, -1.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Number line (horizontal arrow both directions)
+        board.create('arrow', [[-7, 0], [5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.5,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        board.create('arrow', [[5, 0], [-7, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.5,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Tick marks and labels
+        var tickPositions = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4];
+        var tickHeight = 0.15;
+
+        for (var i = 0; i < tickPositions.length; i++) {
+            var tx = tickPositions[i];
+            board.create('segment', [[tx, -tickHeight], [tx, tickHeight]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [tx, -0.55, String(tx)], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 11, color: '#333333', fixed: true, highlight: false
+            });
+        }
+
+        // Open dots at x = -4 and x = 2
+        board.create('point', [-4, 0], {
+            name: '', size: 5,
+            fillColor: '#ffffff', strokeColor: '#222222', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+        board.create('point', [2, 0], {
+            name: '', size: 5,
+            fillColor: '#ffffff', strokeColor: '#222222', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        // Staple/bracket connectors — small and subtle
+        var stapleColor = '#555555';
+        var stapleWidth = 1.0;
+        var riserBottom = 0.4;
+        var riserTop = 0.8;
+        var barY = 0.8;
+
+        // Left staple: from -5.8 to -4.3
+        var lLeft = -5.8;
+        var lRight = -4.3;
+        board.create('segment', [[lLeft, riserBottom], [lLeft, riserTop]], { strokeColor: stapleColor, strokeWidth: stapleWidth, fixed: true, highlight: false });
+        board.create('segment', [[lLeft, barY], [lRight, barY]], { strokeColor: stapleColor, strokeWidth: stapleWidth, fixed: true, highlight: false });
+        board.create('segment', [[lRight, riserTop], [lRight, riserBottom]], { strokeColor: stapleColor, strokeWidth: stapleWidth, fixed: true, highlight: false });
+
+        // Middle staple: from -3.7 to 1.7
+        var mLeft = -3.7;
+        var mRight = 1.7;
+        board.create('segment', [[mLeft, riserBottom], [mLeft, riserTop]], { strokeColor: stapleColor, strokeWidth: stapleWidth, fixed: true, highlight: false });
+        board.create('segment', [[mLeft, barY], [mRight, barY]], { strokeColor: stapleColor, strokeWidth: stapleWidth, fixed: true, highlight: false });
+        board.create('segment', [[mRight, riserTop], [mRight, riserBottom]], { strokeColor: stapleColor, strokeWidth: stapleWidth, fixed: true, highlight: false });
+
+        // Right staple: from 2.3 to 4.0
+        var rLeft = 2.3;
+        var rRight = 4.0;
+        board.create('segment', [[rLeft, riserBottom], [rLeft, riserTop]], { strokeColor: stapleColor, strokeWidth: stapleWidth, fixed: true, highlight: false });
+        board.create('segment', [[rLeft, barY], [rRight, barY]], { strokeColor: stapleColor, strokeWidth: stapleWidth, fixed: true, highlight: false });
+        board.create('segment', [[rRight, riserTop], [rRight, riserBottom]], { strokeColor: stapleColor, strokeWidth: stapleWidth, fixed: true, highlight: false });
+
+        // Interval labels above staples — all black
+        var labelY = 1.6;
+
+        board.create('text', [(lLeft + lRight) / 2, labelY, 'x < -4'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold;'
+        });
+
+        board.create('text', [(mLeft + mRight) / 2, labelY, '-4 < x < 2'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold;'
+        });
+
+        board.create('text', [(rLeft + rRight) / 2, labelY, '2 < x'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold;'
+        });
+    </script>
+</body>
+</html>
