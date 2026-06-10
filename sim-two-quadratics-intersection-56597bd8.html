@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Quadratics</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 10px; height: 100%; }
+        .left-panel {
+            width: 155px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 14px;
+            display: flex; flex-direction: column; justify-content: center; gap: 14px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 4px;
+        }
+        .func-row {
+            display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px;
+        }
+        .func-swatch {
+            width: 18px; height: 3px; border-radius: 2px; flex-shrink: 0; margin-top: 8px;
+        }
+        .func-rule { font-size: 13px; line-height: 1.5; }
+        .hover-msg {
+            font-size: 11px; color: #777; line-height: 1.5; border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: 4px;
+        }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 8px; }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div>
+                    <div class="panel-label">Functions</div>
+                    <div class="func-row">
+                        <div class="func-swatch" style="background: #222222;"></div>
+                        <div class="func-rule" id="func1-label"></div>
+                    </div>
+                    <div class="func-row">
+                        <div class="func-swatch" style="background: #2563EB;"></div>
+                        <div class="func-rule" id="func2-label"></div>
+                    </div>
+                </div>
+                <div class="hover-msg">Hover over the plotted point to read its coordinates.</div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+
+    <script>
+        // Render function labels in panel
+        katex.render('y = -(x-1)^2 + 2', document.getElementById('func1-label'), { throwOnError: false });
+        katex.render('y = 2x^2 - 4x + 4', document.getElementById('func2-label'), { throwOnError: false });
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 9, 5.5, -2.5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        majorHeight: 0,
+                        minorHeight: 0,
+                        drawZero: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 2,
+                        majorHeight: 0,
+                        minorHeight: 0,
+                        drawZero: false
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [5.1, -0.4, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 8.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Colors
+        var COL_F1 = '#222222';
+        var COL_F2 = '#2563EB';
+
+        // Functions
+        function f1(x) { return -(x - 1) * (x - 1) + 2; }
+        function f2(x) { return 2 * x * x - 4 * x + 4; }
+
+        // Curves
+        board.create('functiongraph', [f1, -2.5, 5.5], {
+            strokeColor: COL_F1, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('functiongraph', [f2, -2.5, 5.5], {
+            strokeColor: COL_F2, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Tooltip system ──────────────────────────────────────────────
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function formatValKatex(v) {
+            var absV = Math.abs(v);
+            var sign = v < 0 ? '-' : '';
+            if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+            if (Math.abs(absV - 1/3) < 0.001) return sign + '\\tfrac{1}{3}';
+            if (Math.abs(absV - 2/3) < 0.001) return sign + '\\tfrac{2}{3}';
+            return v.toFixed(2);
+        }
+
+        function showTooltip(pt, color) {
+            var xCoord = pt.X();
+            var yCoord = pt.Y();
+            var latex = '\\color{' + color + '}{\\left(' + formatValKatex(xCoord)
+                      + ',\\,' + formatValKatex(yCoord) + '\\right)}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xCoord, yCoord], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+        // ── Intersection point (1, 2) ───────────────────────────────────
+        var intersection = board.create('point', [1, 2], {
+            name: '', size: 5, color: '#222222', fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: '#222222', highlightStrokeColor: '#222222'
+        });
+        intersection.on('over', function() { showTooltip(intersection, '#222222'); });
+        intersection.on('out', function() { hideTooltip(); });
+
+    </script>
+</body>
+</html>
