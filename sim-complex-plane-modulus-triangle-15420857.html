@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complex Plane — |3 + 4i|</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.2, 5.8, 6.2, -1.2],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444', label: { fontSize: 11 },
+                        minorTicks: 0, ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444', label: { fontSize: 11 },
+                        minorTicks: 0, ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [5.2, -0.5, 'Real'], { fontSize: 14, fixed: true, highlight: false, cssStyle: 'font-style:italic' });
+        board.create('text', [0.15, 5.4, 'Imaginary'], { fontSize: 14, fixed: true, highlight: false, cssStyle: 'font-style:italic' });
+
+        // Point (3, 4)
+        var P = board.create('point', [3, 4], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false,
+            showInfobox: false
+        });
+
+        // Point label: 3 + 4i
+        board.create('text', [3.25, 4.3, '3 + 4i'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+
+        // Horizontal leg: (0,0) to (3,0)
+        board.create('segment', [[0, 0], [3, 0]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+        });
+
+        // Vertical leg: (3,0) to (3,4)
+        board.create('segment', [[3, 0], [3, 4]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+        });
+
+        // Hypotenuse: (0,0) to (3,4)
+        board.create('segment', [[0, 0], [3, 4]], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Label for horizontal leg: "3"
+        board.create('text', [1.5, -0.55, '3'], {
+            fontSize: 13, color: '#DC2626', anchorX: 'middle', fixed: true, highlight: false, useKatex: true
+        });
+
+        // Label for vertical leg: "4"
+        board.create('text', [3.45, 2.0, '4'], {
+            fontSize: 13, color: '#DC2626', fixed: true, highlight: false, useKatex: true
+        });
+
+        // Label for hypotenuse: |3 + 4i|
+        board.create('text', [0.7, 2.7, '|3 + 4i|'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+    </script>
+</body>
+</html>
