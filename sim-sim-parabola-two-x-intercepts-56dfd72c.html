@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parabola with Two X-Intercepts</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; }
+        .container { height: 100%; padding: 0; }
+        .board-wrapper { background: white; border-radius: 8px; height: 100%; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 5.5, 5, -5.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Axes with arrows
+        board.create('arrow', [[-4.6, 0], [4.6, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('arrow', [[0, -5.0], [0, 5.0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Axis labels
+        board.create('text', [4.3, -0.6, '<i>x</i>'], { fontSize: 13, fixed: true, highlight: false });
+        board.create('text', [0.3, 4.6, '<i>y</i>'], { fontSize: 13, fixed: true, highlight: false });
+
+        // Parabola: y = x^2 - 4 (roots at x = -2 and x = 2, vertex at (0, -4))
+        board.create('functiongraph', [
+            function(x) { return x * x - 4; }
+        ], {
+            strokeColor: '#2563EB', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Red x-intercept points
+        board.create('point', [-2, 0], {
+            name: '', size: 4, color: '#DC2626', fixed: true, highlight: false
+        });
+        board.create('point', [2, 0], {
+            name: '', size: 4, color: '#DC2626', fixed: true, highlight: false
+        });
+
+        // Vertex point at (0, -4)
+        board.create('point', [0, -4], {
+            name: '', size: 4, color: '#2563EB', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
