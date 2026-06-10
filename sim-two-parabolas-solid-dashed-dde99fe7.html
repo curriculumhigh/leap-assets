@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Parabolas — Inequality Shading</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 10px; height: 100%; }
+        .left-panel {
+            width: 150px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 14px;
+            display: flex; flex-direction: column; justify-content: center; gap: 16px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 4px;
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+        }
+        .legend-line {
+            width: 24px; height: 0; border-top: 3px solid;
+        }
+        .legend-line.dashed {
+            border-top-style: dashed;
+        }
+        .legend-text { font-size: 12px; min-height: 20px; }
+        .shade-item {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+        }
+        .shade-swatch {
+            width: 16px; height: 16px; border-radius: 3px;
+        }
+        .shade-text { font-size: 11px; color: #555; min-height: 18px; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 8px; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div>
+                    <div class="panel-label">Functions</div>
+                    <div class="legend-item">
+                        <div class="legend-line" style="border-color: #222222;"></div>
+                        <div class="legend-text" id="legend-f1"></div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line dashed" style="border-color: #2563EB;"></div>
+                        <div class="legend-text" id="legend-f2"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="panel-label">Shading</div>
+                    <div class="shade-item">
+                        <div class="shade-swatch" style="background: rgba(220, 38, 38, 0.2); border: 1px solid #DC2626;"></div>
+                        <div class="shade-text" id="shade-label1"></div>
+                    </div>
+                    <div class="shade-item">
+                        <div class="shade-swatch" style="background: rgba(37, 99, 235, 0.2); border: 1px solid #2563EB;"></div>
+                        <div class="shade-text" id="shade-label2"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Render panel labels with KaTeX
+        katex.render('y = -x^2 + 6', document.getElementById('legend-f1'), { throwOnError: false });
+        katex.render('y = x^2 - 4x', document.getElementById('legend-f2'), { throwOnError: false });
+        katex.render('y \\leq -x^2 + 6', document.getElementById('shade-label1'), { throwOnError: false });
+        katex.render('y > x^2 - 4x', document.getElementById('shade-label2'), { throwOnError: false });
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 8, 7, -6],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        majorHeight: 0,
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        label: { fontSize: 11, offset: [0, -12] }
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        majorHeight: 0,
+                        minorTicks: 0,
+                        ticksDistance: 2,
+                        label: { fontSize: 11, offset: [-12, 0] }
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [6.6, -0.5, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 7.5, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Functions
+        function f1(x) { return -x * x + 6; }
+        function f2(x) { return x * x - 4 * x; }
+
+        // Shading: y <= -x^2 + 6 (red, below the solid parabola)
+        board.create('inequality', [
+            board.create('functiongraph', [f1, -3, 7], { visible: false, fixed: true })
+        ], {
+            inverse: false,
+            fillColor: '#DC2626',
+            fillOpacity: 0.12,
+            strokeWidth: 0,
+            fixed: true,
+            highlight: false
+        });
+
+        // Shading: y > x^2 - 4x (blue, above the dashed parabola)
+        board.create('inequality', [
+            board.create('functiongraph', [f2, -3, 7], { visible: false, fixed: true })
+        ], {
+            inverse: true,
+            fillColor: '#2563EB',
+            fillOpacity: 0.12,
+            strokeWidth: 0,
+            fixed: true,
+            highlight: false
+        });
+
+        // Solid parabola: y = -x^2 + 6
+        board.create('functiongraph', [f1, -3, 7], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Dashed parabola: y = x^2 - 4x
+        board.create('functiongraph', [f2, -3, 7], {
+            strokeColor: '#2563EB', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
