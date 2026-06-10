@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle on Coordinate Plane</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: white; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        #board { width: 500px; height: 300px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="board"></div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 4.2, 5.5, -4.2],
+            axis: true,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#222222', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444', label: { visible: false },
+                        minorTicks: 0, majorHeight: 0, drawZero: false, visible: false
+                    }
+                },
+                y: {
+                    strokeColor: '#222222', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444', label: { visible: false },
+                        minorTicks: 0, majorHeight: 0, drawZero: false, visible: false
+                    }
+                }
+            }
+        });
+
+        // Axis labels
+        board.create('text', [5.1, -0.35, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 3.85, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Circle centered at origin
+        var R = 3;
+        var center = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 3, color: '#222222', highlight: false
+        });
+
+        var circle = board.create('circle', [center, R], {
+            strokeColor: '#2563EB', strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none'
+        });
+
+        // "Center" label
+        board.create('text', [-1.6, 0.5, 'Center'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight: 500;'
+        });
+
+        // Point on the circle at angle ~(-30 degrees) to match screenshot
+        var angle = -Math.PI / 6;
+        var px = R * Math.cos(angle);
+        var py = R * Math.sin(angle);
+
+        var pt = board.create('point', [px, py], {
+            name: '', fixed: true, size: 3, color: '#059669', highlight: false
+        });
+
+        // Radius line from center to point
+        var radiusLine = board.create('segment', [center, pt], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Radius label — shifted right to avoid overlapping the line
+        var midX = px / 2 + 0.5;
+        var midY = py / 2 + 0.55;
+        board.create('text', [midX, midY, '<span style="color:#DC2626;">Radius:</span>'], {
+            fontSize: 11, fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [midX, midY - 0.5, '<i style="color:#DC2626;">r</i>'], {
+            fontSize: 13, fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Point label "Point on circle: (x, y)" in green
+        board.create('text', [px + 0.3, py - 0.35, '<span style="color:#059669;">Point on</span>'], {
+            fontSize: 11, fixed: true, highlight: false
+        });
+        board.create('text', [px + 0.3, py - 0.8, '<span style="color:#059669;">circle:</span>'], {
+            fontSize: 11, fixed: true, highlight: false
+        });
+        board.create('text', [px + 0.3, py - 1.3, '<i style="color:#059669;">(x, y)</i>'], {
+            fontSize: 12, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
