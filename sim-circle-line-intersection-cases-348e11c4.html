@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Line-Circle Intersection Cases</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { width: 500px; height: 300px; margin: 0 auto; display: flex; gap: 0; }
+        .panel { flex: 1; position: relative; }
+        .panel .board { width: 100%; height: 260px; }
+        .panel-label { text-align: center; font-size: 13px; font-weight: 600; color: #333; margin-top: 2px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="panel">
+            <div class="board" id="boardA"></div>
+            <div class="panel-label">Graph A</div>
+        </div>
+        <div class="panel">
+            <div class="board" id="boardB"></div>
+            <div class="panel-label">Graph B</div>
+        </div>
+        <div class="panel">
+            <div class="board" id="boardC"></div>
+            <div class="panel-label">Graph C</div>
+        </div>
+    </div>
+
+    <script>
+        var boardOpts = {
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        };
+
+        var CIRCLE_COL = '#2563EB';
+        var LINE_COL = '#222222';
+        var POINT_COL = '#222222';
+        var R = 2.2;
+
+        // ── Graph A: No solution ────────────────────────────────────────
+        var bA = JXG.JSXGraph.initBoard('boardA', JXG.merge(boardOpts, {
+            boundingbox: [-5, 5, 5, -5],
+            keepAspectRatio: true
+        }));
+
+        bA.create('circle', [[0, 0], R], {
+            strokeColor: CIRCLE_COL, strokeWidth: 2.0, fillColor: 'none',
+            fixed: true, highlight: false
+        });
+
+        // Diagonal line that clearly misses the circle
+        // Line passes through upper-left region, well away from the circle
+        // Closest distance from origin to line y = x + 4 is 4/sqrt(2) ≈ 2.83 > R=2.2
+        bA.create('line', [[-5, -1], [5, 9]], {
+            strokeColor: LINE_COL, strokeWidth: 1.5, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        // ── Graph B: One solution (tangent) ─────────────────────────────
+        var bB = JXG.JSXGraph.initBoard('boardB', JXG.merge(boardOpts, {
+            boundingbox: [-5, 5, 5, -5],
+            keepAspectRatio: true
+        }));
+
+        bB.create('circle', [[0, 0], R], {
+            strokeColor: CIRCLE_COL, strokeWidth: 2.0, fillColor: 'none',
+            fixed: true, highlight: false
+        });
+
+        // Horizontal line tangent to the bottom of the circle
+        bB.create('line', [[-4, -R], [4, -R]], {
+            strokeColor: LINE_COL, strokeWidth: 1.5, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        // Tangent point
+        bB.create('point', [0, -R], {
+            name: '', size: 4, color: POINT_COL, fixed: true, highlight: false
+        });
+
+        // ── Graph C: Two solutions (secant) ─────────────────────────────
+        var bC = JXG.JSXGraph.initBoard('boardC', JXG.merge(boardOpts, {
+            boundingbox: [-5, 5, 5, -5],
+            keepAspectRatio: true
+        }));
+
+        bC.create('circle', [[0, 0], R], {
+            strokeColor: CIRCLE_COL, strokeWidth: 2.0, fillColor: 'none',
+            fixed: true, highlight: false
+        });
+
+        // Diagonal line through the circle (y = x)
+        var dx = R * Math.cos(Math.PI / 4);
+        var dy = R * Math.sin(Math.PI / 4);
+
+        bC.create('line', [[-4, -4], [4, 4]], {
+            strokeColor: LINE_COL, strokeWidth: 1.5, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        // Two intersection points
+        bC.create('point', [dx, dy], {
+            name: '', size: 4, color: POINT_COL, fixed: true, highlight: false
+        });
+        bC.create('point', [-dx, -dy], {
+            name: '', size: 4, color: POINT_COL, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
