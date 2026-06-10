@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parabola Systems — Three Cases</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 4px; height: calc(100% - 8px); display: flex; flex-direction: column; }
+        .boards-row { display: flex; gap: 4px; flex: 1; min-height: 0; }
+        .board-col { flex: 1; display: flex; flex-direction: column; align-items: center; min-height: 0; }
+        .board-cell { width: 100%; flex: 1; min-height: 0; }
+        .board-label { font-size: 12px; font-weight: 600; color: #333; text-align: center; margin-top: 2px; flex-shrink: 0; }
+        .jxgbox { width: 100% !important; height: 100% !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="boards-row">
+            <div class="board-col">
+                <div class="board-cell" id="boardA"></div>
+                <div class="board-label">Graph A</div>
+            </div>
+            <div class="board-col">
+                <div class="board-cell" id="boardB"></div>
+                <div class="board-label">Graph B</div>
+            </div>
+            <div class="board-col">
+                <div class="board-cell" id="boardC"></div>
+                <div class="board-label">Graph C</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var boardConfig = {
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        };
+
+        var COL_UP = '#2563EB';
+        var COL_DOWN = '#222222';
+        var CURVE_W = 1.8;
+
+        var BB = [-3.5, 2.5, 3.5, -2.5];
+
+        // Graph A: No intersection — blue opens upward (higher), black opens downward (lower)
+        var bA = JXG.JSXGraph.initBoard('boardA', JXG.merge(boardConfig, {
+            boundingbox: BB
+        }));
+
+        bA.create('functiongraph', [function(x) { return 0.9 * x * x + 0.3; }, -2.2, 2.2], {
+            strokeColor: COL_UP, strokeWidth: CURVE_W, fixed: true, highlight: false
+        });
+
+        bA.create('functiongraph', [function(x) { return -0.9 * x * x - 0.3; }, -2.2, 2.2], {
+            strokeColor: COL_DOWN, strokeWidth: CURVE_W, fixed: true, highlight: false
+        });
+
+        // Graph B: One intersection (tangent at origin)
+        var bB = JXG.JSXGraph.initBoard('boardB', JXG.merge(boardConfig, {
+            boundingbox: BB
+        }));
+
+        bB.create('functiongraph', [function(x) { return 0.9 * x * x; }, -2.2, 2.2], {
+            strokeColor: COL_UP, strokeWidth: CURVE_W, fixed: true, highlight: false
+        });
+
+        bB.create('functiongraph', [function(x) { return -0.9 * x * x; }, -2.2, 2.2], {
+            strokeColor: COL_DOWN, strokeWidth: CURVE_W, fixed: true, highlight: false
+        });
+
+        bB.create('point', [0, 0], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Graph C: Two intersections
+        var bC = JXG.JSXGraph.initBoard('boardC', JXG.merge(boardConfig, {
+            boundingbox: BB
+        }));
+
+        bC.create('functiongraph', [function(x) { return 0.9 * x * x - 1.5; }, -2.5, 2.5], {
+            strokeColor: COL_UP, strokeWidth: CURVE_W, fixed: true, highlight: false
+        });
+
+        bC.create('functiongraph', [function(x) { return -0.9 * x * x + 1.5; }, -2.5, 2.5], {
+            strokeColor: COL_DOWN, strokeWidth: CURVE_W, fixed: true, highlight: false
+        });
+
+        var ix = Math.sqrt(5 / 3);
+        var iy = 0.9 * ix * ix - 1.5;
+        bC.create('point', [ix, iy], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false
+        });
+        bC.create('point', [-ix, iy], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
