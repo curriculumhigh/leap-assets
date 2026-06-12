@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pascal's Triangle and the Binomial Expansion</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 720px; margin: 0; padding: 6px; height: calc(100% - 12px); display: flex; flex-direction: column; }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; flex: 1; min-height: 0; }
+        #board { width: 100%; height: 100%; }
+        .controls { background: white; border-radius: 8px; margin-top: 6px; padding: 8px 12px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn { font-size: 13px; padding: 6px 16px; border: 1px solid #d0d0d0; border-radius: 5px; background: #f5f5f5; color: #333; cursor: pointer; font-family: inherit; }
+        .btn-next { background: #2563EB; color: #fff; border-color: #2563EB; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+        <div class="controls">
+            <button class="btn btn-next" id="toggle-btn">Show Binomial Expansion</button>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('load', function() {
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-9, 6.4, 9, -6.4],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_COEF = '#2563EB';
+
+        // ---- Layout geometry ----
+        var X_SPACING = 1.5;   // horizontal gap between adjacent entries in a Pascal row
+        var Y_TOP = 5.0;       // y of row 0
+        var Y_STEP = 1.85;     // vertical gap between rows
+
+        function posX(n, k) { return (k - n / 2) * X_SPACING; }
+        function posY(n) { return Y_TOP - n * Y_STEP; }
+
+        // Pascal's Triangle rows n = 0..5
+        var rows = [
+            [1],
+            [1, 1],
+            [1, 2, 1],
+            [1, 3, 3, 1],
+            [1, 4, 6, 4, 1],
+            [1, 5, 10, 10, 5, 1]
+        ];
+
+        // =====================================================================
+        // VIEW A — Pascal's Triangle (centered numbers, coefficients in blue)
+        // =====================================================================
+        var pascalEls = [];
+        var i, j;
+        for (i = 0; i < rows.length; i++) {
+            for (j = 0; j < rows[i].length; j++) {
+                var t = board.create('text', [posX(i, j), posY(i), String(rows[i][j])], {
+                    anchorX: 'middle', anchorY: 'middle',
+                    fontSize: 18, color: COL_COEF,
+                    fixed: true, highlight: false,
+                    useKatex: false,
+                    visible: true,
+                    cssStyle: 'font-weight:600;'
+                });
+                pascalEls.push(t);
+            }
+        }
+
+        // =====================================================================
+        // VIEW B — Binomial Expansion (left-aligned, coefficients in blue)
+        // =====================================================================
+        // Only the coefficient is colored — \textcolor colors just its argument
+        // (\color would be a switch that colors the rest of the line).
+        var C = '\\textcolor{#2563EB}';
+        var binomLines = [
+            '(a+b)^0 = ' + C + '{1}',
+            '(a+b)^1 = ' + C + '{1}a + ' + C + '{1}b',
+            '(a+b)^2 = ' + C + '{1}a^2 + ' + C + '{2}ab + ' + C + '{1}b^2',
+            '(a+b)^3 = ' + C + '{1}a^3 + ' + C + '{3}a^2b + ' + C + '{3}ab^2 + ' + C + '{1}b^3',
+            '(a+b)^4 = ' + C + '{1}a^4 + ' + C + '{4}a^3b + ' + C + '{6}a^2b^2 + ' + C + '{4}ab^3 + ' + C + '{1}b^4',
+            '(a+b)^5 = ' + C + '{1}a^5 + ' + C + '{5}a^4b + ' + C + '{10}a^3b^2 + ' + C + '{10}a^2b^3 + ' + C + '{5}ab^4 + ' + C + '{1}b^5'
+        ];
+
+        var BINOM_X = 0;    // centered, so the expansions stack into a triangle/pyramid
+        var binomEls = [];
+        for (i = 0; i < binomLines.length; i++) {
+            var b = board.create('text', [BINOM_X, posY(i), binomLines[i]], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 16, color: '#222222',
+                fixed: true, highlight: false,
+                useKatex: true,
+                visible: false
+            });
+            binomEls.push(b);
+        }
+
+        // ---- Toggle behavior ----
+        function setView(showBinomial) {
+            var m;
+            for (m = 0; m < pascalEls.length; m++) { pascalEls[m].setAttribute({ visible: !showBinomial }); }
+            for (m = 0; m < binomEls.length; m++) { binomEls[m].setAttribute({ visible: showBinomial }); }
+            board.update();
+        }
+
+        var showingBinomial = false;
+        var toggleBtn = document.getElementById('toggle-btn');
+
+        toggleBtn.addEventListener('click', function() {
+            showingBinomial = !showingBinomial;
+            setView(showingBinomial);
+            toggleBtn.textContent = showingBinomial ? 'Show Pascal’s Triangle' : 'Show Binomial Expansion';
+        });
+
+        // initial state: Pascal's Triangle
+        setView(false);
+
+        });
+    </script>
+</body>
+</html>
