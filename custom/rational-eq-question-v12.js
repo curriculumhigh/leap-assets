@@ -94,11 +94,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             || href.indexOf("/classroom") >= 0
             || href.indexOf("teacher") >= 0;
 
-        // Detect the LEAP run mode from the worksheet's React context:
-        //   practice          → infinite retry (Check/Retry never hard-locks)
-        //   in_class / unknown → keep the tutor-lock behavior (safe default)
-        this.runMode = this._detectRunMode();
-        try { console.log("[rational-eq-v12] runMode:", this.runMode); } catch (e) {}
+        // LEAP run mode (practice / homework / in_class) is resolved LAZILY on
+        // the first lock decision — NOT here. At construction the worksheet and
+        // the live class may not have mounted yet (the class can still be
+        // "Connecting"), so reading the React context now can catch a transient
+        // or default value. See _getRunMode() / _readLeapContext().
+        this._runMode = null;
+        this._runModeResolved = false;
 
         // Internal state
         this.MQ = null;
@@ -143,14 +145,21 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     }
 
     // ── LEAP run-mode detection ──────────────────────────────────────────
-    // The worksheet renderer passes its runtime context (nodeType, inClass,
-    // activityType, …) as React props. Because this widget renders inline in
-    // the same document, that context is reachable by walking React's fiber
-    // tree. Cached on the constructor so the walk runs at most once per page
-    // (only successful reads are cached, so a transient early miss can't
-    // poison later widgets on the same page).
+    // The worksheet renderer passes its runtime context as React props. Because
+    // this widget renders inline in the same document, that context is reachable
+    // by walking React's fiber tree.
+    //
+    // We require the AUTHORITATIVE bag — a fiber whose props carry nodeType AND
+    // inClass AND activityType together (the rich shape the worksheet context
+    // exposes: e.g. {nodeType:"LEARNING", inClass:true, activityType:"lesson-v3.1"}).
+    // A stray/default shell that happens to carry only `nodeType` (seen briefly
+    // during load / on the blocked "open on desktop" page) is ignored, so it
+    // can't mis-resolve the mode. Returns null until the real context is found.
+    //
+    // NOT cached statically: while the live class is still "Connecting" the
+    // context may not be mounted yet, so we re-walk until an authoritative read
+    // succeeds (then _getRunMode caches the decisive result per widget).
     Question._readLeapContext = function () {
-        if (Question.__leapCtx) return Question.__leapCtx;
         var ctx = null;
         try {
             var keyStarting = function (el, prefix) {
@@ -171,38 +180,50 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 if (!fib || seen.has(fib)) continue;
                 seen.add(fib);
                 p = fib.memoizedProps;
-                if (p && typeof p === "object" && ("nodeType" in p)) {
-                    ctx = { nodeType: p.nodeType, inClass: p.inClass, activityType: p.activityType, isReview: p.isReview };
+                if (p && typeof p === "object"
+                        && ("nodeType" in p) && ("inClass" in p) && ("activityType" in p)) {
+                    ctx = { nodeType: p.nodeType, inClass: p.inClass, activityType: p.activityType };
                     break;
                 }
                 if (fib.child) q.push(fib.child);
                 if (fib.sibling) q.push(fib.sibling);
             }
         } catch (e) { ctx = null; }
-        if (ctx) Question.__leapCtx = ctx;
         return ctx;
     };
 
-    // Map the LEAP context to a run mode. Falls back to "in_class" (today's
-    // tutor-lock behavior) whenever the context can't be read — so a detection
-    // failure never strips the safety lock.
+    // Map the authoritative context to a run mode. Returns null when the context
+    // can't be read yet (caller fails safe to in_class — the tutor-lock path).
     Question.prototype._detectRunMode = function () {
         try {
             var ctx = Question._readLeapContext();
-            if (!ctx) return "in_class";
+            if (!ctx) return null;
             var nodeType = String(ctx.nodeType || "").toUpperCase();
-            var inClass = ctx.inClass === true;
-            if (inClass) return "in_class";
-            if (nodeType === "PRACTICE") return "practice";
+            if (ctx.inClass === true) return "in_class";  // teacher present → tutor lock
+            if (nodeType === "PRACTICE") return "practice"; // infinite retry
             return "homework"; // LEARNING done solo (self-mode included for now)
         } catch (e) {
-            return "in_class";
+            return null;
         }
+    };
+
+    // Resolve the run mode lazily and cache the first DECISIVE (authoritative)
+    // result. Until then — and on any failure — behaves as in_class (tutor
+    // lock), so the safety lock is never stripped by a missing/early read.
+    Question.prototype._getRunMode = function () {
+        if (this._runModeResolved) return this._runMode;
+        var mode = this._detectRunMode();
+        if (mode) {
+            this._runMode = mode;
+            this._runModeResolved = true;
+            try { console.log("[rational-eq-v12] runMode:", mode); } catch (e) {}
+        }
+        return mode || "in_class";
     };
 
     // True when wrong answers must never hard-lock (unlimited Check/Retry).
     Question.prototype._infiniteRetry = function () {
-        return this.runMode === "practice";
+        return this._getRunMode() === "practice";
     };
 
     Question.prototype.render = function () {
