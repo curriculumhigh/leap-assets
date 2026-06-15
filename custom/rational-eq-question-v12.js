@@ -2680,7 +2680,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             if (self.attemptCounts[stepKey] >= 2 && !self._infiniteRetry()) {
                 self.lockedSteps[stepKey] = true;
                 $btn.text("Retry").prop("disabled", true).addClass("req-retry-locked");
-                $fbPill.attr("class", "req-fb").text("");
+                $fbPill.attr("class", "req-fb wrong").text("Not quite right!");
             } else {
                 self.retryMode[stepKey] = true;
                 $btn.text("Retry");
@@ -2763,7 +2763,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 if (self.attemptCounts[sec.id] >= 2 && !self._infiniteRetry()) {
                     self.lockedSteps[sec.id] = true;
                     $btnSC.text("Retry").prop("disabled", true).addClass("req-retry-locked");
-                    $fbPill.attr("class", "req-fb").text("");
+                    $fbPill.attr("class", "req-fb wrong").text("Not quite right!");
                 } else {
                     self.retryMode[sec.id] = true;
                     $btnSC.text("Retry");
@@ -2895,7 +2895,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 self.lockedSteps[sec.id] = true;
                 $btnTWI.text("Retry").prop("disabled", true).addClass("req-retry-locked");
                 var $fbPillTWI = $("#" + self.uid + "-fbpill-" + sec.id);
-                $fbPillTWI.attr("class", "req-fb").text("");
+                $fbPillTWI.attr("class", "req-fb wrong").text("Not quite right!");
             } else {
                 self.retryMode[sec.id] = true;
                 $btnTWI.text("Retry");
@@ -3371,7 +3371,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                             self._lockRowInputs(sec, ri);
                             var $lockedBtn = self._findStepButton(sec.id, ri);
                             $lockedBtn.text("Retry").prop("disabled", true).addClass("req-retry-locked");
-                            $("#" + self.uid + "-fbpill-" + sec.id + "-" + ri).attr("class", "req-fb").text("");
+                            $("#" + self.uid + "-fbpill-" + sec.id + "-" + ri).attr("class", "req-fb wrong").text("Not quite right!");
                         }
                         tableFullyCompleted = false;
                         break;
@@ -3418,7 +3418,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                         self._lockSectionInputs(sec);
                         var $lockedBtn = self._findSectionButton(sec.id);
                         $lockedBtn.text("Retry").prop("disabled", true).addClass("req-retry-locked");
-                        $("#" + self.uid + "-fbpill-" + sec.id).attr("class", "req-fb").text("");
+                        $("#" + self.uid + "-fbpill-" + sec.id).attr("class", "req-fb wrong").text("Not quite right!");
                     }
                     self.events.trigger("changed", self.getResponse());
                     return;
