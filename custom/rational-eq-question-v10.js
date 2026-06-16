@@ -895,6 +895,14 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         } catch (e) { return false; }
     };
 
+    // Strip thousands-separator commas (groups of exactly 3 digits) so e.g.
+    // "678,900,000" becomes "678900000". Scoped to the grouping pattern so real
+    // comma lists / coordinates like "3,-2" or "(1, 2)" are left untouched.
+    Question.prototype._stripThousands = function (s) {
+        if (typeof s !== "string") return s;
+        return s.replace(/\b\d{1,3}(?:,\d{3})+\b/g, function (m) { return m.replace(/,/g, ""); });
+    };
+
     Question.prototype.validateInput = function (studentLatex, inputSpec) {
         // LEGACY — DO NOT USE in new items or new versions of existing items.
         // setEquiv  → use equivSymbolic + constraints: { ordered: false }
@@ -918,6 +926,15 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             return this.checkInequality(studentLatex, inputSpec.answer);
         }
         var constraints = inputSpec.constraints || {};
+        // Thousands-separator tolerance (opt-in via constraints.allowThousands).
+        // Strip grouping commas so "678,900,000" is compared as the single number
+        // 678900000, instead of being split into a 3-item comma list further down.
+        // Default off → existing items unaffected. Symmetric: works regardless of
+        // whether the author wrote the answer with or without commas.
+        if (constraints.allowThousands) {
+            studentLatex = this._stripThousands(studentLatex);
+            inputSpec = Object.assign({}, inputSpec, { answer: this._stripThousands(inputSpec.answer) });
+        }
         var studentNerd = this.latexToNerdamer(studentLatex);
         if (!studentNerd.trim()) return false;
 
