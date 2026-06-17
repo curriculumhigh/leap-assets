@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Square with Angle 3x°</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; }
+        .container { padding: 6px; height: calc(100% - 12px); display: flex; align-items: center; justify-content: center; }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; width: 220px; height: 220px; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 6.5, 6.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Square vertices
+        var A = board.create('point', [0, 0], { visible: false, fixed: true, name: '' });
+        var B = board.create('point', [5, 0], { visible: false, fixed: true, name: '' });
+        var C = board.create('point', [5, 5], { visible: false, fixed: true, name: '' });
+        var D = board.create('point', [0, 5], { visible: false, fixed: true, name: '' });
+
+        // Square polygon
+        board.create('polygon', [A, B, C, D], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Circular arc at A (bottom-left) — from point on AB to point on AD
+        var arcRadius = 0.8;
+        var arcP1 = board.create('point', [arcRadius, 0], { visible: false, fixed: true, name: '' });
+        var arcP2 = board.create('point', [0, arcRadius], { visible: false, fixed: true, name: '' });
+
+        board.create('arc', [A, arcP1, arcP2], {
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fillColor: '#DC2626', fillOpacity: 0.06,
+            fixed: true, highlight: false
+        });
+
+        // Label "3x°" along the bisector of the angle
+        board.create('text', [1.0, 1.0, '3x\\degree'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
