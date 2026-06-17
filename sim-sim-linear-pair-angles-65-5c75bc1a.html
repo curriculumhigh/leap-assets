@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linear Pair — x° and 65°</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 4, 5, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertex point
+        var V = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // Straight line endpoints (left and right rays)
+        var A = board.create('point', [-4.5, 0], {
+            name: '', fixed: true, visible: false
+        });
+        var B = board.create('point', [4.5, 0], {
+            name: '', fixed: true, visible: false
+        });
+
+        // The ray creating the two angles — 65° from the positive x-direction
+        // so the angle between ray and right ray (B) is 65°
+        var rayAngle = 65 * Math.PI / 180;
+        var C = board.create('point', [3.5 * Math.cos(rayAngle), 3.5 * Math.sin(rayAngle)], {
+            name: '', fixed: true, visible: false
+        });
+
+        // Draw the straight line (base)
+        board.create('segment', [A, B], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Draw the ray from vertex upward
+        board.create('segment', [V, C], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Angle arc for x° (left angle: from ray C to ray A, measured at V)
+        board.create('nonReflexAngle', [C, V, A], {
+            radius: 1.2,
+            fillColor: '#2563EB', fillOpacity: 0.08,
+            strokeColor: '#2563EB', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Angle arc for 65° (right angle: from ray B to ray C, measured at V)
+        board.create('nonReflexAngle', [B, V, C], {
+            radius: 1.2,
+            fillColor: '#059669', fillOpacity: 0.08,
+            strokeColor: '#059669', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Label for x° — positioned inside the left angle (bisector of 65°→180°)
+        var xBisector = (Math.PI + rayAngle) / 2;
+        board.create('text', [1.8 * Math.cos(xBisector), 1.8 * Math.sin(xBisector), 'x\u00B0'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#2563EB', cssStyle: 'font-weight:600; font-style:italic;',
+            fixed: true, highlight: false
+        });
+
+        // Label for 65° — positioned inside the right angle (bisector of 0°→65°)
+        var rightBisector = rayAngle / 2;
+        board.create('text', [1.8 * Math.cos(rightBisector), 1.8 * Math.sin(rightBisector), '65\u00B0'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#059669', cssStyle: 'font-weight:600;',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
