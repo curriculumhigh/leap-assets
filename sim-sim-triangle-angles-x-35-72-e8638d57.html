@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle Angles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; }
+        .container { padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.3, 4.5, 6.2, -0.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertices computed for exact angles: A=35°, B=72°, C=73°
+        var A = board.create('point', [0.5, 0.5], { visible: false, fixed: true, name: '' });
+        var B = board.create('point', [5.5, 0.5], { visible: false, fixed: true, name: '' });
+        var C = board.create('point', [4.57, 3.35], { visible: false, fixed: true, name: '' });
+
+        // Triangle edges
+        board.create('polygon', [A, B, C], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Angle colors
+        var COL_A = '#2563EB';  // 35° at A
+        var COL_B = '#059669';  // 72° at B
+        var COL_C = '#D97706';  // x° at C
+
+        // Angle arcs
+        board.create('nonReflexAngle', [B, A, C], {
+            radius: 0.55,
+            fillColor: COL_A, fillOpacity: 0.12,
+            strokeColor: COL_A, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [C, B, A], {
+            radius: 0.55,
+            fillColor: COL_B, fillOpacity: 0.12,
+            strokeColor: COL_B, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [A, C, B], {
+            radius: 0.55,
+            fillColor: COL_C, fillOpacity: 0.12,
+            strokeColor: COL_C, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // Compute bisector directions for label placement
+        // Angle at A (35°): bisector between AB and AC directions
+        var abDx = B.X() - A.X(), abDy = B.Y() - A.Y();
+        var abLen = Math.sqrt(abDx * abDx + abDy * abDy);
+        var abUx = abDx / abLen, abUy = abDy / abLen;
+
+        var acDx = C.X() - A.X(), acDy = C.Y() - A.Y();
+        var acLen = Math.sqrt(acDx * acDx + acDy * acDy);
+        var acUx = acDx / acLen, acUy = acDy / acLen;
+
+        var bisAx = abUx + acUx, bisAy = abUy + acUy;
+        var bisALen = Math.sqrt(bisAx * bisAx + bisAy * bisAy);
+        bisAx /= bisALen; bisAy /= bisALen;
+
+        // For narrow angle (35°), push label further out along bisector
+        var labelDistA = 1.05;
+
+        board.create('text', [A.X() + bisAx * labelDistA, A.Y() + bisAy * labelDistA, '35\u00B0'], {
+            fontSize: 12, color: COL_A, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Angle at B (72°): bisector between BA and BC directions
+        var baDx = A.X() - B.X(), baDy = A.Y() - B.Y();
+        var baLen = Math.sqrt(baDx * baDx + baDy * baDy);
+        var baUx = baDx / baLen, baUy = baDy / baLen;
+
+        var bcDx = C.X() - B.X(), bcDy = C.Y() - B.Y();
+        var bcLen = Math.sqrt(bcDx * bcDx + bcDy * bcDy);
+        var bcUx = bcDx / bcLen, bcUy = bcDy / bcLen;
+
+        var bisBx = baUx + bcUx, bisBy = baUy + bcUy;
+        var bisBLen = Math.sqrt(bisBx * bisBx + bisBy * bisBy);
+        bisBx /= bisBLen; bisBy /= bisBLen;
+
+        var labelDistB = 0.95;
+
+        board.create('text', [B.X() + bisBx * labelDistB, B.Y() + bisBy * labelDistB, '72\u00B0'], {
+            fontSize: 12, color: COL_B, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Angle at C (x°): bisector between CA and CB directions
+        var caDx = A.X() - C.X(), caDy = A.Y() - C.Y();
+        var caLen = Math.sqrt(caDx * caDx + caDy * caDy);
+        var caUx = caDx / caLen, caUy = caDy / caLen;
+
+        var cbDx = B.X() - C.X(), cbDy = B.Y() - C.Y();
+        var cbLen = Math.sqrt(cbDx * cbDx + cbDy * cbDy);
+        var cbUx = cbDx / cbLen, cbUy = cbDy / cbLen;
+
+        var bisCx = caUx + cbUx, bisCy = caUy + cbUy;
+        var bisCLen = Math.sqrt(bisCx * bisCx + bisCy * bisCy);
+        bisCx /= bisCLen; bisCy /= bisCLen;
+
+        var labelDistC = 0.9;
+
+        board.create('text', [C.X() + bisCx * labelDistC, C.Y() + bisCy * labelDistC, 'x\u00B0'], {
+            fontSize: 12, color: COL_C, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-style:italic'
+        });
+    </script>
+</body>
+</html>
