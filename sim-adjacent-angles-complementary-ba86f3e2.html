@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adjacent Angles — Complementary</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 250px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 5.8, 5.8, -0.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_ANGLE1 = '#2563EB';
+        var COL_ANGLE2 = '#059669';
+        var COL_RAY = '#555555';
+
+        // Vertex
+        var V = board.create('point', [0.5, 0.5], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // Ray length
+        var L = 4.5;
+
+        // Outer ray 1: horizontal (0°)
+        var angRay1 = 0;
+        var R1 = board.create('point', [V.X() + L * Math.cos(angRay1), V.Y() + L * Math.sin(angRay1)], {
+            name: '', fixed: true, visible: false
+        });
+
+        // Outer ray 2: vertical (90°)
+        var angRay2 = Math.PI / 2;
+        var R2 = board.create('point', [V.X() + L * Math.cos(angRay2), V.Y() + L * Math.sin(angRay2)], {
+            name: '', fixed: true, visible: false
+        });
+
+        // Interior ray: 27° from horizontal
+        var angInterior = 27 * Math.PI / 180;
+        var RI = board.create('point', [V.X() + L * Math.cos(angInterior), V.Y() + L * Math.sin(angInterior)], {
+            name: '', fixed: true, visible: false
+        });
+
+        // Draw rays
+        board.create('arrow', [V, R1], {
+            strokeColor: COL_RAY, strokeWidth: 1.5, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+        board.create('arrow', [V, R2], {
+            strokeColor: COL_RAY, strokeWidth: 1.5, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+        board.create('arrow', [V, RI], {
+            strokeColor: COL_RAY, strokeWidth: 1.5, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        // Angle arc for 27° (from horizontal ray to interior ray)
+        var arc1Radius = 1.4;
+        board.create('curve', [
+            function(t) { return V.X() + arc1Radius * Math.cos(t); },
+            function(t) { return V.Y() + arc1Radius * Math.sin(t); },
+            0,
+            angInterior
+        ], {
+            strokeColor: COL_ANGLE1, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Angle arc for x° (from interior ray to vertical ray)
+        var arc2Radius = 1.55;
+        board.create('curve', [
+            function(t) { return V.X() + arc2Radius * Math.cos(t); },
+            function(t) { return V.Y() + arc2Radius * Math.sin(t); },
+            angInterior,
+            Math.PI / 2
+        ], {
+            strokeColor: COL_ANGLE2, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Label for 27°
+        var bisect1 = angInterior / 2;
+        var lbl1Dist = 1.9;
+        board.create('text', [
+            V.X() + lbl1Dist * Math.cos(bisect1),
+            V.Y() + lbl1Dist * Math.sin(bisect1),
+            '27^\\circ'
+        ], {
+            useKatex: true, fontSize: 13, color: COL_ANGLE1,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // Label for x°
+        var bisect2 = (angInterior + Math.PI / 2) / 2;
+        var lbl2Dist = 2.1;
+        board.create('text', [
+            V.X() + lbl2Dist * Math.cos(bisect2),
+            V.Y() + lbl2Dist * Math.sin(bisect2),
+            'x^\\circ'
+        ], {
+            useKatex: true, fontSize: 13, color: COL_ANGLE2,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
