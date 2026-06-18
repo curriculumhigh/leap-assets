@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>region-between-2x-and-x2</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+      // Build the board only after all scripts (including KaTeX) have loaded,
+      // so useKatex:true labels render as math, not raw text.
+      window.addEventListener('load', function () {
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 4.8, 2.8, -0.5],
+            axis: true,
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 },
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 }
+                }
+            }
+        });
+
+        var COL_LINE  = '#222222';   // line y = 2x
+        var COL_PARAB = '#2563EB';   // parabola y = x^2
+
+        // Shaded region between y = 2x (upper) and y = x^2 (lower) on [0,2]
+        board.create('curve', [
+            function (t) { if (t <= 2) { return t; } else { return 4 - t; } },
+            function (t) {
+                if (t <= 2) { return 2 * t; }            // line y = 2x
+                else { var x = 4 - t; return x * x; }     // parabola y = x^2
+            },
+            0, 4
+        ], {
+            strokeColor: 'none', strokeWidth: 0,
+            fillColor: '#888888', fillOpacity: 0.15,
+            fixed: true, highlight: false
+        });
+
+        // Boundary: line y = 2x from (0,0) to (2,4)
+        board.create('segment', [[0, 0], [2, 4]], {
+            strokeColor: COL_LINE, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Boundary: parabola y = x^2 from (0,0) to (2,4)
+        board.create('functiongraph', [function (x) { return x * x; }, 0, 2], {
+            strokeColor: COL_PARAB, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Corner points of the region
+        board.create('point', [0, 0], { name: '', size: 2, color: COL_LINE, fixed: true, highlight: false, showInfobox: false });
+        board.create('point', [2, 4], { name: '', size: 2, color: COL_LINE, fixed: true, highlight: false, showInfobox: false });
+
+        // Curve labels
+        board.create('text', [0.55, 1.85, 'y=2x'], {
+            useKatex: true, fontSize: 13, color: COL_LINE, anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false
+        });
+        board.create('text', [2.18, 3.4, 'y=x^2'], {
+            useKatex: true, fontSize: 13, color: COL_PARAB, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // Axis labels near arrow tips
+        board.create('text', [2.62, -0.26, 'x'], { useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+        board.create('text', [0.18, 4.62, 'y'], { useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+      });
+    </script>
+</body>
+</html>
