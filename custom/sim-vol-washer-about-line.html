@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>volume-washer-method-about-horizontal-line</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+      // Build the board only after all scripts (including KaTeX) have loaded,
+      // so useKatex:true labels render as math, not raw text.
+      window.addEventListener('load', function () {
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.4, 2.4, 1.6, -0.4],
+            axis: true,
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 },
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 0.5 }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 0.5 }
+                }
+            }
+        });
+
+        // Palette
+        var COL_CURVE = '#222222';   // boundary curves y = x and y = x^2 (primary)
+        var COL_AXIS  = '#2563EB';   // axis of revolution y = 2 (emphasized)
+        var COL_OUTER = '#DC2626';   // outer radius R (to far curve, lower)
+        var COL_INNER = '#059669';   // inner radius r (to near curve, upper)
+
+        var YTOP = 2;                // axis of revolution
+        var XMIN = 0, XMAX = 1;      // region bounds; curves meet at (0,0) and (1,1)
+
+        function fLine(x) { return x; }       // y = x  (upper)
+        function fPar(x)  { return x * x; }   // y = x^2 (lower)
+
+        // --- Shaded region between y = x (upper) and y = x^2 (lower) on [0,1] ---
+        var regionPts = [];
+        var N = 80, i, xx;
+        // top edge: along y = x from x = 0 to x = 1
+        for (i = 0; i <= N; i++) { xx = XMIN + (XMAX - XMIN) * i / N; regionPts.push([xx, fLine(xx)]); }
+        // bottom edge: back along y = x^2 from x = 1 to x = 0
+        for (i = N; i >= 0; i--) { xx = XMIN + (XMAX - XMIN) * i / N; regionPts.push([xx, fPar(xx)]); }
+        board.create('polygon', regionPts, {
+            borders: { strokeColor: 'none', strokeWidth: 0 },
+            fillColor: '#888888', fillOpacity: 0.15,
+            vertices: { visible: false }, fixed: true, highlight: false, withLines: false
+        });
+
+        // --- Boundary curves ---
+        board.create('functiongraph', [fLine, XMIN, XMAX], {
+            strokeColor: COL_CURVE, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('functiongraph', [fPar, XMIN, XMAX], {
+            strokeColor: COL_CURVE, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // --- Axis of revolution: line y = 2 (emphasized, blue) ---
+        board.create('segment', [[-0.3, YTOP], [1.5, YTOP]], {
+            strokeColor: COL_AXIS, strokeWidth: 2.2, fixed: true, highlight: false
+        });
+
+        // Corner points where the two curves meet
+        board.create('point', [0, 0], { name: '', size: 2, color: COL_CURVE, fixed: true, highlight: false, showInfobox: false });
+        board.create('point', [1, 1], { name: '', size: 2, color: COL_CURVE, fixed: true, highlight: false, showInfobox: false });
+
+        // --- Representative VERTICAL radii dropping from the line y = 2 ---
+        // Outer radius R: from (0.5, 2) down to the FAR (lower) curve y = x^2 -> (0.5, 0.25)
+        var XR = 0.5;
+        board.create('segment', [[XR, YTOP], [XR, fPar(XR)]], {
+            strokeColor: COL_OUTER, strokeWidth: 2.6, fixed: true, highlight: false, layer: 7
+        });
+        board.create('point', [XR, YTOP], { name: '', size: 2.5, color: COL_OUTER, fixed: true, highlight: false, showInfobox: false });
+        board.create('point', [XR, fPar(XR)], { name: '', size: 2.5, color: COL_CURVE, fixed: true, highlight: false, showInfobox: false });
+
+        // Inner radius r: from (0.55, 2) down to the NEAR (upper) curve y = x -> (0.55, 0.55)
+        var XI = 0.55;
+        board.create('segment', [[XI, YTOP], [XI, fLine(XI)]], {
+            strokeColor: COL_INNER, strokeWidth: 2.6, fixed: true, highlight: false, layer: 7
+        });
+        board.create('point', [XI, YTOP], { name: '', size: 2.5, color: COL_INNER, fixed: true, highlight: false, showInfobox: false });
+        board.create('point', [XI, fLine(XI)], { name: '', size: 2.5, color: COL_CURVE, fixed: true, highlight: false, showInfobox: false });
+
+        // --- Labels (KaTeX) ---
+        // Outer radius R label (red) — left of its segment, in the lower span it spans alone
+        board.create('text', [XR - 0.07, (fLine(XI) + fPar(XR)) / 2 + 0.05, 'R'], {
+            useKatex: true, fontSize: 14, color: COL_OUTER, anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false
+        });
+        // Inner radius r label (green) — right of its segment, near the upper portion
+        board.create('text', [XI + 0.07, (YTOP + fLine(XI)) / 2, 'r'], {
+            useKatex: true, fontSize: 14, color: COL_INNER, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // Curve labels
+        board.create('text', [1.02, 1.0, 'y=x'], {
+            useKatex: true, fontSize: 13, color: COL_CURVE, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false
+        });
+        board.create('text', [1.02, 0.78, 'y=x^2'], {
+            useKatex: true, fontSize: 13, color: COL_CURVE, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // Axis-of-revolution label, above the line on the clear left side
+        board.create('text', [-0.32, YTOP + 0.16, '\\text{axis of revolution: }y=2'], {
+            useKatex: true, fontSize: 12, color: COL_AXIS, anchorX: 'left', anchorY: 'bottom', fixed: true, highlight: false
+        });
+
+        // Axis labels near arrow tips
+        board.create('text', [1.5, -0.16, 'x'], { useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+        board.create('text', [0.1, 2.3, 'y'], { useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+      });
+    </script>
+</body>
+</html>
