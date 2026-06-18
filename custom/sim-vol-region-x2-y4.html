@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>region-x2-below-y4</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+      window.addEventListener('load', function () {
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 4.8, 2.6, -0.5],
+            axis: true,
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 },
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 }
+                }
+            }
+        });
+
+        var COL_LINE  = '#222222';   // line y = 4
+        var COL_PARAB = '#2563EB';   // parabola y = x^2
+
+        // Shaded region: above y = x^2, below y = 4, right of x = 0 (0 <= x <= 2)
+        // Walk up the y-axis from (0,0) to (0,4), across y=4 to (2,4),
+        // then back down the parabola from x=2 to x=0.
+        board.create('curve', [
+            function (t) {
+                if (t <= 1)      { return 0; }             // up the y-axis
+                else if (t <= 2) { return 2 * (t - 1); }     // across y = 4 (x: 0 -> 2)
+                else             { return 4 - t; }          // back along parabola (x from 2 to 0)
+            },
+            function (t) {
+                if (t <= 1)      { return 4 * t; }          // up the y-axis (0 to 4)
+                else if (t <= 2) { return 4; }              // across y = 4
+                else             { var x = 4 - t; return x * x; } // parabola y = x^2
+            },
+            0, 4
+        ], {
+            strokeColor: 'none', strokeWidth: 0,
+            fillColor: '#888888', fillOpacity: 0.15,
+            fixed: true, highlight: false
+        });
+
+        // Boundary: line y = 4
+        board.create('segment', [[0, 4], [2.4, 4]], {
+            strokeColor: COL_LINE, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Boundary: parabola y = x^2 from (0,0) to (2,4)
+        board.create('functiongraph', [function (x) { return x * x; }, 0, 2], {
+            strokeColor: COL_PARAB, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Corner points
+        board.create('point', [0, 0], { name: '', size: 2, color: COL_PARAB, fixed: true, highlight: false, showInfobox: false });
+        board.create('point', [2, 4], { name: '', size: 2, color: COL_LINE, fixed: true, highlight: false, showInfobox: false });
+
+        // Curve labels
+        board.create('text', [2.0, 4.32, 'y=4'], {
+            useKatex: true, fontSize: 13, color: COL_LINE, anchorX: 'middle', anchorY: 'bottom', fixed: true, highlight: false
+        });
+        board.create('text', [2.18, 2.7, 'y=x^2'], {
+            useKatex: true, fontSize: 13, color: COL_PARAB, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // Axis labels near arrow tips
+        board.create('text', [2.42, -0.26, 'x'], { useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+        board.create('text', [0.18, 4.62, 'y'], { useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+      });
+    </script>
+</body>
+</html>
