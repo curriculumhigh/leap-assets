@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garden Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { padding: 6px; height: calc(100% - 12px); display: flex; align-items: center; justify-content: center; }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; width: 280px; height: 230px; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 12, 24, -5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var gardenW = 8;
+        var vegL = 8;
+        var flowerL = 12;
+        var totalL = vegL + flowerL;
+
+        var ox = 2;
+        var oy = 1;
+
+        var vp1 = board.create('point', [ox, oy], { visible: false, name: '' });
+        var vp2 = board.create('point', [ox + vegL, oy], { visible: false, name: '' });
+        var vp3 = board.create('point', [ox + vegL, oy + gardenW], { visible: false, name: '' });
+        var vp4 = board.create('point', [ox, oy + gardenW], { visible: false, name: '' });
+        board.create('polygon', [vp1, vp2, vp3, vp4], {
+            fillColor: '#dcfce7', fillOpacity: 0.6,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        var fp1 = board.create('point', [ox + vegL, oy], { visible: false, name: '' });
+        var fp2 = board.create('point', [ox + totalL, oy], { visible: false, name: '' });
+        var fp3 = board.create('point', [ox + totalL, oy + gardenW], { visible: false, name: '' });
+        var fp4 = board.create('point', [ox + vegL, oy + gardenW], { visible: false, name: '' });
+        board.create('polygon', [fp1, fp2, fp3, fp4], {
+            fillColor: '#fce7f3', fillOpacity: 0.6,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [ox + vegL / 2, oy + gardenW / 2, 'Vegetable'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#166534', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        board.create('text', [ox + vegL + flowerL / 2, oy + gardenW / 2, 'Flower'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#9d174d', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        var dimY = oy - 1.5;
+        board.create('arrow', [[ox, dimY], [ox + vegL, dimY]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, firstArrow: { type: 2, size: 4 }
+        });
+        board.create('text', [ox + vegL / 2, dimY - 1.0, '<i>v</i> ft'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#444444', fixed: true, highlight: false
+        });
+
+        board.create('arrow', [[ox + vegL, dimY], [ox + totalL, dimY]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, firstArrow: { type: 2, size: 4 }
+        });
+        board.create('text', [ox + vegL + flowerL / 2, dimY - 1.0, '12 ft'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#444444', fixed: true, highlight: false
+        });
+
+        var dimX = ox - 1.8;
+        board.create('arrow', [[dimX, oy], [dimX, oy + gardenW]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, firstArrow: { type: 2, size: 4 }
+        });
+        board.create('text', [dimX - 1.2, oy + gardenW / 2, '8 ft'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#444444', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
