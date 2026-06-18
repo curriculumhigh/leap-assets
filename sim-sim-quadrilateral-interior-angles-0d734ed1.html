@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadrilateral Angles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 250px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var angA = 100, angB = 60, angC = 150, angD = 50;
+        var extB = 180 - angB;
+        var extC = 180 - angC;
+
+        var sAB = 4.0, sBC = 3.2, sCD = 4.5;
+
+        var dir = 0;
+        var Ax = 0, Ay = 0;
+
+        var Bx = Ax + sAB * Math.cos(dir * Math.PI / 180);
+        var By = Ay + sAB * Math.sin(dir * Math.PI / 180);
+
+        dir += extB;
+        var Cx = Bx + sBC * Math.cos(dir * Math.PI / 180);
+        var Cy = By + sBC * Math.sin(dir * Math.PI / 180);
+
+        dir += extC;
+        var Dx = Cx + sCD * Math.cos(dir * Math.PI / 180);
+        var Dy = Cy + sCD * Math.sin(dir * Math.PI / 180);
+
+        var allX = [Ax, Bx, Cx, Dx];
+        var allY = [Ay, By, Cy, Dy];
+        var minX = Math.min.apply(null, allX);
+        var maxX = Math.max.apply(null, allX);
+        var minY = Math.min.apply(null, allY);
+        var maxY = Math.max.apply(null, allY);
+        var padX = (maxX - minX) * 0.28;
+        var padY = (maxY - minY) * 0.28;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [minX - padX, maxY + padY, maxX + padX, minY - padY],
+            axis: false, grid: false,
+            keepAspectRatio: true,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false }
+        });
+
+        var A = board.create('point', [Ax, Ay], { name: '', fixed: true, size: 2, color: '#222222', highlight: false });
+        var B = board.create('point', [Bx, By], { name: '', fixed: true, size: 2, color: '#222222', highlight: false });
+        var C = board.create('point', [Cx, Cy], { name: '', fixed: true, size: 2, color: '#222222', highlight: false });
+        var D = board.create('point', [Dx, Dy], { name: '', fixed: true, size: 2, color: '#222222', highlight: false });
+
+        board.create('polygon', [A, B, C, D], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        board.create('nonReflexAngle', [D, A, B], {
+            radius: 0.45, fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+        board.create('nonReflexAngle', [A, B, C], {
+            radius: 0.45, fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+        board.create('nonReflexAngle', [B, C, D], {
+            radius: 0.45, fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+        board.create('nonReflexAngle', [C, D, A], {
+            radius: 0.45, fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        function bisectorOffset(p1, vertex, p2, dist) {
+            var a1 = Math.atan2(p1.Y() - vertex.Y(), p1.X() - vertex.X());
+            var a2 = Math.atan2(p2.Y() - vertex.Y(), p2.X() - vertex.X());
+            var diff = a2 - a1;
+            if (diff > Math.PI) diff -= 2 * Math.PI;
+            if (diff < -Math.PI) diff += 2 * Math.PI;
+            var mid = a1 + diff / 2;
+            return [vertex.X() + dist * Math.cos(mid), vertex.Y() + dist * Math.sin(mid)];
+        }
+
+        var posA = bisectorOffset(D, A, B, 0.95);
+        var posB = bisectorOffset(A, B, C, 1.8);
+        var posC = bisectorOffset(B, C, D, 0.85);
+        var posD = bisectorOffset(C, D, A, 0.95);
+
+        board.create('text', [posA[0], posA[1], '2x\\degree'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12,
+            color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [posB[0], posB[1], '(x\\!+\\!10)\\degree'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12,
+            color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [posC[0], posC[1], '3x\\degree'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12,
+            color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [posD[0], posD[1], 'x\\degree'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12,
+            color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
