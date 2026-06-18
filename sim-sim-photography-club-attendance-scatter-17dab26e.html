@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photography Club Attendance</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.8, 29, 5.4, -5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // X-axis line
+        board.create('arrow', [[0, 0], [5.1, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        // Y-axis line
+        board.create('arrow', [[0, 0], [0, 27.5]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // Y-axis gridlines and ticks (5, 10, 15, 20, 25)
+        var yTicks = [5, 10, 15, 20, 25];
+        for (var j = 0; j < yTicks.length; j++) {
+            var yv = yTicks[j];
+            // Gridline
+            board.create('segment', [[0.15, yv], [4.8, yv]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+            // Tick mark
+            board.create('segment', [[-0.12, yv], [0.12, yv]], {
+                strokeColor: '#444444', strokeWidth: 1, fixed: true, highlight: false
+            });
+            // Label
+            board.create('text', [-0.3, yv, String(yv)], {
+                anchorX: 'right', anchorY: 'middle', fontSize: 11, color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        // X-axis ticks and labels (1, 2, 3, 4)
+        var xTicks = [1, 2, 3, 4];
+        for (var i = 0; i < xTicks.length; i++) {
+            var xv = xTicks[i];
+            // Tick mark
+            board.create('segment', [[xv, -0.3], [xv, 0.3]], {
+                strokeColor: '#444444', strokeWidth: 1, fixed: true, highlight: false
+            });
+            // Label
+            board.create('text', [xv, -2, String(xv)], {
+                anchorX: 'middle', anchorY: 'middle', fontSize: 11, color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        // Axis labels
+        board.create('text', [2.5, -4, 'Session'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12, color: '#444444', fixed: true, highlight: false
+        });
+        // "Students" label — rotated, to the left of y-axis
+        board.create('text', [-1.4, 13, 'Students'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12, color: '#444444', fixed: true, highlight: false,
+            display: 'html', cssStyle: 'transform: rotate(-90deg); transform-origin: center center;'
+        });
+
+        // Title
+        board.create('text', [2.5, 28.2, '<b>Photography Club Attendance</b>'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 11, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Data points and value labels
+        var data = [[1, 15], [2, 22], [3, 19]];
+        for (var d = 0; d < data.length; d++) {
+            var px = data[d][0];
+            var py = data[d][1];
+            // Point (reduced size)
+            board.create('point', [px, py], {
+                name: '', size: 3, color: '#222222', fixed: true, highlight: false, showInfobox: false
+            });
+            // Value label just above
+            board.create('text', [px, py + 1.5, String(py)], {
+                anchorX: 'middle', anchorY: 'bottom', fontSize: 11, color: '#222222',
+                fixed: true, highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
