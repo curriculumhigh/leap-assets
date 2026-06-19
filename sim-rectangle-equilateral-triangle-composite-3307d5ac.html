@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangle with Equilateral Triangle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        // Rectangle dimensions (visual units)
+        var l = 5;
+        var w = 3;
+
+        // Triangle apex x-offset (equilateral triangle with side w, height = w*sqrt(3)/2)
+        var triH = w * Math.sqrt(3) / 2;
+
+        // Vertices
+        var ax = 0, ay = 0;
+        var bx = l, by = 0;
+        var cx = l, cy = w;
+        var dx = 0, dy = w;
+
+        // Triangle apex
+        var ex = l + triH;
+        var ey = w / 2;
+
+        // Bounding box with padding
+        var pad = 1.5;
+        var bb = [ax - pad, dy + pad, ex + pad, ay - pad];
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: bb,
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Create points (invisible)
+        var A = board.create('point', [ax, ay], { visible: false, fixed: true, name: '' });
+        var B = board.create('point', [bx, by], { visible: false, fixed: true, name: '' });
+        var C = board.create('point', [cx, cy], { visible: false, fixed: true, name: '' });
+        var D = board.create('point', [dx, dy], { visible: false, fixed: true, name: '' });
+        var E = board.create('point', [ex, ey], { visible: false, fixed: true, name: '' });
+
+        // Outer boundary segments (solid)
+        var outerStyle = { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false };
+
+        // Rectangle outer edges (bottom, left, top)
+        board.create('segment', [A, B], outerStyle);
+        board.create('segment', [A, D], outerStyle);
+        board.create('segment', [D, C], outerStyle);
+
+        // Triangle outer edges
+        board.create('segment', [B, E], outerStyle);
+        board.create('segment', [C, E], outerStyle);
+
+        // Shared side (dashed)
+        board.create('segment', [B, C], {
+            strokeColor: '#555555', strokeWidth: 1.5, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // Labels using KaTeX
+        // l — centered below the bottom edge
+        board.create('text', [l / 2, -0.55, 'l'], {
+            useKatex: true, fontSize: 15, anchorX: 'middle', anchorY: 'top',
+            color: '#222222', fixed: true, highlight: false
+        });
+
+        // w — centered to the left of the left edge
+        board.create('text', [-0.55, w / 2, 'w'], {
+            useKatex: true, fontSize: 15, anchorX: 'right', anchorY: 'middle',
+            color: '#222222', fixed: true, highlight: false
+        });
+
+        // w — along the bottom-right triangle edge
+        var midBEx = (bx + ex) / 2;
+        var midBEy = (by + ey) / 2;
+        var beDx = ex - bx;
+        var beDy = ey - by;
+        var beLen = Math.sqrt(beDx * beDx + beDy * beDy);
+        var perpX = beDy / beLen;
+        var perpY = -beDx / beLen;
+        var labelOffset = 0.45;
+
+        board.create('text', [midBEx + perpX * labelOffset, midBEy + perpY * labelOffset, 'w'], {
+            useKatex: true, fontSize: 15, anchorX: 'middle', anchorY: 'middle',
+            color: '#222222', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
