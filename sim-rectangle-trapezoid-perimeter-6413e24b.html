@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangle with Isosceles Trapezoid</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.2, 4.8, 8.5, -1.8],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Dimensions
+        var rectW = 3.0;   // width w (vertical)
+        var rectX = 4.0;   // length x (horizontal)
+        var trapS = 1.8;   // shorter base s and leg length s
+
+        // Rectangle vertices
+        var A = [0, 0];           // bottom-left
+        var B = [rectX, 0];       // bottom-right
+        var C = [rectX, rectW];   // top-right
+        var D = [0, rectW];       // top-left
+
+        // Trapezoid vertices (attached to right side of rectangle)
+        var trapOffset = (rectW - trapS) / 2;
+        var legDy = trapOffset;
+        var legDx = Math.sqrt(trapS * trapS - legDy * legDy);
+
+        var E = [rectX + legDx, trapOffset];           // bottom-right of trapezoid (short base bottom)
+        var F = [rectX + legDx, trapOffset + trapS];   // top-right of trapezoid (short base top)
+
+        // Create invisible fixed points
+        var pA = board.create('point', A, { visible: false, fixed: true, name: '' });
+        var pB = board.create('point', B, { visible: false, fixed: true, name: '' });
+        var pC = board.create('point', C, { visible: false, fixed: true, name: '' });
+        var pD = board.create('point', D, { visible: false, fixed: true, name: '' });
+        var pE = board.create('point', E, { visible: false, fixed: true, name: '' });
+        var pF = board.create('point', F, { visible: false, fixed: true, name: '' });
+
+        // Outer perimeter polygon (highlighted)
+        board.create('polygon', [pA, pB, pE, pF, pC, pD], {
+            fillColor: 'none',
+            fillOpacity: 0,
+            borders: {
+                strokeColor: '#222222',
+                strokeWidth: 2.0,
+                fixed: true,
+                highlight: false
+            },
+            vertices: { visible: false },
+            fixed: true,
+            highlight: false
+        });
+
+        // Internal shared edge (dashed)
+        board.create('segment', [pB, pC], {
+            strokeColor: '#555555',
+            strokeWidth: 1.0,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        // Labels
+
+        // x — top edge of rectangle (midpoint of D to C)
+        board.create('text', [rectX / 2, rectW + 0.45, 'x'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // w — left side of rectangle (midpoint of A to D)
+        board.create('text', [-0.5, rectW / 2, 'w'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // w — shared internal edge label
+        board.create('text', [rectX + 0.35, rectW / 2, 'w'], {
+            useKatex: true, fontSize: 13, color: '#555555',
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // s — shorter base of trapezoid (right side, midpoint of E to F)
+        board.create('text', [E[0] + 0.4, (E[1] + F[1]) / 2, 's'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // s — bottom leg of trapezoid (midpoint of B to E)
+        var legBot_mx = (B[0] + E[0]) / 2;
+        var legBot_my = (B[1] + E[1]) / 2;
+        board.create('text', [legBot_mx, legBot_my - 0.4, 's'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // s — top leg of trapezoid (midpoint of F to C)
+        var legTop_mx = (F[0] + C[0]) / 2;
+        var legTop_my = (F[1] + C[1]) / 2;
+        board.create('text', [legTop_mx, legTop_my + 0.4, 's'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Small vertex dots at outer perimeter corners
+        var cornerPts = [A, B, E, F, C, D];
+        for (var i = 0; i < cornerPts.length; i++) {
+            board.create('point', cornerPts[i], {
+                name: '', fixed: true, size: 1.5, color: '#222222',
+                highlight: false, showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
