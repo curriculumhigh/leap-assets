@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>volume-washer-method</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 520px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+      // Build the board only after all scripts (including KaTeX) have loaded,
+      // so useKatex:true labels render as math, not raw text.
+      window.addEventListener('load', function () {
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.0, 4.0, 8.4, -3.2],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', drawLabels: false, minorTicks: 0, ticksDistance: 1 }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', drawLabels: false, minorTicks: 0, ticksDistance: 1 }
+                }
+            }
+        });
+
+        // Palette
+        var COL_F    = '#222222';   // upper curve y = f(x)
+        var COL_G    = '#2563EB';   // lower curve y = g(x)
+        var COL_WASH = '#7C3AED';   // representative washer (annular slice)
+        var COL_R    = '#DC2626';   // outer radius R reference
+        var COL_r    = '#059669';   // inner radius r reference
+        var COL_AX   = '#222222';
+
+        var A = 0.7, B = 7.4;       // interval [a, b]
+
+        // Upper curve y = f(x): gentle sqrt-like, stays well above the axis.
+        function f(x) { return Math.sqrt(x + 0.4) + 1.0; }
+        // Lower curve y = g(x): strictly above the axis and below f, so the
+        // region never touches the x-axis (this is what creates the hole).
+        function g(x) { return 0.55 + 0.10 * x; }
+
+        // --- Shaded region BETWEEN the two curves (both above the x-axis) ---
+        var regionPts = [];
+        var N = 60, i, xx;
+        for (i = 0; i <= N; i++) { xx = A + (B - A) * i / N; regionPts.push([xx, f(xx)]); }   // along f, left->right
+        for (i = N; i >= 0; i--) { xx = A + (B - A) * i / N; regionPts.push([xx, g(xx)]); }   // back along g, right->left
+        board.create('polygon', regionPts, {
+            borders: { strokeColor: 'none', strokeWidth: 0 },
+            fillColor: '#888888', fillOpacity: 0.15,
+            vertices: { visible: false }, fixed: true, highlight: false, withLines: false
+        });
+
+        // Faint mirrored curves below the x-axis suggesting the solid of revolution
+        function fNeg(x) { return -f(x); }
+        function gNeg(x) { return -g(x); }
+        board.create('functiongraph', [fNeg, A, B], {
+            strokeColor: COL_F, strokeWidth: 1.0, dash: 2, opacity: 0.30,
+            fixed: true, highlight: false
+        });
+        board.create('functiongraph', [gNeg, A, B], {
+            strokeColor: COL_G, strokeWidth: 1.0, dash: 2, opacity: 0.30,
+            fixed: true, highlight: false
+        });
+
+        // --- The curves ---
+        board.create('functiongraph', [f, A, B], {
+            strokeColor: COL_F, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('functiongraph', [g, A, B], {
+            strokeColor: COL_G, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Vertical end-caps closing the region between the curves at x = a and x = b
+        board.create('segment', [[A, g(A)], [A, f(A)]], { strokeColor: '#888888', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+        board.create('segment', [[B, g(B)], [B, f(B)]], { strokeColor: '#888888', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+
+        // --- Representative WASHER at x = c (a short cylinder WITH A HOLE) ---
+        var C = 5.0;                     // x-position of the FRONT face
+        var R = f(C);                    // OUTER radius = f(c)  (axis to far curve)
+        var r = g(C);                    // INNER radius = g(c)  (axis to near curve / hole)
+        var TX = 0.55;                   // exaggerated thickness dx (offset along x-axis)
+
+        // Each face lies in a plane perpendicular to the x-axis. In oblique
+        // projection a circle becomes an ellipse: full vertical extent (the radius)
+        // and a narrow foreshortened horizontal extent. Parameterize the rim by t:
+        //   x = cx + W * cos(t)     (W = foreshortened horizontal half-width)
+        //   y = 0  + rad * sin(t)   (full vertical radius, centered on the axis)
+        var Wo = 0.22;                   // foreshortened half-width of the OUTER ellipse
+        var Wi = Wo * (r / R);           // inner ellipse foreshortened proportionally
+        function ellX(cx, W, t) { return cx + W * Math.cos(t); }
+        function ellY(rad, t)   { return rad * Math.sin(t); }
+
+        var CXF = C;                     // front face center x
+        var CXB = C + TX;                // back face center x  (front is to the LEFT)
+
+        // ---- BACK face (complete: outer + inner ellipse), drawn first (underneath) ----
+        // Outer back ellipse — occluded LEFT half: dashed/faded
+        board.create('curve', [
+            function (t) { return ellX(CXB, Wo, t); },
+            function (t) { return ellY(R, t); },
+            Math.PI / 2, 3 * Math.PI / 2
+        ], { strokeColor: COL_WASH, strokeWidth: 1.2, dash: 2, opacity: 0.5, fixed: true, highlight: false, layer: 4 });
+        // Outer back ellipse — visible RIGHT half: solid
+        board.create('curve', [
+            function (t) { return ellX(CXB, Wo, t); },
+            function (t) { return ellY(R, t); },
+            -Math.PI / 2, Math.PI / 2
+        ], { strokeColor: COL_WASH, strokeWidth: 1.5, opacity: 0.85, fixed: true, highlight: false, layer: 4 });
+        // Inner back ellipse (the hole's back rim) — full ellipse, faded/dashed (mostly occluded)
+        board.create('curve', [
+            function (t) { return ellX(CXB, Wi, t); },
+            function (t) { return ellY(r, t); },
+            0, 2 * Math.PI
+        ], { strokeColor: COL_WASH, strokeWidth: 1.2, dash: 2, opacity: 0.45, fixed: true, highlight: false, layer: 4 });
+
+        // ---- Outer connecting edges (top & bottom) joining front & back outer rims ----
+        board.create('segment', [[ellX(CXF, Wo, Math.PI / 2), ellY(R, Math.PI / 2)],
+                                  [ellX(CXB, Wo, Math.PI / 2), ellY(R, Math.PI / 2)]], {
+            strokeColor: COL_WASH, strokeWidth: 1.5, fixed: true, highlight: false, layer: 5
+        });
+        board.create('segment', [[ellX(CXF, Wo, -Math.PI / 2), ellY(R, -Math.PI / 2)],
+                                  [ellX(CXB, Wo, -Math.PI / 2), ellY(R, -Math.PI / 2)]], {
+            strokeColor: COL_WASH, strokeWidth: 1.5, fixed: true, highlight: false, layer: 5
+        });
+
+        // ---- FRONT face: an ANNULUS (ring) ----
+        // We shade only the ring (between outer and inner ellipse) and leave the
+        // inner disk empty (the hole). Build a single polygon whose boundary goes
+        // around the outer ellipse, then back around the inner ellipse, so the
+        // even-odd fill leaves the inner disk unfilled.
+        var ringPts = [], M = 80, t;
+        for (i = 0; i <= M; i++) { t = 2 * Math.PI * i / M; ringPts.push([ellX(CXF, Wo, t), ellY(R, t)]); }   // outer, CCW
+        for (i = M; i >= 0; i--) { t = 2 * Math.PI * i / M; ringPts.push([ellX(CXF, Wi, t), ellY(r, t)]); }   // inner, CW (cuts hole)
+        board.create('polygon', ringPts, {
+            borders: { strokeColor: 'none', strokeWidth: 0 },
+            fillColor: COL_WASH, fillOpacity: 0.18,
+            vertices: { visible: false }, fixed: true, highlight: false, withLines: false, layer: 6
+        });
+        // Front OUTER ellipse outline (on top, occludes back-left outer arc)
+        board.create('curve', [
+            function (t) { return ellX(CXF, Wo, t); },
+            function (t) { return ellY(R, t); },
+            0, 2 * Math.PI
+        ], { strokeColor: COL_WASH, strokeWidth: 1.6, fixed: true, highlight: false, layer: 6 });
+        // Front INNER ellipse outline = rim of the hole
+        board.create('curve', [
+            function (t) { return ellX(CXF, Wi, t); },
+            function (t) { return ellY(r, t); },
+            0, 2 * Math.PI
+        ], { strokeColor: COL_WASH, strokeWidth: 1.4, fixed: true, highlight: false, layer: 7 });
+
+        // --- Outer radius R = f(c): axis up to the OUTER rim, on the front face ---
+        board.create('segment', [[CXF, 0], [CXF, R]], {
+            strokeColor: COL_R, strokeWidth: 1.6, fixed: true, highlight: false, layer: 8
+        });
+        // --- Inner radius r = g(c): axis up to the INNER rim (hole), on the front face ---
+        board.create('segment', [[CXF, 0], [CXF, r]], {
+            strokeColor: COL_r, strokeWidth: 1.8, fixed: true, highlight: false, layer: 8
+        });
+        // center dot on the axis, inner-rim dot, outer-rim dot
+        board.create('point', [CXF, 0], { name: '', size: 2,   color: COL_AX, fixed: true, highlight: false, showInfobox: false, layer: 8 });
+        board.create('point', [CXF, r], { name: '', size: 2.5, color: COL_r,  fixed: true, highlight: false, showInfobox: false, layer: 8 });
+        board.create('point', [CXF, R], { name: '', size: 2.5, color: COL_R,  fixed: true, highlight: false, showInfobox: false, layer: 8 });
+
+        // dx bracket under the slab on the x-axis (front face to back face)
+        board.create('segment', [[C, -0.18], [C + TX, -0.18]], { strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false });
+        board.create('segment', [[C, -0.10], [C, -0.26]], { strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false });
+        board.create('segment', [[C + TX, -0.10], [C + TX, -0.26]], { strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false });
+        board.create('text', [C + TX / 2, -0.52, 'dx'], { useKatex: true, fontSize: 12, color: '#555555', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+
+        // --- Labels ---
+        // y = f(x) near the upper curve
+        board.create('text', [B - 0.05, f(B) + 0.40, 'y = f(x)'], {
+            useKatex: true, fontSize: 13, color: COL_F, anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false
+        });
+        // y = g(x) near the lower curve
+        board.create('text', [B - 0.05, g(B) - 0.40, 'y = g(x)'], {
+            useKatex: true, fontSize: 13, color: COL_G, anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // R beside the outer-radius segment (upper portion, to the LEFT)
+        board.create('text', [CXF - 0.20, (r + R) / 2 + 0.15, 'R'], {
+            useKatex: true, fontSize: 13, color: COL_R, anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false
+        });
+        // r beside the inner-radius segment (lower portion, to the RIGHT, away from R)
+        board.create('text', [CXF + 0.20, r / 2, 'r'], {
+            useKatex: true, fontSize: 13, color: COL_r, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // Axis labels near arrow tips
+        board.create('text', [8.05, -0.38, 'x'], { useKatex: true, fontSize: 14, color: COL_AX, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+        board.create('text', [0.28, 3.78, 'y'], { useKatex: true, fontSize: 14, color: COL_AX, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+      });
+    </script>
+</body>
+</html>
