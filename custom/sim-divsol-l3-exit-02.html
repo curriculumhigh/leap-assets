@@ -1,0 +1,9 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>html,body{margin:0;padding:0;background:transparent;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+.card{max-width:480px;margin:0 auto;background:#fff;border-radius:10px;padding:16px 16px;text-align:center;}
+#tbl{font-size:20px;} #r{margin-top:12px;font-size:14px;color:#111;}</style></head>
+<body><div class="card"><div id="tbl"></div><div id="r"></div></div>
+<script>window.addEventListener('load',function(){katex.render("\\begin{array}{r|rrrr}2 & 3 & -5 & 4 & -6 \\\\  &  & 6 & 2 & 12 \\\\ \\hline  & 3 & 1 & 6 & \\textcolor{#b91c1c}{6}\\end{array}",document.getElementById('tbl'),{throwOnError:false});katex.render("\\text{quotient } 3x^{2}+x+6,\\quad \\text{remainder } \\textcolor{#b91c1c}{6}",document.getElementById('r'),{throwOnError:false});});</script>
+</body></html>
