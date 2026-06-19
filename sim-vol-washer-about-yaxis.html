@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>volume-washer-method-about-y-axis</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 460px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+      // Build the board only after all scripts (including KaTeX) have loaded,
+      // so useKatex:true labels render as math, not raw text.
+      window.addEventListener('load', function () {
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.6, 4.8, 2.8, -0.6],
+            axis: true,
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 },
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 }
+                }
+            }
+        });
+
+        // Palette
+        var COL_LINE  = '#222222';   // line y = 2x boundary (primary)
+        var COL_PARAB = '#222222';   // parabola y = x^2 boundary (primary)
+        var COL_AXIS  = '#2563EB';   // y-axis = axis of revolution (emphasized)
+        var COL_RAD_R = '#DC2626';   // outer radius R -> parabola (far)
+        var COL_RAD_r = '#D97706';   // inner radius r -> line (near)
+
+        // Curves meet at (0,0) and (2,4)
+        // --- Shaded region between y = 2x (upper-left) and y = x^2 (lower-right) on [0,2] ---
+        board.create('curve', [
+            function (t) {
+                // forward along the line y = 2x from x=0..2, then back along parabola x=2..0
+                if (t <= 2) { return t; }
+                else { return 4 - t; }
+            },
+            function (t) {
+                if (t <= 2) { return 2 * t; }          // line y = 2x
+                else { var x = 4 - t; return x * x; }   // parabola y = x^2
+            },
+            0, 4
+        ], {
+            strokeColor: 'none', strokeWidth: 0,
+            fillColor: '#888888', fillOpacity: 0.15,
+            fixed: true, highlight: false
+        });
+
+        // --- Boundary: line y = 2x from (0,0) to (2,4) ---
+        board.create('segment', [[0, 0], [2, 4]], {
+            strokeColor: COL_LINE, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // --- Boundary: parabola y = x^2 from (0,0) to (2,4) ---
+        board.create('functiongraph', [function (x) { return x * x; }, 0, 2], {
+            strokeColor: COL_PARAB, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // --- Axis of revolution: the y-axis (x = 0), emphasized blue/thicker ---
+        board.create('segment', [[0, -0.4], [0, 4.6]], {
+            strokeColor: COL_AXIS, strokeWidth: 2.6, fixed: true, highlight: false, layer: 6
+        });
+
+        // Corner points of the region
+        board.create('point', [0, 0], { name: '', size: 2, color: COL_LINE, fixed: true, highlight: false, showInfobox: false });
+        board.create('point', [2, 4], { name: '', size: 2, color: COL_LINE, fixed: true, highlight: false, showInfobox: false });
+
+        // --- Representative HORIZONTAL radii at y = 2 ---
+        var YS = 2;
+        var XR = Math.sqrt(YS);  // outer radius R: on parabola y = x^2 -> x = sqrt(2) ~ 1.41
+        var Xr = YS / 2;         // inner radius r: on line y = 2x   -> x = y/2 = 1
+
+        // outer radius R (axis -> parabola), drawn first so inner sits on top
+        board.create('segment', [[0, YS], [XR, YS]], {
+            strokeColor: COL_RAD_R, strokeWidth: 2.6, fixed: true, highlight: false, layer: 7
+        });
+        // inner radius r (axis -> line)
+        board.create('segment', [[0, YS], [Xr, YS]], {
+            strokeColor: COL_RAD_r, strokeWidth: 2.6, fixed: true, highlight: false, layer: 8
+        });
+
+        // endpoint ticks
+        board.create('point', [0, YS],  { name: '', size: 2.5, color: COL_AXIS,  fixed: true, highlight: false, showInfobox: false });
+        board.create('point', [Xr, YS], { name: '', size: 2.5, color: COL_LINE,  fixed: true, highlight: false, showInfobox: false });
+        board.create('point', [XR, YS], { name: '', size: 2.5, color: COL_PARAB, fixed: true, highlight: false, showInfobox: false });
+
+        // --- Labels (KaTeX) ---
+        // inner radius r: below the segment, over the line half
+        board.create('text', [Xr / 2, YS - 0.28, 'r'], {
+            useKatex: true, fontSize: 14, color: COL_RAD_r, anchorX: 'middle', anchorY: 'top', fixed: true, highlight: false
+        });
+        // outer radius R: above the segment, between line end and parabola end
+        board.create('text', [(Xr + XR) / 2, YS + 0.22, 'R'], {
+            useKatex: true, fontSize: 14, color: COL_RAD_R, anchorX: 'middle', anchorY: 'bottom', fixed: true, highlight: false
+        });
+
+        // line label y = 2x (upper-left boundary) — placed left of the line, clear region
+        board.create('text', [0.55, 1.85, 'y=2x'], {
+            useKatex: true, fontSize: 13, color: COL_LINE, anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false
+        });
+        // parabola label y = x^2 (lower-right boundary) — placed right of the curve
+        board.create('text', [2.18, 3.4, 'y=x^2'], {
+            useKatex: true, fontSize: 13, color: COL_PARAB, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // axis-of-revolution label, along the y-axis (clear upper-left region)
+        board.create('text', [-0.5, 4.55, '\\text{axis of revolution}'], {
+            useKatex: true, fontSize: 12, color: COL_AXIS, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // Axis labels near arrow tips
+        board.create('text', [2.62, -0.28, 'x'], { useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+        board.create('text', [0.18, 4.62, 'y'], { useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+      });
+    </script>
+</body>
+</html>
