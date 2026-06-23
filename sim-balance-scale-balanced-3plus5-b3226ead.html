@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balance Scale — 3 + 5 = 8</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 6, 7, -4],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Colors
+        var COL_FRAME = '#444444';
+        var COL_FULCRUM = '#555555';
+        var COL_PAN = '#f5f5f5';
+        var COL_PAN_STROKE = '#555555';
+        var COL_TEXT = '#222222';
+        var COL_CHAIN = '#888888';
+
+        // Dimensions
+        var beamY = 3.0;
+        var beamHalfLen = 4.5;
+        var panHangLen = 2.2;
+        var panWidth = 2.8;
+        var panDepth = 0.5;
+
+        // Fulcrum (triangle base)
+        var fulcrumBase = 1.2;
+        var fulcrumHeight = 2.0;
+        var fulcrumTop = [0, beamY];
+        var fulcrumLeft = [-fulcrumBase / 2, beamY - fulcrumHeight];
+        var fulcrumRight = [fulcrumBase / 2, beamY - fulcrumHeight];
+
+        // Draw fulcrum base (wide rectangle at bottom)
+        var baseWidth = 2.0;
+        var baseHeight = 0.35;
+        var baseY = beamY - fulcrumHeight;
+        var bp1 = board.create('point', [-baseWidth / 2, baseY], { visible: false, fixed: true, name: '' });
+        var bp2 = board.create('point', [baseWidth / 2, baseY], { visible: false, fixed: true, name: '' });
+        var bp3 = board.create('point', [baseWidth / 2, baseY - baseHeight], { visible: false, fixed: true, name: '' });
+        var bp4 = board.create('point', [-baseWidth / 2, baseY - baseHeight], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [bp1, bp2, bp3, bp4], {
+            fillColor: COL_FULCRUM, fillOpacity: 1,
+            borders: { strokeColor: COL_FULCRUM, strokeWidth: 1.5 },
+            vertices: { visible: false }, fixed: true, highlight: false
+        });
+
+        // Draw fulcrum triangle
+        var ft1 = board.create('point', fulcrumTop, { visible: false, fixed: true, name: '' });
+        var ft2 = board.create('point', fulcrumLeft, { visible: false, fixed: true, name: '' });
+        var ft3 = board.create('point', fulcrumRight, { visible: false, fixed: true, name: '' });
+        board.create('polygon', [ft1, ft2, ft3], {
+            fillColor: COL_FULCRUM, fillOpacity: 1,
+            borders: { strokeColor: COL_FULCRUM, strokeWidth: 1.5 },
+            vertices: { visible: false }, fixed: true, highlight: false
+        });
+
+        // Draw beam (horizontal bar)
+        board.create('segment', [[-beamHalfLen, beamY], [beamHalfLen, beamY]], {
+            strokeColor: COL_FRAME, strokeWidth: 4, fixed: true, highlight: false
+        });
+
+        // Small circle at pivot
+        board.create('point', [0, beamY], {
+            name: '', size: 3, color: COL_FRAME, fixed: true, highlight: false
+        });
+
+        // Left pan
+        var leftX = -beamHalfLen;
+        var panTopY = beamY;
+        var panBotY = beamY - panHangLen;
+
+        // Chains (left)
+        board.create('segment', [[leftX, panTopY], [leftX - panWidth / 2 + 0.3, panBotY]], {
+            strokeColor: COL_CHAIN, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[leftX, panTopY], [leftX + panWidth / 2 - 0.3, panBotY]], {
+            strokeColor: COL_CHAIN, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Pan shape (left) — trapezoid/bowl
+        var lp1 = board.create('point', [leftX - panWidth / 2, panBotY], { visible: false, fixed: true, name: '' });
+        var lp2 = board.create('point', [leftX + panWidth / 2, panBotY], { visible: false, fixed: true, name: '' });
+        var lp3 = board.create('point', [leftX + panWidth / 2 - 0.2, panBotY - panDepth], { visible: false, fixed: true, name: '' });
+        var lp4 = board.create('point', [leftX - panWidth / 2 + 0.2, panBotY - panDepth], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [lp1, lp2, lp3, lp4], {
+            fillColor: COL_PAN, fillOpacity: 1,
+            borders: { strokeColor: COL_PAN_STROKE, strokeWidth: 1.8 },
+            vertices: { visible: false }, fixed: true, highlight: false
+        });
+
+        // Right pan
+        var rightX = beamHalfLen;
+
+        // Chains (right)
+        board.create('segment', [[rightX, panTopY], [rightX - panWidth / 2 + 0.3, panBotY]], {
+            strokeColor: COL_CHAIN, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[rightX, panTopY], [rightX + panWidth / 2 - 0.3, panBotY]], {
+            strokeColor: COL_CHAIN, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Pan shape (right)
+        var rp1 = board.create('point', [rightX - panWidth / 2, panBotY], { visible: false, fixed: true, name: '' });
+        var rp2 = board.create('point', [rightX + panWidth / 2, panBotY], { visible: false, fixed: true, name: '' });
+        var rp3 = board.create('point', [rightX + panWidth / 2 - 0.2, panBotY - panDepth], { visible: false, fixed: true, name: '' });
+        var rp4 = board.create('point', [rightX - panWidth / 2 + 0.2, panBotY - panDepth], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [rp1, rp2, rp3, rp4], {
+            fillColor: COL_PAN, fillOpacity: 1,
+            borders: { strokeColor: COL_PAN_STROKE, strokeWidth: 1.8 },
+            vertices: { visible: false }, fixed: true, highlight: false
+        });
+
+        // Labels on pans
+        board.create('text', [leftX, panBotY + 0.9, '<b style="font-size:18px; color:#222222;">3 + 5</b>'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 18, color: COL_TEXT,
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [rightX, panBotY + 0.9, '<b style="font-size:18px; color:#222222;">8</b>'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 18, color: COL_TEXT,
+            fixed: true, highlight: false
+        });
+
+        // Equal sign between pans (above beam)
+        board.create('text', [0, beamY + 1.2, '<b style="font-size:20px; color:#059669;">=</b>'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 20, color: '#059669',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
