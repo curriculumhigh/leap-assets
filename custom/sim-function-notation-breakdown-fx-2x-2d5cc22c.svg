@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 24 560 182" width="560" height="182">
+  <style>text{font-family:Georgia,'Times New Roman',serif;}</style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6B6B6B"/>
+    </marker>
+  </defs>
+  <text x="180" y="80" font-size="58" font-style="italic" fill="#1E6B2E">f</text>
+  <text x="206" y="80" font-size="58" fill="#1E6B2E">(</text>
+  <text x="228" y="80" font-size="58" font-style="italic" fill="#7B3FD4">x</text>
+  <text x="258" y="80" font-size="58" fill="#1E6B2E">)</text>
+  <text x="290" y="80" font-size="58" fill="#111">=</text>
+  <text x="332" y="80" font-size="58" font-style="italic" fill="#E2692C">2x</text>
+  <text x="227" y="100" font-size="30" fill="#7B3FD4" textLength="30" lengthAdjust="spacingAndGlyphs">&#9183;</text>
+  <text x="331" y="100" font-size="30" fill="#E2692C" textLength="64" lengthAdjust="spacingAndGlyphs">&#9183;</text>
+  <line x1="100" y1="150" x2="180" y2="92" stroke="#6B6B6B" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="255" y1="150" x2="243" y2="108" stroke="#6B6B6B" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="430" y1="150" x2="368" y2="108" stroke="#6B6B6B" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <text x="20" y="172" font-size="16" fill="#111"><tspan font-style="italic" fill="#1E6B2E">f</tspan> is the name</text>
+  <text x="20" y="192" font-size="16" fill="#111">of the function.</text>
+  <text x="210" y="180" font-size="16" fill="#111"><tspan font-style="italic" fill="#7B3FD4">x</tspan> is the input.</text>
+  <text x="395" y="180" font-size="16" fill="#111"><tspan font-style="italic" fill="#E2692C">2x</tspan> is the output.</text>
+</svg>

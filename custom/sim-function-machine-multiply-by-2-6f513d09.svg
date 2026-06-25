@@ -1,0 +1,29 @@
+<svg viewBox="0 10 620 236" xmlns="http://www.w3.org/2000/svg">
+  <style>text{font-family:Georgia,'Segoe UI',-apple-system,sans-serif;}</style>
+  <defs>
+    <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#222"/>
+    </marker>
+  </defs>
+  <!-- INPUT -->
+  <rect x="20" y="20" width="150" height="34" fill="#F6C29A" stroke="#E8833A" stroke-width="2"/>
+  <text x="95" y="42" text-anchor="middle" font-size="18" font-weight="700" fill="#5A3415">Input</text>
+  <rect x="20" y="54" width="150" height="34" fill="#FCE8D8" stroke="#E8833A" stroke-width="2"/>
+  <text x="95" y="76" text-anchor="middle" font-size="17" fill="#5A3415">1, 2, 3, 4, &#8230;</text>
+  <!-- OUTPUT -->
+  <rect x="450" y="20" width="150" height="34" fill="#F6C29A" stroke="#E8833A" stroke-width="2"/>
+  <text x="525" y="42" text-anchor="middle" font-size="18" font-weight="700" fill="#5A3415">Output</text>
+  <rect x="450" y="54" width="150" height="34" fill="#FCE8D8" stroke="#E8833A" stroke-width="2"/>
+  <text x="525" y="76" text-anchor="middle" font-size="17" fill="#5A3415">2, 4, 6, 8, &#8230;</text>
+  <!-- CONVEYOR -->
+  <polygon points="150,212 470,212 450,188 130,188" fill="#F4C430" stroke="#C99A12" stroke-width="1.5"/>
+  <!-- FUNCTION BOX -->
+  <rect x="240" y="160" width="140" height="76" fill="#C9CEF0" stroke="#3F51B5" stroke-width="2"/>
+  <polygon points="240,160 280,124 420,124 380,160" fill="#AEB6E8" stroke="#3F51B5" stroke-width="2"/>
+  <polygon points="380,160 420,124 420,200 380,236" fill="#AEB6E8" stroke="#3F51B5" stroke-width="2"/>
+  <text x="330" y="147" text-anchor="middle" font-size="15" font-weight="700" fill="#1A237E">Function</text>
+  <text x="310" y="204" text-anchor="middle" font-size="19" font-weight="700" fill="#1A237E">Multiply by 2</text>
+  <!-- ARROWS -->
+  <path d="M95,90 C95,150 110,178 145,198" fill="none" stroke="#222" stroke-width="2" marker-end="url(#ah)"/>
+  <path d="M455,200 C490,178 525,150 525,92" fill="none" stroke="#222" stroke-width="2" marker-end="url(#ah)"/>
+</svg>
