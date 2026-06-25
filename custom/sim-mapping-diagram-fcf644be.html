@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapping Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 11, 15, -1],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_BORDER = '#555555';
+        var COL_FILL = '#F9FAFB';
+        var COL_LABEL = '#2563EB';
+        var COL_ARROW = '#DC2626';
+        var COL_DOT = '#222222';
+        var COL_HEADER = '#333333';
+
+        // ── Layout constants ────────────────────────────────────────────
+        var LB_X1 = -0.5;
+        var LB_X2 = 4.0;
+        var LB_Y1 = 0.5;
+        var LB_Y2 = 9.0;
+        var LB_R = 0.6;
+
+        var RB_X1 = 8.0;
+        var RB_X2 = 12.5;
+        var RB_Y1 = 0.5;
+        var RB_Y2 = 9.0;
+        var RB_R = 0.6;
+
+        var domainVals = [0, 2, 7, 15];
+        var domainYs = [7.8, 6.2, 4.6, 3.0];
+        var domDotX = 3.4;
+        var domLabelX = 1.8;
+
+        var rangeVals = [4, -5, 0, -9, 11];
+        var rangeYs = [8.0, 6.5, 5.0, 3.5, 2.0];
+        var ranDotX = 8.6;
+        var ranLabelX = 10.2;
+
+        // ── Rounded rectangle helper ────────────────────────────────────
+        function drawRoundedRect(x1, y1, x2, y2, r) {
+            var pts = [];
+            var steps = 8;
+            var corners = [
+                { cx: x1 + r, cy: y2 - r, a0: Math.PI / 2, a1: Math.PI },
+                { cx: x1 + r, cy: y1 + r, a0: Math.PI, a1: 3 * Math.PI / 2 },
+                { cx: x2 - r, cy: y1 + r, a0: 3 * Math.PI / 2, a1: 2 * Math.PI },
+                { cx: x2 - r, cy: y2 - r, a0: 0, a1: Math.PI / 2 }
+            ];
+
+            for (var c = 0; c < corners.length; c++) {
+                var corner = corners[c];
+                for (var s = 0; s <= steps; s++) {
+                    var angle = corner.a0 + (corner.a1 - corner.a0) * s / steps;
+                    pts.push(board.create('point', [
+                        corner.cx + r * Math.cos(angle),
+                        corner.cy + r * Math.sin(angle)
+                    ], { visible: false, fixed: true, name: '' }));
+                }
+            }
+
+            board.create('polygon', pts, {
+                fillColor: COL_FILL, fillOpacity: 0.6,
+                borders: { strokeColor: COL_BORDER, strokeWidth: 1.8 },
+                vertices: { visible: false },
+                fixed: true, highlight: false, layer: 1,
+                hasInnerPoints: false
+            });
+        }
+
+        drawRoundedRect(LB_X1, LB_Y1, LB_X2, LB_Y2, LB_R);
+        drawRoundedRect(RB_X1, RB_Y1, RB_X2, RB_Y2, RB_R);
+
+        // ── Headers ─────────────────────────────────────────────────────
+        board.create('text', [(LB_X1 + LB_X2) / 2, 9.8, '<b>Input</b>'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 15, color: COL_HEADER,
+            fixed: true, highlight: false
+        });
+        board.create('text', [(RB_X1 + RB_X2) / 2, 9.8, '<b>Output</b>'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 15, color: COL_HEADER,
+            fixed: true, highlight: false
+        });
+
+        // ── Domain dots and labels ──────────────────────────────────────
+        var domDots = [];
+        for (var i = 0; i < domainVals.length; i++) {
+            domDots.push(board.create('point', [domDotX, domainYs[i]], {
+                name: '', size: 2.5, color: COL_DOT,
+                fixed: true, highlight: false, showInfobox: false, layer: 5
+            }));
+            board.create('text', [domLabelX, domainYs[i], String(domainVals[i])], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 15, color: COL_LABEL,
+                cssStyle: 'font-weight:600',
+                fixed: true, highlight: false, layer: 5
+            });
+        }
+
+        // ── Range dots and labels ───────────────────────────────────────
+        var ranDots = [];
+        for (var j = 0; j < rangeVals.length; j++) {
+            ranDots.push(board.create('point', [ranDotX, rangeYs[j]], {
+                name: '', size: 2.5, color: COL_DOT,
+                fixed: true, highlight: false, showInfobox: false, layer: 5
+            }));
+            board.create('text', [ranLabelX, rangeYs[j], String(rangeVals[j])], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 15, color: COL_LABEL,
+                cssStyle: 'font-weight:600',
+                fixed: true, highlight: false, layer: 5
+            });
+        }
+
+        // ── Straight arrows ─────────────────────────────────────────────
+        var mappings = [
+            [0, 0],
+            [1, 1],
+            [2, 2],
+            [3, 3],
+            [3, 4]
+        ];
+
+        for (var m = 0; m < mappings.length; m++) {
+            var di = mappings[m][0];
+            var ri = mappings[m][1];
+            board.create('arrow', [
+                [domDotX + 0.15, domainYs[di]],
+                [ranDotX - 0.15, rangeYs[ri]]
+            ], {
+                strokeColor: COL_ARROW, strokeWidth: 1.2,
+                lastArrow: { type: 2, size: 5 },
+                fixed: true, highlight: false, layer: 3
+            });
+        }
+
+    </script>
+</body>
+</html>
