@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Area of a Circle as a Function of Radius</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 760px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel { width: 200px; flex-shrink: 0; background: white; border-radius: 8px; padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; }
+        #board { width: 100%; height: 100%; }
+        .slider-label { font-size: 14px; color: #2563EB; margin-bottom: 6px; }
+        input[type=range] { width: 100%; accent-color: #2563EB; margin-bottom: 18px; }
+        .readout-line { margin: 8px 0; min-height: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="slider-label">Radius</div>
+                <input type="range" id="slider-r" min="1" max="5" step="0.5" value="2">
+                <div class="readout-line" id="readout-r"></div>
+                <div class="readout-line" id="readout-area"></div>
+            </div>
+            <div class="board-wrapper"><div id="board"></div></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 6, 6, -6], axis: false, grid: false, keepAspectRatio: true,
+            showNavigation: false, showCopyright: false, pan: { enabled: false }, zoom: { enabled: false }
+        });
+        var rVal = 2;
+        var center = board.create('point', [0, 0], { name: '', size: 2, color: '#222222', fixed: true, showInfobox: false });
+        var circle = board.create('circle', [center, function() { return rVal; }], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, fillColor: '#2563EB', fillOpacity: 0.12, highlight: false });
+        var edge = board.create('point', [ function() { return rVal * Math.cos(Math.PI / 4); }, function() { return rVal * Math.sin(Math.PI / 4); } ], { name: '', size: 2, color: '#3B82F6', fixed: true, showInfobox: false });
+        board.create('segment', [center, edge], { strokeColor: '#3B82F6', strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('text', [ function() { return rVal * Math.cos(Math.PI / 4) * 0.5 - 0.35; }, function() { return rVal * Math.sin(Math.PI / 4) * 0.5 + 0.35; }, 'r' ], { useKatex: true, fontSize: 14, color: '#3B82F6', fixed: true, highlight: false });
+        function updateReadout() {
+            var area = Math.PI * rVal * rVal;
+            katex.render('r = ' + rVal.toFixed(1), document.getElementById('readout-r'), { throwOnError: false });
+            katex.render('A = \\pi r^2 \\approx ' + area.toFixed(2), document.getElementById('readout-area'), { throwOnError: false });
+        }
+        document.getElementById('slider-r').addEventListener('input', function() { rVal = parseFloat(this.value); board.update(); updateReadout(); });
+        window.addEventListener('load', function() { updateReadout(); });
+    </script>
+</body>
+</html>
