@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Square and Triangle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 8, 14, -2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── SQUARE (left side) ──────────────────────────────────────────
+        var sqSide = 4;
+        var sqX = 0.5;
+        var sqY = 0.5;
+
+        var sqA = board.create('point', [sqX, sqY], { visible: false, name: '' });
+        var sqB = board.create('point', [sqX + sqSide, sqY], { visible: false, name: '' });
+        var sqC = board.create('point', [sqX + sqSide, sqY + sqSide], { visible: false, name: '' });
+        var sqD = board.create('point', [sqX, sqY + sqSide], { visible: false, name: '' });
+
+        board.create('polygon', [sqA, sqB, sqC, sqD], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Right-angle marker at bottom-left corner (sqA)
+        var raSize = 0.35;
+        board.create('segment', [[sqX + raSize, sqY], [sqX + raSize, sqY + raSize]], {
+            strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[sqX + raSize, sqY + raSize], [sqX, sqY + raSize]], {
+            strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Labels for square — offset well outside the edges
+        // Bottom side label: (x + 2) — below the bottom edge
+        board.create('text', [sqX + sqSide / 2, sqY - 0.8, '(x + 2)'], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 14, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        // Left side label: (x + 2) — to the left of the left edge
+        board.create('text', [sqX - 1.1, sqY + sqSide / 2, '(x + 2)'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── TRIANGLE (right side) ───────────────────────────────────────
+        var triAx = 8, triAy = 0.5;
+        var triBx = 13, triBy = 0.5;
+        var triCx = 9.8, triCy = 5.5;
+
+        var triA = board.create('point', [triAx, triAy], { visible: false, name: '' });
+        var triB = board.create('point', [triBx, triBy], { visible: false, name: '' });
+        var triC = board.create('point', [triCx, triCy], { visible: false, name: '' });
+
+        board.create('polygon', [triA, triB, triC], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Side labels — offset outward from each edge using perpendicular direction
+
+        // Bottom side (A to B): label "4" — below the base
+        var midAB_x = (triAx + triBx) / 2;
+        board.create('text', [midAB_x, triAy - 0.8, '4'], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 14, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        // Left side (A to C): label "(x + 3)" — offset to the left/outside
+        var midAC_x = (triAx + triCx) / 2;
+        var midAC_y = (triAy + triCy) / 2;
+        var dxAC = triCx - triAx;
+        var dyAC = triCy - triAy;
+        var lenAC = Math.sqrt(dxAC * dxAC + dyAC * dyAC);
+        var nxAC = -dyAC / lenAC;
+        var nyAC = dxAC / lenAC;
+        var offsetAC = 0.9;
+        board.create('text', [midAC_x + nxAC * offsetAC, midAC_y + nyAC * offsetAC, '(x + 3)'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        // Right side (B to C): label "x" — offset to the right/outside
+        var midBC_x = (triBx + triCx) / 2;
+        var midBC_y = (triBy + triCy) / 2;
+        var dxBC = triCx - triBx;
+        var dyBC = triCy - triBy;
+        var lenBC = Math.sqrt(dxBC * dxBC + dyBC * dyBC);
+        var nxBC = dyBC / lenBC;
+        var nyBC = -dxBC / lenBC;
+        var offsetBC = 0.7;
+        board.create('text', [midBC_x + nxBC * offsetBC, midBC_y + nyBC * offsetBC, 'x'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
