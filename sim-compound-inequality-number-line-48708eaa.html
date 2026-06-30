@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compound Inequality: y ≤ -3 or y ≥ 5</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-9, 2.5, 9, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_LINE = '#444444';
+        var COL_SOL = '#2563EB';
+        var TICK_H = 0.15;
+        var Y_LINE = 0;
+
+        // Number line with arrows
+        board.create('arrow', [[-8.5, Y_LINE], [8.5, Y_LINE]], {
+            strokeColor: COL_LINE, strokeWidth: 1.2,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        // Tick marks and labels at every integer
+        for (var t = -8; t <= 8; t++) {
+            board.create('segment', [[t, Y_LINE - TICK_H], [t, Y_LINE + TICK_H]], {
+                strokeColor: COL_LINE, strokeWidth: 0.8, fixed: true, highlight: false
+            });
+            board.create('text', [t, Y_LINE - 0.55, String(t)], {
+                fontSize: 10, color: COL_LINE, anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Solution ray: y ≤ -3 (left ray)
+        board.create('arrow', [[-3, Y_LINE], [-8.5, Y_LINE]], {
+            strokeColor: COL_SOL, strokeWidth: 3.5,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        // Solution ray: y ≥ 5 (right ray)
+        board.create('arrow', [[5, Y_LINE], [8.5, Y_LINE]], {
+            strokeColor: COL_SOL, strokeWidth: 3.5,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        // Closed endpoint at y = -3
+        board.create('point', [-3, Y_LINE], {
+            name: '', size: 5, color: COL_SOL,
+            fillColor: COL_SOL, strokeColor: COL_SOL, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        // Closed endpoint at y = 5
+        board.create('point', [5, Y_LINE], {
+            name: '', size: 5, color: COL_SOL,
+            fillColor: COL_SOL, strokeColor: COL_SOL, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
