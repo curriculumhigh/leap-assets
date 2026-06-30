@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Line: -3 ≤ y ≤ 5</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-9.5, 1.2, 9.5, -1.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var Y_LINE = 0.15;
+        var TICK_HALF = 0.075; // half of 0.15 units total tick height
+
+        // Number line with arrows on both ends
+        board.create('arrow', [[-9, Y_LINE], [9, Y_LINE]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+        board.create('arrow', [[9, Y_LINE], [-9, Y_LINE]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        // Tick marks (0.15 units tall) and labels at every integer from -8 to 8
+        var i;
+        for (i = -8; i <= 8; i++) {
+            // Tick mark — 0.15 units total height centered on the line
+            board.create('segment', [[i, Y_LINE - TICK_HALF], [i, Y_LINE + TICK_HALF]], {
+                strokeColor: '#444444', strokeWidth: 0.8,
+                fixed: true, highlight: false
+            });
+            // Tick label below
+            board.create('text', [i, Y_LINE - TICK_HALF - 0.18, String(i)], {
+                fontSize: 10, color: '#444444',
+                anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Variable label "y" near right arrow
+        board.create('text', [9.1, Y_LINE + 0.25, '<i>y</i>'], {
+            fontSize: 12, color: '#444444',
+            fixed: true, highlight: false
+        });
+
+        // Shaded segment from -3 to 5 (the solution set)
+        board.create('segment', [[-3, Y_LINE], [5, Y_LINE]], {
+            strokeColor: '#2563EB', strokeWidth: 4,
+            fixed: true, highlight: false
+        });
+
+        // Closed circle at y = -3
+        board.create('point', [-3, Y_LINE], {
+            name: '', size: 4,
+            fillColor: '#2563EB', strokeColor: '#2563EB', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        // Closed circle at y = 5
+        board.create('point', [5, Y_LINE], {
+            name: '', size: 4,
+            fillColor: '#2563EB', strokeColor: '#2563EB', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
