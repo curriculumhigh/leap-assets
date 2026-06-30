@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Line: x ≥ −4</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; }
+        .container { padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        // Uniform number-line template (SC option, 300x200). Range -10..2, -4 centered.
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-10, 3.5, 2, -3.5],
+            axis: false, grid: false, showNavigation: false,
+            showCopyright: false, pan: { enabled: false }, zoom: { enabled: false }
+        });
+        var Y = 0;
+        var LINE = '#222222';
+        var BLUE = '#2563EB';
+        var TICK = 0.22;
+
+        board.create('arrow', [[-9.6, Y], [-4, Y]], {strokeColor: LINE, strokeWidth: 2, fixed: true, highlight: false, firstArrow: {type:2, size:5}, lastArrow: false});
+        board.create('arrow', [[-4, Y], [1.6, Y]], {strokeColor: BLUE, strokeWidth: 2.5, fixed: true, highlight: false, firstArrow: false, lastArrow: {type:2, size:5}});
+
+        for (var i = -9; i <= 1; i++) {
+            board.create('segment', [[i, Y - TICK], [i, Y + TICK]], {
+                strokeColor: LINE, strokeWidth: 1, fixed: true, highlight: false
+            });
+            board.create('text', [i, Y - 0.85, String(i)], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 11, color: LINE, fixed: true, highlight: false
+            });
+        }
+
+        board.create('point', [-4, Y], {
+            name: '', size: 5, fixed: true, highlight: false, fillColor: BLUE, strokeColor: BLUE, strokeWidth: 1.8
+        });
+    </script>
+</body>
+</html>
