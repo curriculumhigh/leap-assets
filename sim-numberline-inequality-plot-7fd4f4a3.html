@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Line: x ≥ 3 or x ≤ -3</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.8, 2.5, 6.8, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var TICK_HEIGHT = 0.15;
+        var COL_AXIS = '#444444';
+        var COL_SOL = '#2563EB';
+
+        // ── Number line (horizontal axis) ───────────────────────────────
+        board.create('arrow', [[-6.5, 0], [6.5, 0]], {
+            strokeColor: COL_AXIS,
+            strokeWidth: 1.2,
+            firstArrow: { type: 2, size: 6 },
+            lastArrow: { type: 2, size: 6 },
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Tick marks and labels ───────────────────────────────────────
+        for (var i = -6; i <= 6; i++) {
+            // Tick mark
+            board.create('segment', [[i, -TICK_HEIGHT], [i, TICK_HEIGHT]], {
+                strokeColor: COL_AXIS,
+                strokeWidth: 1.0,
+                fixed: true,
+                highlight: false
+            });
+            // Tick label
+            board.create('text', [i, -0.55, String(i)], {
+                anchorX: 'middle',
+                anchorY: 'middle',
+                fontSize: 11,
+                color: COL_AXIS,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // ── Solution ray: x ≤ -3 (from -3 to left with arrow) ──────────
+        board.create('arrow', [[-3, 0], [-6.5, 0]], {
+            strokeColor: COL_SOL,
+            strokeWidth: 3,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true,
+            highlight: false
+        });
+
+        // Closed circle at x = -3
+        board.create('point', [-3, 0], {
+            name: '',
+            size: 5,
+            color: COL_SOL,
+            fillColor: COL_SOL,
+            strokeColor: COL_SOL,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Solution ray: x ≥ 3 (from 3 to right with arrow) ───────────
+        board.create('arrow', [[3, 0], [6.5, 0]], {
+            strokeColor: COL_SOL,
+            strokeWidth: 3,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true,
+            highlight: false
+        });
+
+        // Closed circle at x = 3
+        board.create('point', [3, 0], {
+            name: '',
+            size: 5,
+            color: COL_SOL,
+            fillColor: COL_SOL,
+            strokeColor: COL_SOL,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
