@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Line: y ≤ -3 or y > 5</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-9, 3, 9, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Number line base
+        board.create('segment', [[-8.5, 0], [8.5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Tick marks and labels at every integer from -8 to 8
+        var tickHeight = 0.15;
+        for (var i = -8; i <= 8; i++) {
+            board.create('segment', [[i, -tickHeight], [i, tickHeight]], {
+                strokeColor: '#444444', strokeWidth: 1, fixed: true, highlight: false
+            });
+            board.create('text', [i, -0.4, String(i)], {
+                fontSize: 10, color: '#444444', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Shaded ray: y <= -3 (from -3 going left to edge)
+        board.create('segment', [[-8.5, 0], [-3, 0]], {
+            strokeColor: '#2563EB', strokeWidth: 3, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 }
+        });
+
+        // Shaded ray: y > 5 (from 5 going right to edge)
+        board.create('segment', [[5, 0], [8.5, 0]], {
+            strokeColor: '#2563EB', strokeWidth: 3, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        // Closed circle at -3 (y <= -3 includes -3)
+        board.create('point', [-3, 0], {
+            name: '', size: 4, color: '#2563EB', fixed: true, highlight: false,
+            strokeColor: '#2563EB', fillColor: '#2563EB'
+        });
+
+        // Open circle at 5 (y > 5 does not include 5)
+        board.create('point', [5, 0], {
+            name: '', size: 4, fixed: true, highlight: false,
+            strokeColor: '#2563EB', strokeWidth: 1.5, fillColor: '#ffffff'
+        });
+    </script>
+</body>
+</html>
