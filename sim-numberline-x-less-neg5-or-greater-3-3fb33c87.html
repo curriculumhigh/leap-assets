@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Line: x < -5 or x > 3</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; }
+        .container { padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        // Uniform compound number-line template (SC option, 300x200). Box [-8,6], centered on -1 (midpoint of -5,3).
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8, 4, 6, -4],
+            axis: false, grid: false, showNavigation: false,
+            showCopyright: false, pan: { enabled: false }, zoom: { enabled: false }
+        });
+        var Y = 0;
+        var LINE = '#222222';
+        var BLUE = '#2563EB';
+        var TICK = 0.22;
+
+        // base number line (black, arrows both ends)
+        board.create('arrow', [[-7.6, Y], [5.6, Y]], {
+            strokeColor: LINE, strokeWidth: 2, fixed: true, highlight: false,
+            firstArrow: {type:2, size:5}, lastArrow: {type:2, size:5}
+        });
+
+        // solution highlight (blue)
+        board.create('arrow', [[-5, Y], [-7.6, Y]], {strokeColor: BLUE, strokeWidth: 2.5, fixed: true, highlight: false, firstArrow: false, lastArrow: {type:2, size:6}});
+        board.create('arrow', [[3, Y], [5.6, Y]], {strokeColor: BLUE, strokeWidth: 2.5, fixed: true, highlight: false, firstArrow: false, lastArrow: {type:2, size:6}});
+
+        // ticks + labels (-7..5)
+        for (var i = -7; i <= 5; i++) {
+            board.create('segment', [[i, Y - TICK], [i, Y + TICK]], {
+                strokeColor: LINE, strokeWidth: 1, fixed: true, highlight: false
+            });
+            board.create('text', [i, Y - 0.85, String(i)], {
+                anchorX: 'middle', anchorY: 'middle', fontSize: 11, color: LINE, fixed: true, highlight: false
+            });
+        }
+
+        // endpoint dots
+        board.create('point', [-5, Y], {name:'', size:5, fixed:true, highlight:false, fillColor: '#ffffff', strokeColor: BLUE, strokeWidth: 1.8});
+        board.create('point', [3, Y], {name:'', size:5, fixed:true, highlight:false, fillColor: '#ffffff', strokeColor: BLUE, strokeWidth: 1.8});
+    </script>
+</body>
+</html>
