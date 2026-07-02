@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Line: x ≥ −4</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; }
+        .container { padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-9.5, 2.5, 9.5, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var Y = 0.3;
+        var LINE_COLOR = '#222222';
+        var HIGHLIGHT_COLOR = '#2563EB';
+        var TICK_LEN = 0.15;
+
+        // Base number line (unshaded portion: left arrow to -4)
+        board.create('arrow', [[-9, Y], [-4, Y]], {
+            strokeColor: LINE_COLOR, strokeWidth: 2, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 }, lastArrow: false
+        });
+
+        // Shaded ray (x >= -4): from -4 to right arrow
+        board.create('arrow', [[-4, Y], [9, Y]], {
+            strokeColor: HIGHLIGHT_COLOR, strokeWidth: 2.2, fixed: true, highlight: false,
+            firstArrow: false, lastArrow: { type: 2, size: 5 }
+        });
+
+        // Tick marks and labels for all integers
+        for (var i = -8; i <= 8; i++) {
+            // Tick mark — short
+            board.create('segment', [[i, Y - TICK_LEN], [i, Y + TICK_LEN]], {
+                strokeColor: LINE_COLOR, strokeWidth: 1, fixed: true, highlight: false
+            });
+            // Label
+            board.create('text', [i, Y - 0.8, String(i)], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 10, color: '#222222', fixed: true, highlight: false
+            });
+        }
+
+        // Closed circle at x = -4 (filled, indicating >=)
+        board.create('point', [-4, Y], {
+            name: '', size: 4, fixed: true, highlight: false,
+            fillColor: HIGHLIGHT_COLOR, strokeColor: HIGHLIGHT_COLOR, strokeWidth: 1.5
+        });
+    </script>
+</body>
+</html>
