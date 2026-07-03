@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odd function f(x)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 5, 5, -5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        board.create('text', [4.55, -0.4, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.3, 4.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        function drawSpline(pts, color, width, dash) {
+            var jxgPts = [];
+            for (var i = 0; i < pts.length; i++) {
+                jxgPts.push(board.create('point', pts[i], { visible: false, fixed: true, name: '' }));
+            }
+            var spl = JXG.Math.Numerics.CardinalSpline(jxgPts, 0.5);
+            return board.create('curve', [spl[0], spl[1], 0, function () { return jxgPts.length - 1; }], {
+                strokeColor: color, strokeWidth: width, dash: dash || 0, fixed: true, highlight: false
+            });
+        }
+
+        // f odd: increasing S through (-3,-3),(-1,-2),(0,0),(1,2),(3,3), origin-symmetric guides
+        var fPts = [[-3.6, -3.3], [-3, -3], [-1, -2], [0, 0], [1, 2], [3, 3], [3.6, 3.3]];
+        drawSpline(fPts, '#222222', 1.8, 0);
+
+        // f(x) label in clear upper-left quadrant (curve is negative there)
+        board.create('text', [-3.4, 2.9, 'f(x)'], { useKatex: true, fontSize: 14, fixed: true, highlight: false, color: '#222222' });
+    </script>
+</body>
+</html>
