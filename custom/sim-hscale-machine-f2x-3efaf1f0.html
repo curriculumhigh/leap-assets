@@ -1,0 +1,22 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>machine f(2x)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+ html,body{margin:0;padding:0;height:100%;overflow:hidden;background:transparent;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+ .row{display:flex;align-items:center;justify-content:center;height:100%;gap:6px;}
+ .lbl{font-size:19px;color:#1f2937;}
+ .box{border:2px solid #2563EB;background:#EFF4FF;border-radius:4px;padding:7px 14px;font-size:20px;color:#1f2937;display:flex;align-items:center;justify-content:center;min-width:36px;}
+ .arrow{flex:0 0 auto;line-height:0;}
+</style></head>
+<body><div class="row">
+ <span class="lbl" id="in"></span>
+ <span class="arrow"><svg width="44" height="16"><line x1="1" y1="8" x2="34" y2="8" stroke="#2563EB" stroke-width="1.8"/><path d="M34,3 L43,8 L34,13 z" fill="#2563EB"/></svg></span>
+ <span class="box" id="box"></span>
+ <span class="arrow"><svg width="44" height="16"><line x1="1" y1="8" x2="34" y2="8" stroke="#2563EB" stroke-width="1.8"/><path d="M34,3 L43,8 L34,13 z" fill="#2563EB"/></svg></span>
+ <span class="lbl" id="out"></span>
+</div>
+<script>
+ function R(id,tex){katex.render(tex,document.getElementById(id),{throwOnError:false});}
+ R("in","\\dfrac{x_0}{2}"); R("box","f(2x)"); R("out","y_0");
+</script></body></html>
