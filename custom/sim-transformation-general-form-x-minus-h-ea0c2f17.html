@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformation Equation y = af(b(x-h))+k</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+        /* Fluid stage: the whole diagram is a fixed 720x360 canvas, scaled to fit
+           whatever iframe box we get, centered both axes, aspect ratio preserved. */
+        #stage-wrap {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #stage {
+            width: 720px;
+            height: 360px;
+            transform-origin: center center;
+            flex: 0 0 auto;
+        }
+        .card {
+            position: relative;
+            width: 720px;
+            height: 360px;
+            box-sizing: border-box;
+            background: #ffffff;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        /* SVG arrow overlay sits above the card background, below label text */
+        #arrows {
+            position: absolute;
+            top: 0; left: 0;
+            width: 720px; height: 360px;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .equation {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 34px;
+            line-height: 1;
+            white-space: nowrap;
+            z-index: 2;
+        }
+        .label {
+            position: absolute;
+            font-size: 13.5px;
+            line-height: 1.35;
+            color: #222222;
+            z-index: 3;
+            width: 250px;
+        }
+        .label.tl { top: 20px; left: 22px; text-align: left; }
+        .label.tr { top: 20px; right: 22px; text-align: right; }
+        .label.bl { bottom: 20px; left: 22px; text-align: left; }
+        .label.br { bottom: 20px; right: 22px; text-align: right; }
+        .c-a { color: #2563EB; font-weight: 600; }
+        .c-b { color: #DC2626; font-weight: 600; }
+        .c-h { color: #059669; font-weight: 600; }
+        .c-k { color: #7C3AED; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div id="stage-wrap">
+      <div id="stage">
+    <div class="card" id="card">
+        <svg id="arrows" viewBox="0 0 720 360">
+            <defs>
+                <marker id="arrowhead" markerWidth="7" markerHeight="7" refX="5.5" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+                    <path d="M0,0 L6,3 L0,6 Z" fill="#444444"></path>
+                </marker>
+            </defs>
+            <line id="ln-a" stroke="#444444" stroke-width="1" marker-end="url(#arrowhead)"></line>
+            <line id="ln-k" stroke="#444444" stroke-width="1" marker-end="url(#arrowhead)"></line>
+            <line id="ln-b" stroke="#444444" stroke-width="1" marker-end="url(#arrowhead)"></line>
+            <line id="ln-h" stroke="#444444" stroke-width="1" marker-end="url(#arrowhead)"></line>
+        </svg>
+
+        <div class="equation" id="eq"></div>
+
+        <div class="label tl">Vertical Scale by a factor of <span id="m-abs-a"></span>. (+Vertical Reflection if <span id="m-a-lt0"></span>.)</div>
+        <div class="label tr">Vertical Translation by <span id="m-k"></span> units.</div>
+        <div class="label bl">Horizontal Scale by a factor of <span id="m-frac"></span>. (+Horizontal Reflection if <span id="m-b-lt0"></span>.)</div>
+        <div class="label br">Horizontal Translation by <span id="m-h"></span> units.</div>
+    </div>
+      </div>
+    </div>
+
+    <script>
+        // Fluid scaling: fit the fixed 720x360 stage into whatever box we're given,
+        // preserving aspect ratio and centering (flex on #stage-wrap handles centering).
+        var STAGE_W = 720, STAGE_H = 360;
+        function fitStage() {
+            var availW = window.innerWidth;
+            var availH = window.innerHeight;
+            var scale = Math.min(availW / STAGE_W, availH / STAGE_H);
+            var stage = document.getElementById('stage');
+            if (stage) { stage.style.transform = 'scale(' + scale + ')'; }
+        }
+        window.addEventListener('resize', fitStage);
+    </script>
+
+    <script>
+        function draw() {
+            var eqEl = document.getElementById('eq');
+            // Tag each parameter with an htmlId so we can anchor arrows precisely.
+            var latex =
+                'y = ' +
+                '\\htmlId{p-a}{\\textcolor{#2563EB}{a}}' +
+                '\\,f\\!\\left(' +
+                '\\htmlId{p-b}{\\textcolor{#DC2626}{b}}' +
+                '\\left(x\\textcolor{#059669}{-}\\htmlId{p-h}{\\textcolor{#059669}{h}}\\right)\\right)' +
+                '\\textcolor{#7C3AED}{+}\\htmlId{p-k}{\\textcolor{#7C3AED}{k}}';
+
+            katex.render(latex, eqEl, {
+                throwOnError: false,
+                trust: true,
+                strict: false,
+                displayMode: false
+            });
+
+            // Render the KaTeX math tokens embedded in the corner labels.
+            function renderMath(id, tex) {
+                var el = document.getElementById(id);
+                if (el) { katex.render(tex, el, { throwOnError: false, displayMode: false }); }
+            }
+            renderMath('m-abs-a', '\\textcolor{#2563EB}{|a|}');
+            renderMath('m-a-lt0', '\\textcolor{#2563EB}{a}<0');
+            renderMath('m-k', '\\textcolor{#7C3AED}{k}');
+            renderMath('m-frac', '\\frac{1}{\\textcolor{#DC2626}{|b|}}');
+            renderMath('m-b-lt0', '\\textcolor{#DC2626}{b}<0');
+            renderMath('m-h', '\\textcolor{#059669}{h}');
+
+            var card = document.getElementById('card');
+            var cardRect = card.getBoundingClientRect();
+
+            function centerOf(id) {
+                var el = document.getElementById(id);
+                var r = el.getBoundingClientRect();
+                return {
+                    x: r.left + r.width / 2 - cardRect.left,
+                    y: r.top + r.height / 2 - cardRect.top,
+                    top: r.top - cardRect.top,
+                    bottom: r.bottom - cardRect.top,
+                    left: r.left - cardRect.left,
+                    right: r.right - cardRect.left
+                };
+            }
+
+            // Shorten the arrow so the head stops just short of the target glyph.
+            function shorten(x1, y1, x2, y2, pad) {
+                var dx = x2 - x1, dy = y2 - y1;
+                var len = Math.sqrt(dx * dx + dy * dy) || 1;
+                return { x: x2 - dx / len * pad, y: y2 - dy / len * pad };
+            }
+
+            function setLine(lineId, sx, sy, targetId, padExtra) {
+                var t = centerOf(targetId);
+                var end = shorten(sx, sy, t.x, t.y, 10 + (padExtra || 0));
+                var ln = document.getElementById(lineId);
+                ln.setAttribute('x1', sx);
+                ln.setAttribute('y1', sy);
+                ln.setAttribute('x2', end.x);
+                ln.setAttribute('y2', end.y);
+            }
+
+            // Arrow start points anchored near the inner corner of each label,
+            // pointing diagonally toward its parameter (matching the reference).
+            // Top-left label -> down-right to a
+            setLine('ln-a', 150, 74, 'p-a');
+            // Top-right label -> down-left to k. Approach from up-right (start x is
+            // right of the k glyph) so the clearance gap opens away from the + sign.
+            setLine('ln-k', 655, 62, 'p-k', 8);
+            // Bottom-left label -> up-right to b
+            setLine('ln-b', 150, 286, 'p-b', 8);
+            // Bottom-right label -> up-left to h
+            setLine('ln-h', 590, 298, 'p-h', 8);
+        }
+
+        function init() {
+            draw();
+            fitStage();
+        }
+
+        if (window.katex) {
+            init();
+        } else {
+            window.addEventListener('load', init);
+        }
+    </script>
+</body>
+</html>
