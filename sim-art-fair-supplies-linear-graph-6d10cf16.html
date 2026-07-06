@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art Fair Supplies</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8, 47, 68, -7],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 10
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 10
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Title
+        board.create('text', [30, 44, '<b>Art Fair Supplies</b>'], {
+            fontSize: 15, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, color: '#222222'
+        });
+
+        // Axis labels
+        board.create('text', [33, -5, 'Number of canvas panels'], {
+            fontSize: 12, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, color: '#444444'
+        });
+        board.create('text', [-6.5, 23, 'Number of paint sets'], {
+            fontSize: 12, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, color: '#444444',
+            display: 'html',
+            cssStyle: 'transform: rotate(-90deg); white-space: nowrap;'
+        });
+
+        // Line segment from (0, 40) to (60, 0)
+        board.create('segment', [[0, 40], [60, 0]], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        // Intercept points
+        board.create('point', [0, 40], {
+            name: '', size: 5, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [60, 0], {
+            name: '', size: 5, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Coordinate labels
+        board.create('text', [3, 42, '(0, 40)'], {
+            fontSize: 12, color: '#222222', anchorX: 'left', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+        board.create('text', [52, 3, '(60, 0)'], {
+            fontSize: 12, color: '#222222', anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
