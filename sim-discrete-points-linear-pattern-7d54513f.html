@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discrete Points on Coordinate Plane</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 140px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .panel-instruction {
+            font-size: 13px; color: #555; line-height: 1.5; text-align: center;
+        }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-instruction">Hover over the points to see their coordinates</div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.9, 9.2, 9.5, -0.9],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        drawZero: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        drawZero: false
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [9.1, -0.5, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 8.9, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Tooltip logic
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function showTooltip(pt) {
+            var xVal = Math.round(pt.X());
+            var yVal = Math.round(pt.Y());
+            tooltip.textContent = '(' + xVal + ', ' + yVal + ')';
+            tooltip.style.borderColor = '#222222';
+            tooltip.style.color = '#222222';
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [pt.X(), pt.Y()], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+        }
+
+        // Discrete points
+        var pointsData = [
+            [0, 8], [1, 7], [2, 6], [3, 5], [4, 4],
+            [5, 3], [6, 2], [7, 1], [8, 0]
+        ];
+
+        for (var i = 0; i < pointsData.length; i++) {
+            (function(idx) {
+                var pt = board.create('point', pointsData[idx], {
+                    name: '',
+                    size: 4,
+                    color: '#222222',
+                    fixed: true,
+                    highlight: true,
+                    highlightFillColor: '#2563EB',
+                    highlightStrokeColor: '#2563EB',
+                    showInfobox: false
+                });
+                pt.on('over', function() { showTooltip(pt); });
+                pt.on('out', function() { hideTooltip(); });
+            })(i);
+        }
+    </script>
+</body>
+</html>
