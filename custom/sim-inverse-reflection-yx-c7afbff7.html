@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inverse Function Reflection Across y = x</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 440px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var COL_F = '#222222';
+        var COL_INV = '#2563EB';
+        var COL_LINE = '#DC2626';
+        var COL_CONN = '#9CA3AF';
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 4, 4, -4],
+            keepAspectRatio: true,
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: { strokeColor: '#444444', strokeWidth: 1.2, lastArrow: { type: 2, size: 6 },
+                     ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 } },
+                y: { strokeColor: '#444444', strokeWidth: 1.2, lastArrow: { type: 2, size: 6 },
+                     ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 } }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels near the arrow tips
+        board.create('text', [3.6, -0.4, 'x'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 3.6, 'y'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+
+        // Reference line y = x (dashed red)
+        board.create('functiongraph', [function(x){ return x; }, -3.6, 3.6], {
+            strokeColor: COL_LINE, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('text', [-2.9, -3.2, 'y = x'], { useKatex: true, fontSize: 14, color: COL_LINE, fixed: true, highlight: false });
+
+        // f(x) = x^3  (primary curve)
+        var fCurve = board.create('functiongraph', [function(x){ return x * x * x; }, -1.5, 1.5], {
+            strokeColor: COL_F, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('text', [1.75, 3.1, 'f'], { useKatex: true, fontSize: 16, color: COL_F, fixed: true, highlight: false });
+
+        // f^-1(x) = cube root of x  (secondary curve)
+        board.create('functiongraph', [function(x){ return Math.cbrt(x); }, -3.4, 3.4], {
+            strokeColor: COL_INV, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('text', [2.7, 2.05, 'f^{-1}'], { useKatex: true, fontSize: 16, color: COL_INV, fixed: true, highlight: false });
+
+        // Draggable point P on f
+        var P = board.create('glider', [1.2, 1.2 * 1.2 * 1.2, fCurve], {
+            face: '<>', size: 5, color: COL_F, name: '', showInfobox: false
+        });
+
+        // Reflected point Q on f^-1  (coordinates swapped)
+        var Q = board.create('point', [
+            function(){ return P.Y(); },
+            function(){ return P.X(); }
+        ], { size: 4, color: COL_INV, name: '', fixed: true, showInfobox: false, highlight: false });
+
+        // Dashed connector between P and Q
+        board.create('segment', [P, Q], { strokeColor: COL_CONN, strokeWidth: 0.8, dash: 1, fixed: true, highlight: false });
+
+        // Dynamic LaTeX coordinate labels: (a, b) near P and (b, a) near Q
+        board.create('text', [
+            function(){ return P.X() + 0.18; },
+            function(){ return P.Y() + 0.5; },
+            function(){ return '\\left(' + P.X().toFixed(1) + ',\\ ' + P.Y().toFixed(1) + '\\right)'; }
+        ], { useKatex: true, fontSize: 14, color: COL_F, fixed: true, highlight: false });
+
+        board.create('text', [
+            function(){ return Q.X() + 0.18; },
+            function(){ return Q.Y() - 0.6; },
+            function(){ return '\\left(' + P.Y().toFixed(1) + ',\\ ' + P.X().toFixed(1) + '\\right)'; }
+        ], { useKatex: true, fontSize: 14, color: COL_INV, fixed: true, highlight: false });
+    </script>
+</body>
+</html>
