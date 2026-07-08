@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Line x + y = 8</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.9, 9.2, 9.2, -0.9],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        // Grid lines
+        var i;
+        for (i = 0; i <= 8; i++) {
+            board.create('segment', [[i, 0], [i, 8]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+            board.create('segment', [[0, i], [8, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+
+        // X-axis
+        board.create('arrow', [[0, 0], [8.8, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Y-axis
+        board.create('arrow', [[0, 0], [0, 8.8]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Tick marks and labels on x-axis
+        for (i = 0; i <= 8; i++) {
+            board.create('segment', [[i, -0.12], [i, 0.12]], {
+                strokeColor: '#444444', strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            board.create('text', [i, -0.45, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Tick marks and labels on y-axis
+        for (i = 1; i <= 8; i++) {
+            board.create('segment', [[-0.12, i], [0.12, i]], {
+                strokeColor: '#444444', strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            board.create('text', [-0.4, i, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Axis labels
+        board.create('text', [8.6, -0.5, '<i>x</i>'], {
+            fontSize: 14, color: '#444444', fixed: true, highlight: false
+        });
+        board.create('text', [0.3, 8.8, '<i>y</i>'], {
+            fontSize: 14, color: '#444444', fixed: true, highlight: false
+        });
+
+        // Line: x + y = 8, i.e., y = 8 - x
+        // Draw from (0, 8) to (8, 0)
+        board.create('segment', [[0, 8], [8, 0]], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        // Intercept points
+        board.create('point', [0, 8], {
+            name: '', size: 4, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [8, 0], {
+            name: '', size: 4, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false
+        });
+    </script>
+</body>
+</html>
