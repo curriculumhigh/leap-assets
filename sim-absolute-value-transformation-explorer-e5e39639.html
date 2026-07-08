@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absolute Value Transformation Explorer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 210px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 12px;
+            overflow: hidden;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 4px;
+        }
+        .slider-group { margin-bottom: 6px; }
+        .slider-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 2px;
+        }
+        .slider-name { font-size: 13px; font-weight: 600; color: #333; }
+        .slider-val { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; color: #2563EB; }
+        .slider-input {
+            width: 100%; -webkit-appearance: none; appearance: none;
+            height: 5px; border-radius: 3px; background: #e5e7eb; outline: none;
+        }
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 14px; height: 14px; border-radius: 50%; background: #2563EB; cursor: pointer;
+        }
+        .readout-section { border-top: 1px solid #e5e7eb; padding-top: 10px; }
+        .readout-line { min-height: 22px; margin-bottom: 6px; }
+        .explainer-section { border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: auto; }
+        .explainer-text { font-size: 11px; color: #888; font-style: italic; line-height: 1.4; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-section">
+                    <div class="panel-label">Parameters</div>
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-name">a</span>
+                            <span class="slider-val" id="val-a">1.0</span>
+                        </div>
+                        <input type="range" id="slider-a" class="slider-input" min="-30" max="30" step="1" value="10">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-name">h</span>
+                            <span class="slider-val" id="val-h">0.0</span>
+                        </div>
+                        <input type="range" id="slider-h" class="slider-input" min="-50" max="50" step="1" value="0">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-name">k</span>
+                            <span class="slider-val" id="val-k">0.0</span>
+                        </div>
+                        <input type="range" id="slider-k" class="slider-input" min="-50" max="50" step="1" value="0">
+                    </div>
+                </div>
+                <div class="panel-section readout-section">
+                    <div class="panel-label">Functions</div>
+                    <div class="readout-line" id="readout-f"></div>
+                    <div class="readout-line" id="readout-g"></div>
+                    <div class="readout-line" id="readout-g-sub"></div>
+                </div>
+                <div class="panel-section explainer-section">
+                    <div class="explainer-text">Observe the effect of <i>a</i>, <i>h</i>, and <i>k</i> on the graph of <i>g</i>.</div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8, 8, 8, -6],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 2 }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 2 }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [7.5, -0.5, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.3, 7.5, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Colors
+        var COL_F = '#222222';
+        var COL_G = '#2563EB';
+
+        // Parameter values (slider stores integer * 10 for a, * 10 for h and k)
+        var aVal = 1.0, hVal = 0.0, kVal = 0.0;
+
+        // Slider elements
+        var sliderA = document.getElementById('slider-a');
+        var sliderH = document.getElementById('slider-h');
+        var sliderK = document.getElementById('slider-k');
+
+        function getA() {
+            var raw = parseInt(sliderA.value) / 10;
+            // Skip 0: clamp to \u00b10.1
+            if (raw === 0) return 0.1;
+            return raw;
+        }
+        function getH() { return parseInt(sliderH.value) / 10; }
+        function getK() { return parseInt(sliderK.value) / 10; }
+
+        // f(x) = |x|
+        board.create('functiongraph', [function(x) { return Math.abs(x); }], {
+            strokeColor: COL_F, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // g(x) = |ax - h| + k
+        board.create('functiongraph', [function(x) {
+            return Math.abs(aVal * x - hVal) + kVal;
+        }], {
+            strokeColor: COL_G, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Function name labels on the board
+        board.create('text', [-6.5, 6.5, 'f(x)'], {
+            fontSize: 13, color: COL_F, useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [
+            function() { return (hVal / aVal) + 2.5; },
+            function() { return kVal + 2.5; },
+            'g(x)'
+        ], {
+            fontSize: 13, color: COL_G, useKatex: true, fixed: true, highlight: false
+        });
+
+        // Vertex points
+        var vertexF = board.create('point', [0, 0], {
+            name: '', size: 5, color: COL_F, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_F, highlightStrokeColor: COL_F
+        });
+
+        var vertexG = board.create('point', [
+            function() { return hVal / aVal; },
+            function() { return kVal; }
+        ], {
+            name: '', size: 5, color: COL_G, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_G, highlightStrokeColor: COL_G
+        });
+
+        // Tooltip setup
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function formatValKatex(v) {
+            var absV = Math.abs(v);
+            var sign = v < 0 ? '-' : '';
+            if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+            return v.toFixed(1);
+        }
+
+        function showTooltip(pt, color) {
+            var xCoord = pt.X();
+            var yCoord = pt.Y();
+            var latex = '\\color{' + color + '}{\\left(' + formatValKatex(xCoord)
+                      + ',\\,' + formatValKatex(yCoord) + '\\right)}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xCoord, yCoord], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+        vertexF.on('over', function() { showTooltip(vertexF, COL_F); });
+        vertexF.on('out', function() { hideTooltip(); });
+        vertexG.on('over', function() { showTooltip(vertexG, COL_G); });
+        vertexG.on('out', function() { hideTooltip(); });
+
+        // Panel update
+        function updatePanel() {
+            aVal = getA();
+            hVal = getH();
+            kVal = getK();
+
+            document.getElementById('val-a').textContent = aVal.toFixed(1);
+            document.getElementById('val-h').textContent = hVal.toFixed(1);
+            document.getElementById('val-k').textContent = kVal.toFixed(1);
+
+            // Static f(x) line
+            katex.render('f(x) = \\lvert x \\rvert', document.getElementById('readout-f'), { throwOnError: false });
+
+            // Static g(x) formula
+            katex.render('\\color{' + COL_G + '}{g(x) = \\lvert ax - h \\rvert + k}', document.getElementById('readout-g'), { throwOnError: false });
+
+            // Substituted g(x)
+            var aStr = aVal.toFixed(1);
+            var hStr = hVal.toFixed(1);
+            var kStr = kVal.toFixed(1);
+
+            // Build inner expression: ax - h
+            var inner = '';
+            if (aVal === 1) {
+                inner = 'x';
+            } else if (aVal === -1) {
+                inner = '-x';
+            } else {
+                inner = aStr + 'x';
+            }
+
+            // Subtract h
+            if (hVal > 0) {
+                inner += ' - ' + hStr;
+            } else if (hVal < 0) {
+                inner += ' + ' + Math.abs(hVal).toFixed(1);
+            }
+
+            var expr = '\\color{' + COL_G + '}{g(x) = \\lvert ' + inner + ' \\rvert';
+            if (kVal > 0) {
+                expr += ' + ' + kStr;
+            } else if (kVal < 0) {
+                expr += ' - ' + Math.abs(kVal).toFixed(1);
+            }
+            expr += '}';
+
+            katex.render(expr, document.getElementById('readout-g-sub'), { throwOnError: false });
+
+            board.update();
+        }
+
+        sliderA.addEventListener('input', function() {
+            // Skip 0
+            var raw = parseInt(sliderA.value);
+            if (raw === 0) { sliderA.value = 1; }
+            updatePanel();
+        });
+        sliderH.addEventListener('input', updatePanel);
+        sliderK.addEventListener('input', updatePanel);
+
+        // Initial render
+        updatePanel();
+    </script>
+</body>
+</html>
