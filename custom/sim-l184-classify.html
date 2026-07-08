@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<style>
+html,body{margin:0;padding:0;overflow:hidden;background:transparent;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px;box-sizing:border-box;}
+.cell{background:white;border:1px solid #E5E7EB;border-radius:8px;padding:4px 4px 2px;}
+.cap{font-size:13px;color:#111;text-align:center;margin:2px 0 0;}
+.bx{width:100%;height:150px;}
+</style></head>
+<body>
+<div class="grid">
+  <div class="cell"><div class="cap">(a) &nbsp;<i>y</i> = <i>x</i>²</div><div id="b1" class="bx"></div></div>
+  <div class="cell"><div class="cap">(b) &nbsp;<i>y</i> = <i>x</i>³</div><div id="b2" class="bx"></div></div>
+  <div class="cell"><div class="cap">(c) &nbsp;<i>y</i> = |<i>x</i>|</div><div id="b3" class="bx"></div></div>
+  <div class="cell"><div class="cap">(d) &nbsp;<i>y</i> = 2<i>x</i> − 1</div><div id="b4" class="bx"></div></div>
+</div>
+<script>
+function mk(id){
+  var b=JXG.JSXGraph.initBoard(id,{boundingbox:[-3.6,3.6,3.6,-3.6],keepaspectratio:true,showNavigation:false,showCopyright:false,pan:{enabled:false},zoom:{enabled:false}});
+  b.create('axis',[[0,0],[1,0]],{strokeColor:'#666',strokeWidth:1,lastArrow:{type:2,size:5},ticks:{visible:false}});
+  b.create('axis',[[0,0],[0,1]],{strokeColor:'#666',strokeWidth:1,lastArrow:{type:2,size:5},ticks:{visible:false}});
+  return b;
+}
+var o={strokeColor:'#2563EB',strokeWidth:2,fixed:true,highlight:false};
+mk('b1').create('functiongraph',[function(x){return x*x;},-2,2],o);
+mk('b2').create('functiongraph',[function(x){return x*x*x;},-1.55,1.55],o);
+mk('b3').create('functiongraph',[function(x){return Math.abs(x);},-3.2,3.2],o);
+mk('b4').create('functiongraph',[function(x){return 2*x-1;},-1.3,2.3],o);
+</script></body></html>
