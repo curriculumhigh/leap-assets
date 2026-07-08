@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absolute Value Transformation Explorer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 185px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 12px;
+            box-sizing: border-box;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 4px;
+        }
+        .slider-group { margin-bottom: 4px; }
+        .slider-row {
+            display: flex; align-items: center; gap: 6px;
+        }
+        .slider-name { font-size: 13px; font-weight: 600; color: #333; width: 16px; }
+        .slider-input {
+            flex: 1; -webkit-appearance: none; appearance: none;
+            height: 5px; border-radius: 3px; background: #e5e7eb; outline: none;
+        }
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 14px; height: 14px; border-radius: 50%; cursor: pointer;
+            background: #2563EB;
+        }
+        .slider-val {
+            font-size: 13px; font-variant-numeric: tabular-nums;
+            width: 30px; text-align: right; font-weight: 600; color: #2563EB;
+        }
+        .equation-section { border-top: 1px solid #e5e7eb; padding-top: 10px; }
+        .equation-display { min-height: 28px; margin-top: 4px; }
+        .explainer-section { border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: auto; }
+        .explainer-text { font-size: 11px; color: #888; line-height: 1.5; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; position: relative; }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-section">
+                    <div class="panel-label">Parameters</div>
+                    <div class="slider-group">
+                        <div class="slider-row">
+                            <span class="slider-name"><i>a</i></span>
+                            <input type="range" id="slider-a" class="slider-input" min="-3" max="3" step="0.1" value="1">
+                            <span class="slider-val" id="val-a">1.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-row">
+                            <span class="slider-name"><i>h</i></span>
+                            <input type="range" id="slider-h" class="slider-input" min="-5" max="5" step="0.1" value="0">
+                            <span class="slider-val" id="val-h">0.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-row">
+                            <span class="slider-name"><i>k</i></span>
+                            <input type="range" id="slider-k" class="slider-input" min="-5" max="5" step="0.1" value="0">
+                            <span class="slider-val" id="val-k">0.0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-section equation-section">
+                    <div class="panel-label">Equation</div>
+                    <div class="equation-display" id="equation"></div>
+                </div>
+                <div class="panel-section explainer-section">
+                    <div class="explainer-text">Observe how <i>a</i>, <i>h</i>, and <i>k</i> affect the graph of <i>g</i>.</div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+                <div class="coord-tooltip" id="tooltip"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8, 8, 8, -6],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 2 }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 2 }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [7.6, -0.5, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.3, 7.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        var COL_F = '#222222';
+        var COL_G = '#2563EB';
+
+        // Slider values
+        var aVal = 1, hVal = 0, kVal = 0;
+
+        // f(x) = |x|
+        board.create('functiongraph', [function(x) { return Math.abs(x); }], {
+            strokeColor: COL_F, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // f(x) label
+        board.create('text', [-6.5, 6.2, 'f(x)'], {
+            fontSize: 13, color: COL_F, useKatex: true, fixed: true, highlight: false
+        });
+
+        // g(x) = a|x-h|+k
+        var gGraph = board.create('functiongraph', [function(x) {
+            return aVal * Math.abs(x - hVal) + kVal;
+        }], {
+            strokeColor: COL_G, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // g(x) label — dynamic position near the curve
+        board.create('text', [
+            function() { return hVal + 3.5; },
+            function() { return aVal * Math.abs(3.5) + kVal + 0.5; },
+            'g(x)'
+        ], {
+            fontSize: 13, color: COL_G, useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Invisible hover-target points on g(x) ──────────────────────
+
+        // Vertex: (h, k)
+        var ptVertex = board.create('point', [
+            function() { return hVal; },
+            function() { return kVal; }
+        ], {
+            name: '', size: 6, color: COL_G, fixed: true,
+            showInfobox: false, highlight: true,
+            fillOpacity: 0, strokeOpacity: 0,
+            highlightFillColor: COL_G, highlightStrokeColor: COL_G,
+            highlightFillOpacity: 1, highlightStrokeOpacity: 1,
+            highlightSize: 5
+        });
+
+        // Y-intercept: (0, a|h|+k)
+        var ptYInt = board.create('point', [
+            0,
+            function() { return aVal * Math.abs(hVal) + kVal; }
+        ], {
+            name: '', size: 6, color: COL_G, fixed: true,
+            showInfobox: false, highlight: true,
+            fillOpacity: 0, strokeOpacity: 0,
+            highlightFillColor: COL_G, highlightStrokeColor: COL_G,
+            highlightFillOpacity: 1, highlightStrokeOpacity: 1,
+            highlightSize: 5,
+            visible: function() {
+                return Math.abs(hVal) > 0.05;
+            }
+        });
+
+        // X-intercepts: a|x-h|+k = 0 → |x-h| = -k/a → x = h ± sqrt(-k/a)
+        function xIntExists() {
+            if (Math.abs(aVal) < 0.001) return false;
+            return (-kVal / aVal) >= -0.001;
+        }
+
+        function xInt1() { return hVal + Math.sqrt(Math.max(0, -kVal / aVal)); }
+        function xInt2() { return hVal - Math.sqrt(Math.max(0, -kVal / aVal)); }
+
+        var ptXInt1 = board.create('point', [
+            function() { return xInt1(); },
+            0
+        ], {
+            name: '', size: 6, color: COL_G, fixed: true,
+            showInfobox: false, highlight: true,
+            fillOpacity: 0, strokeOpacity: 0,
+            highlightFillColor: COL_G, highlightStrokeColor: COL_G,
+            highlightFillOpacity: 1, highlightStrokeOpacity: 1,
+            highlightSize: 5,
+            visible: function() {
+                if (!xIntExists()) return false;
+                var d = Math.abs(xInt1() - hVal) + Math.abs(kVal);
+                return d > 0.05;
+            }
+        });
+
+        var ptXInt2 = board.create('point', [
+            function() { return xInt2(); },
+            0
+        ], {
+            name: '', size: 6, color: COL_G, fixed: true,
+            showInfobox: false, highlight: true,
+            fillOpacity: 0, strokeOpacity: 0,
+            highlightFillColor: COL_G, highlightStrokeColor: COL_G,
+            highlightFillOpacity: 1, highlightStrokeOpacity: 1,
+            highlightSize: 5,
+            visible: function() {
+                if (!xIntExists()) return false;
+                if (Math.abs(xInt1() - xInt2()) < 0.05) return false;
+                var d = Math.abs(xInt2() - hVal) + Math.abs(kVal);
+                return d > 0.05;
+            }
+        });
+
+        // ── Tooltip system ──────────────────────────────────────────────
+        var tooltip = document.getElementById('tooltip');
+        var boardWrapper = document.querySelector('.board-wrapper');
+
+        function formatVal(v) {
+            if (Math.abs(v - Math.round(v)) < 0.01) return String(Math.round(v));
+            var absV = Math.abs(v);
+            var sign = v < 0 ? '-' : '';
+            if (Math.abs(absV - 0.5) < 0.01) return sign + '\\tfrac{1}{2}';
+            if (Math.abs(absV - 0.25) < 0.01) return sign + '\\tfrac{1}{4}';
+            if (Math.abs(absV - 0.75) < 0.01) return sign + '\\tfrac{3}{4}';
+            if (Math.abs(absV - 1.5) < 0.01) return sign + '\\tfrac{3}{2}';
+            if (Math.abs(absV - 2.5) < 0.01) return sign + '\\tfrac{5}{2}';
+            return v.toFixed(1);
+        }
+
+        function showTooltip(pt, color) {
+            var xCoord = pt.X();
+            var yCoord = pt.Y();
+            var latex = '\\color{' + color + '}{\\left(' + formatVal(xCoord) + ',\\,' + formatVal(yCoord) + '\\right)}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xCoord, yCoord], board);
+            var sx = coords.scrCoords[1];
+            var sy = coords.scrCoords[2];
+            tooltip.style.left = (sx + 20) + 'px';
+            tooltip.style.top = (sy - 30) + 'px';
+        }
+
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+        ptVertex.on('over', function() { showTooltip(ptVertex, COL_G); });
+        ptVertex.on('out', function() { hideTooltip(); });
+        ptYInt.on('over', function() { showTooltip(ptYInt, COL_G); });
+        ptYInt.on('out', function() { hideTooltip(); });
+        ptXInt1.on('over', function() { showTooltip(ptXInt1, COL_G); });
+        ptXInt1.on('out', function() { hideTooltip(); });
+        ptXInt2.on('over', function() { showTooltip(ptXInt2, COL_G); });
+        ptXInt2.on('out', function() { hideTooltip(); });
+
+        // ── Slider sync ─────────────────────────────────────────────────
+        var sliderA = document.getElementById('slider-a');
+        var sliderH = document.getElementById('slider-h');
+        var sliderK = document.getElementById('slider-k');
+
+        function syncSliders() {
+            aVal = parseFloat(sliderA.value);
+            hVal = parseFloat(sliderH.value);
+            kVal = parseFloat(sliderK.value);
+            board.update();
+            updatePanel();
+        }
+
+        sliderA.addEventListener('input', syncSliders);
+        sliderH.addEventListener('input', syncSliders);
+        sliderK.addEventListener('input', syncSliders);
+
+        function updatePanel() {
+            document.getElementById('val-a').textContent = aVal.toFixed(1);
+            document.getElementById('val-h').textContent = hVal.toFixed(1);
+            document.getElementById('val-k').textContent = kVal.toFixed(1);
+
+            // Build equation string with substituted values
+            var hStr, kStr, eqStr;
+
+            if (Math.abs(hVal) < 0.01) {
+                hStr = '|x|';
+            } else if (hVal > 0) {
+                hStr = '|x - ' + hVal.toFixed(1) + '|';
+            } else {
+                hStr = '|x + ' + Math.abs(hVal).toFixed(1) + '|';
+            }
+
+            if (Math.abs(kVal) < 0.01) {
+                kStr = '';
+            } else if (kVal > 0) {
+                kStr = ' + ' + kVal.toFixed(1);
+            } else {
+                kStr = ' - ' + Math.abs(kVal).toFixed(1);
+            }
+
+            if (Math.abs(aVal - 1) < 0.01) {
+                eqStr = 'g(x) = ' + hStr + kStr;
+            } else if (Math.abs(aVal + 1) < 0.01) {
+                eqStr = 'g(x) = -' + hStr + kStr;
+            } else {
+                eqStr = 'g(x) = ' + aVal.toFixed(1) + hStr + kStr;
+            }
+
+            katex.render(eqStr, document.getElementById('equation'), { throwOnError: false });
+        }
+
+        updatePanel();
+    </script>
+</body>
+</html>
