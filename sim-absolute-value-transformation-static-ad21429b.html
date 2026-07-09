@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformations of Absolute Value</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 10px; height: 100%; }
+        .left-panel {
+            width: 170px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 14px 12px;
+            display: flex; flex-direction: column; justify-content: center; gap: 16px;
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: 8px;
+            white-space: nowrap;
+        }
+        .legend-swatch {
+            width: 24px; height: 3px; border-radius: 2px; flex-shrink: 0;
+        }
+        .legend-label { font-size: 13px; white-space: nowrap; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="legend-item">
+                    <div class="legend-swatch" style="background: #222222;"></div>
+                    <div class="legend-label" id="label-f"></div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-swatch" style="background: #2563EB;"></div>
+                    <div class="legend-label" id="label-g"></div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Render KaTeX labels in panel
+        katex.render('f(x)=|x|', document.getElementById('label-f'), { throwOnError: false });
+        katex.render('g(x)=-3|x\\!+\\!2|-1', document.getElementById('label-g'), { throwOnError: false });
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 9, 7, -13],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        majorHeight: 0,
+                        minorHeight: 0
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 2,
+                        majorHeight: 0,
+                        minorHeight: 0
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [6.6, -0.7, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.3, 8.5, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // f(x) = |x|
+        board.create('functiongraph', [
+            function(x) { return Math.abs(x); }
+        ], { strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // g(x) = -3|x + 2| - 1
+        board.create('functiongraph', [
+            function(x) { return -3 * Math.abs(x + 2) - 1; }
+        ], { strokeColor: '#2563EB', strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Key points — vertex of g
+        board.create('point', [-2, -1], {
+            name: '', size: 3, color: '#2563EB', fixed: true, highlight: false
+        });
+
+        // Vertex of f
+        board.create('point', [0, 0], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
