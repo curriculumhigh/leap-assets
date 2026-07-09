@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domain and range under transformation</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<style>
+html,body{margin:0;padding:0;overflow:hidden;height:100%;background:transparent;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+.container{max-width:760px;margin:0;padding:6px;height:calc(100% - 12px);}
+.sim-layout{display:flex;gap:12px;height:100%;}
+.board-wrapper{flex:1;background:white;border-radius:8px;padding:10px;}
+#board{width:100%;height:100%;}
+.right-panel{width:230px;flex-shrink:0;background:white;border-radius:8px;padding:16px;box-sizing:border-box;font-size:15px;}
+.ck{display:flex;align-items:flex-start;gap:8px;margin-bottom:16px;cursor:pointer;}
+.ck input{width:18px;height:18px;margin-top:2px;}
+.ph{color:#7C3AED;} .pv{color:#DC2626;}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="sim-layout">
+    <div class="board-wrapper"><div id="board"></div></div>
+    <div class="right-panel">
+      <label class="ck"><input type="checkbox" id="ckh"><span class="ph">Horizontal transformations on <i>f</i></span></label>
+      <label class="ck"><input type="checkbox" id="ckv"><span class="pv">Vertical transformations on <i>f</i></span></label>
+    </div>
+  </div>
+</div>
+<script>
+function f(x){
+  if(x < -4 || x > 4) return NaN;
+  if(x <= -2) return 1;            // flat on [-4,-2]
+  if(x <= 2) return x*x/2 - 1;     // valley on [-2,2], min (0,-1)
+  return -2*x + 5;                 // line (2,1)->(4,-3)
+}
+var board=JXG.JSXGraph.initBoard('board',{boundingbox:[-7.6,9.4,5.6,-4.6],axis:true,showNavigation:false,showCopyright:false,
+  pan:{enabled:false},zoom:{enabled:false},
+  defaultAxes:{x:{strokeColor:'#444444',strokeWidth:1.2,lastArrow:{type:2,size:6},ticks:{strokeColor:'#444444',label:{fontSize:10},minorTicks:0,ticksDistance:1}},
+               y:{strokeColor:'#444444',strokeWidth:1.2,lastArrow:{type:2,size:6},ticks:{strokeColor:'#444444',label:{fontSize:10},minorTicks:0,ticksDistance:1}}},
+  grid:{strokeColor:'#D1D5DB',strokeWidth:0.4}});
+board.create('text',[5.2,-0.5,'<i>x</i>'],{fontSize:14,fixed:true,highlight:false});
+board.create('text',[0.3,9.0,'<i>y</i>'],{fontSize:14,fixed:true,highlight:false});
+// parent f (blue)
+board.create('functiongraph',[f,-4,4],{strokeColor:'#2563EB',strokeWidth:2,fixed:true,highlight:false});
+board.create('text',[1.4,-1.9,'<i>f</i>'],{fontSize:15,color:'#2563EB',fixed:true,highlight:false});
+// full g = 3 f(2(x+4)) + 5 (green)
+board.create('functiongraph',[function(x){return 3*f(2*(x+4))+5;},-6,-2],{strokeColor:'#059669',strokeWidth:2,fixed:true,highlight:false});
+board.create('text',[-6.9,8.7,'<i>g</i>(<i>x</i>) = 3<i>f</i>(2(<i>x</i>+4))+5'],{fontSize:13,color:'#059669',fixed:true,highlight:false});
+// horizontal-only f(2(x+4)) (purple)
+var ph=board.create('functiongraph',[function(x){return f(2*(x+4));},-6,-2],{strokeColor:'#7C3AED',strokeWidth:2,fixed:true,highlight:false,visible:true});
+var pht=board.create('text',[-6.6,-2.4,'<i>f</i>(2(<i>x</i>+4))'],{fontSize:12,color:'#7C3AED',fixed:true,highlight:false,visible:true});
+// vertical-only 3 f(x) + 5 (red)
+var pv=board.create('functiongraph',[function(x){return 3*f(x)+5;},-4,4],{strokeColor:'#DC2626',strokeWidth:2,fixed:true,highlight:false,visible:true});
+var pvt=board.create('text',[2.2,4.6,'3<i>f</i>(<i>x</i>)+5'],{fontSize:12,color:'#DC2626',fixed:true,highlight:false,visible:true});
+function upd(){
+  var h=document.getElementById('ckh').checked, v=document.getElementById('ckv').checked;
+  ph.setAttribute({visible:h}); pht.setAttribute({visible:h});
+  pv.setAttribute({visible:v}); pvt.setAttribute({visible:v});
+  board.update();
+}
+document.getElementById('ckh').addEventListener('change',upd);
+document.getElementById('ckv').addEventListener('change',upd);
+upd();
+</script>
+</body>
+</html>
