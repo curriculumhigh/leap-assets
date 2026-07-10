@@ -96,23 +96,20 @@
     </div>
 
     <script>
-        // Fluid scaling: fit the fixed 720x360 stage into whatever box we're given,
-        // preserving aspect ratio and centering (flex on #stage-wrap handles centering).
+        // The whole diagram is a fixed 720x360 "stage" scaled with CSS transform to fit
+        // the iframe. Everything (equation, labels, SVG arrows) lives inside the stage and
+        // scales together, so arrow endpoints are computed ONCE in the fixed 720x360
+        // viewBox space and stay aligned at any scale.
         var STAGE_W = 720, STAGE_H = 360;
+
         function fitStage() {
-            var availW = window.innerWidth;
-            var availH = window.innerHeight;
-            var scale = Math.min(availW / STAGE_W, availH / STAGE_H);
+            var scale = Math.min(window.innerWidth / STAGE_W, window.innerHeight / STAGE_H);
             var stage = document.getElementById('stage');
             if (stage) { stage.style.transform = 'scale(' + scale + ')'; }
         }
-        window.addEventListener('resize', fitStage);
-    </script>
 
-    <script>
-        function draw() {
-            var eqEl = document.getElementById('eq');
-            // Tag each parameter with an htmlId so we can anchor arrows precisely.
+        // Render the equation + the KaTeX bits embedded in the corner labels. Runs once.
+        function renderMathContent() {
             var latex =
                 'y = ' +
                 '\\htmlId{p-a}{\\textcolor{#2563EB}{a}}' +
@@ -120,82 +117,71 @@
                 '\\htmlId{p-b}{\\textcolor{#DC2626}{b}}' +
                 '\\left(x\\textcolor{#059669}{-}\\htmlId{p-h}{\\textcolor{#059669}{h}}\\right)\\right)' +
                 '\\textcolor{#7C3AED}{+}\\htmlId{p-k}{\\textcolor{#7C3AED}{k}}';
-
-            katex.render(latex, eqEl, {
-                throwOnError: false,
-                trust: true,
-                strict: false,
-                displayMode: false
+            katex.render(latex, document.getElementById('eq'), {
+                throwOnError: false, trust: true, strict: false, displayMode: false
             });
-
-            // Render the KaTeX math tokens embedded in the corner labels.
-            function renderMath(id, tex) {
+            function rm(id, tex) {
                 var el = document.getElementById(id);
                 if (el) { katex.render(tex, el, { throwOnError: false, displayMode: false }); }
             }
-            renderMath('m-abs-a', '\\textcolor{#2563EB}{|a|}');
-            renderMath('m-a-lt0', '\\textcolor{#2563EB}{a}<0');
-            renderMath('m-k', '\\textcolor{#7C3AED}{k}');
-            renderMath('m-frac', '\\frac{1}{\\textcolor{#DC2626}{|b|}}');
-            renderMath('m-b-lt0', '\\textcolor{#DC2626}{b}<0');
-            renderMath('m-h', '\\textcolor{#059669}{h}');
+            rm('m-abs-a', '\\textcolor{#2563EB}{|a|}');
+            rm('m-a-lt0', '\\textcolor{#2563EB}{a}<0');
+            rm('m-k', '\\textcolor{#7C3AED}{k}');
+            rm('m-frac', '\\frac{1}{\\textcolor{#DC2626}{|b|}}');
+            rm('m-b-lt0', '\\textcolor{#DC2626}{b}<0');
+            rm('m-h', '\\textcolor{#059669}{h}');
+        }
 
+        // Measure glyph positions and (re)draw the arrows, converting the post-transform
+        // screen coordinates back to viewBox units by dividing by the measured scale.
+        function layoutArrows() {
             var card = document.getElementById('card');
             var cardRect = card.getBoundingClientRect();
+            var s = (cardRect.width / STAGE_W) || 1;  // actual visual scale of the card
 
             function centerOf(id) {
-                var el = document.getElementById(id);
-                var r = el.getBoundingClientRect();
+                var r = document.getElementById(id).getBoundingClientRect();
                 return {
-                    x: r.left + r.width / 2 - cardRect.left,
-                    y: r.top + r.height / 2 - cardRect.top,
-                    top: r.top - cardRect.top,
-                    bottom: r.bottom - cardRect.top,
-                    left: r.left - cardRect.left,
-                    right: r.right - cardRect.left
+                    x: (r.left + r.width / 2 - cardRect.left) / s,
+                    y: (r.top + r.height / 2 - cardRect.top) / s
                 };
             }
-
-            // Shorten the arrow so the head stops just short of the target glyph.
             function shorten(x1, y1, x2, y2, pad) {
                 var dx = x2 - x1, dy = y2 - y1;
                 var len = Math.sqrt(dx * dx + dy * dy) || 1;
                 return { x: x2 - dx / len * pad, y: y2 - dy / len * pad };
             }
-
             function setLine(lineId, sx, sy, targetId, padExtra) {
                 var t = centerOf(targetId);
                 var end = shorten(sx, sy, t.x, t.y, 10 + (padExtra || 0));
                 var ln = document.getElementById(lineId);
-                ln.setAttribute('x1', sx);
-                ln.setAttribute('y1', sy);
-                ln.setAttribute('x2', end.x);
-                ln.setAttribute('y2', end.y);
+                ln.setAttribute('x1', sx); ln.setAttribute('y1', sy);
+                ln.setAttribute('x2', end.x); ln.setAttribute('y2', end.y);
             }
-
-            // Arrow start points anchored near the inner corner of each label,
-            // pointing diagonally toward its parameter (matching the reference).
-            // Top-left label -> down-right to a
+            // Arrow start points are fixed in the 720x360 viewBox; endpoints track glyphs.
             setLine('ln-a', 150, 74, 'p-a');
-            // Top-right label -> down-left to k. Approach from up-right (start x is
-            // right of the k glyph) so the clearance gap opens away from the + sign.
             setLine('ln-k', 655, 62, 'p-k', 8);
-            // Bottom-left label -> up-right to b
             setLine('ln-b', 150, 286, 'p-b', 8);
-            // Bottom-right label -> up-left to h
             setLine('ln-h', 590, 298, 'p-h', 8);
         }
 
-        function init() {
-            draw();
+        function relayout() { fitStage(); layoutArrows(); }
+
+        function start() {
+            renderMathContent();
             fitStage();
+            // Defer arrow layout until the KaTeX web fonts are loaded, so glyph metrics
+            // are final (measuring earlier anchors arrows to fallback-font positions that
+            // then reflow). Re-lay-out on resize so scale changes stay aligned.
+            var go = function () { requestAnimationFrame(relayout); };
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(go);
+            }
+            window.addEventListener('load', go);   // belt-and-suspenders
+            window.addEventListener('resize', relayout);
         }
 
-        if (window.katex) {
-            init();
-        } else {
-            window.addEventListener('load', init);
-        }
+        if (window.katex) { start(); } else { window.addEventListener('load', start); }
     </script>
 </body>
 </html>
