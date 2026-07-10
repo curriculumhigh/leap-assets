@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometric sequence option A</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container"><div class="board-wrapper"><div id="board"></div></div></div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 56, 7, -32], keepAspectRatio: false,
+            axis: false, grid: false, showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false } });
+
+        // Light grid
+        board.create('grid', [], { strokeColor: '#D1D5DB', strokeWidth: 0.4 });
+
+        // Arrowed dark-gray axes (both directions)
+        board.create('axis', [[0, 0], [1, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            firstArrow: { type: 2, size: 6 }, lastArrow: { type: 2, size: 6 },
+            ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, insertTicks: false, ticksDistance: 1, drawZero: false },
+            highlight: false });
+        board.create('axis', [[0, 0], [0, 1]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            firstArrow: { type: 2, size: 6 }, lastArrow: { type: 2, size: 6 },
+            ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, insertTicks: false, ticksDistance: 12, drawZero: false },
+            highlight: false });
+
+        // Axis name labels (KaTeX) near the arrow tips
+        board.create('text', [6.6, -3.5, 'n'], { useKatex: true, fontSize: 15, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+        board.create('text', [0.55, 52.5, 'a_n'], { useKatex: true, fontSize: 15, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+        // Plotted terms (n, a_n) as discrete filled circles
+        var pts = [[1,48],[2,-24],[3,12],[4,-6],[5,3],[6,-1.5]];
+        for (var i = 0; i < pts.length; i++) {
+            board.create('point', [pts[i][0], pts[i][1]], {
+                size: 3, face: 'o',
+                fillColor: '#2563EB', strokeColor: '#2563EB',
+                fixed: true, highlight: false, withLabel: false, showInfobox: false });
+        }
+    </script>
+</body>
+</html>
