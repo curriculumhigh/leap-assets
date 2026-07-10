@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secant Line Reference Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 470px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 5, 8, -0.5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            showInfobox: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [7.6, -0.35, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.15, 4.7, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Function: y = 8/(x + 0.667)
+        // Passes through (2, 3): 8/(2+0.667) = 8/2.667 ≈ 3.0
+        // Passes through (6, 1): 8/(6+0.667) = 8/6.667 ≈ 1.2 — adjust constant
+        // Actually use y = 8/(x + 2/3) so (2,3) gives 8/(8/3)=3 ✓ and (6,1) gives 8/(20/3)=24/20=1.2
+        // To pass exactly through both: slope = (1-3)/(6-2) = -0.5
+        // Use the formula: f(x) passes through (2,3) and (6,1)
+        // For y = a/(x+b): 3 = a/(2+b), 1 = a/(6+b)
+        // => 3(2+b) = a, 1(6+b) = a => 6+3b = 6+b => 2b = 0 => b=0, a=6
+        // So y = 6/x: f(2)=3 ✓, f(6)=1 ✓. Perfect!
+
+        // Primary curve with arrowheads at both ends
+        board.create('functiongraph', [
+            function(x) { return 6 / x; }, 1, 7
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false,
+            firstArrow: { type: 2, size: 6 },
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // Secant line through (2,3) and (6,1) — slope = -0.5, y = -0.5x + 4
+        // Draw as segment extending a bit beyond both points for visual clarity
+        board.create('line', [[2, 3], [6, 1]], {
+            strokeColor: '#2563EB',
+            strokeWidth: 2,
+            fixed: true,
+            highlight: false,
+            straightFirst: true,
+            straightLast: true
+        });
+
+        // Key points
+        board.create('point', [2, 3], {
+            name: '',
+            size: 5,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            showInfobox: false
+        });
+
+        board.create('point', [6, 1], {
+            name: '',
+            size: 5,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            showInfobox: false
+        });
+
+        // Labels for key points
+        board.create('text', [2.25, 3.35, '(2, 3)'], {
+            fontSize: 13,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            useKatex: true
+        });
+
+        board.create('text', [6.25, 1.35, '(6, 1)'], {
+            fontSize: 13,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            useKatex: true
+        });
+    </script>
+</body>
+</html>
