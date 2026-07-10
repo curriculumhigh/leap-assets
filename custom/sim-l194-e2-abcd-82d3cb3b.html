@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Static Reference Graph — Local Extrema</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 470px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.3, 5, 8.3, -0.3],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            showInfobox: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    firstArrow: { type: 2, size: 6 },
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    firstArrow: { type: 2, size: 6 },
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [7.9, -0.18, '\\textit{x}'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+        board.create('text', [0.15, 4.75, '\\textit{y}'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+
+        // Function: r(x) = 2.75 + 1.25*cos(PI*(x-2.5)/3)
+        function r(x) {
+            return 2.75 + 1.25 * Math.cos(Math.PI * (x - 2.5) / 3);
+        }
+
+        // Plot the curve on [0.5, 7.5]
+        board.create('functiongraph', [r, 0.5, 7.5], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Key points
+        var xA = 1, xB = 2.5, xC = 5.5, xD = 7;
+        var yA = r(xA), yB = r(xB), yC = r(xC), yD = r(xD);
+
+        // Point A
+        board.create('point', [xA, yA], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [xA - 0.35, yA + 0.25, 'A'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+
+        // Point B (maximum)
+        board.create('point', [xB, yB], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [xB + 0.15, yB + 0.25, 'B'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+
+        // Point C (minimum)
+        board.create('point', [xC, yC], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [xC + 0.15, yC - 0.35, 'C'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+
+        // Point D
+        board.create('point', [xD, yD], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [xD + 0.15, yD + 0.25, 'D'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+    </script>
+</body>
+</html>
