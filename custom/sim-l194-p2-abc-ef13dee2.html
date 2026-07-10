@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smooth Wavy Curve with Points A, B, C</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 470px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 5, 5.5, -0.5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            showInfobox: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    firstArrow: { type: 2, size: 6 },
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    firstArrow: { type: 2, size: 6 },
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [5.15, -0.3, 'x'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+        board.create('text', [0.15, 4.7, 'y'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+
+        // Define a smooth wavy curve r(x) with local max near x=1.6 and local min near x=3.6
+        // Using: r(x) = 2.5 + 1.2*sin((x - 1.6)*pi/2) shifted to get max at ~1.6 and min at ~3.6
+        // Let's use: r(x) = 2.6 + 1.1*cos((x - 1.6)*pi/2) — max at x=1.6, min at x=3.6
+        function r(x) {
+            return 2.6 + 1.1 * Math.cos((x - 1.6) * Math.PI / 2.0);
+        }
+
+        // Plot the curve
+        board.create('functiongraph', [r, 0.2, 5.2], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Key points
+        var xA = 0.7;
+        var xB = 2.6;
+        var xC = 4.7;
+
+        var ptA = board.create('point', [xA, r(xA)], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        var ptB = board.create('point', [xB, r(xB)], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        var ptC = board.create('point', [xC, r(xC)], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Labels
+        board.create('text', [xA + 0.2, r(xA) + 0.3, 'A'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [xB + 0.2, r(xB) - 0.35, 'B'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [xC + 0.2, r(xC) + 0.3, 'C'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+    </script>
+</body>
+</html>
