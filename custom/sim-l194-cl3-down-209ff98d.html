@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concave Down Curve with Tangent Segments</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 470px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.3, 6, 6, -0.3],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            showInfobox: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [5.7, -0.18, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.15, 5.7, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // q(x) = -0.2*(x-3)^2 + 5
+        function q(x) {
+            return -0.2 * (x - 3) * (x - 3) + 5;
+        }
+
+        // q'(x) = -0.4*(x-3)
+        function qPrime(x) {
+            return -0.4 * (x - 3);
+        }
+
+        // Primary curve with arrowheads at both ends
+        board.create('functiongraph', [q, 0.4, 5.6], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        // Points of tangency and tangent segments
+        var tangentPoints = [1, 2.2, 3.7, 4.9];
+        var halfWidth = 0.45; // half of 0.9 x-units
+
+        for (var i = 0; i < tangentPoints.length; i++) {
+            var xT = tangentPoints[i];
+            var yT = q(xT);
+            var slope = qPrime(xT);
+
+            // Mark point of tangency
+            board.create('point', [xT, yT], {
+                name: '',
+                size: 4,
+                color: '#222222',
+                fixed: true,
+                highlight: false
+            });
+
+            // Tangent segment: short stick centered on point
+            var x1 = xT - halfWidth;
+            var y1 = yT - halfWidth * slope;
+            var x2 = xT + halfWidth;
+            var y2 = yT + halfWidth * slope;
+
+            board.create('segment', [[x1, y1], [x2, y2]], {
+                strokeColor: '#0EA5E9',
+                strokeWidth: 2.5,
+                fixed: true,
+                highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
