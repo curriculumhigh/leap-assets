@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Increasing and Decreasing Function</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 470px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 4, 4.5, -3],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [4.1, -0.35, 'x'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+        board.create('text', [0.25, 3.6, 'f(x)'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+
+        // Define the curve function:
+        // Increasing on (-5, 0) to peak at (0, 3)
+        // Decreasing on (0, 2) to valley at (2, -1)
+        // Increasing on (2, 4)
+        // Use a cubic or piecewise approach. A cubic with roots designed:
+        // f'(x) = 0 at x=0 and x=2 → f'(x) = k*x*(x-2)
+        // Integrate: f(x) = k*(x^3/3 - x^2) + C
+        // At x=0, f(0)=3 → C = 3
+        // At x=2, f(2) = k*(8/3 - 4) + 3 = k*(-4/3) + 3 = -1 → k*(-4/3) = -4 → k = 3
+        // f(x) = 3*(x^3/3 - x^2) + 3 = x^3 - 3x^2 + 3
+        // Check: f(0) = 3 ✓, f(2) = 8 - 12 + 3 = -1 ✓
+        // f(-5) = -125 - 75 + 3 = -197 — way too low
+        // Need to scale differently. Let's use a different approach with a narrower amplitude.
+        
+        // Let's try: f(x) = a*x^3 + b*x^2 + c*x + d
+        // Conditions: f'(0) = 0, f'(2) = 0, f(0) = 3, f(2) = -1
+        // f'(x) = 3a*x^2 + 2b*x + c
+        // f'(0) = c = 0
+        // f'(2) = 12a + 4b = 0 → b = -3a
+        // f(0) = d = 3
+        // f(2) = 8a + 4b + d = 8a - 12a + 3 = -4a + 3 = -1 → a = 1
+        // So a=1, b=-3, c=0, d=3: f(x) = x^3 - 3x^2 + 3
+        // f(-5) = -125 - 75 + 3 = -197 — too extreme for bounding box
+        
+        // Scale it down: use f(x) = A*(x^3 - 3x^2) + 3 where A is small
+        // f(0) = 3, f(2) = A*(8-12) + 3 = -4A + 3
+        // Want f(2) = -1 → A = 1... same problem at endpoints.
+        
+        // Better: use a function that flattens at extremes.
+        // Use a piecewise smooth function via spline-like segments.
+        // Or just clip the cubic to [-5, 4] and accept the values, adjusting vertical scale.
+        
+        // Actually let me reconsider. With bounding box y:[-3, 4], we need f(-5) and f(4) in range.
+        // f(x) = x^3 - 3x^2 + 3: f(4) = 64 - 48 + 3 = 19 — too high
+        // 
+        // Scale: g(x) = 0.2*(x^3 - 3x^2) + 3
+        // g(0) = 3, g(2) = 0.2*(8-12) + 3 = 0.2*(-4) + 3 = 2.2 — not -1
+        // Need different approach.
+        //
+        // Use a sine-based function that has the right shape:
+        // f(x) = 2*sin(pi*x/2 - pi/2) + 1 ... too periodic
+        //
+        // Better: use a rational/combined function or just accept a gentler curve.
+        // Let's define piecewise with smooth connection using a single function:
+        // f(x) = -0.5*x^3 + 1.5*x^2 - 0.5*x + ... no
+        //
+        // Simplest: scale the cubic so endpoints fit.
+        // g(x) = k*(x^3 - 3x^2 + 3) — peak at 0 is 3k, valley at 2 is -k
+        // Want peak ~ 3: k=1, but endpoints are wild.
+        //
+        // Use a DIFFERENT cubic with critical points at x=0 and x=2:
+        // f(x) = a(x)(x-2) integrated won't easily constrain endpoints.
+        //
+        // Practical solution: define f explicitly for the visual shape desired.
+        // Use: f(x) = -((x-0)^2)*((x-2)^2) scaled + offset? No, that's degree 4.
+        //
+        // Degree 4 with the right shape:
+        // Has local max at x=0 with value 3, local min at x=2 with value -1
+        // and reasonable values at x=-5 and x=4.
+        // f'(x) = c*x*(x-2)*(x - r) for some r that controls end behavior
+        // If r < 0, then there's another critical point at x=r (another max/min on left)
+        // We want monotone increasing on (-5, 0), so no other critical points there.
+        // f'(x) = c*x*(x-2) with just these two zeros (degree 2 derivative → degree 3 function)
+        // f(x) = c*(x^3/3 - x^2) + d
+        // f(0) = d = 3
+        // f(2) = c*(8/3 - 4) + 3 = c*(-4/3) + 3 = -1 → c = 3
+        // f(x) = x^3 - 3x^2 + 3
+        // f(-5) = -125 - 75 + 3 = -197, f(4) = 64 - 48 + 3 = 19
+        // These are outside [-3, 4]. The CURVE exists on [-5, 4] but values go out of view.
+        //
+        // I need to redesign the function so it stays within the visible bounding box.
+        // 
+        // Approach: use a function with gentler slopes outside [0,2].
+        // Combine a cubic in [−1, 3] with flatter tails.
+        // 
+        // Actually, let me just use a well-behaved function:
+        // f(x) = 2*cos(pi*x/2) for x in [-5, 4] — period 4, alternating
+        // At x=0: cos(0)=1 → f=2... not quite 3
+        // 
+        // Let me try: peak at (0,3), valley at (2,-1), endpoints reasonable.
+        // Use a degree-4 polynomial constrained to stay in bounds:
+        // f(x) = ax^4 + bx^3 + cx^2 + dx + e
+        // f(0)=3: e=3
+        // f'(0)=0: d=0  
+        // f(2)=-1: 16a + 8b + 4c + 3 = -1 → 16a + 8b + 4c = -4
+        // f'(2)=0: 32a + 12b + 4c = 0
+        // Additional: f(-5) reasonable, say f(-5)=1: 625a - 125b + 25c + 3 = 1 → 625a - 125b + 25c = -2
+        //
+        // From f'(2)=0: 32a + 12b + 4c = 0 → 8a + 3b + c = 0 → c = -8a - 3b
+        // From 16a + 8b + 4c = -4: 16a + 8b + 4(-8a-3b) = -4 → 16a+8b-32a-12b = -4 → -16a-4b=-4 → 4a+b=1 → b=1-4a
+        // c = -8a - 3(1-4a) = -8a - 3 + 12a = 4a - 3
+        // From 625a - 125b + 25c = -2: 625a - 125(1-4a) + 25(4a-3) = -2
+        // 625a - 125 + 500a + 100a - 75 = -2
+        // 1225a - 200 = -2
+        // 1225a = 198
+        // a = 198/1225 ≈ 0.1616
+        // b = 1 - 4(0.1616) = 1 - 0.6465 = 0.3535
+        // c = 4(0.1616) - 3 = 0.6465 - 3 = -2.3535
+        // 
+        // Check f(4): 0.1616*256 + 0.3535*64 + (-2.3535)*16 + 3
+        //           = 41.37 + 22.62 - 37.66 + 3 = 29.33 — way too high!
+        //
+        // Let me constrain f(4) instead of f(-5):
+        // f(4) = 256a + 64b + 16c + 3 = some value, say 2
+        // 256a + 64b + 16c = -1
+        // With b = 1-4a, c = 4a-3:
+        // 256a + 64(1-4a) + 16(4a-3) = -1
+        // 256a + 64 - 256a + 64a - 48 = -1
+        // 64a + 16 = -1
+        // 64a = -17
+        // a = -17/64 ≈ -0.2656
+        // b = 1 - 4(-0.2656) = 1 + 1.0625 = 2.0625
+        // c = 4(-0.2656) - 3 = -1.0625 - 3 = -4.0625
+        //
+        // f(x) = -0.2656x^4 + 2.0625x^3 - 4.0625x^2 + 3
+        // f(-5) = -0.2656*625 + 2.0625*(-125) - 4.0625*25 + 3
+        //       = -166 - 257.8 - 101.6 + 3 = -522 — terrible!
+        //
+        // The issue is degree 4 with large domain [-5,4] will have huge values.
+        // 
+        // BEST APPROACH: Use a piecewise-defined smooth function via JXG functiongraph
+        // that simply draws the desired shape. Use a combination that stays bounded.
+        //
+        // f(x) = 3*exp(-x^2/2) - 2*exp(-(x-2)^2/0.8) + some baseline
+        // This uses Gaussians: peak near 0, dip near 2.
+        // f(0) = 3*1 - 2*exp(-4/0.8) = 3 - 2*exp(-5) ≈ 3 - 0.013 ≈ 2.99 ~ 3 ✓
+        // f(2) = 3*exp(-2) - 2*1 = 3*0.135 - 2 = 0.406 - 2 = -1.59
+        // Want f(2)=-1: adjust coefficients.
+        //
+        // f(x) = A*exp(-x^2/s1) - B*exp(-(x-2)^2/s2) + C
+        // f(0) = A - B*exp(-4/s2) + C = 3
+        // f(2) = A*exp(-4/s1) - B + C = -1
+        // f'(0) = 0: -A*2*0/s1 + B*2*(0-2)/s2 * exp(-4/s2) = 0 → B*(-4/s2)*exp(-4/s2) = 0
+        // That's only 0 if B=0 or exp(-4/s2)=0... not helpful.
+        // The Gaussian centered at 0 already has f'(0)=0. But the second Gaussian
+        // contributes f'(0) = -B * (-2*(-2)/s2) * exp(-4/s2) = -B*(4/s2)*exp(-4/s2)
+        // For this to be 0, we need s2 large (so exp(-4/s2) is significant) but then the 
+        // contribution at x=0 is also large. Or accept f'(0) ≈ 0 approximately.
+        //
+        // Let me just use a simple approach that works visually:
+        // Piecewise smooth curve using a cubic spline approach.
+        // Key points: (-5, -2), (-3, 0.5), (-1, 2.5), (0, 3), (1, 1.5), (2, -1), (3, 1), (4, 3.5)
+        // With f'(0)=0 and f'(2)=0.
+        //
+        // Actually simplest: use a sinusoidal-like function scaled to fit:
+        // f(x) = 2*cos(pi*(x-0)/2) + 1 gives period 4, peak at 0 (value 3), valley at 2 (value -1)
+        // f(-5) = 2*cos(-5pi/2) + 1 = 2*0 + 1 = 1
+        // f(4) = 2*cos(4pi/2) + 1 = 2*cos(2pi) + 1 = 2+1 = 3
+        // f(-4) = 2*cos(-4pi/2) + 1 = 2*cos(-2pi) + 1 = 3
+        // f(-3) = 2*cos(-3pi/2) + 1 = 2*0 + 1 = 1
+        // f(-2) = 2*cos(-2pi/2) + 1 = 2*cos(-pi) + 1 = -2+1 = -1
+        // Hmm, f(-2)=-1 means there's a valley at x=-2, so it's NOT increasing on all of (-5,0).
+        // The cosine has period 4, so it oscillates.
+        //
+        // I need NON-periodic. Use cos only on a half-period or similar.
+        // 
+        // KEY INSIGHT: Use cos(pi*x/2) ONLY on [0,2] for the decrease, and different 
+        // expressions on [-5,0] and [2,4] for the increases. But functiongraph needs one function.
+        //
+        // Use a piecewise function in JS:
+        
+        function f(x) {
+            // Increasing on [-5, 0]: from about -2 to 3
+            // Decreasing on [0, 2]: from 3 to -1
+            // Increasing on [2, 4]: from -1 to about 3.5
+            if (x <= 0) {
+                // Smooth increasing from (-5, -2) to (0, 3)
+                // Use a curve that starts gentle, steepens, then flattens at x=0
+                // f'(0) = 0 (local max)
+                // Cubic: f = a*x^3 + b*x^2 + c*x + 3 with f'(0)=c=0
+                // f(-5) = -125a + 25b + 3 = -2 → -125a + 25b = -5
+                // Also want f'(-5) > 0 (entering the domain increasing)
+                // f'(x) = 3a*x^2 + 2b*x; f'(-5) = 75a - 10b > 0
+                // From -125a + 25b = -5: 25b = 125a - 5, b = 5a - 0.2
+                // f'(-5) = 75a - 10(5a - 0.2) = 75a - 50a + 2 = 25a + 2
+                // For increasing on (-5,0): f'(x) = 3a*x^2 + 2b*x = x(3a*x + 2b)
+                // f'(x)=0 at x=0 and x = -2b/(3a)
+                // Need -2b/(3a) ≤ -5 (the other critical point is outside our domain)
+                // -2(5a-0.2)/(3a) ≤ -5 → -(10a-0.4)/(3a) ≤ -5 → (10a-0.4)/(3a) ≥ 5
+                // 10a - 0.4 ≥ 15a → -0.4 ≥ 5a → a ≤ -0.08
+                // Try a = -0.08: b = 5(-0.08) - 0.2 = -0.4 - 0.2 = -0.6
+                // f(x) = -0.08x^3 - 0.6x^2 + 3 for x ∈ [-5, 0]
+                // f(-5) = -0.08*(-125) - 0.6*25 + 3 = 10 - 15 + 3 = -2 ✓
+                // f'(x) = -0.24x^2 - 1.2x = -x(0.24x + 1.2)
+                // f'(x)=0 at x=0 and x=-5. So the other critical point is exactly at x=-5!
+                // f'(-3) = -0.24*9 - 1.2*(-3) = -2.16 + 3.6 = 1.44 > 0 ✓ (increasing)
+                // f'(-5) = 0 — starts flat at x=-5, which is fine for an endpoint.
+                // Actually this means f has a local min at x=-5 (f''(-5)=-0.48*(-5)-1.2=2.4-1.2=1.2>0)
+                // So increasing on [-5, 0] ✓
+                return -0.08 * x * x * x - 0.6 * x * x + 3;
+            } else if (x <= 2) {
+                // Decreasing from (0, 3) to (2, -1) with f'(0)=0 and f'(2)=0
+                // Cubic: f = ax^3 + bx^2 + cx + 3, f'(0)=c=0
+                // f(2) = 8a + 4b + 3 = -1 → 8a + 4b = -4 → 2a + b = -1
+                // f'(2) = 12a + 4b = 0 → 3a + b = 0 → b = -3a
+                // 2a + (-3a) = -1 → -a = -1 → a = 1
+                // b = -3, so f(x) = x^3 - 3x^2 + 3
+                // f'(x) = 3x^2 - 6x = 3x(x-2): f'(1) = 3(1)(-1) = -3 < 0 ✓ (decreasing)
+                return x * x * x - 3 * x * x + 3;
+            } else {
+                // Increasing from (2, -1) to (4, ~3.5)
+                // f'(2) = 0 (local min), increasing on (2, 4)
+                // Cubic: f = a*(x-2)^3 + b*(x-2)^2 + c*(x-2) - 1, f'(2)=c=0
+                // f(4) target ~3.5: a*8 + b*4 - 1 = 3.5 → 8a + 4b = 4.5
+                // Want f'(x) > 0 for x > 2: f'(x) = 3a*(x-2)^2 + 2b*(x-2)
+                // = (x-2)[3a*(x-2) + 2b]
+                // For x > 2: (x-2) > 0, need 3a*(x-2) + 2b > 0 for x ∈ (2,4]
+                // At x=2: 2b > 0 → b > 0
+                // At x=4: 6a + 2b > 0
+                // Try a = 0.0625, b = 1: 8(0.0625) + 4(1) = 0.5 + 4 = 4.5 ✓
+                // f'(4) = 2[3(0.0625)(2) + 2(1)] = 2[0.375 + 2] = 4.75 > 0 ✓
+                var t = x - 2;
+                return 0.0625 * t * t * t + 1.0 * t * t - 1;
+            }
+        }
+
+        // Draw the curve
+        board.create('functiongraph', [f, -5, 4], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Mark endpoints (filled circles, key point size)
+        board.create('point', [-5, f(-5)], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [4, f(4)], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Mark local max at (0, 3) and local min at (2, -1)
+        board.create('point', [0, 3], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [2, -1], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+    </script>
+</body>
+</html>

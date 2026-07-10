@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inflection Point Identification</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 470px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4.5, 3, 4.5, -3],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [4.1, -0.35, 'x'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+        board.create('text', [0.25, 2.65, 'f(x)'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+
+        // S-shaped increasing function: concave down on (-4,0), concave up on (0,4)
+        // inflection at (0,0). Use f(x) = (1/8)x^3 scaled to fit nicely.
+        // f(x) = 0.12 * x^3 gives f(4)=7.68 too big. 
+        // Use f(x) = tanh(x) scaled: 2*tanh(0.6x) gives nice S in [-4,4] range [-2,2]
+        // Actually let's use f(x) = (2/pi)*arctan(0.9*x) ... no, let's use cubic:
+        // f(x) = 0.08*x^3 → f(4)=5.12 too big
+        // f(x) = 0.04*x^3 → f(4)=2.56, f(-4)=-2.56 fits in [-3,3]
+        // Concavity: f''(x) = 0.24x, so f''<0 for x<0 (concave down), f''>0 for x>0 (concave up). Perfect.
+        
+        function f(x) {
+            return 0.04 * x * x * x;
+        }
+
+        // Curve with arrowheads both ends
+        board.create('functiongraph', [f, -4, 4], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 6 },
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // Key points
+        var xA = -3, xB = -1, xC = 0, xD = 2;
+
+        var ptA = board.create('point', [xA, f(xA)], {
+            name: 'A', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false,
+            label: { fontSize: 13, color: '#222222', offset: [-14, 8], useKatex: true }
+        });
+
+        var ptB = board.create('point', [xB, f(xB)], {
+            name: 'B', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false,
+            label: { fontSize: 13, color: '#222222', offset: [-14, 8], useKatex: true }
+        });
+
+        var ptC = board.create('point', [xC, f(xC)], {
+            name: 'C', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false,
+            label: { fontSize: 13, color: '#222222', offset: [8, 8], useKatex: true }
+        });
+
+        var ptD = board.create('point', [xD, f(xD)], {
+            name: 'D', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false,
+            label: { fontSize: 13, color: '#222222', offset: [8, 8], useKatex: true }
+        });
+    </script>
+</body>
+</html>

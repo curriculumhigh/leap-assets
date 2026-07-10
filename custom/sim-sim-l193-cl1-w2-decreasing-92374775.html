@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decreasing Function Explorer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 560px; margin: 0; padding: 6px; height: calc(100% - 12px); display: flex; flex-direction: column; }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; flex: 1; display: flex; flex-direction: column; }
+        #board { width: 100%; flex: 1; }
+        .readout-strip { background: white; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb; padding: 8px 16px; text-align: center; min-height: 28px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .readout-item { min-height: 24px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper" style="border-radius: 8px 8px 0 0;">
+            <div id="board"></div>
+        </div>
+        <div class="readout-strip">
+            <span class="readout-item" id="readout-comparison"></span>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.3, 6, 5.6, -1.3],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [5.2, -0.35, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 5.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Function
+        var f = function(x) { return -x + 4; };
+
+        // Primary curve
+        board.create('functiongraph', [f, -1, 5], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Static function label
+        board.create('text', [4.2, 0.5, 'f(x) = -x + 4'], {
+            fontSize: 12, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        // Define the line for gliders
+        var lineObj = board.create('line', [[0, 4], [4, 0]], { visible: false });
+
+        // Colors
+        var COL1 = '#2563EB';
+        var COL2 = '#D97706';
+        var COL_REF = '#DC2626';
+
+        // Draggable points as gliders on the line
+        var P1 = board.create('glider', [1, f(1), lineObj], {
+            name: '', size: 5, color: COL1, showInfobox: false, highlight: true,
+            highlightFillColor: COL1, highlightStrokeColor: COL1
+        });
+
+        var P2 = board.create('glider', [3, f(3), lineObj], {
+            name: '', size: 5, color: COL2, showInfobox: false, highlight: true,
+            highlightFillColor: COL2, highlightStrokeColor: COL2
+        });
+
+        // Enforce x-range and x1 < x2 with buffer
+        var X_MIN = -0.8;
+        var X_MAX = 4.8;
+        var BUFFER = 0.3;
+
+        P1.on('drag', function() {
+            var x1 = P1.X();
+            if (x1 < X_MIN) { P1.moveTo([X_MIN, f(X_MIN)]); return; }
+            if (x1 >= P2.X() - BUFFER) { P1.moveTo([P2.X() - BUFFER, f(P2.X() - BUFFER)]); return; }
+            if (x1 > X_MAX) { P1.moveTo([X_MAX, f(X_MAX)]); }
+        });
+
+        P2.on('drag', function() {
+            var x2 = P2.X();
+            if (x2 > X_MAX) { P2.moveTo([X_MAX, f(X_MAX)]); return; }
+            if (x2 <= P1.X() + BUFFER) { P2.moveTo([P1.X() + BUFFER, f(P1.X() + BUFFER)]); return; }
+            if (x2 < X_MIN) { P2.moveTo([X_MIN, f(X_MIN)]); }
+        });
+
+        // Vertical drop-lines (dashed red)
+        board.create('segment', [
+            function() { return [P1.X(), P1.Y()]; },
+            function() { return [P1.X(), 0]; }
+        ], { strokeColor: COL_REF, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+
+        board.create('segment', [
+            function() { return [P2.X(), P2.Y()]; },
+            function() { return [P2.X(), 0]; }
+        ], { strokeColor: COL_REF, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+
+        // Horizontal lines to y-axis (dashed red)
+        board.create('segment', [
+            function() { return [P1.X(), P1.Y()]; },
+            function() { return [0, P1.Y()]; }
+        ], { strokeColor: COL_REF, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+
+        board.create('segment', [
+            function() { return [P2.X(), P2.Y()]; },
+            function() { return [0, P2.Y()]; }
+        ], { strokeColor: COL_REF, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+
+        // Small markers on x-axis
+        board.create('point', [function() { return P1.X(); }, 0], {
+            name: '', size: 3, color: COL1, fixed: true, highlight: false
+        });
+        board.create('point', [function() { return P2.X(); }, 0], {
+            name: '', size: 3, color: COL2, fixed: true, highlight: false
+        });
+
+        // Small markers on y-axis
+        board.create('point', [0, function() { return P1.Y(); }], {
+            name: '', size: 3, color: COL1, fixed: true, highlight: false
+        });
+        board.create('point', [0, function() { return P2.Y(); }], {
+            name: '', size: 3, color: COL2, fixed: true, highlight: false
+        });
+
+        // Dynamic labels — using useKatex: true for proper subscript rendering
+        // x-axis labels
+        board.create('text', [
+            function() { return P1.X(); },
+            function() { return -0.45; },
+            'x_1'
+        ], { anchorX: 'middle', fontSize: 13, color: COL1, fixed: true, highlight: false, useKatex: true });
+
+        board.create('text', [
+            function() { return P2.X(); },
+            function() { return -0.45; },
+            'x_2'
+        ], { anchorX: 'middle', fontSize: 13, color: COL2, fixed: true, highlight: false, useKatex: true });
+
+        // y-axis labels
+        board.create('text', [
+            function() { return -0.65; },
+            function() { return P1.Y(); },
+            'f(x_1)'
+        ], { anchorX: 'right', anchorY: 'middle', fontSize: 12, color: COL1, fixed: true, highlight: false, useKatex: true });
+
+        board.create('text', [
+            function() { return -0.65; },
+            function() { return P2.Y(); },
+            'f(x_2)'
+        ], { anchorX: 'right', anchorY: 'middle', fontSize: 12, color: COL2, fixed: true, highlight: false, useKatex: true });
+
+        // Point labels (P1, P2 near the points)
+        board.create('text', [
+            function() { return P1.X() + 0.15; },
+            function() { return P1.Y() + 0.35; },
+            'P_1'
+        ], { fontSize: 13, color: COL1, fixed: true, highlight: false, useKatex: true });
+
+        board.create('text', [
+            function() { return P2.X() + 0.15; },
+            function() { return P2.Y() + 0.35; },
+            'P_2'
+        ], { fontSize: 13, color: COL2, fixed: true, highlight: false, useKatex: true });
+
+        // Live readout using katex.render in the panel strip
+        function updateReadout() {
+            var x1 = P1.X();
+            var x2 = P2.X();
+            var y1 = P1.Y();
+            var y2 = P2.Y();
+
+            var latex = '\\color{' + COL1 + '}{x_1 = ' + x1.toFixed(2) + '}';
+            latex += ' \\;<\\; ';
+            latex += '\\color{' + COL2 + '}{x_2 = ' + x2.toFixed(2) + '}';
+            latex += '\\qquad ';
+            latex += '\\color{' + COL1 + '}{f(x_1) = ' + y1.toFixed(2) + '}';
+
+            if (y1 > y2) {
+                latex += ' \\;>\\; ';
+            } else if (y1 < y2) {
+                latex += ' \\;<\\; ';
+            } else {
+                latex += ' \\;=\\; ';
+            }
+
+            latex += '\\color{' + COL2 + '}{f(x_2) = ' + y2.toFixed(2) + '}';
+
+            katex.render(latex, document.getElementById('readout-comparison'), { throwOnError: false });
+        }
+
+        board.on('update', updateReadout);
+        setTimeout(updateReadout, 50);
+    </script>
+</body>
+</html>

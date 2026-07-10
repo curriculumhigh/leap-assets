@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Downward Parabola f(x) = -(x-1)(x-3)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 470px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.6, 2, 4.6, -3],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [4.2, -0.25, 'x'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+        board.create('text', [0.15, 1.7, 'f(x)'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+
+        // Function: f(x) = -(x-1)(x-3) = -x^2 + 4x - 3
+        board.create('functiongraph', [
+            function(x) { return -(x - 1) * (x - 3); },
+            -0.3, 4.3
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        // Key points
+        // x-intercept (1, 0)
+        board.create('point', [1, 0], {
+            name: '', size: 5, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false
+        });
+        // x-intercept (3, 0)
+        board.create('point', [3, 0], {
+            name: '', size: 5, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false
+        });
+        // Vertex (2, 1)
+        board.create('point', [2, 1], {
+            name: '', size: 5, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Labels for intercepts — placed just below the x-axis
+        board.create('text', [1, -0.35, '(1,\\, 0)'], {
+            fontSize: 12, color: '#222222', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [3, -0.35, '(3,\\, 0)'], {
+            fontSize: 12, color: '#222222', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        // Label for vertex
+        board.create('text', [2.15, 1.25, '(2,\\, 1)'], {
+            fontSize: 12, color: '#222222', anchorX: 'left', anchorY: 'bottom',
+            fixed: true, highlight: false, useKatex: true
+        });
+    </script>
+</body>
+</html>

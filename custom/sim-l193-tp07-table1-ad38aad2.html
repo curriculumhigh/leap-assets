@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concavity and Extrema</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 470px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4.5, 5, 4.5, -2],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [4.1, -0.35, 'x'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+        board.create('text', [0.25, 4.6, 'f(x)'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+
+        // Define the curve piecewise using a smooth function:
+        // We want: min at (-2, 0.5), max at (2, 4), inflection at (0, ~2.25)
+        // Use f(x) = -0.4375*x^3/8 ... let's construct carefully.
+        // A cubic-like shape won't give concave up then concave down symmetrically with the right values.
+        // Use: f(x) = 2.25 + 1.75*sin(pi*x/4)
+        // f(-2) = 2.25 + 1.75*sin(-pi/2) = 2.25 - 1.75 = 0.5 ✓
+        // f(0) = 2.25 + 1.75*sin(0) = 2.25 (inflection) ✓
+        // f(2) = 2.25 + 1.75*sin(pi/2) = 2.25 + 1.75 = 4.0 ✓
+        // f''(x) = -1.75*(pi/4)^2 * sin(pi*x/4)
+        // On (-4,-2): sin(pi*x/4) < 0 when x in (-4,-2) → sin negative → f'' > 0 → concave up ✓
+        // On (-2,0): sin(pi*x/4) < 0 when x in (-2,0) → sin(pi*(-1)/4)=sin(-pi/4)<0 → f'' > 0 → concave up ✓
+        // Hmm, that gives concave up on (-4,0) and concave down on (0,4). 
+        // Check intervals: f''(x) = -1.75*(pi/4)^2 * sin(pi*x/4)
+        // sin(pi*x/4): negative for x in (-4,0), positive for x in (0,4)
+        // So f'' > 0 (concave up) on (-4,0), f'' < 0 (concave down) on (0,4) ✓
+        // Decreasing on (-4,-2): f'(x) = 1.75*(pi/4)*cos(pi*x/4)
+        // At x=-3: cos(-3pi/4) = -√2/2 < 0 → f' < 0 → decreasing ✓
+        // Increasing on (-2,0): at x=-1: cos(-pi/4) = √2/2 > 0 → f' > 0 → increasing ✓
+        // Increasing on (0,2): at x=1: cos(pi/4) = √2/2 > 0 → f' > 0 → increasing ✓
+        // Decreasing on (2,4): at x=3: cos(3pi/4) = -√2/2 < 0 → f' < 0 → decreasing ✓
+        // Perfect!
+
+        function f(x) {
+            return 2.25 + 1.75 * Math.sin(Math.PI * x / 4);
+        }
+
+        // Plot the curve on [-4, 4]
+        board.create('functiongraph', [f, -4, 4], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Key points: min at (-2, 0.5), max at (2, 4)
+        board.create('point', [-2, 0.5], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [2, 4], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Labels for key points — offset to avoid overlap
+        board.create('text', [-2, -0.45, '(-2,\\, 0.5)'], {
+            fontSize: 12, color: '#222222', anchorX: 'middle', useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [2, 4.45, '(2,\\, 4)'], {
+            fontSize: 12, color: '#222222', anchorX: 'middle', useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>

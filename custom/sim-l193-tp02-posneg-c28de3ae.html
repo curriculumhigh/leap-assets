@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Function Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 470px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4.5, 4, 4.5, -4],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [4.1, -0.4, 'x'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+        board.create('text', [0.25, 3.6, 'f(x)'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+
+        // Function: designed to be negative & decreasing on (-4,-1), valley near (-1,-3),
+        // negative & increasing on (-1,2), crossing x-axis at x=2, positive & increasing on (2,4).
+        // Using f(x) = (x - 2)(x + 1)^2 / 3 scaled to fit nicely:
+        // At x=-1: f(-1) = (-3)(0)/3 = 0 — not what we want.
+        // Instead use a cubic: f(x) = 0.25*(x-2)*(x+1.5)^2 - adjusting...
+        // Let's use: f(x) = 0.3*(x - 2)*(x + 0.5)^2
+        // At x=-4: 0.3*(-6)*(−3.5)^2 = 0.3*(-6)*12.25 = -22.05 too big
+        // Try: f(x) = (x-2)(x+1)^2 / 4.5
+        // At x=-1: (-3)(0)/4.5 = 0 — local min at y=0, not negative enough.
+        // Better approach: use a smooth function that hits the constraints directly.
+        // f(x) = a(x - 2)(x^2 + bx + c) with minimum near (-1, -3)
+        // Let's just define piecewise-smooth or pick a good cubic.
+        // f(x) = 0.2(x-2)(x+2)^2: at x=-1: 0.2*(-3)(1)= -0.6, too shallow
+        // f(x) = 0.5(x-2)(x+1)^2 / 2.25 = (x-2)(x+1)^2 / 4.5
+        // x=-1: 0, x=-4: (-6)(9)/4.5 = -12, too big
+        // Let's use: f(x) = (x-2)(x+1.2)^2 / 6
+        // x=-1.2: 0 (local min at 0, not -3)
+        // For a valley at (-1, -3) that's not a zero, use non-factored:
+        // f(x) = 0.4x^3 - 0.4x^2 - 1.6x + ... let me solve constraints:
+        // Want: f(2)=0, f'(-1)=0, f(-1)=-3
+        // f(x) = a*x^3 + b*x^2 + c*x + d
+        // f(2) = 8a + 4b + 2c + d = 0
+        // f'(x) = 3ax^2 + 2bx + c; f'(-1) = 3a - 2b + c = 0
+        // f(-1) = -a + b - c + d = -3
+        // Need one more: f(-4) should be around -1 to -2 (negative, and f'(-4)<0)
+        // Let's also set f(4) ~ 3 (positive, increasing)
+        // f(4) = 64a + 16b + 4c + d ~ 3
+        // System: 8a+4b+2c+d=0, 3a-2b+c=0, -a+b-c+d=-3, 64a+16b+4c+d=3
+        // From eq1: d = -8a-4b-2c
+        // Sub into eq3: -a+b-c+(-8a-4b-2c)=-3 => -9a-3b-3c=-3 => 3a+b+c=1
+        // From eq2: c = -3a+2b
+        // Sub into 3a+b+c=1: 3a+b-3a+2b=1 => 3b=1 => b=1/3
+        // c = -3a + 2/3
+        // d = -8a - 4/3 - 2(-3a+2/3) = -8a - 4/3 + 6a - 4/3 = -2a - 8/3
+        // Sub into eq4: 64a + 16/3 + 4(-3a+2/3) + (-2a-8/3) = 3
+        // 64a + 16/3 - 12a + 8/3 - 2a - 8/3 = 3
+        // 50a + 16/3 = 3
+        // 50a = 3 - 16/3 = -7/3
+        // a = -7/150
+        // b = 1/3
+        // c = -3(-7/150) + 2/3 = 21/150 + 2/3 = 7/50 + 2/3 = 21/150 + 100/150 = 121/150
+        // d = -2(-7/150) - 8/3 = 14/150 - 8/3 = 7/75 - 200/75 = -193/75
+        // Check f(-1): -(-7/150) + 1/3 - 121/150 + (-193/75)
+        //   = 7/150 + 50/150 - 121/150 - 386/150 = (7+50-121-386)/150 = -450/150 = -3 ✓
+        // Check f(2): 8(-7/150)+4(1/3)+2(121/150)+(-193/75)
+        //   = -56/150 + 200/150 + 242/150 - 386/150 = 0/150 = 0 ✓
+        // f(-4): 64(-7/150)+16(1/3)+4(-121/150 wait, let me recalc c)
+        // Actually c = 121/150. f(-4) = (-7/150)(-64) + (1/3)(16) + (121/150)(-4) + (-193/75)
+        //   = 448/150 + 800/150 - 484/150 - 386/150 = (448+800-484-386)/150 = 378/150 ≈ -2.52... wait
+        //   Let me redo: -7/150 * (-64) = 448/150; 1/3*16 = 16/3 = 800/150; 121/150*(-4) = -484/150; d = -193/75 = -386/150
+        //   Sum = (448 + 800 - 484 - 386)/150 = 378/150 = 2.52
+        // That's positive at x=-4! We need it negative. Let me try f(-4) ~ -1.5
+        // New system: f(2)=0, f'(-1)=0, f(-1)=-3, f(-4)=-1.5
+        // 8a+4b+2c+d=0, 3a-2b+c=0, -a+b-c+d=-3, -64a+16b-4c+d=-1.5
+        // From eq1: d=-8a-4b-2c
+        // eq3: -a+b-c-8a-4b-2c=-3 => -9a-3b-3c=-3 => 3a+b+c=1
+        // eq2: c=-3a+2b
+        // 3a+b-3a+2b=1 => 3b=1 => b=1/3, c=-3a+2/3
+        // d=-8a-4/3-2(-3a+2/3)=-8a-4/3+6a-4/3=-2a-8/3
+        // eq4: -64a+16/3-4(-3a+2/3)+(-2a-8/3)=-1.5
+        //   -64a+16/3+12a-8/3-2a-8/3=-1.5
+        //   -54a + (16-8-8)/3 = -1.5
+        //   -54a + 0 = -1.5
+        //   a = 1/36
+        // b=1/3, c=-3/36+2/3 = -1/12+2/3 = -1/12+8/12 = 7/12
+        // d = -2/36-8/3 = -1/18-8/3 = -1/18-48/18 = -49/18
+        // Check f(-1): (1/36)(-1)+(1/3)(1)+(7/12)(-1)+(-49/18)
+        //   = -1/36 + 12/36 - 21/36 - 98/36 = (-1+12-21-98)/36 = -108/36 = -3 ✓
+        // Check f(2): (1/36)(8)+(1/3)(4)+(7/12)(2)+(-49/18)
+        //   = 8/36+48/36+42/36-98/36 = 0/36 = 0 ✓
+        // f(-4): (1/36)(-64)+(1/3)(16)+(7/12)(-4)+(-49/18)
+        //   = -64/36+192/36-84/36-98/36 = (-64+192-84-98)/36 = -54/36 = -1.5 ✓
+        // f'(x) = 3(1/36)x^2 + 2(1/3)x + 7/12 = x^2/12 + 2x/3 + 7/12
+        // f'(-1) = 1/12 - 2/3 + 7/12 = 1/12-8/12+7/12 = 0 ✓
+        // f'(-4) = 16/12 - 8/3 + 7/12 = 16/12-32/12+7/12 = -9/12 = -0.75 < 0 ✓ (decreasing)
+        // f(4) = (1/36)(64)+(1/3)(16)+(7/12)(4)+(-49/18)
+        //   = 64/36+192/36+84/36-98/36 = 242/36 ≈ 6.72 — a bit high but ok for bounding box y:[-4,4]
+        // Actually that goes above y=4. Let me check where it hits 4:
+        // We could just clip the domain display at x=4 which is fine since bb is [-4.5,4.5]
+        // At x=3.5: (1/36)(42.875)+(1/3)(12.25)+(7/12)(3.5)-49/18
+        //   = 42.875/36 + 4.083 + 2.042 - 2.722 = 1.191+4.083+2.042-2.722 = 4.59
+        // Still above 4. Let's check x=3: (1/36)(27)+(1/3)(9)+(7/12)(3)-49/18
+        //   = 0.75+3+1.75-2.722 = 2.778 — good, under 4
+        // The curve will go off the top near x=3.5-4, which is fine visually.
+
+        var a = 1/36, b = 1/3, c = 7/12, d = -49/18;
+
+        function f(x) {
+            return a*x*x*x + b*x*x + c*x + d;
+        }
+
+        // Plot the curve on [-4, 4]
+        board.create('functiongraph', [f, -4, 4], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Key point: x-intercept at (2, 0)
+        board.create('point', [2, 0], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Label for the x-intercept
+        board.create('text', [2.15, 0.45, '(2, 0)'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+    </script>
+</body>
+</html>
