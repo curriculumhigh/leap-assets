@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>f(x) = 2x - 3</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 470px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 5.5, 4.5, -6],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            showInfobox: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [4.1, -0.4, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 5.1, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Line f(x) = 2x - 3 with arrowheads on both ends
+        var xMin = -2.5, xMax = 4.5;
+        var yAtXMin = 2 * xMin - 3;
+        var yAtXMax = 2 * xMax - 3;
+
+        board.create('line', [[xMin, yAtXMin], [xMax, yAtXMax]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false,
+            straightFirst: false,
+            straightLast: false,
+            firstArrow: { type: 2, size: 6 },
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // Key points
+        var pts = [[0, -3], [1, -1], [2, 1]];
+        var labels = ['(0,\\,-3)', '(1,\\,-1)', '(2,\\,1)'];
+        var labelOffsets = [
+            [0.15, -0.45],
+            [0.15, -0.45],
+            [-0.15, 0.45]
+        ];
+        var labelAnchors = ['left', 'left', 'right'];
+
+        for (var i = 0; i < pts.length; i++) {
+            board.create('point', pts[i], {
+                name: '',
+                size: 5,
+                color: '#222222',
+                fixed: true,
+                highlight: false
+            });
+            board.create('text', [pts[i][0] + labelOffsets[i][0], pts[i][1] + labelOffsets[i][1], labels[i]], {
+                useKatex: true,
+                fontSize: 12,
+                color: '#222222',
+                fixed: true,
+                highlight: false,
+                anchorX: labelAnchors[i]
+            });
+        }
+
+        // Function label — above-left of the line in clear space
+        board.create('text', [1.0, 3.5, 'f(x) = 2x - 3'], {
+            useKatex: true,
+            fontSize: 13,
+            color: '#222222',
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
