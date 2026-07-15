@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapping Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 200px; margin: 0 auto; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 4px; height: calc(100% - 8px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 7.5, 7, -7.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Colors
+        var COL_INPUT = '#DC2626';
+        var COL_OUTPUT = '#059669';
+        var COL_OVAL = '#2563EB';
+        var COL_ARROW = '#2563EB';
+        var COL_NUMS = '#2563EB';
+
+        // Oval parameters
+        var OVAL_RX = 2.2;
+        var OVAL_RY = 5.0;
+
+        var LX = -3.0;
+        var RX = 3.5;
+        var OVAL_CY = -0.5;
+
+        // Draw ovals
+        function drawEllipse(cx, cy, rx, ry, color) {
+            board.create('curve', [
+                function(t) { return cx + rx * Math.cos(t); },
+                function(t) { return cy + ry * Math.sin(t); },
+                0, 2 * Math.PI
+            ], {
+                strokeColor: color, strokeWidth: 1.8, fixed: true, highlight: false
+            });
+        }
+
+        drawEllipse(LX, OVAL_CY, OVAL_RX, OVAL_RY, COL_OVAL);
+        drawEllipse(RX, OVAL_CY, OVAL_RX, OVAL_RY, COL_OVAL);
+
+        // Headers
+        board.create('text', [LX, 6.5, '<b>Input</b>'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 11, color: COL_INPUT, fixed: true, highlight: false
+        });
+        board.create('text', [RX, 6.5, '<b>Output</b>'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 11, color: COL_OUTPUT, fixed: true, highlight: false
+        });
+
+        // Input values (3 items, evenly spaced)
+        var inputVals = ['0', '2', '4'];
+        var inputY = [2.5, 0, -2.5];
+        var inputX = LX;
+
+        // Output values (3 items, evenly spaced)
+        var outputVals = ['1', '0', '\u22123'];
+        var outputY = [2.5, 0, -2.5];
+        var outputX = RX;
+
+        // Draw input labels
+        for (var i = 0; i < inputVals.length; i++) {
+            board.create('text', [inputX, inputY[i], inputVals[i]], {
+                anchorX: 'middle', anchorY: 'middle', fontSize: 13, color: COL_NUMS,
+                fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+            });
+        }
+
+        // Draw output labels
+        for (var j = 0; j < outputVals.length; j++) {
+            board.create('text', [outputX, outputY[j], outputVals[j]], {
+                anchorX: 'middle', anchorY: 'middle', fontSize: 13, color: COL_NUMS,
+                fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+            });
+        }
+
+        // Mappings: 0→1, 2→0, 4→-3
+        var mappings = [
+            { from: 0, to: 0, bend: 0.6 },
+            { from: 1, to: 1, bend: 0.3 },
+            { from: 2, to: 2, bend: -0.3 }
+        ];
+
+        for (var m = 0; m < mappings.length; m++) {
+            var map = mappings[m];
+            var fx = inputX + 0.7;
+            var fy = inputY[map.from];
+            var tx = outputX - 0.9;
+            var ty = outputY[map.to];
+
+            // Control point for curve
+            var midX = (fx + tx) / 2;
+            var midY = (fy + ty) / 2 + map.bend;
+
+            (function(fx2, fy2, cx2, cy2, tx2, ty2) {
+                board.create('curve', [
+                    function(t) { return (1-t)*(1-t)*fx2 + 2*(1-t)*t*cx2 + t*t*tx2; },
+                    function(t) { return (1-t)*(1-t)*fy2 + 2*(1-t)*t*cy2 + t*t*ty2; },
+                    0, 1
+                ], {
+                    strokeColor: COL_ARROW, strokeWidth: 1.2, fixed: true, highlight: false
+                });
+
+                // Arrowhead
+                var dxdt = 2 * (tx2 - cx2);
+                var dydt = 2 * (ty2 - cy2);
+                var len = Math.sqrt(dxdt * dxdt + dydt * dydt);
+                var ux = dxdt / len;
+                var uy = dydt / len;
+                var arrSize = 0.45;
+                var px = -uy;
+                var py = ux;
+
+                var a1x = tx2 - arrSize * ux + arrSize * 0.4 * px;
+                var a1y = ty2 - arrSize * uy + arrSize * 0.4 * py;
+                var a2x = tx2 - arrSize * ux - arrSize * 0.4 * px;
+                var a2y = ty2 - arrSize * uy - arrSize * 0.4 * py;
+
+                board.create('polygon', [[tx2, ty2], [a1x, a1y], [a2x, a2y]], {
+                    fillColor: COL_ARROW, fillOpacity: 1,
+                    borders: { strokeColor: COL_ARROW, strokeWidth: 0.5 },
+                    vertices: { visible: false },
+                    fixed: true, highlight: false
+                });
+            })(fx, fy, midX, midY, tx, ty);
+        }
+    </script>
+</body>
+</html>
