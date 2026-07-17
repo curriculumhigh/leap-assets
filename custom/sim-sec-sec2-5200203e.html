@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sec-sec2</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+  html, body { margin:0; padding:0; overflow:hidden; height:100%; background:transparent;
+               font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+  .container { max-width:300px; margin:0 auto; padding:6px; height:calc(100% - 12px); }
+  .board-wrapper { background:white; border-radius:8px; padding:6px; height:calc(100% - 12px); }
+  #board { width:100%; height:100%; }
+</style>
+</head>
+<body>
+<div class="container"><div class="board-wrapper"><div id="board"></div></div></div>
+<script>
+  var DENOM='cos', B=2, SGN=1;
+  var XMIN=-6.8, XMAX=6.8, YMIN=-5, YMAX=5;
+  var board = JXG.JSXGraph.initBoard('board', {
+    boundingbox:[XMIN,YMAX,XMAX,YMIN], axis:true, grid:true,
+    showNavigation:false, showCopyright:false, pan:{enabled:false}, zoom:{enabled:false},
+    defaultAxes:{
+      x:{strokeColor:'#444444',strokeWidth:1.2,lastArrow:{type:2,size:6},
+         ticks:{strokeColor:'#444444',minorTicks:0,ticksDistance:Math.PI/2,label:{visible:false},drawZero:false}},
+      y:{strokeColor:'#444444',strokeWidth:1.2,lastArrow:{type:2,size:6},
+         ticks:{strokeColor:'#444444',minorTicks:0,ticksDistance:2,label:{fontSize:10},drawZero:false}}
+    },
+    grid:{strokeColor:'#D1D5DB',strokeWidth:0.4}
+  });
+
+  function den(t){ return DENOM==='cos' ? Math.cos(B*t) : Math.sin(B*t); }
+  function g(t){ return SGN/den(t); }
+
+  // asymptotes: den(t)=0
+  var asy=[];
+  for (var k=-40;k<=40;k++){
+    var t = DENOM==='cos' ? (Math.PI/2 + k*Math.PI)/B : (k*Math.PI)/B;
+    if (t>XMIN+0.02 && t<XMAX-0.02) asy.push(t);
+  }
+  asy.sort(function(p,q){return p-q;});
+  for (var i=0;i<asy.length;i++){
+    board.create('line',[[asy[i],0],[asy[i],1]],
+      {straightFirst:true,straightLast:true,strokeColor:'#0EA5E9',strokeWidth:1.0,dash:2,fixed:true,highlight:false});
+  }
+  var edges=[XMIN].concat(asy).concat([XMAX]);
+  for (var j=0;j<edges.length-1;j++){
+    var L=edges[j]+0.05, R=edges[j+1]-0.05;
+    if (R<=L) continue;
+    board.create('functiongraph',[g,L,R],{strokeColor:'#222222',strokeWidth:1.8,fixed:true,highlight:false});
+  }
+
+  // x-axis labels at multiples of pi/2 (KaTeX)
+  function gcd(a,b){return b?gcd(b,a%b):a;}
+  function piLabel(m){ // value = m*pi/2
+    var sign=m<0?'-':'', a=Math.abs(m), gg=gcd(a,2), num=a/gg, den2=2/gg;
+    var top=(num===1?'\\pi':num+'\\pi');
+    return den2===1 ? sign+top : sign+'\\frac{'+top+'}{'+den2+'}';
+  }
+  for (var m=-4;m<=4;m++){
+    if (m===0) continue;
+    board.create('text',[m*Math.PI/2, -0.45, piLabel(m)],
+      {useKatex:true,fontSize:8,color:'#333333',anchorX:'middle',anchorY:'top',fixed:true,highlight:false});
+  }
+</script>
+</body>
+</html>
