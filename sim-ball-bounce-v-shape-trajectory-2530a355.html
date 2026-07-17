@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ball Bounce V-Shape Trajectory</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 5.8, 10.2, -0.8],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [9.8, -0.45, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 5.5, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Function: f(x) = |x - 5| + 1
+        board.create('functiongraph', [
+            function(x) { return Math.abs(x - 5) + 1; }
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Ball — orange filled circle just above the vertex
+        var ballCenter = board.create('point', [5, 2.2], {
+            name: '',
+            visible: false,
+            fixed: true
+        });
+
+        board.create('circle', [ballCenter, 0.55], {
+            strokeColor: '#D97706',
+            strokeWidth: 2,
+            fillColor: '#F59E0B',
+            fillOpacity: 0.9,
+            fixed: true,
+            highlight: false
+        });
+
+        // Ball highlight (small white dot for 3D effect)
+        board.create('point', [4.8, 2.45], {
+            name: '',
+            size: 3,
+            color: '#ffffff',
+            strokeColor: '#ffffff',
+            fixed: true,
+            highlight: false,
+            showInfobox: false
+        });
+
+        // Key point: vertex (5, 1)
+        board.create('point', [5, 1], {
+            name: '',
+            size: 5,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            showInfobox: false
+        });
+
+        // Label for (5, 1)
+        board.create('text', [5.3, 0.35, '(5,\\,1)'], {
+            useKatex: true,
+            fontSize: 13,
+            color: '#222222',
+            fixed: true,
+            highlight: false
+        });
+
+        // Key point: (2, 4)
+        board.create('point', [2, 4], {
+            name: '',
+            size: 5,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            showInfobox: false
+        });
+
+        // Label for (2, 4)
+        board.create('text', [2.2, 4.35, '(2,\\,4)'], {
+            useKatex: true,
+            fontSize: 13,
+            color: '#222222',
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
