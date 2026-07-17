@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>30-60-90 triangle on the unit circle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <!-- KaTeX loaded WITHOUT defer so `katex` is defined before the inline board script runs. -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 420px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.4, 1.5, 1.45, -0.35],
+            keepAspectRatio: true,
+            axis: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var c = Math.sqrt(3) / 2; // sqrt(3)/2 ≈ 0.8660  (x of P)
+
+        // Vertices
+        var O = board.create('point', [0, 0], { name: '', size: 3, fillColor: '#222222', strokeColor: '#222222', fixed: true, highlight: false, showInfobox: false });
+        var M = board.create('point', [c, 0], { name: '', size: 3, fillColor: '#222222', strokeColor: '#222222', fixed: true, highlight: false, showInfobox: false });
+        var P = board.create('point', [c, 0.5], { name: '', size: 3, fillColor: '#222222', strokeColor: '#222222', fixed: true, highlight: false, showInfobox: false });
+
+        // Quarter unit circle (light, dashed, radius 1)
+        var cX = board.create('point', [1, 0], { visible: false, fixed: true, name: '' });
+        var cY = board.create('point', [0, 1], { visible: false, fixed: true, name: '' });
+        board.create('arc', [O, cX, cY], { strokeColor: '#9CA3AF', strokeWidth: 1, dash: 2, fixed: true, highlight: false, withLabel: false, lastArrow: false });
+
+        // Shaded triangle O-M-P
+        board.create('polygon', [O, M, P], { fillColor: '#2563EB', fillOpacity: 0.10, borders: { visible: false }, hasInnerPoints: false, fixed: true, highlight: false });
+
+        // Legs and emphasized hypotenuse (the radius = 1)
+        board.create('segment', [O, M], { strokeColor: '#555555', strokeWidth: 1.6, fixed: true, highlight: false });
+        board.create('segment', [M, P], { strokeColor: '#555555', strokeWidth: 1.6, fixed: true, highlight: false });
+        board.create('segment', [O, P], { strokeColor: '#222222', strokeWidth: 2.4, fixed: true, highlight: false });
+
+        // Right-angle mark at M
+        var d = 0.09;
+        board.create('segment', [[c - d, 0], [c - d, d]], { strokeColor: '#DC2626', strokeWidth: 1.3, fixed: true, highlight: false });
+        board.create('segment', [[c - d, d], [c, d]], { strokeColor: '#DC2626', strokeWidth: 1.3, fixed: true, highlight: false });
+
+        // 30 degree angle arc at O
+        var r1 = 0.32;
+        var g1a = board.create('point', [r1, 0], { visible: false, fixed: true, name: '' });
+        var g1b = board.create('point', [r1 * Math.cos(Math.PI / 6), r1 * Math.sin(Math.PI / 6)], { visible: false, fixed: true, name: '' });
+        board.create('arc', [O, g1a, g1b], { strokeColor: '#DC2626', strokeWidth: 1.3, fixed: true, highlight: false, withLabel: false, lastArrow: false });
+        // Smaller "30°" label, nudged in closer to its arc (arc midpoint ~ r=0.32 @ 15°)
+        board.create('text', [0.44, 0.108, '30^\\circ'], { useKatex: true, fontSize: 11, color: '#DC2626', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+        // 60 degree angle arc at P (between ray P->O and ray P->M)
+        var r2 = 0.28;
+        var pO = board.create('point', [c + r2 * Math.cos(210 * Math.PI / 180), 0.5 + r2 * Math.sin(210 * Math.PI / 180)], { visible: false, fixed: true, name: '' });
+        var pM = board.create('point', [c + r2 * Math.cos(270 * Math.PI / 180), 0.5 + r2 * Math.sin(270 * Math.PI / 180)], { visible: false, fixed: true, name: '' });
+        board.create('arc', [P, pO, pM], { strokeColor: '#DC2626', strokeWidth: 1.3, fixed: true, highlight: false, withLabel: false, lastArrow: false });
+        // Smaller "60°" label, nudged in closer to its arc (arc midpoint ~ r=0.28 @ 240° from P)
+        board.create('text', [0.685, 0.185, '60^\\circ'], { useKatex: true, fontSize: 11, color: '#DC2626', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+        // Side labels (kept)
+        board.create('text', [0.433, -0.15, '\\dfrac{\\sqrt{3}}{2}'], { useKatex: true, fontSize: 15, color: '#3B82F6', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+        board.create('text', [1.05, 0.25, '\\dfrac{1}{2}'], { useKatex: true, fontSize: 15, color: '#3B82F6', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+        board.create('text', [0.29, 0.44, '1'], { useKatex: true, fontSize: 16, color: '#222222', cssStyle: 'font-weight:bold', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+        // Vertex labels
+        board.create('text', [-0.11, -0.12, 'O'], { useKatex: true, fontSize: 16, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+        board.create('text', [0.955, -0.14, 'M'], { useKatex: true, fontSize: 16, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+        board.create('text', [0.965, 0.57, 'P'], { useKatex: true, fontSize: 16, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+    </script>
+</body>
+</html>
