@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit circle: generic angle definition</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <!-- KaTeX loaded WITHOUT defer so `katex` is defined before the inline board script runs. -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 440px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.38, 1.42, 1.78, -1.38],
+            keepAspectRatio: true,
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COS = Math.cos, SIN = Math.sin, RAD = Math.PI / 180;
+        var TH = 50; // generic first-quadrant angle (degrees) — purely illustrative, no numeric label shown
+
+        // Axes (manual so tick spacing / arrowheads match the static style)
+        board.create('axis', [[0, 0], [1, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 },
+            ticks: { strokeColor: '#444444', label: { fontSize: 11, offset: [0, -12] }, minorTicks: 0, ticksDistance: 1, insertTicks: false, drawZero: false, majorHeight: 7 }
+        });
+        board.create('axis', [[0, 0], [0, 1]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 },
+            ticks: { strokeColor: '#444444', label: { fontSize: 11, offset: [10, 0] }, minorTicks: 0, ticksDistance: 1, insertTicks: false, drawZero: false, majorHeight: 7 }
+        });
+
+        // Full unit circle (light)
+        var O = board.create('point', [0, 0], { name: '', size: 3, fillColor: '#222222', strokeColor: '#222222', fixed: true, highlight: false, showInfobox: false });
+        board.create('circle', [O, 1], { strokeColor: '#9CA3AF', strokeWidth: 1.3, fixed: true, highlight: false });
+
+        // Terminal point P in Quadrant I
+        var P = board.create('point', [COS(TH * RAD), SIN(TH * RAD)], { name: '', size: 3.5, fillColor: '#222222', strokeColor: '#222222', fixed: true, highlight: false, showInfobox: false });
+
+        // Axis labels
+        board.create('text', [1.68, 0.17, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+        board.create('text', [0.16, 1.30, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+        // Terminal ray / radius O -> P (arrow)
+        board.create('arrow', [O, P], { strokeColor: '#222222', strokeWidth: 2, fixed: true, highlight: false, lastArrow: { type: 2, size: 6 } });
+
+        // Angle arc theta from +x axis counterclockwise to the ray (generic — no numeric measure)
+        var rT = 0.36;
+        var t0 = board.create('point', [rT, 0], { visible: false, fixed: true, name: '' });
+        var t1 = board.create('point', [rT * COS(TH * RAD), rT * SIN(TH * RAD)], { visible: false, fixed: true, name: '' });
+        board.create('arc', [O, t0, t1], { strokeColor: '#2563EB', strokeWidth: 1.6, fixed: true, highlight: false, withLabel: false, lastArrow: { type: 2, size: 5 } });
+        board.create('text', [0.50, 0.24, '\\theta'], { useKatex: true, fontSize: 15, color: '#2563EB', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+        // "1 unit" label along the radius (upper-left side of the ray, clear of y-axis ticks)
+        board.create('text', [0.28, 0.66, '1\\ \\text{unit}'], { useKatex: true, fontSize: 13, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+        // Vertex / point labels
+        board.create('text', [-0.15, -0.15, 'O'], { useKatex: true, fontSize: 16, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+        board.create('text', [1.02, 0.92, 'P(a,\\, b)'], { useKatex: true, fontSize: 15, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+    </script>
+</body>
+</html>
