@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angles 5 pi over 6 and negative pi over 3 on the unit circle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <!-- KaTeX loaded WITHOUT defer so `katex` is defined before the inline board script runs. -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { display: flex; gap: 12px; max-width: 800px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        .board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper"><div id="boardL" class="board"></div></div>
+        <div class="board-wrapper"><div id="boardR" class="board"></div></div>
+    </div>
+    <script>
+        var COS = Math.cos, SIN = Math.sin, RAD = Math.PI / 180;
+
+        function buildPanel(id, opts) {
+            var board = JXG.JSXGraph.initBoard(id, {
+                boundingbox: [-1.4, 1.4, 1.4, -1.4],
+                keepAspectRatio: true,
+                axis: false,
+                grid: false,
+                showNavigation: false,
+                showCopyright: false,
+                pan: { enabled: false },
+                zoom: { enabled: false }
+            });
+
+            // Axes (manual so tick spacing / styling are reliably honored)
+            board.create('axis', [[0, 0], [1, 0]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+                lastArrow: { type: 2, size: 6 },
+                ticks: { strokeColor: '#444444', label: { fontSize: 11, offset: [0, -12] }, minorTicks: 0, ticksDistance: 1, insertTicks: false, drawZero: false, majorHeight: 7 }
+            });
+            board.create('axis', [[0, 0], [0, 1]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+                lastArrow: { type: 2, size: 6 },
+                ticks: { strokeColor: '#444444', label: { fontSize: 11, offset: [10, 0] }, minorTicks: 0, ticksDistance: 1, insertTicks: false, drawZero: false, majorHeight: 7 }
+            });
+
+            // Origin
+            var O = board.create('point', [0, 0], { name: '', size: 3, fillColor: '#222222', strokeColor: '#222222', fixed: true, highlight: false, showInfobox: false });
+
+            // Full unit circle (light)
+            board.create('circle', [O, 1], { strokeColor: '#9CA3AF', strokeWidth: 1.3, fixed: true, highlight: false });
+
+            // Axis labels
+            board.create('text', [1.32, 0.16, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+            board.create('text', [0.15, 1.3, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+            // Terminal point P on the unit circle (NO coordinate label)
+            var pa = opts.angleDeg * RAD;
+            var P = board.create('point', [COS(pa), SIN(pa)], { name: '', size: 3.5, fillColor: '#222222', strokeColor: '#222222', fixed: true, highlight: false, showInfobox: false });
+
+            // Terminal ray O -> P (arrow)
+            board.create('arrow', [O, P], { strokeColor: '#222222', strokeWidth: 2, fixed: true, highlight: false, lastArrow: { type: 2, size: 6 } });
+
+            // Angle arc from the +x axis
+            var rT = 0.42;
+            var a0 = board.create('point', [rT * COS(opts.arcFrom * RAD), rT * SIN(opts.arcFrom * RAD)], { visible: false, fixed: true, name: '' });
+            var a1 = board.create('point', [rT * COS(opts.arcTo * RAD), rT * SIN(opts.arcTo * RAD)], { visible: false, fixed: true, name: '' });
+            var arcOpts = { strokeColor: '#2563EB', strokeWidth: 1.6, fixed: true, highlight: false, withLabel: false };
+            if (opts.arrowAt === 'first') { arcOpts.firstArrow = { type: 2, size: 5 }; }
+            else { arcOpts.lastArrow = { type: 2, size: 5 }; }
+            board.create('arc', [O, a0, a1], arcOpts);
+
+            // Angle measure label
+            board.create('text', [opts.arcLabelPos[0], opts.arcLabelPos[1], opts.arcLabel], { useKatex: true, fontSize: 15, color: '#2563EB', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+            // Vertex label O (lower-left of origin — clear in every quadrant used here)
+            board.create('text', [-0.15, -0.15, 'O'], { useKatex: true, fontSize: 16, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+            // Point label P (letter only — no coordinates)
+            board.create('text', [opts.pLabelPos[0], opts.pLabelPos[1], 'P'], { useKatex: true, fontSize: 16, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+            return board;
+        }
+
+        // LEFT: 5 pi / 6 (150 degrees), Quadrant II, CCW arc from +x axis
+        buildPanel('boardL', {
+            angleDeg: 150,
+            arcFrom: 0, arcTo: 150, arrowAt: 'last',
+            arcLabel: '\\frac{5\\pi}{6}', arcLabelPos: [0.19, 0.67],
+            pLabelPos: [-1.0, 0.6]
+        });
+
+        // RIGHT: -pi/3 (-60 degrees), Quadrant IV, CW arc below the +x axis
+        buildPanel('boardR', {
+            angleDeg: -60,
+            arcFrom: -60, arcTo: 0, arrowAt: 'first',
+            arcLabel: '-\\frac{\\pi}{3}', arcLabelPos: [0.62, -0.36],
+            pLabelPos: [0.62, -1.02]
+        });
+    </script>
+</body>
+</html>
