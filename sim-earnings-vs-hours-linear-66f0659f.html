@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earnings vs Hours — y = 12x</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.6, 50, 4.8, -5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 12
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Origin label "0"
+        board.create('text', [-0.2, -1.5, '0'], {
+            fontSize: 11, color: '#444444', fixed: true, highlight: false
+        });
+
+        // Axis labels
+        board.create('text', [3.5, -2, '\\textit{Hours}'], {
+            fontSize: 13, fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [0.15, 48, '\\textit{Earnings (dollars)}'], {
+            fontSize: 13, fixed: true, highlight: false, useKatex: true, anchorX: 'left'
+        });
+
+        // Line y = 12x (first quadrant only, x from 0 to 4)
+        board.create('functiongraph', [
+            function(x) { return 12 * x; }, 0, 4
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Key points and coordinate labels
+        // (0,0) has point but no label; others get labels
+        board.create('point', [0, 0], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        var pts = [[1, 12], [2, 24], [3, 36]];
+        var labelOffsets = [
+            [0.2, -1.8],
+            [0.2, -1.8],
+            [0.2, -1.8]
+        ];
+
+        for (var i = 0; i < pts.length; i++) {
+            board.create('point', pts[i], {
+                name: '', size: 2, color: '#222222', fixed: true, highlight: false, showInfobox: false
+            });
+
+            board.create('text', [
+                pts[i][0] + labelOffsets[i][0],
+                pts[i][1] + labelOffsets[i][1],
+                '(' + pts[i][0] + ',\\,' + pts[i][1] + ')'
+            ], {
+                fontSize: 12, color: '#222222', fixed: true, highlight: false, useKatex: true
+            });
+        }
+
+        // Function label
+        board.create('text', [2, 37, 'y = 12x'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+    </script>
+</body>
+</html>
