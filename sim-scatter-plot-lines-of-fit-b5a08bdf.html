@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scatter Plot with Lines of Fit</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.2, 10.8, 14.5, -1.2],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 2
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 2
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [14.0, -0.6, 'x'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+        board.create('text', [0.3, 10.4, 'y'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+
+        // Data points — no labels
+        var data = [
+            [1, 2], [2, 2.5], [3, 3], [3.5, 4], [4, 3.5], [5, 4.5],
+            [6, 5], [7, 5.5], [8, 6], [9, 6.5], [10, 7], [11, 7.5]
+        ];
+
+        for (var i = 0; i < data.length; i++) {
+            board.create('point', data[i], {
+                name: '', size: 3, color: '#222222', fixed: true, highlight: false,
+                showInfobox: false
+            });
+        }
+
+        // Line colors
+        var COL_J = '#7C3AED';  // purple
+        var COL_K = '#222222';  // dark/primary
+        var COL_M = '#059669';  // green
+        var COL_N = '#D97706';  // orange
+
+        // Line j: slope = (9-1)/(6-1) = 1.6, y = 1.6x - 0.6
+        function lineJ(x) { return 1.6 * x - 0.6; }
+        // Line k: slope = (7.5-2)/(11-1) = 0.55, y = 0.55x + 1.45
+        function lineK(x) { return 0.55 * x + 1.45; }
+        // Line m: slope = (4-3)/(11-1) = 0.1, y = 0.1x + 2.9
+        function lineM(x) { return 0.1 * x + 2.9; }
+        // Line n: slope = (9.5-5)/(11-1) = 0.45, y = 0.45x + 4.55
+        function lineN(x) { return 0.45 * x + 4.55; }
+
+        // Draw lines as functiongraphs clipped to visible area
+        // Line j: at y=10.5, x=(10.5+0.6)/1.6=6.94
+        board.create('functiongraph', [lineJ, 0.5, 6.94], {
+            strokeColor: COL_J, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Line k: at x=0.5, y=1.72; at x=13.5, y=8.87
+        board.create('functiongraph', [lineK, 0.5, 13.5], {
+            strokeColor: COL_K, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Line m: at x=0.5, y=2.95; at x=13.5, y=4.25
+        board.create('functiongraph', [lineM, 0.5, 13.5], {
+            strokeColor: COL_M, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Line n: at x=0.5, y=4.775; at x=13, y=10.4
+        board.create('functiongraph', [lineN, 0.5, 13.0], {
+            strokeColor: COL_N, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Line labels — positioned at right end of each line, offset for clearance
+        board.create('text', [7.2, 10.0, 'j'], {
+            fontSize: 14, color: COL_J, fixed: true, highlight: false, useKatex: true,
+            cssStyle: 'font-style: italic;'
+        });
+
+        board.create('text', [13.2, 9.2, 'k'], {
+            fontSize: 14, color: COL_K, fixed: true, highlight: false, useKatex: true,
+            cssStyle: 'font-style: italic;'
+        });
+
+        board.create('text', [13.2, 4.6, 'm'], {
+            fontSize: 14, color: COL_M, fixed: true, highlight: false, useKatex: true,
+            cssStyle: 'font-style: italic;'
+        });
+
+        board.create('text', [13.2, 10.4, 'n'], {
+            fontSize: 14, color: COL_N, fixed: true, highlight: false, useKatex: true,
+            cssStyle: 'font-style: italic;'
+        });
+    </script>
+</body>
+</html>
