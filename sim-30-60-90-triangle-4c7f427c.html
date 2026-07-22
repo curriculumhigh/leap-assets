@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>30-60-90 Triangle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.8, 8.5, 7, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var Cx = 1, Cy = 1;
+        var Bx = Cx + 4, By = Cy;
+        var Ax = Cx, Ay = Cy + 6.93;
+
+        var C2 = board.create('point', [Cx, Cy], { name: '', visible: false, fixed: true });
+        var B2 = board.create('point', [Bx, By], { name: '', visible: false, fixed: true });
+        var A2 = board.create('point', [Ax, Ay], { name: '', visible: false, fixed: true });
+
+        // Triangle
+        board.create('polygon', [C2, B2, A2], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Right angle marker at C
+        var sq = 0.35;
+        board.create('polygon', [
+            [Cx, Cy],
+            [Cx + sq, Cy],
+            [Cx + sq, Cy + sq],
+            [Cx, Cy + sq]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Angle label: 30° at A (top-left)
+        board.create('text', [Ax + 0.0, Ay - 1.0, '30^\\circ'], {
+            useKatex: true, fontSize: 13, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Angle label: 60° at B (bottom-right)
+        board.create('text', [Bx - 1.5, By + 0.5, '60^\\circ'], {
+            useKatex: true, fontSize: 13, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Side labels:
+        // Bottom side BC = 4 (shorter leg, opposite 30°)
+        board.create('text', [(Cx + Bx) / 2, Cy - 0.6, '4'], {
+            useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', fixed: true, highlight: false
+        });
+
+        // Left side AC = 4√3 (longer leg, opposite 60°)
+        board.create('text', [Cx - 0.9, (Cy + Ay) / 2, '4\\sqrt{3}'], {
+            useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', fixed: true, highlight: false
+        });
+
+        // Hypotenuse AB = 8 (opposite 90°)
+        var midHx = (Ax + Bx) / 2 + 0.5;
+        var midHy = (Ay + By) / 2 + 0.2;
+        board.create('text', [midHx, midHy, '8'], {
+            useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
