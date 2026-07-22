@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>45-45-90 Triangle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); display: flex; flex-direction: column; }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; flex: 1; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 6.5, 7, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle vertices: right angle at bottom-left
+        var A = board.create('point', [1, 1], { visible: false, fixed: true, name: '' });
+        var B = board.create('point', [5.5, 1], { visible: false, fixed: true, name: '' });
+        var C = board.create('point', [1, 5.5], { visible: false, fixed: true, name: '' });
+
+        // Triangle edges
+        board.create('segment', [A, B], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [A, C], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [B, C], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+
+        // Right angle marker at A (bottom-left)
+        var sqSize = 0.4;
+        var sq1 = board.create('point', [1 + sqSize, 1], { visible: false, fixed: true, name: '' });
+        var sq2 = board.create('point', [1 + sqSize, 1 + sqSize], { visible: false, fixed: true, name: '' });
+        var sq3 = board.create('point', [1, 1 + sqSize], { visible: false, fixed: true, name: '' });
+        board.create('segment', [sq1, sq2], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [sq2, sq3], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // 45° label at top-left (angle at C)
+        board.create('text', [1.05, 4.85, '45°'], { fontSize: 14, color: '#222222', fixed: true, highlight: false });
+
+        // 45° label at bottom-right (angle at B)
+        board.create('text', [3.7, 1.3, '45°'], { fontSize: 14, color: '#222222', fixed: true, highlight: false });
+
+        // Side labels
+        // Left side (vertical): x
+        board.create('text', [0.3, 3.25, 'x'], { fontSize: 15, color: '#222222', fixed: true, highlight: false, useKatex: true, anchorX: 'middle' });
+
+        // Bottom side (horizontal): x
+        board.create('text', [3.25, 0.3, 'x'], { fontSize: 15, color: '#222222', fixed: true, highlight: false, useKatex: true, anchorX: 'middle' });
+
+        // Hypotenuse: x√2
+        board.create('text', [3.9, 3.9, 'x\\sqrt{2}'], { fontSize: 15, color: '#222222', fixed: true, highlight: false, useKatex: true, anchorX: 'middle' });
+
+        // Caption below triangle
+        board.create('text', [3.25, -1.2, '\\text{hypotenuse} = \\text{leg} \\cdot \\sqrt{2}'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false, useKatex: true, anchorX: 'middle'
+        });
+    </script>
+</body>
+</html>
