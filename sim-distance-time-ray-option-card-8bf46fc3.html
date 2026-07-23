@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ray - Distance vs Time</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 9.5, 6.8, -1.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Grid — first quadrant only
+        var i;
+        for (i = 1; i <= 6; i++) {
+            board.create('segment', [[i, 0], [i, 9]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+        for (i = 1; i <= 6; i++) {
+            board.create('segment', [[0, i * 1.5], [6.5, i * 1.5]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // Axes
+        board.create('arrow', [[0, 0], [6.5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+        board.create('arrow', [[0, 0], [0, 9.2]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        // x-axis ticks and labels
+        for (i = 1; i <= 6; i++) {
+            board.create('segment', [[i, -0.15], [i, 0.15]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [i, -0.6, String(i)], {
+                fontSize: 10, anchorX: 'middle', anchorY: 'middle',
+                color: '#333', fixed: true, highlight: false
+            });
+        }
+
+        // y-axis ticks and labels
+        var yTicks = [1.5, 3.0, 4.5, 6.0, 7.5];
+        for (i = 0; i < yTicks.length; i++) {
+            board.create('segment', [[-0.15, yTicks[i]], [0.15, yTicks[i]]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [-0.5, yTicks[i], yTicks[i].toFixed(1)], {
+                fontSize: 10, anchorX: 'right', anchorY: 'middle',
+                color: '#333', fixed: true, highlight: false
+            });
+        }
+
+        // Axis labels (KaTeX)
+        board.create('text', [6.3, -0.8, 't'], {
+            fontSize: 13, useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [0.3, 9.1, 'd'], {
+            fontSize: 13, useKatex: true, fixed: true, highlight: false
+        });
+
+        // Ray: starts at (0, 0), passes through (1, 1.5), slope 1.5
+        // Extends to edge of bounding box
+        // At y = 9.2: x = 9.2 / 1.5 = 6.133
+        var xEnd = 9.2 / 1.5;
+        var yEnd = 9.2;
+
+        board.create('segment', [[0, 0], [xEnd, yEnd]], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // Solid endpoint at origin (0, 0)
+        board.create('point', [0, 0], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
