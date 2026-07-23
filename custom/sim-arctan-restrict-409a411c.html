@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>arctan-restrict</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+  html,body{margin:0;padding:0;overflow:hidden;height:100%;background:transparent;
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .container{max-width:440px;margin:0 auto;padding:6px;height:calc(100% - 12px);}
+  .board-wrapper{background:white;border-radius:8px;padding:6px;height:calc(100% - 12px);}
+  #board{width:100%;height:100%;}
+</style></head>
+<body><div class="container"><div class="board-wrapper"><div id="board"></div></div></div>
+<script>
+  var PI=Math.PI, HP=PI/2, XMIN=-5, XMAX=5, YMIN=-4.2, YMAX=4.6;
+  var board=JXG.JSXGraph.initBoard('board',{
+    boundingbox:[XMIN,YMAX,XMAX,YMIN],axis:false,
+    showNavigation:false,showCopyright:false,pan:{enabled:false},zoom:{enabled:false}});
+  board.create('axis',[[0,0],[1,0]],{strokeColor:'#444444',strokeWidth:1.2,lastArrow:{type:2,size:6},
+    ticks:{strokeColor:'#444444',minorTicks:0,ticksDistance:HP,label:{visible:false},drawZero:false}});
+  board.create('axis',[[0,0],[0,1]],{strokeColor:'#444444',strokeWidth:1.2,lastArrow:{type:2,size:6},
+    ticks:{strokeColor:'#444444',minorTicks:0,ticksDistance:1,label:{fontSize:10},drawZero:false}});
+  board.create('text',[XMAX-0.35,-0.32,'x'],{useKatex:true,fontSize:14,fixed:true,highlight:false});
+  board.create('text',[0.2,YMAX-0.3,'y'],{useKatex:true,fontSize:14,fixed:true,highlight:false});
+
+  var asy=[-3*HP,-HP,HP,3*HP];
+  for(var i=0;i<asy.length;i++){
+    var main=(Math.abs(asy[i])<HP+0.01);
+    board.create('line',[[asy[i],0],[asy[i],1]],{straightFirst:true,straightLast:true,
+      strokeColor:main?'#0EA5E9':'#CBD5E1',strokeWidth:main?1.2:0.9,dash:2,fixed:true,highlight:false});
+  }
+  var edges=[XMIN].concat(asy).concat([XMAX]);
+  for(var j=0;j<edges.length-1;j++){
+    var L=edges[j]+0.06,Rr=edges[j+1]-0.06; if(Rr<=L) continue;
+    var hl=(L>-HP-0.1 && Rr<HP+0.1);
+    board.create('functiongraph',[function(x){return Math.tan(x);},L,Rr],
+      {strokeColor:hl?'#2563EB':'#9CA3AF',strokeWidth:hl?2.4:1.2,fixed:true,highlight:false});
+  }
+  board.create('text',[-4.8,4.15,'\\text{restricted to }\\left(-\\tfrac{\\pi}{2},\\tfrac{\\pi}{2}\\right)'],
+    {useKatex:true,fontSize:11,color:'#2563EB',anchorX:'left',fixed:true,highlight:false});
+</script></body></html>

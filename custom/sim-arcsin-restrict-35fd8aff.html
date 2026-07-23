@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>arcsin-restrict</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+  html,body{margin:0;padding:0;overflow:hidden;height:100%;background:transparent;
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .container{max-width:420px;margin:0 auto;padding:6px;height:calc(100% - 12px);}
+  .board-wrapper{background:white;border-radius:8px;padding:6px;height:calc(100% - 12px);}
+  #board{width:100%;height:100%;}
+</style></head>
+<body><div class="container"><div class="board-wrapper"><div id="board"></div></div></div>
+<script>
+  var HP=Math.PI/2, XMIN=-3.7, XMAX=3.7, YMIN=-1.8, YMAX=1.9;
+  var board=JXG.JSXGraph.initBoard('board',{
+    boundingbox:[XMIN,YMAX,XMAX,YMIN],axis:false,
+    showNavigation:false,showCopyright:false,pan:{enabled:false},zoom:{enabled:false}});
+  board.create('axis',[[0,0],[1,0]],{strokeColor:'#444444',strokeWidth:1.2,lastArrow:{type:2,size:6},
+    ticks:{strokeColor:'#444444',minorTicks:0,ticksDistance:HP,label:{visible:false},drawZero:false}});
+  board.create('axis',[[0,0],[0,1]],{strokeColor:'#444444',strokeWidth:1.2,lastArrow:{type:2,size:6},
+    ticks:{strokeColor:'#444444',minorTicks:0,ticksDistance:1,label:{fontSize:10},drawZero:false}});
+  board.create('text',[XMAX-0.35,-0.28,'x'],{useKatex:true,fontSize:14,fixed:true,highlight:false});
+  board.create('text',[0.18,YMAX-0.22,'y'],{useKatex:true,fontSize:14,fixed:true,highlight:false});
+
+  // full sine — faint
+  board.create('functiongraph',[function(x){return Math.sin(x);},XMIN+0.1,XMAX-0.1],
+    {strokeColor:'#9CA3AF',strokeWidth:1.2,fixed:true,highlight:false});
+  // restricted branch [-pi/2, pi/2] — highlighted
+  board.create('functiongraph',[function(x){return Math.sin(x);},-HP,HP],
+    {strokeColor:'#2563EB',strokeWidth:2.6,fixed:true,highlight:false});
+
+  // endpoints
+  function dot(x,y){return board.create('point',[x,y],{name:'',size:3,strokeColor:'#222222',fillColor:'#222222',fixed:true,highlight:false,showInfobox:false});}
+  dot(-HP,-1); dot(HP,1); dot(0,0);
+  board.create('text',[-HP,-1.32,'\\left(-\\frac{\\pi}{2},\\ -1\\right)'],{useKatex:true,fontSize:12,anchorX:'middle',fixed:true,highlight:false});
+  board.create('text',[HP,1.3,'\\left(\\frac{\\pi}{2},\\ 1\\right)'],{useKatex:true,fontSize:12,anchorX:'middle',fixed:true,highlight:false});
+  board.create('text',[-3.5,1.62,'\\text{restricted to }\\left[-\\frac{\\pi}{2},\\ \\frac{\\pi}{2}\\right]'],{useKatex:true,fontSize:12,color:'#2563EB',anchorX:'left',fixed:true,highlight:false});
+</script></body></html>

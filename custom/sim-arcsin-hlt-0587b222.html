@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>arcsin-hlt</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+  html,body{margin:0;padding:0;overflow:hidden;height:100%;background:transparent;
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .container{max-width:460px;margin:0 auto;padding:6px;height:calc(100% - 12px);}
+  .board-wrapper{background:white;border-radius:8px;padding:6px;height:calc(100% - 12px);}
+  #board{width:100%;height:100%;}
+</style></head>
+<body><div class="container"><div class="board-wrapper"><div id="board"></div></div></div>
+<script>
+  var XMIN=-7, XMAX=7, YMIN=-2.2, YMAX=2.4;
+  var board=JXG.JSXGraph.initBoard('board',{
+    boundingbox:[XMIN,YMAX,XMAX,YMIN],axis:false,
+    showNavigation:false,showCopyright:false,pan:{enabled:false},zoom:{enabled:false}});
+  board.create('axis',[[0,0],[1,0]],{strokeColor:'#444444',strokeWidth:1.2,lastArrow:{type:2,size:6},
+    ticks:{strokeColor:'#444444',minorTicks:0,ticksDistance:Math.PI/2,label:{visible:false},drawZero:false}});
+  board.create('axis',[[0,0],[0,1]],{strokeColor:'#444444',strokeWidth:1.2,lastArrow:{type:2,size:6},
+    ticks:{strokeColor:'#444444',minorTicks:0,ticksDistance:1,label:{fontSize:10},drawZero:false}});
+  board.create('text',[XMAX-0.35,-0.32,'x'],{useKatex:true,fontSize:14,fixed:true,highlight:false});
+  board.create('text',[0.2,YMAX-0.28,'y'],{useKatex:true,fontSize:14,fixed:true,highlight:false});
+
+  // sine curve (primary)
+  board.create('functiongraph',[function(x){return Math.sin(x);},XMIN+0.1,XMAX-0.1],
+    {strokeColor:'#222222',strokeWidth:1.8,fixed:true,highlight:false});
+  board.create('text',[XMIN+0.3,1.55,'y=\\sin x'],{useKatex:true,fontSize:13,color:'#222222',fixed:true,highlight:false});
+
+  // draggable horizontal line y=k, k in [-1,1]
+  var seg=board.create('segment',[[0,-1],[0,1]],{visible:false});
+  var P=board.create('glider',[0,0.5,seg],{name:'',size:5,strokeColor:'#DC2626',fillColor:'#DC2626',
+    highlight:true,showInfobox:false,label:{visible:false}});
+  board.create('functiongraph',[function(){return P.Y();}],
+    {strokeColor:'#DC2626',strokeWidth:1.4,dash:2,fixed:true,highlight:false});
+
+  // intersection dots (track the line) — highlight the many crossings
+  function ck(){var k=P.Y();return Math.max(-0.999,Math.min(0.999,k));}
+  for(var n=-2;n<=2;n++){(function(n){
+    board.create('point',[function(){return Math.asin(ck())+2*Math.PI*n;},function(){return P.Y();}],
+      {name:'',size:2.5,strokeColor:'#DC2626',fillColor:'#DC2626',fixed:true,highlight:false,showInfobox:false});
+    board.create('point',[function(){return (Math.PI-Math.asin(ck()))+2*Math.PI*n;},function(){return P.Y();}],
+      {name:'',size:2.5,strokeColor:'#DC2626',fillColor:'#DC2626',fixed:true,highlight:false,showInfobox:false});
+  })(n);}
+
+  // dynamic readout — PLAIN text (updates on drag; KaTeX re-render per frame is discouraged)
+  board.create('text',[XMIN+0.3,YMAX-0.5,function(){return 'y = k = '+P.Y().toFixed(2);}],
+    {fontSize:14,color:'#DC2626',fixed:true,highlight:false});
+  board.create('text',[3.0,1.9,'drag ↕'],{fontSize:12,color:'#DC2626',fixed:true,highlight:false});
+</script></body></html>

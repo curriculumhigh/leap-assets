@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angle of Elevation — Airplane</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 420px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 13, 18, -3],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle vertices
+        var O = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 0, visible: false
+        });
+        var Bp = board.create('point', [15, 0], {
+            name: '', fixed: true, size: 0, visible: false
+        });
+        var P = board.create('point', [15, 10], {
+            name: '', fixed: true, size: 3, color: '#222222', highlight: false
+        });
+
+        // Ground segment O -> Bp
+        board.create('segment', [O, Bp], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Altitude segment Bp -> P
+        board.create('segment', [Bp, P], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Line of sight (hypotenuse) O -> P
+        board.create('segment', [O, P], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Right-angle marker at Bp
+        var raSize = 0.8;
+        var ra1 = board.create('point', [15 - raSize, 0], { visible: false, fixed: true, name: '' });
+        var ra2 = board.create('point', [15 - raSize, raSize], { visible: false, fixed: true, name: '' });
+        var ra3 = board.create('point', [15, raSize], { visible: false, fixed: true, name: '' });
+        board.create('segment', [ra1, ra2], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [ra2, ra3], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        // Angle arc theta at O
+        board.create('nonReflexAngle', [Bp, O, P], {
+            radius: 2.2,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false,
+            highlight: false
+        });
+
+        // Theta label along the bisector
+        var theta_angle = Math.atan2(10, 15) / 2; // bisector angle
+        var theta_r = 2.9;
+        board.create('text', [
+            theta_r * Math.cos(theta_angle),
+            theta_r * Math.sin(theta_angle),
+            '\\theta'
+        ], {
+            useKatex: true, fontSize: 15, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Label: altitude "10 km" — right of midpoint of Bp->P
+        board.create('text', [15.8, 5, '10 \\text{ km}'], {
+            useKatex: true, fontSize: 13, color: '#3B82F6',
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Label: horizontal "d" — below midpoint of O->Bp
+        board.create('text', [7.5, -1.2, 'd'], {
+            useKatex: true, fontSize: 13, color: '#3B82F6',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>

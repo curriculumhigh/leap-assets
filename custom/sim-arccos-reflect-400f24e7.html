@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>arccos-reflect</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+  html,body{margin:0;padding:0;overflow:hidden;height:100%;background:transparent;
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .container{max-width:400px;margin:0 auto;padding:6px;height:calc(100% - 12px);}
+  .board-wrapper{background:white;border-radius:8px;padding:6px;height:calc(100% - 12px);}
+  #board{width:100%;height:100%;}
+</style></head>
+<body><div class="container"><div class="board-wrapper"><div id="board"></div></div></div>
+<script>
+  var PI=Math.PI, LO=-1.35, HI=3.55;
+  var board=JXG.JSXGraph.initBoard('board',{
+    boundingbox:[LO,HI,HI,LO],axis:false,keepAspectRatio:true,
+    showNavigation:false,showCopyright:false,pan:{enabled:false},zoom:{enabled:false}});
+  board.create('axis',[[0,0],[1,0]],{strokeColor:'#444444',strokeWidth:1.2,lastArrow:{type:2,size:6},
+    ticks:{strokeColor:'#444444',minorTicks:0,ticksDistance:1,label:{fontSize:10},drawZero:false}});
+  board.create('axis',[[0,0],[0,1]],{strokeColor:'#444444',strokeWidth:1.2,lastArrow:{type:2,size:6},
+    ticks:{strokeColor:'#444444',minorTicks:0,ticksDistance:1,label:{fontSize:10},drawZero:false}});
+  board.create('text',[HI-0.25,-0.24,'x'],{useKatex:true,fontSize:14,fixed:true,highlight:false});
+  board.create('text',[0.16,HI-0.2,'y'],{useKatex:true,fontSize:14,fixed:true,highlight:false});
+
+  // dashed mirror line (unlabeled — student identifies it)
+  board.create('functiongraph',[function(x){return x;},LO+0.05,HI-0.05],
+    {strokeColor:'#6B7280',strokeWidth:1.0,dash:2,fixed:true,highlight:false});
+
+  // restricted cosine on [0, pi]
+  board.create('functiongraph',[function(x){return Math.cos(x);},0,PI],
+    {strokeColor:'#222222',strokeWidth:1.8,fixed:true,highlight:false});
+  board.create('text',[1.15,-0.95,'\\text{restricted }y=\\cos x'],{useKatex:true,fontSize:11,color:'#222222',anchorX:'left',fixed:true,highlight:false});
+  // arccos on [-1, 1]  (reflection over y=x) — decreasing
+  board.create('functiongraph',[function(x){return Math.acos(Math.max(-1,Math.min(1,x)));},-1,1],
+    {strokeColor:'#2563EB',strokeWidth:1.8,fixed:true,highlight:false});
+  board.create('text',[-1.25,2.5,'y=\\arccos x'],{useKatex:true,fontSize:11,color:'#2563EB',anchorX:'left',fixed:true,highlight:false});
+
+  // corresponding points (0,1)<->(1,0) and (pi,-1)<->(-1,pi)
+  function dot(x,y,c){return board.create('point',[x,y],{name:'',size:2.6,strokeColor:c,fillColor:c,fixed:true,highlight:false,showInfobox:false});}
+  dot(0,1,'#222222'); dot(1,0,'#2563EB'); dot(PI,-1,'#222222'); dot(-1,PI,'#2563EB');
+  board.create('segment',[[0,1],[1,0]],{strokeColor:'#9CA3AF',strokeWidth:0.8,dash:1,fixed:true,highlight:false});
+  board.create('segment',[[PI,-1],[-1,PI]],{strokeColor:'#9CA3AF',strokeWidth:0.8,dash:1,fixed:true,highlight:false});
+</script></body></html>
