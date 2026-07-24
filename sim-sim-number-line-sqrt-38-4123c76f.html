@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Line — Square Roots</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [5.92, 1.6, 6.58, -1.4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Number line
+        board.create('arrow', [[5.95, 0], [6.55, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.5, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        // Major tick marks and decimal labels
+        var ticks = [6.0, 6.1, 6.2, 6.3, 6.4, 6.5];
+        var tickH = 0.15;
+        for (var i = 0; i < ticks.length; i++) {
+            board.create('segment', [[ticks[i], -tickH], [ticks[i], tickH]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [ticks[i], -0.4, ticks[i].toFixed(1)], {
+                anchorX: 'middle', anchorY: 'middle', fontSize: 12, color: '#222222',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Square root labels above the line (no dots)
+        var sqrtLabels = [
+            { x: 6.1, label: '\\sqrt{37.21}' },
+            { x: 6.2, label: '\\sqrt{38.44}' },
+            { x: 6.3, label: '\\sqrt{39.69}' },
+            { x: 6.4, label: '\\sqrt{40.96}' }
+        ];
+
+        for (var j = 0; j < sqrtLabels.length; j++) {
+            board.create('text', [sqrtLabels[j].x, 0.55, sqrtLabels[j].label], {
+                anchorX: 'middle', anchorY: 'bottom', fontSize: 13, color: '#222222',
+                useKatex: true, fixed: true, highlight: false
+            });
+        }
+
+        // \sqrt{38} point — prominent in red
+        var sqrt38 = Math.sqrt(38); // ≈ 6.1644
+        board.create('point', [sqrt38, 0], {
+            name: '', size: 2, color: '#DC2626', fixed: true, highlight: false
+        });
+
+        // Red dotted line from point up to the label
+        board.create('segment', [[sqrt38, 0], [sqrt38, 1.05]], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+
+        // \sqrt{38} label — moved further up
+        board.create('text', [sqrt38, 1.1, '\\sqrt{38}'], {
+            anchorX: 'middle', anchorY: 'bottom', fontSize: 13, color: '#DC2626',
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
