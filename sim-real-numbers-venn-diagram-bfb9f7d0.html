@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Numbers Venn Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-12, 10, 12, -10],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: true
+        });
+
+        // Universal set rectangle
+        var rectPts = [
+            board.create('point', [-11.2, 9.2], { visible: false, fixed: true, name: '' }),
+            board.create('point', [11.2, 9.2], { visible: false, fixed: true, name: '' }),
+            board.create('point', [11.2, -9.2], { visible: false, fixed: true, name: '' }),
+            board.create('point', [-11.2, -9.2], { visible: false, fixed: true, name: '' })
+        ];
+        board.create('polygon', rectPts, {
+            fillColor: '#fafafa', fillOpacity: 0.2,
+            borders: { strokeColor: '#444444', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Title
+        board.create('text', [0, 9.6, 'Real Numbers'], {
+            fontSize: 14, anchorX: 'middle', anchorY: 'middle',
+            color: '#222222', cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+
+        // Helper: draw filled ellipse
+        function drawEllipse(cx, cy, rx, ry, fillColor, fillOpacity, strokeColor, strokeWidth) {
+            return board.create('curve', [
+                function(t) { return cx + rx * Math.cos(t); },
+                function(t) { return cy + ry * Math.sin(t); },
+                0, 2 * Math.PI
+            ], {
+                strokeColor: strokeColor, strokeWidth: strokeWidth,
+                fillColor: fillColor, fillOpacity: fillOpacity,
+                fixed: true, highlight: false
+            });
+        }
+
+        // LEFT SIDE: Nested sets
+        drawEllipse(-4, 0, 6.5, 8.5, '#FECDD3', 0.35, '#DC2626', 1.5);
+        drawEllipse(-4, 0, 5.0, 6.5, '#FCA5A5', 0.3, '#DC2626', 1.3);
+        drawEllipse(-4, 0, 3.5, 4.5, '#F87171', 0.22, '#DC2626', 1.2);
+        drawEllipse(-4, 0, 2.0, 2.5, '#EF4444', 0.2, '#DC2626', 1.1);
+
+        // Set labels
+        board.create('text', [-4, 7.4, 'Rational'], {
+            fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+            color: '#DC2626', cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+        board.create('text', [-4, 5.4, 'Integer'], {
+            fontSize: 10, anchorX: 'middle', anchorY: 'middle',
+            color: '#DC2626', cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+        board.create('text', [-4, 3.4, 'Whole'], {
+            fontSize: 10, anchorX: 'middle', anchorY: 'middle',
+            color: '#DC2626', cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+        board.create('text', [-4, 1.6, 'Natural'], {
+            fontSize: 9, anchorX: 'middle', anchorY: 'middle',
+            color: '#DC2626', cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+
+        // RIGHT SIDE: Irrational
+        drawEllipse(7.5, 0, 3.0, 7.0, '#DBEAFE', 0.45, '#2563EB', 1.5);
+        board.create('text', [7.5, 6.0, 'Irrational'], {
+            fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+            color: '#2563EB', cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+
+        // Unified style: all numbers in KaTeX at font size 10
+        var numK = { fontSize: 10, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', useKatex: true };
+        var irrK = { fontSize: 10, color: '#2563EB', fixed: true, highlight: false, anchorX: 'middle', useKatex: true };
+
+        // Natural: 2, 5, 8
+        board.create('text', [-5.0, 0.2, '2'], numK);
+        board.create('text', [-4.0, -0.5, '5'], numK);
+        board.create('text', [-3.1, 0.4, '8'], numK);
+
+        // Whole (not Natural): 0
+        board.create('text', [-4.0, -3.3, '0'], numK);
+
+        // Integer (not Whole): -4, -1
+        board.create('text', [-3.3, -5.3, '-4'], numK);
+        board.create('text', [-5.0, -5.3, '-1'], numK);
+
+        // Rational (not Integer): 3/4, -1.5, 0.6 repeating, 2.25
+        board.create('text', [-5.0, -7.3, '\\tfrac{3}{4}'], numK);
+        board.create('text', [-3.0, -7.3, '-1.5'], numK);
+        board.create('text', [1.5, 1.0, '0.\\overline{6}'], numK);
+        board.create('text', [1.5, -1.5, '2.25'], numK);
+
+        // Irrational: pi, sqrt5, -2pi, -sqrt2, cbrt11
+        board.create('text', [7.5, 4.0, '\\pi'], irrK);
+        board.create('text', [6.5, 1.5, '\\sqrt{5}'], irrK);
+        board.create('text', [8.5, 0.0, '-2\\pi'], irrK);
+        board.create('text', [7.0, -2.0, '-\\sqrt{2}'], irrK);
+        board.create('text', [8.0, -4.0, '\\sqrt[3]{11}'], irrK);
+    </script>
+</body>
+</html>
