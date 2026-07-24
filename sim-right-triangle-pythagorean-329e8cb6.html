@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle — Pythagorean Theorem</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 9, 9.5, -2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle vertices: right angle at bottom-left
+        var A = board.create('point', [0, 0], { name: '', fixed: true, visible: false }); // bottom-left (right angle)
+        var B = board.create('point', [6, 0], { name: '', fixed: true, visible: false }); // bottom-right
+        var C = board.create('point', [0, 8], { name: '', fixed: true, visible: false }); // top-left
+
+        // Triangle edges
+        board.create('segment', [A, B], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [A, C], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [B, C], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+
+        // Right angle marker (small square at A)
+        var sqSize = 0.6;
+        var sq1 = board.create('point', [sqSize, 0], { visible: false, fixed: true, name: '' });
+        var sq2 = board.create('point', [sqSize, sqSize], { visible: false, fixed: true, name: '' });
+        var sq3 = board.create('point', [0, sqSize], { visible: false, fixed: true, name: '' });
+        board.create('segment', [sq1, sq2], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [sq2, sq3], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // Labels
+        // Bottom leg: "6 mi" — centered below the horizontal leg
+        board.create('text', [3, -1, '6 \\text{ mi}'], {
+            useKatex: true, fontSize: 14, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, color: '#222222'
+        });
+
+        // Left leg: "x" — centered to the left of the vertical leg
+        board.create('text', [-0.9, 4, 'x'], {
+            useKatex: true, fontSize: 14, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, color: '#222222'
+        });
+
+        // Hypotenuse: "10 mi" — centered along the hypotenuse, offset to the right
+        board.create('text', [4.0, 4.6, '10 \\text{ mi}'], {
+            useKatex: true, fontSize: 14, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, color: '#222222'
+        });
+    </script>
+</body>
+</html>
