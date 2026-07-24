@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle PQR — Segment Distances</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel { width: 170px; flex-shrink: 0; background: white; border-radius: 8px; padding: 16px; display: flex; align-items: flex-start; }
+        .panel-text { font-size: 13px; color: #555; line-height: 1.5; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-text">Click on the sides to show the vertical and horizontal distances between the vertices.</div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 8, 7, -1],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444', label: { fontSize: 11 },
+                        minorTicks: 0, ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444', label: { fontSize: 11 },
+                        minorTicks: 0, ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [6.6, -0.5, 'x'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+        board.create('text', [0.2, 7.6, 'y'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+
+        // Colors
+        var COL_PQ = '#2563EB';
+        var COL_QR = '#059669';
+        var COL_RP = '#D97706';
+        var COL_HORIZ = '#DC2626';
+        var COL_VERT = '#7C3AED';
+        var COL_PT = '#222222';
+
+        // Points
+        var P = board.create('point', [1, 2], {
+            name: '', fixed: true, size: 2, color: COL_PT,
+            showInfobox: false, highlight: false
+        });
+        var Q = board.create('point', [4, 6], {
+            name: '', fixed: true, size: 2, color: COL_PT,
+            showInfobox: false, highlight: false
+        });
+        var R = board.create('point', [5, 3], {
+            name: '', fixed: true, size: 2, color: COL_PT,
+            showInfobox: false, highlight: false
+        });
+
+        // Point coordinate labels
+        board.create('text', [1, 1.5, 'P(1,2)'], {
+            fontSize: 12, color: COL_PT, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'top', useKatex: true
+        });
+        board.create('text', [4, 6.4, 'Q(4,6)'], {
+            fontSize: 12, color: COL_PT, fixed: true, highlight: false,
+            anchorX: 'middle', useKatex: true
+        });
+        board.create('text', [5.6, 3, 'R(5,3)'], {
+            fontSize: 12, color: COL_PT, fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle', useKatex: true
+        });
+
+        // Segments
+        var segPQ = board.create('segment', [P, Q], {
+            strokeColor: COL_PQ, strokeWidth: 1.5, fixed: true, highlight: true,
+            highlightStrokeColor: COL_PQ, highlightStrokeWidth: 3
+        });
+        var segQR = board.create('segment', [Q, R], {
+            strokeColor: COL_QR, strokeWidth: 1.5, fixed: true, highlight: true,
+            highlightStrokeColor: COL_QR, highlightStrokeWidth: 3
+        });
+        var segRP = board.create('segment', [R, P], {
+            strokeColor: COL_RP, strokeWidth: 1.5, fixed: true, highlight: true,
+            highlightStrokeColor: COL_RP, highlightStrokeWidth: 3
+        });
+
+        // Reference line elements (initially hidden)
+        var refHoriz = board.create('segment', [[0,0],[1,0]], {
+            strokeColor: COL_HORIZ, strokeWidth: 1.0, dash: 2,
+            fixed: true, visible: false, highlight: false
+        });
+        var refVert = board.create('segment', [[0,0],[0,1]], {
+            strokeColor: COL_VERT, strokeWidth: 1.0, dash: 2,
+            fixed: true, visible: false, highlight: false
+        });
+
+        // Labels for distances
+        var lblDx = board.create('text', [0, 0, ''], {
+            fontSize: 13, color: COL_HORIZ, fixed: true, visible: false,
+            anchorX: 'middle', anchorY: 'top', highlight: false, useKatex: true
+        });
+        var lblDy = board.create('text', [0, 0, ''], {
+            fontSize: 13, color: COL_VERT, fixed: true, visible: false,
+            anchorX: 'left', anchorY: 'middle', highlight: false, useKatex: true
+        });
+
+        // Right-angle square marker
+        var sqSize = 0.25;
+        var sqP1 = board.create('point', [0,0], { visible: false, fixed: true, name: '' });
+        var sqP2 = board.create('point', [0,0], { visible: false, fixed: true, name: '' });
+        var sqP3 = board.create('point', [0,0], { visible: false, fixed: true, name: '' });
+        var sqSeg1 = board.create('segment', [sqP1, sqP2], {
+            strokeColor: '#888888', strokeWidth: 0.8, fixed: true, visible: false, highlight: false
+        });
+        var sqSeg2 = board.create('segment', [sqP2, sqP3], {
+            strokeColor: '#888888', strokeWidth: 0.8, fixed: true, visible: false, highlight: false
+        });
+
+        var selectedSeg = null;
+
+        function formatUnits(val) {
+            if (val === 1) return '1 \\text{ unit}';
+            return val + ' \\text{ units}';
+        }
+
+        function showRefLinesFor(segName) {
+            var cx, cy, dx, dy;
+
+            if (segName === 'PQ') {
+                cx = 4; cy = 2;
+                dx = 3; dy = 4;
+                refHoriz.point1.moveTo([1, 2], 0);
+                refHoriz.point2.moveTo([4, 2], 0);
+                refVert.point1.moveTo([4, 2], 0);
+                refVert.point2.moveTo([4, 6], 0);
+                lblDx.moveTo([2.5, 1.6], 0);
+                lblDx.setAttribute({ visible: true, anchorY: 'top' });
+                lblDy.moveTo([4.3, 4], 0);
+                lblDy.setAttribute({ visible: true, anchorX: 'left' });
+                sqP1.moveTo([cx - sqSize, cy], 0);
+                sqP2.moveTo([cx - sqSize, cy + sqSize], 0);
+                sqP3.moveTo([cx, cy + sqSize], 0);
+            } else if (segName === 'QR') {
+                cx = 5; cy = 6;
+                dx = 1; dy = 3;
+                refHoriz.point1.moveTo([4, 6], 0);
+                refHoriz.point2.moveTo([5, 6], 0);
+                refVert.point1.moveTo([5, 6], 0);
+                refVert.point2.moveTo([5, 3], 0);
+                lblDx.moveTo([4.5, 6.4], 0);
+                lblDx.setAttribute({ visible: true, anchorY: 'bottom' });
+                lblDy.moveTo([5.3, 4.5], 0);
+                lblDy.setAttribute({ visible: true, anchorX: 'left' });
+                sqP1.moveTo([cx - sqSize, cy], 0);
+                sqP2.moveTo([cx - sqSize, cy - sqSize], 0);
+                sqP3.moveTo([cx, cy - sqSize], 0);
+            } else if (segName === 'RP') {
+                cx = 5; cy = 2;
+                dx = 4; dy = 1;
+                refHoriz.point1.moveTo([5, 2], 0);
+                refHoriz.point2.moveTo([1, 2], 0);
+                refVert.point1.moveTo([5, 3], 0);
+                refVert.point2.moveTo([5, 2], 0);
+                lblDx.moveTo([3, 1.6], 0);
+                lblDx.setAttribute({ visible: true, anchorY: 'top' });
+                lblDy.moveTo([5.3, 2.5], 0);
+                lblDy.setAttribute({ visible: true, anchorX: 'left' });
+                sqP1.moveTo([cx - sqSize, cy], 0);
+                sqP2.moveTo([cx - sqSize, cy + sqSize], 0);
+                sqP3.moveTo([cx, cy + sqSize], 0);
+            }
+
+            refHoriz.setAttribute({ visible: true });
+            refVert.setAttribute({ visible: true });
+            lblDx.setText(formatUnits(dx));
+            lblDy.setText(formatUnits(dy));
+            lblDx.setAttribute({ visible: true });
+            lblDy.setAttribute({ visible: true });
+            sqSeg1.setAttribute({ visible: true });
+            sqSeg2.setAttribute({ visible: true });
+        }
+
+        function hideRefLines() {
+            refHoriz.setAttribute({ visible: false });
+            refVert.setAttribute({ visible: false });
+            lblDx.setAttribute({ visible: false });
+            lblDy.setAttribute({ visible: false });
+            sqSeg1.setAttribute({ visible: false });
+            sqSeg2.setAttribute({ visible: false });
+        }
+
+        function selectSegment(seg, segName) {
+            if (selectedSeg === seg) {
+                deselectAll();
+                return;
+            }
+            deselectAll();
+            selectedSeg = seg;
+            seg.setAttribute({ strokeWidth: 3 });
+
+            var allSegs = [segPQ, segQR, segRP];
+            for (var i = 0; i < allSegs.length; i++) {
+                if (allSegs[i] !== seg) {
+                    allSegs[i].setAttribute({ strokeOpacity: 0.3 });
+                }
+            }
+
+            showRefLinesFor(segName);
+        }
+
+        function deselectAll() {
+            selectedSeg = null;
+            segPQ.setAttribute({ strokeWidth: 1.5, strokeOpacity: 1 });
+            segQR.setAttribute({ strokeWidth: 1.5, strokeOpacity: 1 });
+            segRP.setAttribute({ strokeWidth: 1.5, strokeOpacity: 1 });
+            hideRefLines();
+        }
+
+        // Click handlers
+        segPQ.on('down', function() { selectSegment(segPQ, 'PQ'); });
+        segQR.on('down', function() { selectSegment(segQR, 'QR'); });
+        segRP.on('down', function() { selectSegment(segRP, 'RP'); });
+    </script>
+</body>
+</html>
