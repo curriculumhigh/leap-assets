@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle — Complementary Angles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 520px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        // Triangle vertices (in user coords)
+        // A = bottom-left, B = bottom-right, C = top-right
+        // Right angle at B → AB horizontal, BC vertical
+        var Ax = 0, Ay = 0;
+        var Bx = 5, By = 0;
+        var Cx = 5, Cy = 6;
+
+        // Tight bounding box hugging the triangle + labels (uniform ~1 unit margin)
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 7, 6.2, -1],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices (small fixed points) ───────────────────────────────
+        var A = board.create('point', [Ax, Ay], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false
+        });
+        var B = board.create('point', [Bx, By], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false
+        });
+        var C = board.create('point', [Cx, Cy], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false
+        });
+
+        // ── Triangle (no fill) ──────────────────────────────────────────
+        board.create('polygon', [A, B, C], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true
+        });
+
+        // ── Right-angle mark at B ───────────────────────────────────────
+        var sq = 0.45; // size of right-angle square
+        var sqP1 = board.create('point', [Bx - sq, By], { visible: false, fixed: true, name: '' });
+        var sqP2 = board.create('point', [Bx - sq, By + sq], { visible: false, fixed: true, name: '' });
+        var sqP3 = board.create('point', [Bx, By + sq], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [sqP1, sqP2], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [sqP2, sqP3], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Angle arc at A (theta) ─────────────────────────────────────
+        board.create('nonReflexAngle', [B, A, C], {
+            radius: 1.05,
+            fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // Theta label along the bisector of angle A
+        var angA = Math.atan2(Cy - Ay, Cx - Ax); // angle of AC from horizontal
+        var bisector = angA / 2; // bisector of angle BAC (since AB is along x-axis)
+        var labelR = 1.75;
+        var thetaX = Ax + labelR * Math.cos(bisector);
+        var thetaY = Ay + labelR * Math.sin(bisector);
+
+        board.create('text', [thetaX, thetaY, '\\theta'], {
+            useKatex: true, fontSize: 16, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Vertex labels ───────────────────────────────────────────────
+        board.create('text', [Ax - 0.55, Ay - 0.55, 'A'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Bx + 0.55, By - 0.55, 'B'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Cx + 0.55, Cy + 0.45, 'C'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
