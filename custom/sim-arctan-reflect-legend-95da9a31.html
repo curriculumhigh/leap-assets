@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>arctan-reflect</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+  html,body{margin:0;padding:0;overflow:hidden;height:100%;background:transparent;
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .container{max-width:520px;margin:0;padding:6px;height:calc(100% - 12px);}
+  .sim-layout{display:flex;gap:10px;height:100%;background:white;border-radius:8px;padding:10px;box-sizing:border-box;}
+  .panel{width:130px;min-width:130px;display:flex;flex-direction:column;justify-content:center;gap:14px;}
+  .legend-row{display:flex;align-items:flex-start;gap:8px;}
+  .swatch{width:22px;height:3px;border-radius:1px;margin-top:8px;flex-shrink:0;}
+  .legend-label{font-size:13px;line-height:1.4;}
+  .board-wrapper{flex:1;height:100%;}
+  #board{width:100%;height:100%;}
+</style></head>
+<body><div class="container"><div class="sim-layout">
+  <div class="panel">
+    <div class="legend-row">
+      <div class="swatch" style="background:#2563EB;"></div>
+      <div class="legend-label" id="legend-arctan"></div>
+    </div>
+    <div class="legend-row">
+      <div class="swatch" style="background:#222222;"></div>
+      <div class="legend-label" id="legend-tan"></div>
+    </div>
+  </div>
+  <div class="board-wrapper"><div id="board"></div></div>
+</div></div>
+<script>
+  // Render legend labels with KaTeX
+  katex.render('y=\\arctan x', document.getElementById('legend-arctan'), {throwOnError:false});
+  var tanEl = document.getElementById('legend-tan');
+  tanEl.innerHTML = '<span style="font-size:12px;color:#222222;">restricted</span><br>';
+  var mathSpan = document.createElement('span');
+  tanEl.appendChild(mathSpan);
+  katex.render('y=\\tan x', mathSpan, {throwOnError:false});
+
+  var PI=Math.PI, HP=PI/2, M=3.6;
+  var board=JXG.JSXGraph.initBoard('board',{
+    boundingbox:[-M,M,M,-M],axis:false,keepAspectRatio:true,
+    showNavigation:false,showCopyright:false,pan:{enabled:false},zoom:{enabled:false}});
+  board.create('axis',[[0,0],[1,0]],{strokeColor:'#444444',strokeWidth:1.2,lastArrow:{type:2,size:6},
+    ticks:{strokeColor:'#444444',minorTicks:0,ticksDistance:1,label:{fontSize:10},drawZero:false}});
+  board.create('axis',[[0,0],[0,1]],{strokeColor:'#444444',strokeWidth:1.2,lastArrow:{type:2,size:6},
+    ticks:{strokeColor:'#444444',minorTicks:0,ticksDistance:1,label:{fontSize:10},drawZero:false}});
+  board.create('text',[M-0.25,-0.26,'x'],{useKatex:true,fontSize:14,fixed:true,highlight:false});
+  board.create('text',[0.16,M-0.2,'y'],{useKatex:true,fontSize:14,fixed:true,highlight:false});
+
+  // dashed mirror line y=x (unlabeled)
+  board.create('functiongraph',[function(x){return x;},-M+0.05,M-0.05],
+    {strokeColor:'#6B7280',strokeWidth:1.0,dash:2,fixed:true,highlight:false});
+
+  // asymptotes
+  [HP,-HP].forEach(function(v){
+    board.create('line',[[v,0],[v,1]],{straightFirst:true,straightLast:true,strokeColor:'#CBD5E1',strokeWidth:0.9,dash:2,fixed:true,highlight:false});
+    board.create('line',[[0,v],[1,v]],{straightFirst:true,straightLast:true,strokeColor:'#CBD5E1',strokeWidth:0.9,dash:2,fixed:true,highlight:false});
+  });
+
+  // restricted tangent on (-pi/2, pi/2)
+  board.create('functiongraph',[function(x){return Math.tan(x);},-HP+0.02,HP-0.02],
+    {strokeColor:'#222222',strokeWidth:1.8,fixed:true,highlight:false});
+
+  // arctan on all reals
+  board.create('functiongraph',[function(x){return Math.atan(x);},-M+0.05,M-0.05],
+    {strokeColor:'#2563EB',strokeWidth:1.8,fixed:true,highlight:false});
+
+  // corresponding points (pi/4,1)<->(1,pi/4)
+  function dot(x,y,c){return board.create('point',[x,y],{name:'',size:2.6,strokeColor:c,fillColor:c,fixed:true,highlight:false,showInfobox:false});}
+  dot(PI/4,1,'#222222'); dot(1,PI/4,'#2563EB'); dot(0,0,'#444444');
+  board.create('segment',[[PI/4,1],[1,PI/4]],{strokeColor:'#9CA3AF',strokeWidth:0.8,dash:1,fixed:true,highlight:false});
+</script></body></html>

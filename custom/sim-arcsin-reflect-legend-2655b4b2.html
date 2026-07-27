@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>arcsin-reflect</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+  html,body{margin:0;padding:0;overflow:hidden;height:100%;background:transparent;
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .container{max-width:520px;margin:0;padding:6px;height:calc(100% - 12px);}
+  .sim-layout{display:flex;gap:10px;height:100%;background:white;border-radius:8px;padding:10px;box-sizing:border-box;}
+  .panel{width:160px;min-width:160px;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:8px 4px;}
+  .panel-item{display:flex;flex-direction:row;align-items:center;gap:6px;line-height:1.5;}
+  .panel-item-multi{display:flex;flex-direction:row;align-items:flex-start;gap:6px;line-height:1.5;}
+  .swatch{width:22px;height:3px;border-radius:1px;flex-shrink:0;}
+  .swatch-center{margin-top:8px;}
+  .label-stack{display:flex;flex-direction:column;gap:1px;color:#222222;}
+  .label-stack .line1{font-size:13px;}
+  #board{flex:1;height:100%;}
+</style></head>
+<body><div class="container"><div class="sim-layout">
+  <div class="panel">
+    <div class="panel-item"><span class="swatch" style="background:#2563EB;"></span><span id="label-arcsin"></span></div>
+    <div class="panel-item-multi"><span class="swatch swatch-center" style="background:#222222;"></span><span class="label-stack"><span class="line1">restricted</span><span id="label-sin"></span></span></div>
+  </div>
+  <div id="board"></div>
+</div></div>
+<script>
+  katex.render('y=\\arcsin x', document.getElementById('label-arcsin'), {displayMode:false});
+  document.getElementById('label-arcsin').style.color='#2563EB';
+  katex.render('y=\\sin x', document.getElementById('label-sin'), {displayMode:false});
+  document.getElementById('label-sin').style.color='#222222';
+
+  var HP=Math.PI/2, M=1.95;
+  var board=JXG.JSXGraph.initBoard('board',{
+    boundingbox:[-M,M,M,-M],axis:false,keepAspectRatio:true,
+    showNavigation:false,showCopyright:false,pan:{enabled:false},zoom:{enabled:false}});
+  board.create('axis',[[0,0],[1,0]],{strokeColor:'#444444',strokeWidth:1.2,lastArrow:{type:2,size:6},
+    ticks:{strokeColor:'#444444',minorTicks:0,ticksDistance:1,label:{fontSize:10},drawZero:false}});
+  board.create('axis',[[0,0],[0,1]],{strokeColor:'#444444',strokeWidth:1.2,lastArrow:{type:2,size:6},
+    ticks:{strokeColor:'#444444',minorTicks:0,ticksDistance:1,label:{fontSize:10},drawZero:false}});
+  board.create('text',[M-0.2,-0.22,'x'],{useKatex:true,fontSize:14,fixed:true,highlight:false});
+  board.create('text',[0.14,M-0.16,'y'],{useKatex:true,fontSize:14,fixed:true,highlight:false});
+
+  // dashed y = x
+  board.create('functiongraph',[function(x){return x;},-M+0.05,M-0.05],
+    {strokeColor:'#6B7280',strokeWidth:1.0,dash:2,fixed:true,highlight:false});
+
+  // restricted sine on [-pi/2, pi/2]
+  board.create('functiongraph',[function(x){return Math.sin(x);},-HP,HP],
+    {strokeColor:'#222222',strokeWidth:1.8,fixed:true,highlight:false});
+
+  // arcsin on [-1,1]
+  board.create('functiongraph',[function(x){return Math.asin(Math.max(-1,Math.min(1,x)));},-1,1],
+    {strokeColor:'#2563EB',strokeWidth:1.8,fixed:true,highlight:false});
+
+  // corresponding points  (pi/2,1) <-> (1,pi/2)
+  function dot(x,y,c){return board.create('point',[x,y],{name:'',size:2.8,strokeColor:c,fillColor:c,fixed:true,highlight:false,showInfobox:false});}
+  dot(HP,1,'#222222'); dot(1,HP,'#2563EB'); dot(0,0,'#444444');
+  board.create('segment',[[HP,1],[1,HP]],{strokeColor:'#9CA3AF',strokeWidth:0.8,dash:1,fixed:true,highlight:false});
+  board.create('text',[HP,0.64,'\\left(\\frac{\\pi}{2},\\ 1\\right)'],{useKatex:true,fontSize:11,color:'#222222',anchorX:'middle',fixed:true,highlight:false});
+  board.create('text',[0.34,1.74,'\\left(1,\\ \\frac{\\pi}{2}\\right)'],{useKatex:true,fontSize:11,color:'#2563EB',anchorX:'left',fixed:true,highlight:false});
+
+  // corresponding points  (-pi/2,-1) <-> (-1,-pi/2)
+  dot(-HP,-1,'#222222'); dot(-1,-HP,'#2563EB');
+  board.create('segment',[[-HP,-1],[-1,-HP]],{strokeColor:'#9CA3AF',strokeWidth:0.8,dash:1,fixed:true,highlight:false});
+  board.create('text',[-HP-0.08,-0.62,'\\left(-\\frac{\\pi}{2},\\ -1\\right)'],{useKatex:true,fontSize:11,color:'#222222',anchorX:'middle',fixed:true,highlight:false});
+  board.create('text',[-0.34,-1.78,'\\left(-1,\\ -\\frac{\\pi}{2}\\right)'],{useKatex:true,fontSize:11,color:'#2563EB',anchorX:'right',fixed:true,highlight:false});
+</script></body></html>

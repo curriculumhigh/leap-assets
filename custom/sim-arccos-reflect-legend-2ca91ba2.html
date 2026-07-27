@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>arccos-reflect</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+  html,body{margin:0;padding:0;overflow:hidden;height:100%;background:transparent;
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .container{max-width:520px;margin:0;padding:6px;height:calc(100% - 12px);}
+  .sim-layout{display:flex;gap:10px;height:100%;background:white;border-radius:8px;padding:10px;box-sizing:border-box;}
+  .left-panel{width:140px;min-width:140px;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:6px 4px;}
+  .legend-row{display:flex;align-items:flex-start;gap:8px;}
+  .legend-swatch{width:22px;height:3px;border-radius:1px;margin-top:8px;flex-shrink:0;}
+  .legend-label{font-size:13px;line-height:1.4;}
+  #board{flex:1;height:100%;}
+</style></head>
+<body><div class="container"><div class="sim-layout">
+  <div class="left-panel">
+    <div class="legend-row">
+      <div class="legend-swatch" style="background:#2563EB;"></div>
+      <div class="legend-label" id="legend1"></div>
+    </div>
+    <div class="legend-row">
+      <div class="legend-swatch" style="background:#222222;"></div>
+      <div class="legend-label" id="legend2"></div>
+    </div>
+  </div>
+  <div id="board"></div>
+</div></div>
+<script>
+  // Render legend labels with KaTeX
+  katex.render('y=\\arccos x', document.getElementById('legend1'), {displayMode:false});
+  var leg2 = document.getElementById('legend2');
+  leg2.innerHTML = '<span style="font-size:12px;color:#222222;">restricted</span><br>';
+  var mathSpan = document.createElement('span');
+  leg2.appendChild(mathSpan);
+  katex.render('y=\\cos x', mathSpan, {displayMode:false});
+
+  var PI=Math.PI, LO=-1.55, HI=4.55;
+  var board=JXG.JSXGraph.initBoard('board',{
+    boundingbox:[LO,HI,HI,LO],axis:false,keepAspectRatio:true,
+    showNavigation:false,showCopyright:false,pan:{enabled:false},zoom:{enabled:false}});
+
+  // Axes
+  board.create('axis',[[0,0],[1,0]],{strokeColor:'#444444',strokeWidth:1.2,lastArrow:{type:2,size:6},
+    ticks:{strokeColor:'#444444',minorTicks:0,ticksDistance:1,label:{fontSize:10},drawZero:false}});
+  board.create('axis',[[0,0],[0,1]],{strokeColor:'#444444',strokeWidth:1.2,lastArrow:{type:2,size:6},
+    ticks:{strokeColor:'#444444',minorTicks:0,ticksDistance:1,label:{fontSize:10},drawZero:false}});
+  board.create('text',[HI-0.25,-0.24,'x'],{useKatex:true,fontSize:14,fixed:true,highlight:false});
+  board.create('text',[0.16,HI-0.2,'y'],{useKatex:true,fontSize:14,fixed:true,highlight:false});
+
+  // Dashed mirror line y=x (unlabeled)
+  board.create('functiongraph',[function(x){return x;},LO+0.05,HI-0.05],
+    {strokeColor:'#6B7280',strokeWidth:1.0,dash:2,fixed:true,highlight:false});
+
+  // Restricted cosine on [0, pi]
+  board.create('functiongraph',[function(x){return Math.cos(x);},0,PI],
+    {strokeColor:'#222222',strokeWidth:1.8,fixed:true,highlight:false});
+
+  // arccos on [-1, 1]
+  board.create('functiongraph',[function(x){return Math.acos(Math.max(-1,Math.min(1,x)));},-1,1],
+    {strokeColor:'#2563EB',strokeWidth:1.8,fixed:true,highlight:false});
+
+  // Endpoint dots
+  function dot(x,y,c){return board.create('point',[x,y],{name:'',size:2.6,strokeColor:c,fillColor:c,fixed:true,highlight:false,showInfobox:false});}
+  dot(0,1,'#222222'); dot(1,0,'#2563EB'); dot(PI,-1,'#222222'); dot(-1,PI,'#2563EB');
+
+  // Connecting segments
+  board.create('segment',[[0,1],[1,0]],{strokeColor:'#9CA3AF',strokeWidth:0.8,dash:1,fixed:true,highlight:false});
+  board.create('segment',[[PI,-1],[-1,PI]],{strokeColor:'#9CA3AF',strokeWidth:0.8,dash:1,fixed:true,highlight:false});
+
+  // Coordinate labels
+  board.create('text',[-0.15,1.35,'\\left(0,\\ 1\\right)'],{useKatex:true,fontSize:11,color:'#222222',anchorX:'right',fixed:true,highlight:false});
+  board.create('text',[1.1,0.25,'\\left(1,\\ 0\\right)'],{useKatex:true,fontSize:11,color:'#2563EB',anchorX:'left',fixed:true,highlight:false});
+  board.create('text',[PI+0.1,-0.75,'\\left(\\pi,\\ -1\\right)'],{useKatex:true,fontSize:11,color:'#222222',anchorX:'left',fixed:true,highlight:false});
+  board.create('text',[-1.45,PI+0.3,'\\left(-1,\\ \\pi\\right)'],{useKatex:true,fontSize:11,color:'#2563EB',anchorX:'left',fixed:true,highlight:false});
+</script></body></html>
