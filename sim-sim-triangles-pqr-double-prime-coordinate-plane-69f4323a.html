@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangles PQR and P″Q″R″</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 175px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 8px;
+        }
+        .hover-msg {
+            font-size: 12px; color: #555; line-height: 1.5;
+            background: #f8f9fa; border-radius: 6px; padding: 10px 12px;
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+        }
+        .legend-swatch {
+            width: 20px; height: 3px; border-radius: 2px; flex-shrink: 0;
+        }
+        .legend-label { font-size: 13px; font-weight: 500; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div>
+                    <div class="panel-label">Legend</div>
+                    <div class="legend-item">
+                        <div class="legend-swatch" style="background: #222222;"></div>
+                        <span class="legend-label" style="color: #222222;">△PQR</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-swatch" style="background: #2563EB;"></div>
+                        <span class="legend-label" style="color: #2563EB;">△P″Q″R″</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="panel-label">Tip</div>
+                    <div class="hover-msg">Hover over the vertices to read the coordinates.</div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-9, 17, 7, -4],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 2 }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 3 }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [6.5, -0.6, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.3, 16.4, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        var COL_PQR = '#222222';
+        var COL_PRIME = '#2563EB';
+
+        // Tooltip setup
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function showTooltip(pt, color) {
+            var xCoord = pt.X();
+            var yCoord = pt.Y();
+            var latex = '\\color{' + color + '}{\\left(' + Math.round(xCoord) + ',\\,' + Math.round(yCoord) + '\\right)}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xCoord, yCoord], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+        // ── △PQR ──────────────────────────────────────────────────────────
+        var P = board.create('point', [1, 3], {
+            name: 'P', size: 5, color: COL_PQR, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_PQR, highlightStrokeColor: COL_PQR,
+            label: { fontSize: 13, color: COL_PQR, offset: [-15, 8], useKatex: true }
+        });
+        var Q = board.create('point', [4, 1], {
+            name: 'Q', size: 5, color: COL_PQR, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_PQR, highlightStrokeColor: COL_PQR,
+            label: { fontSize: 13, color: COL_PQR, offset: [8, -8], useKatex: true }
+        });
+        var R = board.create('point', [2, -1], {
+            name: 'R', size: 5, color: COL_PQR, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_PQR, highlightStrokeColor: COL_PQR,
+            label: { fontSize: 13, color: COL_PQR, offset: [8, -8], useKatex: true }
+        });
+
+        // △PQR edges
+        board.create('polygon', [P, Q, R], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_PQR, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Hover events for △PQR
+        P.on('over', function() { showTooltip(P, COL_PQR); });
+        P.on('out', function() { hideTooltip(); });
+        Q.on('over', function() { showTooltip(Q, COL_PQR); });
+        Q.on('out', function() { hideTooltip(); });
+        R.on('over', function() { showTooltip(R, COL_PQR); });
+        R.on('out', function() { hideTooltip(); });
+
+        // ── △P″Q″R″ ──────────────────────────────────────────────────────
+        var Pp = board.create('point', [-6, 15], {
+            name: "P''", size: 5, color: COL_PRIME, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_PRIME, highlightStrokeColor: COL_PRIME,
+            label: { fontSize: 13, color: COL_PRIME, offset: [-20, 8], useKatex: true }
+        });
+        var Qp = board.create('point', [3, 9], {
+            name: "Q''", size: 5, color: COL_PRIME, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_PRIME, highlightStrokeColor: COL_PRIME,
+            label: { fontSize: 13, color: COL_PRIME, offset: [8, 6], useKatex: true }
+        });
+        var Rp = board.create('point', [-3, 3], {
+            name: "R''", size: 5, color: COL_PRIME, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_PRIME, highlightStrokeColor: COL_PRIME,
+            label: { fontSize: 13, color: COL_PRIME, offset: [-20, -6], useKatex: true }
+        });
+
+        // △P″Q″R″ edges
+        board.create('polygon', [Pp, Qp, Rp], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_PRIME, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Hover events for △P″Q″R″
+        Pp.on('over', function() { showTooltip(Pp, COL_PRIME); });
+        Pp.on('out', function() { hideTooltip(); });
+        Qp.on('over', function() { showTooltip(Qp, COL_PRIME); });
+        Qp.on('out', function() { hideTooltip(); });
+        Rp.on('over', function() { showTooltip(Rp, COL_PRIME); });
+        Rp.on('out', function() { hideTooltip(); });
+    </script>
+</body>
+</html>
