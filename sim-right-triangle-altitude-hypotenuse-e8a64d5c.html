@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle with Altitude to Hypotenuse</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 5.5, 10.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertices matching screenshot proportions
+        var A = board.create('point', [0, 0], {
+            name: 'A', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-15, -10] }
+        });
+        var B = board.create('point', [9, 0], {
+            name: 'B', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -10] }
+        });
+        var C = board.create('point', [7, 4.5], {
+            name: 'C', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [0, 12] }
+        });
+
+        // D is the foot of the altitude from C to AB
+        var D = board.create('point', [7, 0], {
+            name: 'D', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, -14] }
+        });
+
+        // Triangle sides
+        board.create('segment', [A, B], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [A, C], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [B, C], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Altitude CD
+        board.create('segment', [C, D], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Right angle mark at D (angle CDA)
+        var raSize = 0.35;
+        board.create('segment', [[7, raSize], [7 - raSize, raSize]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[7 - raSize, raSize], [7 - raSize, 0]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Right angle mark at C (angle ACB)
+        var caLen = Math.sqrt(49 + 20.25);
+        var caDx = -7 / caLen;
+        var caDy = -4.5 / caLen;
+        var cbLen = Math.sqrt(4 + 20.25);
+        var cbDx = 2 / cbLen;
+        var cbDy = -4.5 / cbLen;
+
+        var rs = 0.4;
+        var cx = 7, cy = 4.5;
+        var p1x = cx + rs * caDx;
+        var p1y = cy + rs * caDy;
+        var p2x = cx + rs * cbDx;
+        var p2y = cy + rs * cbDy;
+        var p3x = cx + rs * caDx + rs * cbDx;
+        var p3y = cy + rs * caDy + rs * cbDy;
+
+        board.create('segment', [[p1x, p1y], [p3x, p3y]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[p2x, p2y], [p3x, p3y]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
