@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>45-45-90 Triangle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 5.5, 5.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle vertices
+        var A = board.create('point', [0, 4], { name: '', fixed: true, visible: false }); // top-left
+        var B = board.create('point', [0, 0], { name: '', fixed: true, visible: false }); // bottom-left (right angle)
+        var C = board.create('point', [4, 0], { name: '', fixed: true, visible: false }); // bottom-right
+
+        // Triangle edges
+        board.create('segment', [A, B], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [B, C], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [A, C], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+
+        // Right angle marker at B (bottom-left)
+        var sqSize = 0.4;
+        board.create('segment', [[sqSize, 0], [sqSize, sqSize]], { strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false });
+        board.create('segment', [[sqSize, sqSize], [0, sqSize]], { strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false });
+
+        // 45° angle arc at A (top-left)
+        board.create('nonReflexAngle', [B, A, C], {
+            radius: 0.6,
+            fillColor: 'none', fillOpacity: 0,
+            strokeColor: '#555555', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // 45° label at top-left vertex
+        board.create('text', [0.15, 3.35, '45°'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Side labels
+        // Left leg: "1" — placed to the left of the vertical side
+        board.create('text', [-0.6, 2.0, '1'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Bottom leg: "1" — placed below the horizontal side
+        board.create('text', [2.0, -0.6, '1'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Hypotenuse: "√2" — placed above/right of the hypotenuse midpoint
+        board.create('text', [2.4, 2.5, '\\sqrt{2}'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', useKatex: true
+        });
+    </script>
+</body>
+</html>
