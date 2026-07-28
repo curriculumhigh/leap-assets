@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle ABC with Altitude CD</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: white; }
+        .container { height: 100%; padding: 6px; box-sizing: border-box; }
+        .board-wrapper { background: white; height: 100%; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 6.5, 12.5, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertices
+        var A = board.create('point', [0, 0], { name: '', visible: false, fixed: true });
+        var B = board.create('point', [11, 0], { name: '', visible: false, fixed: true });
+        var C = board.create('point', [8, 5], { name: '', visible: false, fixed: true });
+
+        // D is the foot of the altitude from C to AB
+        // Since AB is along the x-axis, D is simply (C.x, 0)
+        var D = board.create('point', [8, 0], { name: '', visible: false, fixed: true });
+
+        // Triangle edges
+        board.create('segment', [A, B], { strokeColor: '#222222', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [B, C], { strokeColor: '#222222', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [A, C], { strokeColor: '#222222', strokeWidth: 2.0, fixed: true, highlight: false });
+
+        // Altitude CD
+        board.create('segment', [C, D], { strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Right angle marker at C (angle ACB = 90 degrees)
+        // We need to draw a small square at C in the angle between CA and CB
+        var sqSize = 0.45;
+        // Vectors from C toward A and toward B
+        var cax = A.X() - C.X();
+        var cay = A.Y() - C.Y();
+        var caLen = Math.sqrt(cax * cax + cay * cay);
+        var uax = cax / caLen;
+        var uay = cay / caLen;
+
+        var cbx = B.X() - C.X();
+        var cby = B.Y() - C.Y();
+        var cbLen = Math.sqrt(cbx * cbx + cby * cby);
+        var ubx = cbx / cbLen;
+        var uby = cby / cbLen;
+
+        var sq1 = board.create('point', [C.X() + sqSize * uax, C.Y() + sqSize * uay], { visible: false, fixed: true, name: '' });
+        var sq2 = board.create('point', [C.X() + sqSize * uax + sqSize * ubx, C.Y() + sqSize * uay + sqSize * uby], { visible: false, fixed: true, name: '' });
+        var sq3 = board.create('point', [C.X() + sqSize * ubx, C.Y() + sqSize * uby], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [sq1, sq2], { strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false });
+        board.create('segment', [sq2, sq3], { strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false });
+
+        // Right angle marker at D (CD perpendicular to AB)
+        // At D, the two directions are up (toward C) and left (toward A)
+        var sqD1 = board.create('point', [D.X() - sqSize, D.Y()], { visible: false, fixed: true, name: '' });
+        var sqD2 = board.create('point', [D.X() - sqSize, D.Y() + sqSize], { visible: false, fixed: true, name: '' });
+        var sqD3 = board.create('point', [D.X(), D.Y() + sqSize], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [sqD1, sqD2], { strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false });
+        board.create('segment', [sqD2, sqD3], { strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false });
+
+        // Vertex labels
+        board.create('text', [A.X() - 0.5, A.Y() - 0.7, '<i>A</i>'], { fontSize: 15, color: '#222222', fixed: true, highlight: false });
+        board.create('text', [B.X() + 0.3, B.Y() - 0.7, '<i>B</i>'], { fontSize: 15, color: '#222222', fixed: true, highlight: false });
+        board.create('text', [C.X() - 0.1, C.Y() + 0.4, '<i>C</i>'], { fontSize: 15, color: '#222222', fixed: true, highlight: false });
+        board.create('text', [D.X() - 0.1, D.Y() - 0.7, '<i>D</i>'], { fontSize: 15, color: '#222222', fixed: true, highlight: false });
+    </script>
+</body>
+</html>
