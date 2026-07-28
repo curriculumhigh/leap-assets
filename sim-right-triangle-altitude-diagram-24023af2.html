@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle with Altitude</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 6.5, 12.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertices
+        var A = board.create('point', [0, 0], {
+            name: 'A', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-5, -18] }
+        });
+
+        var B = board.create('point', [11, 0], {
+            name: 'B', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [5, -18] }
+        });
+
+        var C = board.create('point', [7.5, 5], {
+            name: 'C', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [5, 8] }
+        });
+
+        // D is the foot of the altitude from C to AB (AB is along y=0, so D is directly below C)
+        var D = board.create('point', [7.5, 0], {
+            name: 'D', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-5, -18] }
+        });
+
+        // Triangle sides
+        board.create('segment', [A, B], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [A, C], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [B, C], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Altitude CD
+        board.create('segment', [C, D], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Right angle mark at C (angle ACB)
+        var markSize = 0.4;
+
+        // Vectors from C toward A and toward B
+        var cax = A.X() - C.X();
+        var cay = A.Y() - C.Y();
+        var caLen = Math.sqrt(cax * cax + cay * cay);
+        var uax = cax / caLen;
+        var uay = cay / caLen;
+
+        var cbx = B.X() - C.X();
+        var cby = B.Y() - C.Y();
+        var cbLen = Math.sqrt(cbx * cbx + cby * cby);
+        var ubx = cbx / cbLen;
+        var uby = cby / cbLen;
+
+        // Right angle mark points at C
+        var cMark1 = board.create('point', [C.X() + markSize * uax, C.Y() + markSize * uay], { visible: false, fixed: true, name: '' });
+        var cMark2 = board.create('point', [C.X() + markSize * uax + markSize * ubx, C.Y() + markSize * uay + markSize * uby], { visible: false, fixed: true, name: '' });
+        var cMark3 = board.create('point', [C.X() + markSize * ubx, C.Y() + markSize * uby], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [cMark1, cMark2], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [cMark2, cMark3], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Right angle mark at D (angle CDA)
+        var dMark1 = board.create('point', [D.X() - markSize, D.Y()], { visible: false, fixed: true, name: '' });
+        var dMark2 = board.create('point', [D.X() - markSize, D.Y() + markSize], { visible: false, fixed: true, name: '' });
+        var dMark3 = board.create('point', [D.X(), D.Y() + markSize], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [dMark1, dMark2], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [dMark2, dMark3], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
