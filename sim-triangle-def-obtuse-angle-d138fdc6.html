@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle DEF</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        // Compute triangle coordinates first
+        var scale = 0.35;
+        var Ex = 5, Ey = 1.5;
+
+        // F is to the right of E along horizontal
+        var EF_len = 14 * scale;
+        var Fx = Ex + EF_len, Fy = Ey;
+
+        // D is at 128° from the EF direction (measured at E)
+        var angleRad = 128 * Math.PI / 180;
+        var DE_len = 23 * scale;
+        var Dx = Ex + DE_len * Math.cos(angleRad);
+        var Dy = Ey + DE_len * Math.sin(angleRad);
+
+        // Compute bounding box with generous margins
+        var allX = [Dx, Ex, Fx];
+        var allY = [Dy, Ey, Fy];
+        var minX = Math.min.apply(null, allX) - 2;
+        var maxX = Math.max.apply(null, allX) + 2;
+        var minY = Math.min.apply(null, allY) - 2;
+        var maxY = Math.max.apply(null, allY) + 2;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [minX, maxY, maxX, minY],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Create vertices
+        var D = board.create('point', [Dx, Dy], {
+            name: 'D', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-6, 12] }
+        });
+
+        var E = board.create('point', [Ex, Ey], {
+            name: 'E', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-6, -18] }
+        });
+
+        var F = board.create('point', [Fx, Fy], {
+            name: 'F', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -18] }
+        });
+
+        // Draw triangle edges as individual segments
+        board.create('segment', [D, E], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [E, F], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [D, F], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // Angle arc at E (128°)
+        board.create('nonReflexAngle', [F, E, D], {
+            radius: 0.6,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Angle label "128°" along the bisector of the angle
+        var angleBisector = angleRad / 2;
+        var angleLabelR = 1.1;
+        board.create('text', [
+            Ex + angleLabelR * Math.cos(angleBisector),
+            Ey + angleLabelR * Math.sin(angleBisector),
+            '128^\\circ'
+        ], {
+            fontSize: 12, color: '#DC2626', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        // Side label: DE = 23 (offset outward from the triangle)
+        var midDEx = (Dx + Ex) / 2;
+        var midDEy = (Dy + Ey) / 2;
+        var DE_dx = Dx - Ex, DE_dy = Dy - Ey;
+        var DE_norm = Math.sqrt(DE_dx * DE_dx + DE_dy * DE_dy);
+        // Perpendicular pointing left/outward
+        var DE_perpX = -DE_dy / DE_norm;
+        var DE_perpY = DE_dx / DE_norm;
+        board.create('text', [
+            midDEx + 0.5 * DE_perpX,
+            midDEy + 0.5 * DE_perpY,
+            '23'
+        ], {
+            fontSize: 13, color: '#3B82F6', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        // Side label: EF = 14 (offset below)
+        var midEFx = (Ex + Fx) / 2;
+        var midEFy = (Ey + Fy) / 2;
+        board.create('text', [
+            midEFx,
+            midEFy - 0.55,
+            '14'
+        ], {
+            fontSize: 13, color: '#3B82F6', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+    </script>
+</body>
+</html>
