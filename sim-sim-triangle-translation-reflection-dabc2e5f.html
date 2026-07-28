@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle Translation and Reflection</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); box-sizing: border-box; }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 165px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 14px;
+            display: flex; flex-direction: column; gap: 12px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 4px;
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+        }
+        .legend-swatch {
+            width: 20px; height: 3px; border-radius: 2px; flex-shrink: 0;
+        }
+        .legend-label { font-size: 11px; color: #333; }
+        .arrow-legend {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 5px;
+        }
+        .arrow-swatch {
+            width: 20px; height: 0; border-top: 2px dashed; flex-shrink: 0;
+        }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 8px; box-sizing: border-box; height: 100%; min-width: 0; }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-section">
+                    <div class="panel-label">Legend</div>
+                    <div class="legend-item">
+                        <div class="legend-swatch" style="background: #222222;"></div>
+                        <span class="legend-label">Original △ABC</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-swatch" style="background: #2563EB;"></div>
+                        <span class="legend-label">Translated △A'B'C'</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-swatch" style="background: #059669;"></div>
+                        <span class="legend-label">Reflected △A''B''C''</span>
+                    </div>
+                </div>
+                <div class="panel-section">
+                    <div class="panel-label">Arrows</div>
+                    <div class="arrow-legend">
+                        <div class="arrow-swatch" style="border-color: #0EA5E9;"></div>
+                        <span class="legend-label" style="font-size:11px;">Translation</span>
+                    </div>
+                    <div class="arrow-legend">
+                        <div class="arrow-swatch" style="border-color: #DC2626;"></div>
+                        <span class="legend-label" style="font-size:11px;">Reflection</span>
+                    </div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 8, 9, -6],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [8.6, -0.5, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 7.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Colors
+        var COL_ORIG = '#222222';
+        var COL_TRANS = '#2563EB';
+        var COL_REFL = '#059669';
+        var COL_TRANS_ARROW = '#0EA5E9';
+        var COL_REFL_ARROW = '#DC2626';
+
+        // Line of reflection (x-axis highlight)
+        board.create('segment', [[-0.8, 0], [8.8, 0]], {
+            strokeColor: COL_REFL_ARROW, strokeWidth: 1.5, dash: 0,
+            fixed: true, highlight: false
+        });
+        board.create('text', [5.8, 0.45, 'x\\text{-axis (reflection line)}'], {
+            fontSize: 10, color: COL_REFL_ARROW, useKatex: true, fixed: true, highlight: false
+        });
+
+        // Tooltip setup
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function showTooltip(pt, color) {
+            var xCoord = pt.X();
+            var yCoord = pt.Y();
+            var latex = '\\color{' + color + '}{\\left(' + Math.round(xCoord) + ',\\,' + Math.round(yCoord) + '\\right)}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xCoord, yCoord], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+        // Helper: create vertex with tooltip
+        function makeVertex(x, y, name, color, labelOffset) {
+            var pt = board.create('point', [x, y], {
+                name: name, fixed: true, size: 4, color: color,
+                showInfobox: false, highlight: true,
+                highlightFillColor: color, highlightStrokeColor: color,
+                label: { fontSize: 13, color: color, offset: labelOffset }
+            });
+            pt.on('over', function() { showTooltip(pt, color); });
+            pt.on('out', function() { hideTooltip(); });
+            return pt;
+        }
+
+        // Original triangle ABC
+        var A = makeVertex(1, 2, 'A', COL_ORIG, [-14, -10]);
+        var B = makeVertex(3, 1, 'B', COL_ORIG, [8, -10]);
+        var C = makeVertex(2, 4, 'C', COL_ORIG, [-6, 10]);
+
+        board.create('polygon', [A, B, C], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_ORIG, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Translated triangle A'B'C'
+        var Ap = makeVertex(5, 2, "A'", COL_TRANS, [-14, -10]);
+        var Bp = makeVertex(7, 1, "B'", COL_TRANS, [8, -10]);
+        var Cp = makeVertex(6, 4, "C'", COL_TRANS, [-6, 10]);
+
+        board.create('polygon', [Ap, Bp, Cp], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_TRANS, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Reflected triangle A''B''C''
+        var App = makeVertex(5, -2, "A''", COL_REFL, [-14, 8]);
+        var Bpp = makeVertex(7, -1, "B''", COL_REFL, [8, 8]);
+        var Cpp = makeVertex(6, -4, "C''", COL_REFL, [-8, -12]);
+
+        board.create('polygon', [App, Bpp, Cpp], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_REFL, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Translation arrows (ABC to A'B'C')
+        var arrowAttrs = {
+            strokeColor: COL_TRANS_ARROW, strokeWidth: 1.0, dash: 2,
+            lastArrow: { type: 2, size: 5 }, fixed: true, highlight: false
+        };
+
+        board.create('arrow', [[1, 2], [5, 2]], arrowAttrs);
+        board.create('arrow', [[3, 1], [7, 1]], arrowAttrs);
+        board.create('arrow', [[2, 4], [6, 4]], arrowAttrs);
+
+        // Reflection arrows (A'B'C' to A''B''C'')
+        var reflArrowAttrs = {
+            strokeColor: COL_REFL_ARROW, strokeWidth: 1.0, dash: 2,
+            lastArrow: { type: 2, size: 5 }, fixed: true, highlight: false
+        };
+
+        board.create('arrow', [[5, 2], [5, -2]], reflArrowAttrs);
+        board.create('arrow', [[7, 1], [7, -1]], reflArrowAttrs);
+        board.create('arrow', [[6, 4], [6, -4]], reflArrowAttrs);
+    </script>
+</body>
+</html>
