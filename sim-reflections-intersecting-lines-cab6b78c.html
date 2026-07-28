@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reflections Across Intersecting Lines</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 5.5, 7, -5.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Angle between lines k and m
+        var xDeg = 55;
+        var xRad = xDeg * Math.PI / 180;
+
+        // Colors
+        var COL_GH = '#222222';
+        var COL_GpHp = '#2563EB';
+        var COL_GppHpp = '#059669';
+        var COL_LINE = '#555555';
+
+        // Helper: reflect point across line through origin at angle theta
+        function reflectAcrossLine(px, py, theta) {
+            var t2 = 2 * theta;
+            return [
+                px * Math.cos(t2) + py * Math.sin(t2),
+                px * Math.sin(t2) - py * Math.cos(t2)
+            ];
+        }
+
+        // Point P at origin (intersection of lines)
+        var P = board.create('point', [0, 0], {
+            name: 'P', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-14, -14] }
+        });
+
+        // Line k: along the positive x-axis direction
+        var kPt = board.create('point', [6.5, 0], { visible: false, fixed: true, name: '' });
+        var kPtNeg = board.create('point', [-4, 0], { visible: false, fixed: true, name: '' });
+        var lineK = board.create('line', [kPtNeg, kPt], {
+            strokeColor: COL_LINE, strokeWidth: 1.5, fixed: true, highlight: false,
+            straightFirst: true, straightLast: true
+        });
+
+        // Line m: at angle 55° from line k (counterclockwise)
+        var mDir = [Math.cos(xRad), Math.sin(xRad)];
+        var mPt = board.create('point', [6 * mDir[0], 6 * mDir[1]], { visible: false, fixed: true, name: '' });
+        var mPtNeg = board.create('point', [-3.5 * mDir[0], -3.5 * mDir[1]], { visible: false, fixed: true, name: '' });
+        var lineM = board.create('line', [mPtNeg, mPt], {
+            strokeColor: COL_LINE, strokeWidth: 1.5, fixed: true, highlight: false,
+            straightFirst: true, straightLast: true
+        });
+
+        // Line labels
+        board.create('text', [6.0, -0.45, '<i>k</i>'], {
+            fontSize: 15, color: COL_LINE, fixed: true, highlight: false
+        });
+        board.create('text', [5.8 * mDir[0] + 0.25, 5.8 * mDir[1] + 0.2, '<i>m</i>'], {
+            fontSize: 15, color: COL_LINE, fixed: true, highlight: false
+        });
+
+        // Angle arc: 55° between lines k and m
+        var arcXpt1 = board.create('point', [2, 0], { visible: false, fixed: true, name: '' });
+        var arcXpt2 = board.create('point', [2 * Math.cos(xRad), 2 * Math.sin(xRad)], { visible: false, fixed: true, name: '' });
+
+        board.create('nonReflexAngle', [arcXpt1, P, arcXpt2], {
+            radius: 1.1,
+            fillColor: '#888888', fillOpacity: 0.08,
+            strokeColor: '#555555', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // 55° label
+        var xLabelAngle = xRad / 2;
+        board.create('text', [1.6 * Math.cos(xLabelAngle), 1.6 * Math.sin(xLabelAngle), '55\\degree'], {
+            useKatex: true, fontSize: 12, color: '#555555', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Segment GH: below line k, radiating from P area ─────────────
+        var distG = 2.8;
+        var distH = 4.5;
+        var segAngle = -30 * Math.PI / 180;
+
+        var Gx = distG * Math.cos(segAngle);
+        var Gy = distG * Math.sin(segAngle);
+        var Hx = distH * Math.cos(segAngle - 15 * Math.PI / 180);
+        var Hy = distH * Math.sin(segAngle - 15 * Math.PI / 180);
+
+        // Draw segment GH
+        board.create('segment', [[Gx, Gy], [Hx, Hy]], {
+            strokeColor: COL_GH, strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('point', [Gx, Gy], {
+            name: 'G', fixed: true, size: 3, color: COL_GH, highlight: false,
+            label: { fontSize: 13, color: COL_GH, offset: [6, 6] }
+        });
+        board.create('point', [Hx, Hy], {
+            name: 'H', fixed: true, size: 3, color: COL_GH, highlight: false,
+            label: { fontSize: 13, color: COL_GH, offset: [6, -10] }
+        });
+
+        // ── G'H': reflection of GH across line k (the x-axis, theta=0) ──
+        var Gpx = Gx, Gpy = -Gy;
+        var Hpx = Hx, Hpy = -Hy;
+
+        board.create('segment', [[Gpx, Gpy], [Hpx, Hpy]], {
+            strokeColor: COL_GpHp, strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('point', [Gpx, Gpy], {
+            name: "G'", fixed: true, size: 3, color: COL_GpHp, highlight: false,
+            label: { fontSize: 13, color: COL_GpHp, offset: [6, -8] }
+        });
+        board.create('point', [Hpx, Hpy], {
+            name: "H'", fixed: true, size: 3, color: COL_GpHp, highlight: false,
+            label: { fontSize: 13, color: COL_GpHp, offset: [6, 8] }
+        });
+
+        // ── G''H'': reflection of G'H' across line m (theta = xRad) ─────
+        var Gpp = reflectAcrossLine(Gpx, Gpy, xRad);
+        var Hpp = reflectAcrossLine(Hpx, Hpy, xRad);
+
+        board.create('segment', [Gpp, Hpp], {
+            strokeColor: COL_GppHpp, strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('point', Gpp, {
+            name: "G''", fixed: true, size: 3, color: COL_GppHpp, highlight: false,
+            label: { fontSize: 13, color: COL_GppHpp, offset: [-18, 6] }
+        });
+        board.create('point', Hpp, {
+            name: "H''", fixed: true, size: 3, color: COL_GppHpp, highlight: false,
+            label: { fontSize: 13, color: COL_GppHpp, offset: [-18, -4] }
+        });
+
+        // ── Dashed construction lines showing reflection correspondence ──
+        board.create('segment', [[Gx, Gy], [Gpx, Gpy]], {
+            strokeColor: COL_GpHp, strokeWidth: 0.8, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [[Hx, Hy], [Hpx, Hpy]], {
+            strokeColor: COL_GpHp, strokeWidth: 0.8, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [[Gpx, Gpy], Gpp], {
+            strokeColor: COL_GppHpp, strokeWidth: 0.8, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [[Hpx, Hpy], Hpp], {
+            strokeColor: COL_GppHpp, strokeWidth: 0.8, dash: 2, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
