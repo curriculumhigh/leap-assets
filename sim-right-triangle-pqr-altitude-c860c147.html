@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle PQR with Altitude QS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 8, 12, -2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var Px = 1.0, Py = 7.0;
+        var Rx = 10.5, Ry = 1.0;
+
+        var dx = Rx - Px;
+        var dy = Ry - Py;
+        var lenPR = Math.sqrt(dx * dx + dy * dy);
+        var ux = dx / lenPR;
+        var uy = dy / lenPR;
+
+        var Sx = Px + (4 / 13) * dx;
+        var Sy = Py + (4 / 13) * dy;
+
+        var perpX = uy;
+        var perpY = -ux;
+
+        var QS_visual = (lenPR / 13) * 6;
+        var Qx = Sx + QS_visual * perpX;
+        var Qy = Sy + QS_visual * perpY;
+
+        var P = board.create('point', [Px, Py], {
+            name: 'P', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-8, 10] }
+        });
+        var Q = board.create('point', [Qx, Qy], {
+            name: 'Q', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, -4] }
+        });
+        var R = board.create('point', [Rx, Ry], {
+            name: 'R', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, -8] }
+        });
+        var S = board.create('point', [Sx, Sy], {
+            name: 'S', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [4, 8] }
+        });
+
+        board.create('segment', [P, Q], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [Q, R], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [P, R], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+
+        board.create('segment', [Q, S], { strokeColor: '#555555', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false });
+
+        var raSize = 0.45;
+        var qpLen = Math.sqrt((Px - Qx) * (Px - Qx) + (Py - Qy) * (Py - Qy));
+        var qrLen = Math.sqrt((Rx - Qx) * (Rx - Qx) + (Ry - Qy) * (Ry - Qy));
+        var qpX_u = (Px - Qx) / qpLen;
+        var qpY_u = (Py - Qy) / qpLen;
+        var qrX_u = (Rx - Qx) / qrLen;
+        var qrY_u = (Ry - Qy) / qrLen;
+
+        var ra1Q = board.create('point', [Qx + raSize * qpX_u, Qy + raSize * qpY_u], { visible: false, fixed: true, name: '' });
+        var ra2Q = board.create('point', [Qx + raSize * (qpX_u + qrX_u), Qy + raSize * (qpY_u + qrY_u)], { visible: false, fixed: true, name: '' });
+        var ra3Q = board.create('point', [Qx + raSize * qrX_u, Qy + raSize * qrY_u], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [ra1Q, ra2Q], { strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false });
+        board.create('segment', [ra2Q, ra3Q], { strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false });
+
+        var spX_u = -ux;
+        var spY_u = -uy;
+        var sqX_u = (Qx - Sx) / QS_visual;
+        var sqY_u = (Qy - Sy) / QS_visual;
+
+        var ra1S = board.create('point', [Sx + raSize * spX_u, Sy + raSize * spY_u], { visible: false, fixed: true, name: '' });
+        var ra2S = board.create('point', [Sx + raSize * (spX_u + sqX_u), Sy + raSize * (spY_u + sqY_u)], { visible: false, fixed: true, name: '' });
+        var ra3S = board.create('point', [Sx + raSize * sqX_u, Sy + raSize * sqY_u], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [ra1S, ra2S], { strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false });
+        board.create('segment', [ra2S, ra3S], { strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false });
+
+        var ps_midX = (Px + Sx) / 2;
+        var ps_midY = (Py + Sy) / 2;
+        var outwardX = -perpX;
+        var outwardY = -perpY;
+        board.create('text', [ps_midX + 0.5 * outwardX, ps_midY + 0.5 * outwardY, '4 \\text{ m}'], {
+            fontSize: 14, color: '#3B82F6', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var sr_midX = (Sx + Rx) / 2;
+        var sr_midY = (Sy + Ry) / 2;
+        board.create('text', [sr_midX + 0.5 * outwardX, sr_midY + 0.5 * outwardY, '9 \\text{ m}'], {
+            fontSize: 14, color: '#3B82F6', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var qs_midX = (Qx + Sx) / 2;
+        var qs_midY = (Qy + Sy) / 2;
+        var qsDirX = (Sx - Qx) / QS_visual;
+        var qsDirY = (Sy - Qy) / QS_visual;
+        var qsPerpX = -qsDirY;
+        var qsPerpY = qsDirX;
+        board.create('text', [qs_midX + 0.55 * qsPerpX, qs_midY + 0.55 * qsPerpY, 'h'], {
+            fontSize: 15, color: '#3B82F6', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
