@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Quadrilaterals EFGH ≅ MNPQ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.3, 5.6, 9.7, -0.3],
+            axis: false, grid: false,
+            keepAspectRatio: true,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_OUTLINE = '#555555';
+        var COL_MARKS = '#DC2626';
+        var COL_LABEL = '#222222';
+
+        // ── EFGH vertices (left side, irregular quad) ───────────────────
+        var E = [0.8, 4.3];
+        var F = [3.0, 5.0];
+        var G = [3.6, 2.8];
+        var H = [1.0, 2.0];
+
+        // ── MNPQ vertices (right side, rotated ~80° CW + shifted) ───────
+        var cx = (E[0] + F[0] + G[0] + H[0]) / 4;
+        var cy = (E[1] + F[1] + G[1] + H[1]) / 4;
+
+        var cosA = Math.cos(-1.4);
+        var sinA = Math.sin(-1.4);
+
+        function rotateAndShift(pt) {
+            var dx = pt[0] - cx;
+            var dy = pt[1] - cy;
+            var rx = dx * cosA - dy * sinA;
+            var ry = dx * sinA + dy * cosA;
+            return [rx + cx + 4.2, ry + cy + 0.2];
+        }
+
+        // M↔H, N↔E, P↔F, Q↔G
+        var M_pos = rotateAndShift(H);
+        var N_pos = rotateAndShift(E);
+        var P_pos = rotateAndShift(F);
+        var Q_pos = rotateAndShift(G);
+
+        // ── Create points ───────────────────────────────────────────────
+        function makeVtx(pos, name, offsetX, offsetY) {
+            return board.create('point', pos, {
+                name: name, fixed: true, size: 2, color: COL_LABEL, highlight: false,
+                showInfobox: false,
+                label: { fontSize: 13, color: COL_LABEL, offset: [offsetX, offsetY] }
+            });
+        }
+
+        var pE = makeVtx(E, 'E', -14, 4);
+        var pF = makeVtx(F, 'F', 0, 10);
+        var pG = makeVtx(G, 'G', 8, -2);
+        var pH = makeVtx(H, 'H', -14, -8);
+
+        var pM = makeVtx(M_pos, 'M', -14, -8);
+        var pN = makeVtx(N_pos, 'N', -8, 10);
+        var pP = makeVtx(P_pos, 'P', 8, 4);
+        var pQ = makeVtx(Q_pos, 'Q', 8, -6);
+
+        // ── Create polygons (no fill) ───────────────────────────────────
+        board.create('polygon', [pE, pF, pG, pH], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_OUTLINE, strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('polygon', [pM, pN, pP, pQ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_OUTLINE, strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Tick mark helper (side congruence marks) ────────────────────
+        function drawTicks(p1, p2, count) {
+            var mx = (p1[0] + p2[0]) / 2;
+            var my = (p1[1] + p2[1]) / 2;
+            var dx = p2[0] - p1[0];
+            var dy = p2[1] - p1[1];
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var ax = dx / len;
+            var ay = dy / len;
+            var tickLen = 0.18;
+            var spacing = 0.13;
+            var startOffset = -(count - 1) * spacing / 2;
+
+            for (var i = 0; i < count; i++) {
+                var offset = startOffset + i * spacing;
+                var tcx = mx + offset * ax;
+                var tcy = my + offset * ay;
+                board.create('segment', [
+                    [tcx - tickLen * px, tcy - tickLen * py],
+                    [tcx + tickLen * px, tcy + tickLen * py]
+                ], {
+                    strokeColor: COL_MARKS, strokeWidth: 1.5, fixed: true, highlight: false
+                });
+            }
+        }
+
+        // EFGH sides: EF(1 tick), FG(2 ticks), GH(3 ticks), HE(4 ticks)
+        drawTicks(E, F, 1);
+        drawTicks(F, G, 2);
+        drawTicks(G, H, 3);
+        drawTicks(H, E, 4);
+
+        // MNPQ sides: NP↔EF(1), PQ↔FG(2), QM↔GH(3), MN↔HE(4)
+        drawTicks(N_pos, P_pos, 1);
+        drawTicks(P_pos, Q_pos, 2);
+        drawTicks(Q_pos, M_pos, 3);
+        drawTicks(M_pos, N_pos, 4);
+
+        // ── Angle arc helper ────────────────────────────────────────────
+        function createAngleArcs(vertex, prev, next, count) {
+            var vx = vertex[0], vy = vertex[1];
+            var a1 = Math.atan2(prev[1] - vy, prev[0] - vx);
+            var a2 = Math.atan2(next[1] - vy, next[0] - vx);
+
+            var diff = a2 - a1;
+            if (diff > Math.PI) diff -= 2 * Math.PI;
+            if (diff < -Math.PI) diff += 2 * Math.PI;
+
+            var startA, endA;
+            if (diff > 0) {
+                startA = a1;
+                endA = a1 + diff;
+            } else {
+                startA = a2;
+                endA = a2 - diff;
+            }
+
+            var baseRadius = 0.28;
+            var arcSpacing = 0.09;
+
+            for (var i = 0; i < count; i++) {
+                (function(radius, sA, eA, cvx, cvy) {
+                    board.create('curve', [
+                        function(t) { return cvx + radius * Math.cos(t); },
+                        function(t) { return cvy + radius * Math.sin(t); },
+                        sA,
+                        eA
+                    ], {
+                        strokeColor: COL_MARKS, strokeWidth: 1.3, fixed: true, highlight: false
+                    });
+                })(baseRadius + i * arcSpacing, startA, endA, vx, vy);
+            }
+        }
+
+        // EFGH angles: E(1 arc), F(2 arcs), G(3 arcs), H(4 arcs)
+        createAngleArcs(E, H, F, 1);
+        createAngleArcs(F, E, G, 2);
+        createAngleArcs(G, F, H, 3);
+        createAngleArcs(H, G, E, 4);
+
+        // MNPQ angles: N↔E(1), P↔F(2), Q↔G(3), M↔H(4)
+        createAngleArcs(N_pos, M_pos, P_pos, 1);
+        createAngleArcs(P_pos, N_pos, Q_pos, 2);
+        createAngleArcs(Q_pos, P_pos, M_pos, 3);
+        createAngleArcs(M_pos, Q_pos, N_pos, 4);
+
+    </script>
+</body>
+</html>
