@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle PQR — Equal Angles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 4.5, 3.5, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle vertices — isosceles with P at top, Q and R at base
+        var P = board.create('point', [0, 3.5], {
+            name: 'P', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [0, 12] }
+        });
+        var Q = board.create('point', [-2.2, -0.5], {
+            name: 'Q', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-16, -8] }
+        });
+        var R = board.create('point', [2.2, -0.5], {
+            name: 'R', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -8] }
+        });
+
+        // Triangle edges
+        board.create('polygon', [P, Q, R], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Make vertices visible (polygon hides them)
+        P.setAttribute({ visible: true });
+        Q.setAttribute({ visible: true });
+        R.setAttribute({ visible: true });
+
+        // Angle arcs at Q and R (equal angles) — same color
+        var COL_EQUAL = '#2563EB';
+
+        // Angle at Q: P-Q-R
+        board.create('nonReflexAngle', [P, Q, R], {
+            radius: 0.55,
+            fillColor: COL_EQUAL, fillOpacity: 0.1,
+            strokeColor: COL_EQUAL, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Angle at R: Q-R-P
+        board.create('nonReflexAngle', [Q, R, P], {
+            radius: 0.55,
+            fillColor: COL_EQUAL, fillOpacity: 0.1,
+            strokeColor: COL_EQUAL, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Congruence tick marks on angle arcs
+        // Tick at angle Q — along the bisector of angle PQR
+        var bisQ = Math.atan2((P.Y() + R.Y()) / 2 - Q.Y(), (P.X() + R.X()) / 2 - Q.X());
+        var tickDistQ = 0.55;
+        var tickLen = 0.12;
+        var tickCx = Q.X() + tickDistQ * Math.cos(bisQ);
+        var tickCy = Q.Y() + tickDistQ * Math.sin(bisQ);
+        var perpQ = bisQ + Math.PI / 2;
+        board.create('segment', [
+            [tickCx - tickLen * Math.cos(perpQ), tickCy - tickLen * Math.sin(perpQ)],
+            [tickCx + tickLen * Math.cos(perpQ), tickCy + tickLen * Math.sin(perpQ)]
+        ], { strokeColor: COL_EQUAL, strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // Tick at angle R — along the bisector of angle QRP
+        var bisR = Math.atan2((Q.Y() + P.Y()) / 2 - R.Y(), (Q.X() + P.X()) / 2 - R.X());
+        var tickDistR = 0.55;
+        var tickCxR = R.X() + tickDistR * Math.cos(bisR);
+        var tickCyR = R.Y() + tickDistR * Math.sin(bisR);
+        var perpR = bisR + Math.PI / 2;
+        board.create('segment', [
+            [tickCxR - tickLen * Math.cos(perpR), tickCyR - tickLen * Math.sin(perpR)],
+            [tickCxR + tickLen * Math.cos(perpR), tickCyR + tickLen * Math.sin(perpR)]
+        ], { strokeColor: COL_EQUAL, strokeWidth: 1.5, fixed: true, highlight: false });
+    </script>
+</body>
+</html>
