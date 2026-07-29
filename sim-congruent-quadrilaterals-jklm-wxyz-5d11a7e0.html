@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Quadrilaterals JKLM and WXYZ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 9, 18, -1],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Left Quadrilateral JKLM ─────────────────────────────────────
+        var J = board.create('point', [1, 7], { name: 'J', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false, label: { fontSize: 13, color: '#222222', offset: [-14, 6] } });
+        var K = board.create('point', [6, 7.5], { name: 'K', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false, label: { fontSize: 13, color: '#222222', offset: [6, 6] } });
+        var L = board.create('point', [6.5, 2.5], { name: 'L', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false, label: { fontSize: 13, color: '#222222', offset: [6, -12] } });
+        var M = board.create('point', [0.5, 2], { name: 'M', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false, label: { fontSize: 13, color: '#222222', offset: [-16, -12] } });
+
+        var polyJKLM = board.create('polygon', [J, K, L, M], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        J.setAttribute({ visible: true });
+        K.setAttribute({ visible: true });
+        L.setAttribute({ visible: true });
+        M.setAttribute({ visible: true });
+
+        // Angle arc at J (118°)
+        board.create('nonReflexAngle', [M, J, K], {
+            radius: 0.7, fillColor: '#3B82F6', fillOpacity: 0.1,
+            strokeColor: '#3B82F6', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        board.create('text', [2.0, 6.1, '118°'], {
+            fontSize: 11, color: '#3B82F6', fixed: true, highlight: false, useKatex: true
+        });
+
+        // Angle arc at M ((4y-7)°)
+        board.create('nonReflexAngle', [L, M, J], {
+            radius: 0.7, fillColor: '#3B82F6', fillOpacity: 0.1,
+            strokeColor: '#3B82F6', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        board.create('text', [1.5, 3.1, '(4y\\!-\\!7)^\\circ'], {
+            fontSize: 11, color: '#3B82F6', fixed: true, highlight: false, useKatex: true
+        });
+
+        // Side KL label (15 cm)
+        board.create('text', [6.8, 5.0, '15\\text{ cm}'], {
+            fontSize: 11, color: '#3B82F6', fixed: true, highlight: false, useKatex: true
+        });
+
+        // ── Right Quadrilateral WXYZ ────────────────────────────────────
+        var dx = 8.5;
+        var W = board.create('point', [1 + dx, 7], { name: 'W', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false, label: { fontSize: 13, color: '#222222', offset: [-16, 6] } });
+        var X = board.create('point', [6 + dx, 7.5], { name: 'X', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false, label: { fontSize: 13, color: '#222222', offset: [6, 6] } });
+        var Y = board.create('point', [6.5 + dx, 2.5], { name: 'Y', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false, label: { fontSize: 13, color: '#222222', offset: [6, -12] } });
+        var Z = board.create('point', [0.5 + dx, 2], { name: 'Z', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false, label: { fontSize: 13, color: '#222222', offset: [-14, -12] } });
+
+        var polyWXYZ = board.create('polygon', [W, X, Y, Z], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        W.setAttribute({ visible: true });
+        X.setAttribute({ visible: true });
+        Y.setAttribute({ visible: true });
+        Z.setAttribute({ visible: true });
+
+        // Angle arc at W (118°)
+        board.create('nonReflexAngle', [Z, W, X], {
+            radius: 0.7, fillColor: '#3B82F6', fillOpacity: 0.1,
+            strokeColor: '#3B82F6', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        board.create('text', [2.0 + dx, 6.1, '118°'], {
+            fontSize: 11, color: '#3B82F6', fixed: true, highlight: false, useKatex: true
+        });
+
+        // Angle arc at Z (73°)
+        board.create('nonReflexAngle', [Y, Z, W], {
+            radius: 0.7, fillColor: '#3B82F6', fillOpacity: 0.1,
+            strokeColor: '#3B82F6', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        board.create('text', [1.5 + dx, 3.1, '73°'], {
+            fontSize: 11, color: '#3B82F6', fixed: true, highlight: false, useKatex: true
+        });
+
+        // Side XY label ((3x+6) cm)
+        board.create('text', [6.8 + dx, 5.0, '(3x\\!+\\!6)\\text{ cm}'], {
+            fontSize: 11, color: '#3B82F6', fixed: true, highlight: false, useKatex: true
+        });
+
+        // ── Congruence tick marks on KL and XY ──────────────────────────
+        var klMidX = (K.X() + L.X()) / 2;
+        var klMidY = (K.Y() + L.Y()) / 2;
+        var klDx = L.X() - K.X();
+        var klDy = L.Y() - K.Y();
+        var klLen = Math.sqrt(klDx * klDx + klDy * klDy);
+        var klNx = -klDy / klLen * 0.25;
+        var klNy = klDx / klLen * 0.25;
+        board.create('segment', [[klMidX + klNx, klMidY + klNy], [klMidX - klNx, klMidY - klNy]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var xyMidX = (X.X() + Y.X()) / 2;
+        var xyMidY = (X.Y() + Y.Y()) / 2;
+        board.create('segment', [[xyMidX + klNx, xyMidY + klNy], [xyMidX - klNx, xyMidY - klNy]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
