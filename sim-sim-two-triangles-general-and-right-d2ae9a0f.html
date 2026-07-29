@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Triangles — General and Right</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 5.5, 13.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_EDGE = '#555555';
+        var COL_LABEL = '#333333';
+        var EDGE_W = 1.8;
+        var PT_STYLE = { visible: false, fixed: true, name: '' };
+
+        // ══════════════════════════════════════════════════════════════
+        // LEFT TRIANGLE — General triangle ABC
+        // ══════════════════════════════════════════════════════════════
+        var LA = board.create('point', [0.5, 0], PT_STYLE);
+        var LB = board.create('point', [4.5, 0], PT_STYLE);
+        var LC = board.create('point', [3.2, 4.2], PT_STYLE);
+
+        // Edges
+        board.create('segment', [LA, LB], { strokeColor: COL_EDGE, strokeWidth: EDGE_W, fixed: true, highlight: false });
+        board.create('segment', [LB, LC], { strokeColor: COL_EDGE, strokeWidth: EDGE_W, fixed: true, highlight: false });
+        board.create('segment', [LC, LA], { strokeColor: COL_EDGE, strokeWidth: EDGE_W, fixed: true, highlight: false });
+
+        // Vertex labels
+        board.create('text', [0.1, -0.6, 'A'], { fontSize: 14, color: COL_LABEL, fixed: true, highlight: false, useKatex: true });
+        board.create('text', [4.5, -0.6, 'B'], { fontSize: 14, color: COL_LABEL, fixed: true, highlight: false, useKatex: true });
+        board.create('text', [3.2, 4.6, 'C'], { fontSize: 14, color: COL_LABEL, fixed: true, highlight: false, useKatex: true, anchorX: 'middle' });
+
+        // Side labels
+        // c = opposite C (side AB, bottom)
+        board.create('text', [2.5, -0.7, 'c'], { fontSize: 13, color: COL_LABEL, fixed: true, highlight: false, useKatex: true, anchorX: 'middle' });
+        // a = opposite A (side BC, right)
+        board.create('text', [4.15, 2.3, 'a'], { fontSize: 13, color: COL_LABEL, fixed: true, highlight: false, useKatex: true, anchorX: 'middle' });
+        // b = opposite B (side AC, left)
+        board.create('text', [1.5, 2.3, 'b'], { fontSize: 13, color: COL_LABEL, fixed: true, highlight: false, useKatex: true, anchorX: 'middle' });
+
+        // ══════════════════════════════════════════════════════════════
+        // RIGHT TRIANGLE — Right triangle PQR with right angle at R
+        // ══════════════════════════════════════════════════════════════
+        var RP = board.create('point', [8, 4.2], PT_STYLE);
+        var RQ = board.create('point', [12.5, 0], PT_STYLE);
+        var RR = board.create('point', [8, 0], PT_STYLE);
+
+        // Edges
+        board.create('segment', [RR, RP], { strokeColor: COL_EDGE, strokeWidth: EDGE_W, fixed: true, highlight: false });
+        board.create('segment', [RR, RQ], { strokeColor: COL_EDGE, strokeWidth: EDGE_W, fixed: true, highlight: false });
+        board.create('segment', [RP, RQ], { strokeColor: COL_EDGE, strokeWidth: EDGE_W, fixed: true, highlight: false });
+
+        // Right angle marker at R
+        var sqSize = 0.35;
+        var sq1 = board.create('point', [8 + sqSize, 0], PT_STYLE);
+        var sq2 = board.create('point', [8 + sqSize, sqSize], PT_STYLE);
+        var sq3 = board.create('point', [8, sqSize], PT_STYLE);
+        board.create('segment', [sq1, sq2], { strokeColor: COL_EDGE, strokeWidth: 1.0, fixed: true, highlight: false });
+        board.create('segment', [sq2, sq3], { strokeColor: COL_EDGE, strokeWidth: 1.0, fixed: true, highlight: false });
+
+        // Vertex labels
+        board.create('text', [7.8, 4.6, 'P'], { fontSize: 14, color: COL_LABEL, fixed: true, highlight: false, useKatex: true, anchorX: 'middle' });
+        board.create('text', [12.7, -0.6, 'Q'], { fontSize: 14, color: COL_LABEL, fixed: true, highlight: false, useKatex: true });
+        board.create('text', [7.6, -0.6, 'R'], { fontSize: 14, color: COL_LABEL, fixed: true, highlight: false, useKatex: true });
+
+        // Side labels
+        // b = vertical leg (PR, left side)
+        board.create('text', [7.4, 2.1, 'b'], { fontSize: 13, color: COL_LABEL, fixed: true, highlight: false, useKatex: true, anchorX: 'middle' });
+        // a = horizontal leg (RQ, bottom)
+        board.create('text', [10.25, -0.7, 'a'], { fontSize: 13, color: COL_LABEL, fixed: true, highlight: false, useKatex: true, anchorX: 'middle' });
+        // r = hypotenuse (PQ)
+        board.create('text', [10.7, 2.5, 'r'], { fontSize: 13, color: COL_LABEL, fixed: true, highlight: false, useKatex: true, anchorX: 'middle' });
+    </script>
+</body>
+</html>
