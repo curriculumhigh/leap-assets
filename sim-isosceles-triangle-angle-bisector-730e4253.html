@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Isosceles Triangle Angle Bisector</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 4px; height: calc(100% - 8px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.8, 4.2, 3.8, -2.9],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var ARC_COL = '#2563EB';
+
+        // Triangle vertices
+        var P = board.create('point', [-3, -2], {
+            name: 'P', fixed: true, size: 1, color: '#222222', highlight: false, showInfobox: false,
+            label: { fontSize: 13, color: '#222222', offset: [-14, -8], useKatex: true }
+        });
+        var R = board.create('point', [3, -2], {
+            name: 'R', fixed: true, size: 1, color: '#222222', highlight: false, showInfobox: false,
+            label: { fontSize: 13, color: '#222222', offset: [6, -8], useKatex: true }
+        });
+        var Q = board.create('point', [0, 3.5], {
+            name: 'Q', fixed: true, size: 1, color: '#222222', highlight: false, showInfobox: false,
+            label: { fontSize: 13, color: '#222222', offset: [-4, 10], useKatex: true }
+        });
+
+        // Midpoint S on PR
+        var S = board.create('point', [0, -2], {
+            name: 'S', fixed: true, size: 1, color: '#222222', highlight: false, showInfobox: false,
+            label: { fontSize: 13, color: '#222222', offset: [-4, -14], useKatex: true }
+        });
+
+        // Triangle edges
+        board.create('segment', [P, Q], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [Q, R], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [P, R], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Angle bisector QS (dashed)
+        board.create('segment', [Q, S], {
+            strokeColor: '#555555', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // Tick marks on PQ and QR
+        var midPQ_x = (P.X() + Q.X()) / 2;
+        var midPQ_y = (P.Y() + Q.Y()) / 2;
+        var dxPQ = Q.X() - P.X();
+        var dyPQ = Q.Y() - P.Y();
+        var lenPQ = Math.sqrt(dxPQ * dxPQ + dyPQ * dyPQ);
+        var perpPQ_x = -dyPQ / lenPQ;
+        var perpPQ_y = dxPQ / lenPQ;
+        var tickLen = 0.25;
+
+        board.create('segment', [
+            [midPQ_x - perpPQ_x * tickLen, midPQ_y - perpPQ_y * tickLen],
+            [midPQ_x + perpPQ_x * tickLen, midPQ_y + perpPQ_y * tickLen]
+        ], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        var midQR_x = (Q.X() + R.X()) / 2;
+        var midQR_y = (Q.Y() + R.Y()) / 2;
+        var dxQR = R.X() - Q.X();
+        var dyQR = R.Y() - Q.Y();
+        var lenQR = Math.sqrt(dxQR * dxQR + dyQR * dyQR);
+        var perpQR_x = -dyQR / lenQR;
+        var perpQR_y = dxQR / lenQR;
+
+        board.create('segment', [
+            [midQR_x - perpQR_x * tickLen, midQR_y - perpQR_y * tickLen],
+            [midQR_x + perpQR_x * tickLen, midQR_y + perpQR_y * tickLen]
+        ], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // Angle arcs at Q — same color, different radii
+        board.create('nonReflexAngle', [P, Q, S], {
+            radius: 0.55,
+            fillColor: ARC_COL, fillOpacity: 0.1,
+            strokeColor: ARC_COL, strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        board.create('nonReflexAngle', [S, Q, R], {
+            radius: 0.8,
+            fillColor: ARC_COL, fillOpacity: 0.08,
+            strokeColor: ARC_COL, strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+    </script>
+</body>
+</html>
