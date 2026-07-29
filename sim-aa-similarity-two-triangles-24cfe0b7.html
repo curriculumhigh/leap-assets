@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AA Similarity — Two Triangles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 6.5, 13.5, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_EDGE = '#555555';
+        var COL_ARC1 = '#2563EB';
+        var COL_ARC2 = '#059669';
+        var COL_LABEL = '#222222';
+
+        // Triangle PQR (left)
+        var P = board.create('point', [1.0, 5.0], {
+            name: 'P', fixed: true, size: 2, color: COL_EDGE, showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [-5, 10] }
+        });
+        var Q = board.create('point', [0.5, 0.5], {
+            name: 'Q', fixed: true, size: 2, color: COL_EDGE, showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [-15, -5] }
+        });
+        var R = board.create('point', [5.5, 0.5], {
+            name: 'R', fixed: true, size: 2, color: COL_EDGE, showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [8, -5] }
+        });
+
+        board.create('polygon', [P, Q, R], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_EDGE, strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Triangle XYZ (right, same size)
+        var offsetX = 7.0;
+        var X = board.create('point', [1.0 + offsetX, 5.0], {
+            name: 'X', fixed: true, size: 2, color: COL_EDGE, showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [-5, 10] }
+        });
+        var Y = board.create('point', [0.5 + offsetX, 0.5], {
+            name: 'Y', fixed: true, size: 2, color: COL_EDGE, showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [-15, -5] }
+        });
+        var Z = board.create('point', [5.5 + offsetX, 0.5], {
+            name: 'Z', fixed: true, size: 2, color: COL_EDGE, showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [8, -5] }
+        });
+
+        board.create('polygon', [X, Y, Z], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_EDGE, strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Angle arcs
+        // Single arc at P
+        board.create('nonReflexAngle', [Q, P, R], {
+            radius: 0.7, name: '', withLabel: false,
+            fillColor: COL_ARC1, fillOpacity: 0.08,
+            strokeColor: COL_ARC1, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        // Single arc at X
+        board.create('nonReflexAngle', [Y, X, Z], {
+            radius: 0.7, name: '', withLabel: false,
+            fillColor: COL_ARC1, fillOpacity: 0.08,
+            strokeColor: COL_ARC1, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        // Double arc at Q — inner
+        board.create('nonReflexAngle', [P, Q, R], {
+            radius: 0.65, name: '', withLabel: false,
+            fillColor: COL_ARC2, fillOpacity: 0.08,
+            strokeColor: COL_ARC2, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+        // Double arc at Q — outer
+        board.create('nonReflexAngle', [P, Q, R], {
+            radius: 0.85, name: '', withLabel: false,
+            fillColor: 'none', fillOpacity: 0,
+            strokeColor: COL_ARC2, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        // Double arc at Y — inner
+        board.create('nonReflexAngle', [X, Y, Z], {
+            radius: 0.65, name: '', withLabel: false,
+            fillColor: COL_ARC2, fillOpacity: 0.08,
+            strokeColor: COL_ARC2, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+        // Double arc at Y — outer
+        board.create('nonReflexAngle', [X, Y, Z], {
+            radius: 0.85, name: '', withLabel: false,
+            fillColor: 'none', fillOpacity: 0,
+            strokeColor: COL_ARC2, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        // Tick marks on arcs
+        function angleBisector(vertex, p1, p2) {
+            var a1 = Math.atan2(p1.Y() - vertex.Y(), p1.X() - vertex.X());
+            var a2 = Math.atan2(p2.Y() - vertex.Y(), p2.X() - vertex.X());
+            var diff = a2 - a1;
+            if (diff > Math.PI) diff -= 2 * Math.PI;
+            if (diff < -Math.PI) diff += 2 * Math.PI;
+            return a1 + diff / 2;
+        }
+
+        function drawTick(vertex, p1, p2, radius, color, tickLength) {
+            var bisAngle = angleBisector(vertex, p1, p2);
+            var cx = vertex.X() + radius * Math.cos(bisAngle);
+            var cy = vertex.Y() + radius * Math.sin(bisAngle);
+            var perpAngle = bisAngle + Math.PI / 2;
+            var dx = tickLength * Math.cos(perpAngle);
+            var dy = tickLength * Math.sin(perpAngle);
+            board.create('segment', [[cx - dx, cy - dy], [cx + dx, cy + dy]], {
+                strokeColor: color, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+        }
+
+        function drawDoubleTick(vertex, p1, p2, radius, color, tickLength, gap) {
+            var bisAngle = angleBisector(vertex, p1, p2);
+            var perpAngle = bisAngle + Math.PI / 2;
+            for (var i = -1; i <= 1; i += 2) {
+                var cx = vertex.X() + (radius + i * gap) * Math.cos(bisAngle);
+                var cy = vertex.Y() + (radius + i * gap) * Math.sin(bisAngle);
+                var dx = tickLength * Math.cos(perpAngle);
+                var dy = tickLength * Math.sin(perpAngle);
+                board.create('segment', [[cx - dx, cy - dy], [cx + dx, cy + dy]], {
+                    strokeColor: color, strokeWidth: 1.5, fixed: true, highlight: false
+                });
+            }
+        }
+
+        // Single tick on P and X
+        drawTick(P, Q, R, 0.7, COL_ARC1, 0.18);
+        drawTick(X, Y, Z, 0.7, COL_ARC1, 0.18);
+
+        // Double tick on Q and Y
+        drawDoubleTick(Q, P, R, 0.75, COL_ARC2, 0.18, 0.09);
+        drawDoubleTick(Y, X, Z, 0.75, COL_ARC2, 0.18, 0.09);
+
+        // Angle measure labels
+        function labelPos(vertex, p1, p2, dist) {
+            var bisAngle = angleBisector(vertex, p1, p2);
+            return [vertex.X() + dist * Math.cos(bisAngle), vertex.Y() + dist * Math.sin(bisAngle)];
+        }
+
+        var posP = labelPos(P, Q, R, 1.35);
+        board.create('text', [posP[0], posP[1], '50\u00B0'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12,
+            color: COL_ARC1, fixed: true, highlight: false
+        });
+
+        var posX = labelPos(X, Y, Z, 1.35);
+        board.create('text', [posX[0], posX[1], '50\u00B0'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12,
+            color: COL_ARC1, fixed: true, highlight: false
+        });
+
+        var posQ = labelPos(Q, P, R, 1.45);
+        board.create('text', [posQ[0], posQ[1], '70\u00B0'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12,
+            color: COL_ARC2, fixed: true, highlight: false
+        });
+
+        var posY = labelPos(Y, X, Z, 1.45);
+        board.create('text', [posY[0], posY[1], '70\u00B0'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12,
+            color: COL_ARC2, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
