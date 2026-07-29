@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Triangles — Find Angle U</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 7.5, 14.5, -0.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Triangle PQR (left) ─────────────────────────────────────────
+        var Q_pos = [1, 1];
+        var P_pos = [5.5, 1];
+
+        var angQ_rad = 63 * Math.PI / 180;
+        var QR_len = 4.2;
+        var R_pos = [Q_pos[0] + QR_len * Math.cos(angQ_rad), Q_pos[1] + QR_len * Math.sin(angQ_rad)];
+
+        var P = board.create('point', P_pos, {
+            name: 'P', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, -12] }
+        });
+        var Q = board.create('point', Q_pos, {
+            name: 'Q', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [-16, -12] }
+        });
+        var R = board.create('point', R_pos, {
+            name: 'R', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, 10] }
+        });
+
+        board.create('polygon', [P, Q, R], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        P.setAttribute({ visible: true });
+        Q.setAttribute({ visible: true });
+        R.setAttribute({ visible: true });
+
+        // ── Angle arcs for △PQR ─────────────────────────────────────────
+        board.create('nonReflexAngle', [Q, P, R], {
+            radius: 0.55,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        board.create('nonReflexAngle', [P, Q, R], {
+            radius: 0.5,
+            fillColor: 'none', fillOpacity: 0,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        board.create('nonReflexAngle', [P, Q, R], {
+            radius: 0.7,
+            fillColor: 'none', fillOpacity: 0,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // ── Angle measure labels for △PQR ───────────────────────────────
+        var vecPQ = [Q.X() - P.X(), Q.Y() - P.Y()];
+        var vecPR = [R.X() - P.X(), R.Y() - P.Y()];
+        var lenPQ = Math.sqrt(vecPQ[0]*vecPQ[0] + vecPQ[1]*vecPQ[1]);
+        var lenPR = Math.sqrt(vecPR[0]*vecPR[0] + vecPR[1]*vecPR[1]);
+        var bisP = [(vecPQ[0]/lenPQ + vecPR[0]/lenPR), (vecPQ[1]/lenPQ + vecPR[1]/lenPR)];
+        var lenBisP = Math.sqrt(bisP[0]*bisP[0] + bisP[1]*bisP[1]);
+        var lblP_x = P.X() + bisP[0]/lenBisP * 1.2;
+        var lblP_y = P.Y() + bisP[1]/lenBisP * 1.2;
+
+        board.create('text', [lblP_x, lblP_y, '52\\degree'], {
+            useKatex: true, fontSize: 11, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        var vecQP = [P.X() - Q.X(), P.Y() - Q.Y()];
+        var vecQR = [R.X() - Q.X(), R.Y() - Q.Y()];
+        var lenQP = Math.sqrt(vecQP[0]*vecQP[0] + vecQP[1]*vecQP[1]);
+        var lenQR = Math.sqrt(vecQR[0]*vecQR[0] + vecQR[1]*vecQR[1]);
+        var bisQ = [(vecQP[0]/lenQP + vecQR[0]/lenQR), (vecQP[1]/lenQP + vecQR[1]/lenQR)];
+        var lenBisQ = Math.sqrt(bisQ[0]*bisQ[0] + bisQ[1]*bisQ[1]);
+        var lblQ_x = Q.X() + bisQ[0]/lenBisQ * 1.3;
+        var lblQ_y = Q.Y() + bisQ[1]/lenBisQ * 1.3;
+
+        board.create('text', [lblQ_x, lblQ_y, '63\\degree'], {
+            useKatex: true, fontSize: 11, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Triangle STU (right) ────────────────────────────────────────
+        var offsetX = 7.5;
+        var S_pos = [P_pos[0] + offsetX, P_pos[1]];
+        var T_pos = [Q_pos[0] + offsetX, Q_pos[1]];
+        var U_pos = [R_pos[0] + offsetX, R_pos[1]];
+
+        var S = board.create('point', S_pos, {
+            name: 'S', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, -12] }
+        });
+        var T = board.create('point', T_pos, {
+            name: 'T', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [-16, -12] }
+        });
+        var U = board.create('point', U_pos, {
+            name: 'U', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, 10] }
+        });
+
+        board.create('polygon', [S, T, U], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        S.setAttribute({ visible: true });
+        T.setAttribute({ visible: true });
+        U.setAttribute({ visible: true });
+
+        // ── Angle arcs for △STU ─────────────────────────────────────────
+        board.create('nonReflexAngle', [T, S, U], {
+            radius: 0.55,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        board.create('nonReflexAngle', [S, T, U], {
+            radius: 0.5,
+            fillColor: 'none', fillOpacity: 0,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        board.create('nonReflexAngle', [S, T, U], {
+            radius: 0.7,
+            fillColor: 'none', fillOpacity: 0,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // ── "?" label at ∠U ─────────────────────────────────────────────
+        var vecUS = [S.X() - U.X(), S.Y() - U.Y()];
+        var vecUT = [T.X() - U.X(), T.Y() - U.Y()];
+        var lenUS = Math.sqrt(vecUS[0]*vecUS[0] + vecUS[1]*vecUS[1]);
+        var lenUT = Math.sqrt(vecUT[0]*vecUT[0] + vecUT[1]*vecUT[1]);
+        var bisU = [(vecUS[0]/lenUS + vecUT[0]/lenUT), (vecUS[1]/lenUS + vecUT[1]/lenUT)];
+        var lenBisU = Math.sqrt(bisU[0]*bisU[0] + bisU[1]*bisU[1]);
+        var lblU_x = U.X() + bisU[0]/lenBisU * 1.2;
+        var lblU_y = U.Y() + bisU[1]/lenBisU * 1.2;
+
+        board.create('text', [lblU_x, lblU_y, '?'], {
+            fontSize: 14, color: '#222222', cssStyle: 'font-weight:bold',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
