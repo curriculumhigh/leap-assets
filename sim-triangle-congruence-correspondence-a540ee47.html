@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle Congruence Correspondence</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 4.5, 9.5, -1.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_A = '#222222';
+        var COL_B = '#2563EB';
+        var COL_C = '#DC2626';
+
+        // Text baseline
+        var baseY = 1.5;
+
+        // X positions
+        var xTri1 = 0.5;
+        var xA = 1.4;
+        var xB = 2.5;
+        var xC = 3.6;
+        var xCong = 4.8;
+        var xTri2 = 6.0;
+        var xD = 6.9;
+        var xE = 8.0;
+        var xF = 9.1;
+
+        // Text labels
+        board.create('text', [xTri1, baseY, '\u25b3'], { fontSize: 22, color: '#222222', fixed: true, highlight: false, anchorX: 'middle' });
+        board.create('text', [xCong, baseY, '\u2245'], { fontSize: 22, color: '#222222', fixed: true, highlight: false, anchorX: 'middle' });
+        board.create('text', [xTri2, baseY, '\u25b3'], { fontSize: 22, color: '#222222', fixed: true, highlight: false, anchorX: 'middle' });
+
+        board.create('text', [xA, baseY, 'A'], { fontSize: 22, color: COL_A, fixed: true, highlight: false, anchorX: 'middle', cssStyle: 'font-weight:bold' });
+        board.create('text', [xB, baseY, 'B'], { fontSize: 22, color: COL_B, fixed: true, highlight: false, anchorX: 'middle', cssStyle: 'font-weight:bold' });
+        board.create('text', [xC, baseY, 'C'], { fontSize: 22, color: COL_C, fixed: true, highlight: false, anchorX: 'middle', cssStyle: 'font-weight:bold' });
+        board.create('text', [xD, baseY, 'D'], { fontSize: 22, color: COL_A, fixed: true, highlight: false, anchorX: 'middle', cssStyle: 'font-weight:bold' });
+        board.create('text', [xE, baseY, 'E'], { fontSize: 22, color: COL_B, fixed: true, highlight: false, anchorX: 'middle', cssStyle: 'font-weight:bold' });
+        board.create('text', [xF, baseY, 'F'], { fontSize: 22, color: COL_C, fixed: true, highlight: false, anchorX: 'middle', cssStyle: 'font-weight:bold' });
+
+        // Open-stroke arrowheads on curved paths
+        function drawMappingArrow(xStart, xEnd, archAbove, peakOffset, color) {
+            var startY, endY, peakY;
+            if (archAbove) {
+                startY = baseY + 0.55;
+                endY = baseY + 0.55;
+                peakY = baseY + 0.55 + peakOffset;
+            } else {
+                startY = baseY - 0.4;
+                endY = baseY - 0.4;
+                peakY = baseY - 0.4 - peakOffset;
+            }
+
+            var cx = (xStart + xEnd) / 2;
+            var cy = peakY;
+
+            // Bezier curve
+            board.create('curve', [
+                function(t) { return (1-t)*(1-t)*xStart + 2*(1-t)*t*cx + t*t*xEnd; },
+                function(t) { return (1-t)*(1-t)*startY + 2*(1-t)*t*cy + t*t*endY; },
+                0, 1
+            ], {
+                strokeColor: color,
+                strokeWidth: 2.0,
+                fixed: true,
+                highlight: false,
+                numberPointsHigh: 80
+            });
+
+            // Open arrowhead — two segments forming a V
+            var tdx = 2 * (xEnd - cx);
+            var tdy = 2 * (endY - cy);
+            var tlen = Math.sqrt(tdx*tdx + tdy*tdy);
+            tdx /= tlen;
+            tdy /= tlen;
+
+            var aSize = 0.4;
+            var wingAngle = 0.5;
+
+            var cos1 = Math.cos(Math.PI - wingAngle);
+            var sin1 = Math.sin(Math.PI - wingAngle);
+            var cos2 = Math.cos(Math.PI + wingAngle);
+            var sin2 = Math.sin(Math.PI + wingAngle);
+
+            var w1x = xEnd + aSize * (tdx * cos1 - tdy * sin1);
+            var w1y = endY + aSize * (tdy * cos1 + tdx * sin1);
+            var w2x = xEnd + aSize * (tdx * cos2 - tdy * sin2);
+            var w2y = endY + aSize * (tdy * cos2 + tdx * sin2);
+
+            board.create('segment', [[xEnd, endY], [w1x, w1y]], {
+                strokeColor: color, strokeWidth: 2.0, fixed: true, highlight: false
+            });
+            board.create('segment', [[xEnd, endY], [w2x, w2y]], {
+                strokeColor: color, strokeWidth: 2.0, fixed: true, highlight: false
+            });
+        }
+
+        // A -> D: black, tall arch above
+        drawMappingArrow(xA, xD, true, 2.2, COL_A);
+
+        // B -> E: blue, medium arch above
+        drawMappingArrow(xB, xE, true, 1.3, COL_B);
+
+        // C -> F: red, arch below
+        drawMappingArrow(xC, xF, false, 1.4, COL_C);
+
+    </script>
+</body>
+</html>
