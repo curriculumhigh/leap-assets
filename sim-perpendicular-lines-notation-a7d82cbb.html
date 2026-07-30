@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perpendicular Lines</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); display: flex; flex-direction: column; align-items: center; }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; width: 260px; height: calc(100% - 50px); }
+        #board { width: 100%; height: 100%; }
+        .notation { background: white; border-radius: 6px; padding: 6px 12px; margin-top: 6px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+        <div class="notation" id="notation"></div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 5.5, 5, -5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertical line (ℓ)
+        board.create('arrow', [[0, -4], [0, 4.5]], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        board.create('arrow', [[0, 4.5], [0, -4]], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Horizontal line (m)
+        board.create('arrow', [[0, 0], [4.5, 0]], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        board.create('arrow', [[0, 0], [-4.5, 0]], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Right angle marker
+        var sq = 0.45;
+        board.create('segment', [[sq, 0], [sq, sq]], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[sq, sq], [0, sq]], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Label ℓ (vertical line)
+        board.create('text', [0.45, 4.6, '\\ell'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'left'
+        });
+
+        // Label m (horizontal line)
+        board.create('text', [4.0, -0.6, 'm'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Notation below
+        katex.render('\\ell \\perp m', document.getElementById('notation'), { throwOnError: false, displayMode: false });
+    </script>
+</body>
+</html>
