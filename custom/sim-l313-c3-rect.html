@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L313 c3-rect</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+  html,body{margin:0;padding:0;overflow:hidden;height:100%;background:transparent;
+            pointer-events:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .container{width:520px;height:380px;margin:0;padding:0;}
+  .board-wrapper{background:white;border-radius:8px;padding:10px;
+                 width:calc(100% - 20px);height:calc(100% - 20px);}
+  #board{width:100%;height:100%;}
+</style></head>
+<body><div class="container"><div class="board-wrapper"><div id="board"></div></div></div>
+<script>
+  var TMAX=6.283185307179586, XMIN=-0.6283185307179586, XMAX=6.911503837897545;
+  var YMIN=-1, YMAX=10;
+  var board=JXG.JSXGraph.initBoard('board',{
+    boundingbox:[XMIN,YMAX,XMAX,YMIN],axis:false,grid:false,
+    showNavigation:false,showCopyright:false,pan:{enabled:false},zoom:{enabled:false}});
+  for(var gy=-1+1; gy<10; gy++){ if(gy%2===0 && gy!==0)
+    board.create('line',[[XMIN,gy],[XMAX,gy]],{strokeColor:'#E5E7EB',strokeWidth:1,straightFirst:false,straightLast:false,fixed:true,highlight:false}); }
+  var TT=[0.0,1.5707963267948966,3.141592653589793,4.71238898038469,6.283185307179586];
+  for(var i=0;i<TT.length;i++){ if(TT[i]>0)
+    board.create('line',[[TT[i],YMIN],[TT[i],YMAX]],{strokeColor:'#F3F4F6',strokeWidth:1,
+      straightFirst:false,straightLast:false,fixed:true,highlight:false}); }
+  board.create('axis',[[0,0],[1,0]],{strokeColor:'#444444',strokeWidth:1.3,
+    lastArrow:{type:2,size:6},ticks:{visible:false}});
+  board.create('axis',[[0,0],[0,1]],{strokeColor:'#444444',strokeWidth:1.3,
+    lastArrow:{type:2,size:6},ticks:{strokeColor:'#444444',minorTicks:0,
+    ticksDistance:2,label:{fontSize:10,offset:[-14,0]},drawZero:false}});
+  board.create('segment',[[1.5707963267948966,-0.19799999999999998],[1.5707963267948966,0.19799999999999998]],{strokeColor:'#444444',strokeWidth:1.2,fixed:true,highlight:false});
+  board.create('text',[1.5707963267948966,-0.395,'\\frac{\\pi}{2}'],{useKatex:true,fontSize:11,color:'#444444',anchorX:'middle',anchorY:'middle',fixed:true,highlight:false});
+  board.create('segment',[[3.141592653589793,-0.19799999999999998],[3.141592653589793,0.19799999999999998]],{strokeColor:'#444444',strokeWidth:1.2,fixed:true,highlight:false});
+  board.create('text',[3.141592653589793,-0.395,'\\pi'],{useKatex:true,fontSize:11,color:'#444444',anchorX:'middle',anchorY:'middle',fixed:true,highlight:false});
+  board.create('segment',[[4.71238898038469,-0.19799999999999998],[4.71238898038469,0.19799999999999998]],{strokeColor:'#444444',strokeWidth:1.2,fixed:true,highlight:false});
+  board.create('text',[4.71238898038469,-0.395,'\\frac{3\\pi}{2}'],{useKatex:true,fontSize:11,color:'#444444',anchorX:'middle',anchorY:'middle',fixed:true,highlight:false});
+  board.create('segment',[[6.283185307179586,-0.19799999999999998],[6.283185307179586,0.19799999999999998]],{strokeColor:'#444444',strokeWidth:1.2,fixed:true,highlight:false});
+  board.create('text',[6.283185307179586,-0.395,'2\\pi'],{useKatex:true,fontSize:11,color:'#444444',anchorX:'middle',anchorY:'middle',fixed:true,highlight:false});
+  board.create('text',[XMAX-0.25132741228718347,-0.6599999999999999,'\\theta'],{useKatex:true,fontSize:14,color:'#222',fixed:true,highlight:false});
+  board.create('text',[0.21991148575128555,YMAX-0.55,'r'],{useKatex:true,fontSize:14,color:'#222',fixed:true,highlight:false});
+  board.create('functiongraph',[function(t){return 5-3*Math.cos(t);},0,TMAX],{strokeColor:'#2563EB',strokeWidth:2.6,fixed:true,highlight:false});
+  board.create('point',[3.141592653589793,8.0],{name:'',size:3,color:'#DC2626',fixed:true,highlight:false,showInfobox:false});
+  board.create('text',[3.141592653589793,9.1,'\\text{turning point}'],{useKatex:true,fontSize:12,color:'#DC2626',anchorX:'middle',anchorY:'middle',fixed:true,highlight:false});
+</script></body></html>

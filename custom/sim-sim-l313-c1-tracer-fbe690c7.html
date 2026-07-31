@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polar Rate of Change Explorer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 190px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 6px;
+        }
+        .curve-section { margin-bottom: 0; }
+        .curve-label-row { min-height: 24px; }
+        .slider-section { border-top: 1px solid #e5e7eb; padding-top: 12px; }
+        .slider-label-row { min-height: 28px; margin-bottom: 6px; }
+        .slider-input {
+            width: 100%; -webkit-appearance: none; appearance: none;
+            height: 5px; border-radius: 3px; background: #e5e7eb; outline: none;
+        }
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 15px; height: 15px; border-radius: 50%; cursor: pointer;
+            background: #059669;
+        }
+        .readout-section { border-top: 1px solid #e5e7eb; padding-top: 12px; }
+        .readout-row { min-height: 28px; margin-bottom: 8px; }
+        .readout-sub { min-height: 24px; margin-bottom: 10px; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="curve-section">
+                    <div class="panel-label">Curve</div>
+                    <div class="curve-label-row" id="curve-eq"></div>
+                </div>
+                <div class="slider-section">
+                    <div class="panel-label">Parameter</div>
+                    <div class="slider-label-row" id="slider-label"></div>
+                    <input type="range" id="theta-slider" class="slider-input" min="0" max="6.2832" step="0.01" value="0">
+                </div>
+                <div class="readout-section">
+                    <div class="panel-label">Readouts</div>
+                    <div class="readout-row" id="readout-r"></div>
+                    <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Distance from pole:</div>
+                    <div class="readout-sub" id="readout-dist"></div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8.5, 8.5, 8.5, -8.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Polar grid: concentric rings ────────────────────────────────
+        var ringColor = '#D1D5DB';
+        var ringWidth = 0.4;
+        var i, ang;
+        for (i = 1; i <= 6; i++) {
+            board.create('circle', [[0, 0], i], {
+                strokeColor: ringColor, strokeWidth: ringWidth,
+                fixed: true, highlight: false,
+                fillColor: 'none', fillOpacity: 0
+            });
+        }
+
+        // Ring number labels
+        board.create('text', [2, -0.45, '2'], { fontSize: 10, color: '#999', anchorX: 'middle', fixed: true, highlight: false });
+        board.create('text', [4, -0.45, '4'], { fontSize: 10, color: '#999', anchorX: 'middle', fixed: true, highlight: false });
+        board.create('text', [6, -0.45, '6'], { fontSize: 10, color: '#999', anchorX: 'middle', fixed: true, highlight: false });
+
+        // ── Polar grid: radial rays every π/12 ──────────────────────────
+        for (i = 0; i < 24; i++) {
+            ang = i * Math.PI / 12;
+            board.create('segment', [[0, 0], [7.8 * Math.cos(ang), 7.8 * Math.sin(ang)]], {
+                strokeColor: ringColor, strokeWidth: ringWidth,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Pole point O ────────────────────────────────────────────────
+        board.create('point', [0, 0], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [-0.5, -0.5, '<i>O</i>'], { fontSize: 12, color: '#222222', fixed: true, highlight: false });
+
+        // ── Polar axis arrow ────────────────────────────────────────────
+        board.create('arrow', [[0, 0], [8.0, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        board.create('text', [6.8, -0.6, 'polar axis'], {
+            fontSize: 10, color: '#444444', fixed: true, highlight: false,
+            cssStyle: 'font-style:italic'
+        });
+
+        // ── Polar function ──────────────────────────────────────────────
+        function f(t) {
+            return 2 + 4 * Math.cos(t);
+        }
+
+        // ── Full curve (light blue wash, always visible) ────────────────
+        board.create('curve', [
+            function(t) { return f(t) * Math.cos(t); },
+            function(t) { return f(t) * Math.sin(t); },
+            0, 2 * Math.PI
+        ], {
+            strokeColor: '#93C5FD', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        // ── Slider state ────────────────────────────────────────────────
+        var thetaVal = 0;
+        var sliderEl = document.getElementById('theta-slider');
+
+        // ── Traced portion (heavier saturated blue, 0 to θ) ─────────────
+        board.create('curve', [
+            function(t) { return f(t) * Math.cos(t); },
+            function(t) { return f(t) * Math.sin(t); },
+            0,
+            function() { return thetaVal; }
+        ], {
+            strokeColor: '#2563EB', strokeWidth: 2.4,
+            fixed: true, highlight: false
+        });
+
+        // ── Dashed direction ray from pole in direction θ ───────────────
+        board.create('segment', [
+            [0, 0],
+            [function() { return 7.5 * Math.cos(thetaVal); },
+             function() { return 7.5 * Math.sin(thetaVal); }]
+        ], {
+            strokeColor: '#999999', strokeWidth: 1, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── θ angle arc near pole (GREEN — distinct from blue curve) ────
+        board.create('curve', [
+            function(t) { return 1.2 * Math.cos(t); },
+            function(t) { return 1.2 * Math.sin(t); },
+            0,
+            function() { return thetaVal; }
+        ], {
+            strokeColor: '#059669', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        // Small θ label near the arc midpoint
+        board.create('text', [
+            function() {
+                var mid = thetaVal / 2;
+                return 1.6 * Math.cos(mid);
+            },
+            function() {
+                var mid = thetaVal / 2;
+                return 1.6 * Math.sin(mid);
+            },
+            function() { return thetaVal > 0.15 ? '\u03B8' : ''; }
+        ], {
+            fontSize: 13, color: '#059669', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Red segment from pole to P (distance visualization) ─────────
+        board.create('segment', [
+            [0, 0],
+            [function() { return f(thetaVal) * Math.cos(thetaVal); },
+             function() { return f(thetaVal) * Math.sin(thetaVal); }]
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── Point P ─────────────────────────────────────────────────────
+        board.create('point', [
+            function() { return f(thetaVal) * Math.cos(thetaVal); },
+            function() { return f(thetaVal) * Math.sin(thetaVal); }
+        ], {
+            name: 'P', size: 4, color: '#DC2626',
+            fixed: true, highlight: false, showInfobox: false,
+            label: { fontSize: 13, color: '#DC2626', offset: [8, 8] }
+        });
+
+        // ── θ display as fraction of π ──────────────────────────────────
+        function thetaToFrac(t) {
+            if (t < 0.005) return '0';
+            var coeff = t / Math.PI;
+            var fracs = [
+                [1, 12], [1, 6], [1, 4], [1, 3], [5, 12], [1, 2],
+                [7, 12], [2, 3], [3, 4], [5, 6], [11, 12], [1, 1],
+                [13, 12], [7, 6], [5, 4], [4, 3], [17, 12], [3, 2],
+                [19, 12], [5, 3], [7, 4], [11, 6], [23, 12], [2, 1]
+            ];
+            for (var i = 0; i < fracs.length; i++) {
+                var num = fracs[i][0];
+                var den = fracs[i][1];
+                var val = num / den;
+                if (Math.abs(coeff - val) < 0.02) {
+                    if (den === 1) {
+                        if (num === 1) return '\\pi';
+                        return num + '\\pi';
+                    }
+                    if (num === 1) return '\\dfrac{\\pi}{' + den + '}';
+                    return '\\dfrac{' + num + '\\pi}{' + den + '}';
+                }
+            }
+            return coeff.toFixed(2) + '\\pi';
+        }
+
+        // ── Panel updates ───────────────────────────────────────────────
+        function updatePanel() {
+            var t = thetaVal;
+            var r = f(t);
+
+            katex.render(
+                '\\theta = ' + thetaToFrac(t),
+                document.getElementById('slider-label'),
+                { throwOnError: false }
+            );
+
+            var rCol = r >= 0 ? '#2563EB' : '#DC2626';
+            katex.render(
+                '\\color{' + rCol + '}{r = f(\\theta) = ' + r.toFixed(2) + '}',
+                document.getElementById('readout-r'),
+                { throwOnError: false }
+            );
+
+            katex.render(
+                '|r| = ' + Math.abs(r).toFixed(2),
+                document.getElementById('readout-dist'),
+                { throwOnError: false }
+            );
+        }
+
+        // Curve equation (static, render once)
+        katex.render(
+            'r = 2 + 4\\cos\\theta',
+            document.getElementById('curve-eq'),
+            { throwOnError: false }
+        );
+
+        // ── Slider event ────────────────────────────────────────────────
+        sliderEl.addEventListener('input', function() {
+            thetaVal = parseFloat(this.value);
+            board.update();
+            updatePanel();
+        });
+
+        // Initial render
+        updatePanel();
+    </script>
+</body>
+</html>
