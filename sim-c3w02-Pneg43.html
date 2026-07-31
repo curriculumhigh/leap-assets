@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangular to Polar Conversion (QII)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { width: 460px; height: 360px; margin: 0; padding: 0; }
+        .board-wrapper { background: white; border-radius: 8px; border: 1px solid #e0e0e0; width: 100%; height: 100%; box-sizing: border-box; }
+        #board { width: 100%; height: 100%; pointer-events: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 5.5, 6.5, -2],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 2 }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 11 }, minorTicks: 0, ticksDistance: 1 }
+                }
+            }
+        });
+
+        // Axis labels
+        board.create('text', [6.1, -0.35, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.15, 5.1, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Points
+        var Px = -4, Py = 3;
+        var O = board.create('point', [0, 0], { name: '', size: 0, fixed: true, visible: false });
+        var P = board.create('point', [Px, Py], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false,
+            showInfobox: false
+        });
+
+        // Label P(-4, 3)
+        board.create('text', [Px - 0.2, Py + 0.4, 'P(-4,\\,3)'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false, useKatex: true, anchorX: 'right'
+        });
+
+        // Foot point on x-axis
+        var foot = board.create('point', [Px, 0], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Segment O to P (blue, labeled r)
+        board.create('segment', [O, P], {
+            strokeColor: '#2563EB', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        // Label r at midpoint (offset up-left)
+        board.create('text', [Px / 2 + 0.25, Py / 2 + 0.45, 'r'], {
+            fontSize: 13, color: '#2563EB', fixed: true, highlight: false, useKatex: true
+        });
+
+        // Angle arc theta — CCW from +x axis to OP (~143°)
+        // Use a curve to draw the arc from angle 0 to ~143°
+        var thetaAngle = Math.atan2(Py, Px); // ~2.498 rad (~143.13°)
+        var arcR = 1.2;
+        board.create('curve', [
+            function(t) { return arcR * Math.cos(t); },
+            function(t) { return arcR * Math.sin(t); },
+            0, thetaAngle
+        ], {
+            strokeColor: '#2563EB', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        // Small arrowhead at end of theta arc
+        var arrowAng = thetaAngle - 0.05;
+        board.create('line', [
+            [arcR * Math.cos(thetaAngle), arcR * Math.sin(thetaAngle)],
+            [arcR * Math.cos(thetaAngle) - 0.15 * Math.cos(thetaAngle - 0.6),
+             arcR * Math.sin(thetaAngle) - 0.15 * Math.sin(thetaAngle - 0.6)]
+        ], {
+            straightFirst: false, straightLast: false,
+            strokeColor: '#2563EB', strokeWidth: 1.5, fixed: true, highlight: false,
+            lastArrow: false, firstArrow: false
+        });
+
+        // Theta label — position in the arc area (QI-QII boundary area)
+        board.create('text', [0.6, 1.1, '\\theta'], {
+            fontSize: 14, color: '#2563EB', fixed: true, highlight: false, useKatex: true
+        });
+
+        // Reference angle arc — acute angle between OP and -x axis (~36.87°)
+        var refAngle = Math.PI - thetaAngle; // angle from pi to OP direction
+        var refArcR = 0.8;
+        // Draw arc from thetaAngle to PI (the acute angle at -x axis)
+        board.create('curve', [
+            function(t) { return refArcR * Math.cos(t); },
+            function(t) { return refArcR * Math.sin(t); },
+            thetaAngle, Math.PI
+        ], {
+            strokeColor: '#059669', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        // Reference angle label
+        board.create('text', [-1.15, 0.55, '\\alpha'], {
+            fontSize: 13, color: '#059669', fixed: true, highlight: false, useKatex: true
+        });
+
+        // Dashed vertical drop (P to foot) — labeled y = 3
+        board.create('segment', [P, foot], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('text', [Px - 0.6, Py / 2, 'y = 3'], {
+            fontSize: 12, color: '#DC2626', fixed: true, highlight: false, useKatex: true, anchorX: 'right'
+        });
+
+        // Dashed horizontal leg (O to foot) — labeled x = -4
+        board.create('segment', [O, foot], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('text', [Px / 2, -0.5, 'x = -4'], {
+            fontSize: 12, color: '#DC2626', fixed: true, highlight: false, useKatex: true, anchorX: 'middle'
+        });
+
+        // Right angle marker at foot
+        var raSize = 0.22;
+        board.create('segment', [[Px + raSize, 0], [Px + raSize, raSize]], {
+            strokeColor: '#444444', strokeWidth: 0.8, fixed: true, highlight: false
+        });
+        board.create('segment', [[Px + raSize, raSize], [Px, raSize]], {
+            strokeColor: '#444444', strokeWidth: 0.8, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
