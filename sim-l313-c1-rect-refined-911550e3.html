@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L313 c1-rect</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+  html,body{margin:0;padding:0;overflow:hidden;height:100%;background:transparent;
+            pointer-events:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .container{max-width:520px;margin:0;padding:6px;height:calc(100% - 12px);}
+  .board-wrapper{background:white;border-radius:8px;padding:10px;height:calc(100% - 20px);}
+  #board{width:100%;height:100%;}
+</style>
+</head>
+<body>
+<div class="container"><div class="board-wrapper"><div id="board"></div></div></div>
+<script>
+var TMAX = 2 * Math.PI;
+var XMIN = -0.5, XMAX = 6.8;
+var YMIN = -2.8, YMAX = 7.5;
+
+var board = JXG.JSXGraph.initBoard('board', {
+    boundingbox: [XMIN, YMAX, XMAX, YMIN],
+    axis: false, grid: false,
+    showNavigation: false, showCopyright: false,
+    pan: { enabled: false }, zoom: { enabled: false }
+});
+
+// Grid lines - horizontal at even y values
+var hGridVals = [-2, 2, 4, 6];
+for (var gi = 0; gi < hGridVals.length; gi++) {
+    board.create('segment', [[XMIN, hGridVals[gi]], [XMAX, hGridVals[gi]]], {
+        strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+    });
+}
+
+// Vertical grid at pi/3 intervals
+var TT = [Math.PI/3, 2*Math.PI/3, Math.PI, 4*Math.PI/3, 5*Math.PI/3, 2*Math.PI];
+for (var vi = 0; vi < TT.length; vi++) {
+    board.create('segment', [[TT[vi], YMIN], [TT[vi], YMAX]], {
+        strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+    });
+}
+
+// Axes
+board.create('arrow', [[XMIN, 0], [XMAX, 0]], {
+    strokeColor: '#444444', strokeWidth: 1.2,
+    lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false
+});
+board.create('arrow', [[0, YMIN], [0, YMAX]], {
+    strokeColor: '#444444', strokeWidth: 1.2,
+    lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false
+});
+
+// Y-axis ticks
+var yTicks = [-2, 2, 4, 6];
+var tickHalf = 0.08;
+for (var yi = 0; yi < yTicks.length; yi++) {
+    var yv = yTicks[yi];
+    board.create('segment', [[-tickHalf, yv], [tickHalf, yv]], {
+        strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+    });
+    board.create('text', [-0.35, yv, String(yv)], {
+        fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+        fixed: true, highlight: false
+    });
+}
+
+// X-axis ticks with labels just below the axis
+var xTickLabels = [
+    [Math.PI/3, '\\frac{\\pi}{3}'],
+    [2*Math.PI/3, '\\frac{2\\pi}{3}'],
+    [Math.PI, '\\pi'],
+    [4*Math.PI/3, '\\frac{4\\pi}{3}'],
+    [5*Math.PI/3, '\\frac{5\\pi}{3}'],
+    [2*Math.PI, '2\\pi']
+];
+var xTickHalf = 0.15;
+for (var xi = 0; xi < xTickLabels.length; xi++) {
+    var xt = xTickLabels[xi][0];
+    var xl = xTickLabels[xi][1];
+    board.create('segment', [[xt, -xTickHalf], [xt, xTickHalf]], {
+        strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+    });
+    board.create('text', [xt, -0.55, xl], {
+        useKatex: true, fontSize: 11, color: '#444444',
+        anchorX: 'middle', anchorY: 'top',
+        fixed: true, highlight: false
+    });
+}
+
+// Axis labels
+board.create('text', [XMAX - 0.2, -0.55, '\\theta'], {
+    useKatex: true, fontSize: 14, color: '#222222',
+    anchorX: 'right', anchorY: 'top',
+    fixed: true, highlight: false
+});
+board.create('text', [0.25, YMAX - 0.3, 'r'], {
+    useKatex: true, fontSize: 14, color: '#222222',
+    fixed: true, highlight: false
+});
+
+// Curve: r = 2 + 4cos(theta)
+board.create('functiongraph', [function(t) { return 2 + 4 * Math.cos(t); }, 0, TMAX], {
+    strokeColor: '#2563EB', strokeWidth: 1.8, fixed: true, highlight: false
+});
+
+// Curve label
+board.create('text', [0.6, 6.6, 'r = 2 + 4\\cos\\theta'], {
+    useKatex: true, fontSize: 13, color: '#2563EB',
+    fixed: true, highlight: false
+});
+</script>
+</body>
+</html>
