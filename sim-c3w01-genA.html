@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generic Right Triangle – Quadrant II</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { width: 460px; height: 360px; margin: 0; padding: 0; }
+        .board-wrapper { background: white; border-radius: 8px; border: 1px solid #e0e0e0; width: 100%; height: 100%; box-sizing: border-box; }
+        #board { width: 100%; height: 100%; pointer-events: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 4.2, 4.5, -2.2],
+            axis: true,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { visible: false }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { visible: false }
+                }
+            }
+        });
+
+        // Axis labels
+        board.create('text', [4.1, -0.35, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 3.8, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Point A in QII
+        var Ax = -3;
+        var Ay = 2;
+
+        var O = board.create('point', [0, 0], { name: '', size: 0, fixed: true, visible: false });
+        var A = board.create('point', [Ax, Ay], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        // Label A (above-left to avoid collision with leg)
+        board.create('text', [Ax - 0.4, Ay + 0.35, 'A'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, cssStyle: 'font-weight:600', anchorX: 'middle'
+        });
+
+        // Foot point M on x-axis
+        var M = board.create('point', [Ax, 0], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Blue hypotenuse O to A
+        board.create('segment', [O, A], {
+            strokeColor: '#2563EB', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        // Label r at midpoint (offset to upper-right of segment)
+        board.create('text', [Ax / 2 + 0.3, Ay / 2 + 0.4, 'r'], {
+            fontSize: 14, color: '#2563EB', fixed: true, highlight: false, useKatex: true
+        });
+
+        // Angle theta — counterclockwise arc from +x axis to OA in QII
+        // Angle of A from positive x-axis
+        var angleA = Math.atan2(Ay, Ax); // ~2.554 rad (~146.3°)
+        var angleAPos = angleA; // already positive since QII
+        var arcRadius = 1.0;
+        board.create('curve', [
+            function(t) { return arcRadius * Math.cos(t); },
+            function(t) { return arcRadius * Math.sin(t); },
+            0,
+            angleAPos
+        ], {
+            strokeColor: '#2563EB', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        // Small arrowhead at end of arc to show direction
+        var arrowDt = 0.08;
+        board.create('curve', [
+            function(t) { return arcRadius * Math.cos(t); },
+            function(t) { return arcRadius * Math.sin(t); },
+            angleAPos - arrowDt,
+            angleAPos
+        ], {
+            strokeColor: '#2563EB', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        // Theta label — place near the arc (around 70-80° position, slightly outside)
+        var thetaLabelAngle = angleAPos * 0.45;
+        var thetaLabelR = 1.4;
+        board.create('text', [thetaLabelR * Math.cos(thetaLabelAngle), thetaLabelR * Math.sin(thetaLabelAngle), '\\theta'], {
+            fontSize: 14, color: '#2563EB', fixed: true, highlight: false, useKatex: true, anchorX: 'middle'
+        });
+
+        // Red dashed vertical leg from M down to A (M is on x-axis, A is above) — labeled 'y' to the LEFT
+        board.create('segment', [M, A], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('text', [Ax - 0.45, Ay / 2, 'y'], {
+            fontSize: 13, color: '#DC2626', fixed: true, highlight: false, useKatex: true, anchorX: 'middle'
+        });
+
+        // Red dashed horizontal leg from O to M — labeled 'x' BELOW the x-axis
+        board.create('segment', [O, M], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('text', [Ax / 2, -0.4, 'x'], {
+            fontSize: 13, color: '#DC2626', fixed: true, highlight: false, useKatex: true, anchorX: 'middle'
+        });
+
+        // Right-angle marker at M
+        var raSize = 0.25;
+        // M is at (Ax, 0). Leg goes up (toward A) and toward O (rightward).
+        board.create('segment', [[Ax + raSize, 0], [Ax + raSize, raSize]], {
+            strokeColor: '#444444', strokeWidth: 0.8, fixed: true, highlight: false
+        });
+        board.create('segment', [[Ax + raSize, raSize], [Ax, raSize]], {
+            strokeColor: '#444444', strokeWidth: 0.8, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
