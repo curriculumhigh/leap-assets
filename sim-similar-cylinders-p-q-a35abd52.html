@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Similar Cylinders P and Q</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 12, 22, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        function drawCylinder(cx, baseY, radius, height, fillColor, outlineColor) {
+            var topY = baseY + height;
+            var ellipseRatio = 0.25;
+            var eHeight = radius * ellipseRatio;
+
+            board.create('ellipse', [
+                [cx - radius, baseY], [cx + radius, baseY], [cx, baseY + eHeight]
+            ], {
+                strokeColor: outlineColor, strokeWidth: 1.0, dash: 2,
+                fillColor: 'none', fillOpacity: 0,
+                fixed: true, highlight: false
+            });
+
+            var bodyPts = [];
+            var nPts = 30;
+            var i;
+            bodyPts.push(board.create('point', [cx - radius, baseY], { visible: false, fixed: true, name: '' }));
+            bodyPts.push(board.create('point', [cx - radius, topY], { visible: false, fixed: true, name: '' }));
+            for (i = 0; i <= nPts; i++) {
+                var angle = Math.PI - (Math.PI * i / nPts);
+                var px = cx + radius * Math.cos(angle);
+                var py = topY + eHeight * Math.sin(angle);
+                bodyPts.push(board.create('point', [px, py], { visible: false, fixed: true, name: '' }));
+            }
+            bodyPts.push(board.create('point', [cx + radius, topY], { visible: false, fixed: true, name: '' }));
+            bodyPts.push(board.create('point', [cx + radius, baseY], { visible: false, fixed: true, name: '' }));
+            for (i = 0; i <= nPts; i++) {
+                var angle2 = 0 - (Math.PI * i / nPts);
+                var px2 = cx + radius * Math.cos(angle2);
+                var py2 = baseY + eHeight * Math.sin(angle2);
+                bodyPts.push(board.create('point', [px2, py2], { visible: false, fixed: true, name: '' }));
+            }
+
+            board.create('polygon', bodyPts, {
+                fillColor: fillColor, fillOpacity: 0.35,
+                borders: { strokeColor: 'none', strokeWidth: 0 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            board.create('segment', [[cx - radius, baseY], [cx - radius, topY]], {
+                strokeColor: outlineColor, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            board.create('segment', [[cx + radius, baseY], [cx + radius, topY]], {
+                strokeColor: outlineColor, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            board.create('ellipse', [
+                [cx - radius, topY], [cx + radius, topY], [cx, topY + eHeight]
+            ], {
+                strokeColor: outlineColor, strokeWidth: 1.5,
+                fillColor: fillColor, fillOpacity: 0.2,
+                fixed: true, highlight: false
+            });
+
+            var frontArcPts = [];
+            for (i = 0; i <= 40; i++) {
+                var a = -Math.PI + (Math.PI * i / 40);
+                frontArcPts.push([cx + radius * Math.cos(a), baseY + eHeight * Math.sin(a)]);
+            }
+            board.create('curve', [
+                frontArcPts.map(function(p) { return p[0]; }),
+                frontArcPts.map(function(p) { return p[1]; })
+            ], {
+                strokeColor: outlineColor, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            return { cx: cx, baseY: baseY, topY: topY, radius: radius, eHeight: eHeight };
+        }
+
+        var pRadius = 2.0;
+        var pHeight = 5.0;
+        var pCx = 4.5;
+        var pBaseY = 0.5;
+        var cylP = drawCylinder(pCx, pBaseY, pRadius, pHeight, '#DBEAFE', '#555555');
+
+        var qRadius = 4.0;
+        var qHeight = 8.0;
+        var qCx = 14.5;
+        var qBaseY = 0.5;
+        var cylQ = drawCylinder(qCx, qBaseY, qRadius, qHeight, '#D1FAE5', '#555555');
+
+        board.create('text', [pCx, cylP.topY + cylP.eHeight + 1.2, '\\textbf{Cylinder P}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14, color: '#222222',
+            useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [qCx, cylQ.topY + cylQ.eHeight + 1.2, '\\textbf{Cylinder Q}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14, color: '#222222',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[pCx, cylP.topY], [pCx + pRadius, cylP.topY]], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, firstArrow: { type: 2, size: 4 }
+        });
+        board.create('text', [pCx + pRadius / 2, cylP.topY + 0.6, '4 \\text{ cm}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12, color: '#DC2626',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[qCx, cylQ.topY], [qCx + qRadius, cylQ.topY]], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, firstArrow: { type: 2, size: 4 }
+        });
+        board.create('text', [qCx + qRadius / 2, cylQ.topY + 0.6, '12 \\text{ cm}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12, color: '#DC2626',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('text', [pCx, pBaseY - 1.4, 'V = 80\\pi \\text{ cm}^3'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13, color: '#222222',
+            useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [qCx, qBaseY - 1.4, 'V = \\, ?'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13, color: '#222222',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('point', [pCx, cylP.topY], {
+            name: '', size: 1.5, color: '#555555', fixed: true, highlight: false
+        });
+        board.create('point', [qCx, cylQ.topY], {
+            name: '', size: 1.5, color: '#555555', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
