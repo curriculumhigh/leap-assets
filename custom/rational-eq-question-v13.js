@@ -579,19 +579,28 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             // nested inside any {...} group (\frac/\sqrt/^{}/_{} args) is
             // STRUCTURAL — left in the math for the marker pipeline, which
             // inserts a compact in-math dropdown.
+            //
+            // Segment builder (v13.1): collect math chunks and extracted DN
+            // tokens separately, then emit delimiters ONLY around non-blank
+            // math chunks. The v10-style "close before / reopen after" splice
+            // left an EMPTY $...$ pair when the DN sat at the start or end of
+            // the block, which rendered as a stray literal "$$".
             var delim = mathBlock.charAt(0) === '$' && mathBlock.charAt(1) === '$' ? '$$' : '$';
             var inner = mathBlock.slice(delim.length, mathBlock.length - delim.length);
-            var out = '';
+            var pieces = [];
+            var cur = '';
             var i = 0, depth = 0, changed = false;
             while (i < inner.length) {
                 var m = /^\{\{(\d+)\}\}/.exec(inner.slice(i));
                 if (m) {
                     var inp = inputs[parseInt(m[1], 10)];
                     if (inp && inp.type === "dropdown" && depth === 0) {
-                        out += delim + " " + m[0] + " " + delim;
+                        pieces.push({ math: cur });
+                        cur = '';
+                        pieces.push({ dn: m[0] });
                         changed = true;
                     } else {
-                        out += m[0];
+                        cur += m[0];
                     }
                     i += m[0].length;
                     continue;
@@ -599,10 +608,22 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 var ch = inner.charAt(i);
                 if (ch === '{') depth++;
                 else if (ch === '}') depth = Math.max(0, depth - 1);
-                out += ch;
+                cur += ch;
                 i++;
             }
-            return changed ? delim + out + delim : mathBlock;
+            if (!changed) return mathBlock;
+            pieces.push({ math: cur });
+            var out = '';
+            pieces.forEach(function (p) {
+                if (p.dn !== undefined) {
+                    out += ' ' + p.dn + ' ';
+                } else if (p.math.replace(/[\s~]/g, '') !== '') {
+                    out += delim + p.math + delim;
+                } else if (p.math) {
+                    out += p.math; // whitespace-only chunk: keep as prose spacing
+                }
+            });
+            return out;
         });
     };
 
