@@ -4571,8 +4571,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                             ctr.inputIndices.forEach(function (idx) {
                                 var savedKey = sec.id + "-" + ri + "-" + idx;
                                 var sv = savedInputs[savedKey];
-                                if (sv && sv.latex) {
-                                    boxLatex.push(sv.latex);
+                                // v13: DN entries carry .value (not .latex)
+                                if (sv && (sv.latex || sv.value)) {
+                                    boxLatex.push(sv.latex || sv.value);
                                 } else {
                                     allFilled = false;
                                 }
@@ -4597,7 +4598,8 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                             if (containerInputSet[ii]) return;
                             var savedKey = sec.id + "-" + ri + "-" + ii;
                             var sv = savedInputs[savedKey];
-                            if (sv && sv.latex) {
+                            // v13: DN entries carry .value (not .latex)
+                            if (sv && (sv.latex || sv.value)) {
                                 if (!sv.correct) nonContainerOk = false;
                             } else {
                                 allNonContainerFilled = false;
@@ -4625,8 +4627,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                         row.inputs.forEach(function (inp, ii) {
                             var savedKey = sec.id + "-" + ri + "-" + ii;
                             var sv = savedInputs[savedKey];
-                            if (sv && sv.latex) {
-                                boxLatex.push(sv.latex);
+                            // v13: DN entries carry .value (not .latex)
+                            if (sv && (sv.latex || sv.value)) {
+                                boxLatex.push(sv.latex || sv.value);
                             } else {
                                 allFilled = false;
                             }
@@ -4662,7 +4665,11 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                             var anyWrong = false;
                             row.inputs.forEach(function (inp, ii) {
                                 var savedKey = sec.id + "-" + ri + "-" + ii;
-                                if (savedInputs[savedKey] && savedInputs[savedKey].latex && !savedInputs[savedKey].correct) {
+                                var sv = savedInputs[savedKey];
+                                // v13: DN entries carry .value (not .latex) — a wrong
+                                // dropdown previously never set anyWrong, so the teacher
+                                // row tick showed green on a wrong DN answer.
+                                if (sv && (sv.latex || sv.value) && !sv.correct) {
                                     anyWrong = true;
                                 }
                             });
