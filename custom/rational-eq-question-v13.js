@@ -3647,6 +3647,24 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
 
         // Add numbered badges to inputs (teacher view)
         var inputNum = 0;
+        // v13: badge helper for eq-row inputs — DN elements are id'd -dd- (not
+        // -mq-), so dropdowns need the same wrap-and-badge pattern TWI DNs use.
+        var _badgeRowInput = function (sec, ri, ii, inp, num, isContainer) {
+            var badgeCls = 'req-num-badge' + (isContainer ? ' req-container-badge' : '');
+            if (inp && inp.type === "dropdown") {
+                var dd = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ri + "-" + ii);
+                if (dd) {
+                    var $w = $(dd).wrap('<span class="req-input-numbered"></span>').parent();
+                    $w.prepend($('<span class="' + badgeCls + '"></span>').text(num));
+                }
+                return;
+            }
+            var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii);
+            if (slot) {
+                $(slot).addClass("req-input-numbered" + (isContainer ? " req-container-numbered" : ""));
+                $(slot).prepend($('<span class="' + badgeCls + '"></span>').text(num));
+            }
+        };
         sections.forEach(function (sec) {
             if (sec.type === "equation-table") {
                 sec.rows.forEach(function (row, ri) {
@@ -3669,23 +3687,13 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                 if (!emittedContainers[belongsTo]) {
                                     emittedContainers[belongsTo] = true;
                                     inputNum++;
-                                    // Badge on first input slot of this container
+                                    // Badge on first input slot of this container (v13: DN-aware)
                                     var firstIdx = row.containers[belongsTo].inputIndices[0];
-                                    var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + firstIdx;
-                                    var slot = document.getElementById(slotId);
-                                    if (slot) {
-                                        $(slot).addClass("req-input-numbered req-container-numbered");
-                                        $(slot).prepend($('<span class="req-num-badge req-container-badge"></span>').text(inputNum));
-                                    }
+                                    _badgeRowInput(sec, ri, firstIdx, row.inputs[firstIdx], inputNum, true);
                                 }
                             } else {
                                 inputNum++;
-                                var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii;
-                                var slot = document.getElementById(slotId);
-                                if (slot) {
-                                    $(slot).addClass("req-input-numbered");
-                                    $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
-                                }
+                                _badgeRowInput(sec, ri, ii, inp, inputNum, false);
                             }
                         });
                     } else if (row.container) {
@@ -3698,12 +3706,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     } else {
                         row.inputs.forEach(function (inp, ii) {
                             inputNum++;
-                            var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii;
-                            var slot = document.getElementById(slotId);
-                            if (slot) {
-                                $(slot).addClass("req-input-numbered");
-                                $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
-                            }
+                            _badgeRowInput(sec, ri, ii, inp, inputNum, false);  // v13: DN-aware
                         });
                     }
                 });
@@ -4176,11 +4179,20 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                                 }
                             } else {
                                 inputNum++;
-                                var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii;
-                                var slot = document.getElementById(slotId);
-                                if (slot) {
-                                    $(slot).addClass("req-input-numbered");
-                                    $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                                // v13: DN-aware badge (dropdowns are -dd- elements)
+                                if (inp && inp.type === "dropdown") {
+                                    var ddN = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ri + "-" + ii);
+                                    if (ddN) {
+                                        var $wN = $(ddN).wrap('<span class="req-input-numbered"></span>').parent();
+                                        $wN.prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                                    }
+                                } else {
+                                    var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii;
+                                    var slot = document.getElementById(slotId);
+                                    if (slot) {
+                                        $(slot).addClass("req-input-numbered");
+                                        $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                                    }
                                 }
                             }
                         });
@@ -4194,11 +4206,20 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     } else {
                         row.inputs.forEach(function (inp, ii) {
                             inputNum++;
-                            var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii;
-                            var slot = document.getElementById(slotId);
-                            if (slot) {
-                                $(slot).addClass("req-input-numbered");
-                                $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                            // v13: DN-aware badge (dropdowns are -dd- elements)
+                            if (inp && inp.type === "dropdown") {
+                                var ddN2 = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ri + "-" + ii);
+                                if (ddN2) {
+                                    var $wN2 = $(ddN2).wrap('<span class="req-input-numbered"></span>').parent();
+                                    $wN2.prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                                }
+                            } else {
+                                var slotId = self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii;
+                                var slot = document.getElementById(slotId);
+                                if (slot) {
+                                    $(slot).addClass("req-input-numbered");
+                                    $(slot).prepend($('<span class="req-num-badge"></span>').text(inputNum));
+                                }
                             }
                         });
                     }
