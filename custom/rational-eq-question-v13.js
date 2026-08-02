@@ -2443,6 +2443,30 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var row = sec.rows[rowIdx];
         var allCorrect = true;
 
+        // v13: eq-row DN support. Row dropdown elements are id'd
+        // uid-dd-<secId>-<rowIdx>-<idx> (same shape the teacher mirror and
+        // save/restore already resolve). Value getter covers both input kinds.
+        var _rowDD = function (ii) {
+            return document.getElementById(self.uid + "-dd-" + sec.id + "-" + rowIdx + "-" + ii);
+        };
+        var _rowVal = function (ii) {
+            if (row.inputs[ii] && row.inputs[ii].type === "dropdown") {
+                var dd = _rowDD(ii);
+                return (dd && dd.getValue) ? dd.getValue() : null;
+            }
+            var f = self.mqFields[sec.id + "-" + rowIdx + "-" + ii];
+            return f ? f.latex() : null;
+        };
+        var _markRowInput = function (ii, correct) {
+            if (row.inputs[ii] && row.inputs[ii].type === "dropdown") {
+                var dd = _rowDD(ii);
+                if (dd) $(dd).removeClass("correct incorrect").addClass(correct ? "correct" : "incorrect");
+            } else {
+                var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + rowIdx + "-" + ii);
+                if (slot) $(slot).removeClass("correct incorrect").addClass(correct ? "correct" : "incorrect");
+            }
+        };
+
         if (row.containers && row.containers.length > 0) {
             // ── v5: Multi-container validation — each container validates a subset of inputs ──
             // Build a set of input indices that belong to any container
@@ -2458,9 +2482,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 var boxValues = [];
                 var boxOk = true;
                 ctr.inputIndices.forEach(function (idx) {
-                    var field = self.mqFields[sec.id + "-" + rowIdx + "-" + idx];
-                    if (!field) { boxOk = false; return; }
-                    boxValues.push(field.latex());
+                    var v = _rowVal(idx);                       // v13: MQ or dropdown
+                    if (v === null) { boxOk = false; return; }
+                    boxValues.push(v);
                 });
                 if (!boxOk || boxValues.length !== ctr.inputIndices.length) {
                     allCorrect = false;
@@ -2468,16 +2492,23 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 }
                 var correct = self.validateContainer(ctr, boxValues);
                 if (!correct) allCorrect = false;
-                // Color container boxes
+                // Color container boxes (v13: DN-aware)
                 ctr.inputIndices.forEach(function (idx) {
-                    var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + rowIdx + "-" + idx);
-                    if (slot) { $(slot).removeClass("correct incorrect").addClass(correct ? "correct" : "incorrect"); }
+                    _markRowInput(idx, correct);
                 });
             });
 
             // Validate individual inputs not in any container
             row.inputs.forEach(function (inp, ii) {
                 if (containerInputs[ii]) return; // already handled by container
+                if (inp.type === "dropdown") {
+                    // v13: exact-match DN validation (same rule as TWI DN)
+                    var val = _rowVal(ii);
+                    var ddCorrect = !!(val && val === inp.answer);
+                    _markRowInput(ii, ddCorrect);
+                    if (!ddCorrect) allCorrect = false;
+                    return;
+                }
                 var field = self.mqFields[sec.id + "-" + rowIdx + "-" + ii];
                 if (!field) { allCorrect = false; return; }
                 var correct = self.validateInput(field.latex(), inp);
@@ -2489,9 +2520,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             // ── Legacy single-container (backward compat) ──
             var boxValues = [];
             for (var bi = 0; bi < row.inputs.length; bi++) {
-                var field = self.mqFields[sec.id + "-" + rowIdx + "-" + bi];
-                if (!field) { allCorrect = false; break; }
-                boxValues.push(field.latex());
+                var bv = _rowVal(bi);                           // v13: MQ or dropdown
+                if (bv === null) { allCorrect = false; break; }
+                boxValues.push(bv);
             }
             if (boxValues.length === row.inputs.length) {
                 allCorrect = self.validateContainer(row.container, boxValues);
@@ -2541,6 +2572,15 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             });
         } else {
             row.inputs.forEach(function (inp, ii) {
+                if (inp.type === "dropdown") {
+                    // v13: exact-match DN validation (was silently SKIPPED —
+                    // a row could pass Check without the dropdown being checked)
+                    var val = _rowVal(ii);
+                    var ddCorrect = !!(val && val === inp.answer);
+                    _markRowInput(ii, ddCorrect);
+                    if (!ddCorrect) allCorrect = false;
+                    return;
+                }
                 var field = self.mqFields[sec.id + "-" + rowIdx + "-" + ii];
                 if (!field) return;
                 var correct = self.validateInput(field.latex(), inp);
@@ -3068,6 +3108,17 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     var rowCompleted = !!(self.completedRows[sec.id] && self.completedRows[sec.id][ri]);
                     row.inputs.forEach(function (inp, ii) {
                         var key = sec.id + "-" + ri + "-" + ii;
+                        if (inp.type === "dropdown") {
+                            // v13: serialize row DN selections. The dd element id is
+                            // uid-dd-<key>, the same shape populateFieldsFromSaved and
+                            // _updateTeacherFromResponse already resolve — so save,
+                            // resume, and the teacher live mirror work from this alone.
+                            var dd = document.getElementById(self.uid + "-dd-" + key);
+                            var val = (dd && dd.getValue) ? dd.getValue() : "";
+                            var ddCorrect = rowCompleted || !!(val && val === inp.answer);
+                            inputs[key] = { value: val, correct: ddCorrect };
+                            return;
+                        }
                         var field = self.mqFields[key];
                         if (field) {
                             var latex = field.latex();
@@ -3246,13 +3297,16 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     choiceEl.setValue(saved.selected);
                 }
             } else if (saved.value !== undefined) {
-                // Dropdown
-                var parts = key.split("-");
-                // key format: "secId-inputIdx" — find the dropdown element
+                // Dropdown — custom req-dropdown-wrap element. v13: use its
+                // setValue API (the old native `select.value =` was a silent
+                // no-op on the custom element, so DN selections never restored).
+                // Key shapes: "secId-inputIdx" (TWI) and "secId-rowIdx-inputIdx"
+                // (eq-row) both resolve as uid-dd-<key>.
                 var ddId = self.uid + "-dd-" + key;
                 var select = document.getElementById(ddId);
                 if (select && saved.value) {
-                    select.value = saved.value;
+                    if (select.setValue) select.setValue(saved.value);
+                    else select.value = saved.value;
                 }
             } else if (saved.latex !== undefined) {
                 // MQ field
