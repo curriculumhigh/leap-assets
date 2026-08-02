@@ -367,9 +367,11 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     Question.prototype._buildDropdown = function (id, options, onChange, structural) {
         var self = this;
         var $wrap = $('<span class="req-dropdown-wrap" id="' + id + '"></span>');
-        // v13: structural (in-math) dropdowns get a compact FM-box-like trigger
+        // v13: structural (in-math) dropdowns get a compact Learnosity-style
+        // trigger -- blank box, chevron on the right edge (no "Select" text,
+        // which would balloon fractions/exponents). Grows to fit on selection.
         if (structural) $wrap.addClass('req-dd-structural');
-        var $selected = $('<span class="req-dd-selected">' + (structural ? '\u25A1' : 'Select\u2026') + '</span>');
+        var $selected = $('<span class="req-dd-selected">' + (structural ? '' : 'Select\u2026') + '</span>');
         var $arrow = $('<span class="req-dd-arrow">\u25BE</span>');
         var $trigger = $('<span class="req-dd-trigger"></span>').append($selected).append($arrow);
         var $menu = $('<span class="req-dd-menu"></span>');
