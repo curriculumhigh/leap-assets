@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Reflection Construction</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 6.5, 10, -5.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Angles in radians
+        var angleX = 50 * Math.PI / 180;
+        var angleAlpha = 35 * Math.PI / 180;
+
+        // Point P at origin-ish
+        var Px = 1, Py = 0;
+
+        // Line k: slight upward tilt
+        var kAngle = 10 * Math.PI / 180;
+        var mAngle = kAngle + angleX;
+
+        // Direction vectors for lines
+        var kDirX = Math.cos(kAngle);
+        var kDirY = Math.sin(kAngle);
+        var mDirX = Math.cos(mAngle);
+        var mDirY = Math.sin(mAngle);
+
+        // Point P
+        var P = board.create('point', [Px, Py], {
+            name: 'P', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-16, -12] }
+        });
+
+        // Line k through P
+        var kEnd1 = board.create('point', [Px - 2 * kDirX, Py - 2 * kDirY], { visible: false, fixed: true, name: '' });
+        var kEnd2 = board.create('point', [Px + 8 * kDirX, Py + 8 * kDirY], { visible: false, fixed: true, name: '' });
+        var lineK = board.create('line', [kEnd1, kEnd2], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false,
+            straightFirst: true, straightLast: true
+        });
+
+        // Line m through P
+        var mEnd1 = board.create('point', [Px - 1.5 * mDirX, Py - 1.5 * mDirY], { visible: false, fixed: true, name: '' });
+        var mEnd2 = board.create('point', [Px + 7 * mDirX, Py + 7 * mDirY], { visible: false, fixed: true, name: '' });
+        var lineM = board.create('line', [mEnd1, mEnd2], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false,
+            straightFirst: true, straightLast: true
+        });
+
+        // Label lines k and m
+        board.create('text', [Px + 7.5 * kDirX, Py + 7.5 * kDirY + 0.4, 'k'], {
+            fontSize: 14, color: '#555555', fixed: true, highlight: false,
+            cssStyle: 'font-style: italic; font-weight: 600;'
+        });
+        board.create('text', [Px + 6.2 * mDirX + 0.2, Py + 6.2 * mDirY + 0.4, 'm'], {
+            fontSize: 14, color: '#555555', fixed: true, highlight: false,
+            cssStyle: 'font-style: italic; font-weight: 600;'
+        });
+
+        // Point B: at angle (kAngle + alpha) from P, above line k
+        var PB_dist = 4.5;
+        var bAngle = kAngle + angleAlpha;
+        var Bx = Px + PB_dist * Math.cos(bAngle);
+        var By = Py + PB_dist * Math.sin(bAngle);
+
+        var B = board.create('point', [Bx, By], {
+            name: 'B', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, 8] }
+        });
+
+        // Reflection helper
+        function reflectAcrossLine(px, py, dirX, dirY, qx, qy) {
+            var vx = qx - px;
+            var vy = qy - py;
+            var proj = vx * dirX + vy * dirY;
+            var refVx = 2 * proj * dirX - vx;
+            var refVy = 2 * proj * dirY - vy;
+            return [px + refVx, py + refVy];
+        }
+
+        var Bprime_coords = reflectAcrossLine(Px, Py, kDirX, kDirY, Bx, By);
+        var Bprime = board.create('point', Bprime_coords, {
+            name: "B'", fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, -14] }
+        });
+
+        var Bdoubleprime_coords = reflectAcrossLine(Px, Py, mDirX, mDirY, Bprime_coords[0], Bprime_coords[1]);
+        var Bdoubleprime = board.create('point', Bdoubleprime_coords, {
+            name: "B''", fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, 6] }
+        });
+
+        // Segments PB, PB', PB''
+        board.create('segment', [P, B], {
+            strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [P, Bprime], {
+            strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [P, Bdoubleprime], {
+            strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Angle arc: x° between line k and line m
+        var ptOnK = board.create('point', [Px + 3 * kDirX, Py + 3 * kDirY], { visible: false, fixed: true, name: '' });
+        var ptOnM = board.create('point', [Px + 3 * mDirX, Py + 3 * mDirY], { visible: false, fixed: true, name: '' });
+
+        board.create('nonReflexAngle', [ptOnK, P, ptOnM], {
+            radius: 1.4,
+            fillColor: '#2563EB', fillOpacity: 0.08,
+            strokeColor: '#2563EB', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // Label x°
+        var xLabelAngle = kAngle + angleX / 2;
+        var xLabelDist = 1.8;
+        board.create('text', [
+            Px + xLabelDist * Math.cos(xLabelAngle),
+            Py + xLabelDist * Math.sin(xLabelAngle),
+            'x^{\\circ}'
+        ], {
+            fontSize: 13, color: '#2563EB', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Angle arc: α between line k and segment PB
+        var ptOnPB = board.create('point', [Px + 3 * Math.cos(bAngle), Py + 3 * Math.sin(bAngle)], { visible: false, fixed: true, name: '' });
+
+        board.create('nonReflexAngle', [ptOnK, P, ptOnPB], {
+            radius: 2.0,
+            fillColor: '#059669', fillOpacity: 0.08,
+            strokeColor: '#059669', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // Label α
+        var alphaLabelAngle = kAngle + angleAlpha / 2;
+        var alphaLabelDist = 2.5;
+        board.create('text', [
+            Px + alphaLabelDist * Math.cos(alphaLabelAngle),
+            Py + alphaLabelDist * Math.sin(alphaLabelAngle),
+            '\\alpha'
+        ], {
+            fontSize: 13, color: '#059669', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+    </script>
+</body>
+</html>
