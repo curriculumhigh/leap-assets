@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reflection Across Parallel Lines</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 9, 19, -2],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 10 }, minorTicks: 0, ticksDistance: 1, drawZero: false }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', label: { fontSize: 10 }, minorTicks: 0, ticksDistance: 1, drawZero: false }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [18.5, -0.6, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.3, 8.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // ── Parallel lines p and q ──────────────────────────────────────
+        board.create('line', [[5, 0], [5, 1]], {
+            strokeColor: '#555555', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false,
+            straightFirst: true, straightLast: true, point1: { visible: false }, point2: { visible: false }
+        });
+        board.create('line', [[13, 0], [13, 1]], {
+            strokeColor: '#555555', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false,
+            straightFirst: true, straightLast: true, point1: { visible: false }, point2: { visible: false }
+        });
+
+        // Line labels
+        board.create('text', [4.5, 8.3, 'p'], { fontSize: 15, color: '#555555', fixed: true, highlight: false, cssStyle: 'font-style:italic; font-weight:bold' });
+        board.create('text', [12.5, 8.3, 'q'], { fontSize: 15, color: '#555555', fixed: true, highlight: false, cssStyle: 'font-style:italic; font-weight:bold' });
+
+        // ── Coordinates ─────────────────────────────────────────────────
+        var Jx = 0, Jy = 6, Kx = 0, Ky = 3;
+        var Jpx = 10, Jpy = 6, Kpx = 10, Kpy = 3;
+        var Jppx = 16, Jppy = 6, Kppx = 16, Kppy = 3;
+        var Ax = 5, Ay = 3;
+        var Bx = 5, By = 6;
+        var Cx = 13, Cy = 3;
+        var Dx = 13, Dy = 6;
+
+        // ── Perpendicular segments (construction lines) ─────────────────
+        board.create('segment', [[Kx, Ky], [Ax, Ay]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [[Jx, Jy], [Bx, By]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [[Kpx, Kpy], [Cx, Cy]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [[Jpx, Jpy], [Dx, Dy]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [[Kppx, Kppy], [Cx, Cy]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [[Jppx, Jppy], [Dx, Dy]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Segments JK, J'K', J''K'' ──────────────────────────────────
+        board.create('segment', [[Jx, Jy], [Kx, Ky]], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [[Jpx, Jpy], [Kpx, Kpy]], {
+            strokeColor: '#2563EB', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[Jppx, Jppy], [Kppx, Kppy]], {
+            strokeColor: '#059669', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Points ──────────────────────────────────────────────────────
+        board.create('point', [Jx, Jy], {
+            name: 'J', size: 4, color: '#222222', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-16, 6] }
+        });
+        board.create('point', [Kx, Ky], {
+            name: 'K', size: 4, color: '#222222', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-16, -10] }
+        });
+
+        board.create('point', [Jpx, Jpy], {
+            name: "J'", size: 4, color: '#2563EB', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#2563EB', offset: [-4, 12] }
+        });
+        board.create('point', [Kpx, Kpy], {
+            name: "K'", size: 4, color: '#2563EB', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#2563EB', offset: [-4, -16] }
+        });
+
+        board.create('point', [Jppx, Jppy], {
+            name: "J''", size: 4, color: '#059669', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#059669', offset: [10, 6] }
+        });
+        board.create('point', [Kppx, Kppy], {
+            name: "K''", size: 4, color: '#059669', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#059669', offset: [10, -10] }
+        });
+
+        board.create('point', [Ax, Ay], {
+            name: 'A', size: 3, color: '#222222', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [8, -10] }
+        });
+        board.create('point', [Bx, By], {
+            name: 'B', size: 3, color: '#222222', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [8, 8] }
+        });
+        board.create('point', [Cx, Cy], {
+            name: 'C', size: 3, color: '#222222', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-18, -10] }
+        });
+        board.create('point', [Dx, Dy], {
+            name: 'D', size: 3, color: '#222222', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-18, 8] }
+        });
+
+        // ── Right angle markers ─────────────────────────────────────────
+        var RA = 0.35;
+        function drawRightAngle(corner, dir1, dir2) {
+            var cx = corner[0], cy = corner[1];
+            var p1 = [cx + dir1[0] * RA, cy + dir1[1] * RA];
+            var p2 = [cx + dir1[0] * RA + dir2[0] * RA, cy + dir1[1] * RA + dir2[1] * RA];
+            var p3 = [cx + dir2[0] * RA, cy + dir2[1] * RA];
+            board.create('segment', [p1, p2], { strokeColor: '#444444', strokeWidth: 0.8, fixed: true, highlight: false });
+            board.create('segment', [p2, p3], { strokeColor: '#444444', strokeWidth: 0.8, fixed: true, highlight: false });
+        }
+
+        drawRightAngle([Ax, Ay], [-1, 0], [0, -1]);
+        drawRightAngle([Bx, By], [-1, 0], [0, 1]);
+        drawRightAngle([Cx, Cy], [1, 0], [0, -1]);
+        drawRightAngle([Dx, Dy], [1, 0], [0, 1]);
+    </script>
+</body>
+</html>
