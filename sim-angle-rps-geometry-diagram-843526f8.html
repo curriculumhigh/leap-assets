@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometry — Angle RPS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var Qx = 0, Qy = 0;
+        var Rx = 2, Ry = 0;
+        var Sx = 6, Sy = 0;
+        var Tx = 10, Ty = 0;
+        var Px = 3.6, Py = 4.8;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 7.5, 12.5, -2.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Points
+        var P = board.create('point', [Px, Py], {
+            name: 'P', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, 12] }
+        });
+        var Q = board.create('point', [Qx, Qy], {
+            name: 'Q', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-6, -18] }
+        });
+        var R = board.create('point', [Rx, Ry], {
+            name: 'R', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, -18] }
+        });
+        var S = board.create('point', [Sx, Sy], {
+            name: 'S', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, -18] }
+        });
+        var T = board.create('point', [Tx, Ty], {
+            name: 'T', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-2, -18] }
+        });
+
+        // Base line
+        board.create('segment', [Q, T], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Segments from P
+        board.create('segment', [P, Q], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [P, R], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [P, S], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [P, T], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Right angle marker at P (between PQ and PT)
+        var raSize = 0.4;
+        var dPQ = Math.sqrt((Qx - Px) * (Qx - Px) + (Qy - Py) * (Qy - Py));
+        var uQx = (Qx - Px) / dPQ, uQy = (Qy - Py) / dPQ;
+        var dPT = Math.sqrt((Tx - Px) * (Tx - Px) + (Ty - Py) * (Ty - Py));
+        var uTx = (Tx - Px) / dPT, uTy = (Ty - Py) / dPT;
+
+        var ra1x = Px + raSize * uQx, ra1y = Py + raSize * uQy;
+        var ra2x = Px + raSize * (uQx + uTx), ra2y = Py + raSize * (uQy + uTy);
+        var ra3x = Px + raSize * uTx, ra3y = Py + raSize * uTy;
+
+        var raP1 = board.create('point', [ra1x, ra1y], { visible: false, fixed: true, name: '' });
+        var raP2 = board.create('point', [ra2x, ra2y], { visible: false, fixed: true, name: '' });
+        var raP3 = board.create('point', [ra3x, ra3y], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [raP1, raP2], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [raP2, raP3], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Angle x = ∠RPS arc (blue)
+        board.create('nonReflexAngle', [R, P, S], {
+            radius: 0.7,
+            fillColor: '#2563EB', fillOpacity: 0.08,
+            strokeColor: '#2563EB', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // Label "x" for angle RPS — placed along the bisector
+        var dPR = Math.sqrt((Rx - Px) * (Rx - Px) + (Ry - Py) * (Ry - Py));
+        var uRx_dir = (Rx - Px) / dPR, uRy_dir = (Ry - Py) / dPR;
+        var dPS = Math.sqrt((Sx - Px) * (Sx - Px) + (Sy - Py) * (Sy - Py));
+        var uSx_dir = (Sx - Px) / dPS, uSy_dir = (Sy - Py) / dPS;
+        var bisX = uRx_dir + uSx_dir, bisY = uRy_dir + uSy_dir;
+        var bisLen = Math.sqrt(bisX * bisX + bisY * bisY);
+        bisX /= bisLen; bisY /= bisLen;
+
+        var xLabelDist = 1.1;
+        board.create('text', [Px + xLabelDist * bisX, Py + xLabelDist * bisY, 'x'], {
+            fontSize: 14, color: '#2563EB', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-style:italic; font-weight:600;'
+        });
+
+        // Segment length labels along the base (close, just below)
+        var baseYoffset = -0.55;
+        board.create('text', [1, baseYoffset, '2'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [4, baseYoffset, '4'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [8, baseYoffset, '4'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // PQ = 6 label — to the LEFT of segment PQ
+        var pqMidX = (Px + Qx) / 2, pqMidY = (Py + Qy) / 2;
+        var pqNormX = -0.8, pqNormY = 0.6;
+        board.create('text', [pqMidX + 0.5 * pqNormX, pqMidY + 0.5 * pqNormY, '6'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // PT = 8 label — to the RIGHT of segment PT
+        var ptMidX = (Px + Tx) / 2, ptMidY = (Py + Ty) / 2;
+        var ptNormX = 0.6, ptNormY = 0.8;
+        board.create('text', [ptMidX + 0.5 * ptNormX, ptMidY + 0.5 * ptNormY, '8'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
