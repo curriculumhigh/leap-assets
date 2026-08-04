@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signal Tower Triangulation Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 4, 11, -6],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Points on the horizontal line ───────────────────────────────
+        var Jx = 1, lineY = 2.5;
+        var Mx = Jx + 4.5;
+        var Kx = Mx + 2.5;
+
+        var J = board.create('point', [Jx, lineY], {
+            name: 'J', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-5, 12] }
+        });
+        var M = board.create('point', [Mx, lineY], {
+            name: 'M', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-5, 12] }
+        });
+        var K = board.create('point', [Kx, lineY], {
+            name: 'K', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [5, 12] }
+        });
+
+        // ── Horizontal ray J → K (solid, with arrow) ───────────────────
+        var rayEnd = board.create('point', [Kx + 1.2, lineY], { visible: false, fixed: true, name: '' });
+        board.create('arrow', [J, rayEnd], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // ── Compute T position (approximately correct angles) ───────────
+        var angJ = 28 * Math.PI / 180;
+        var angM = 56 * Math.PI / 180;
+
+        var JMdist = Mx - Jx;
+        var t = JMdist * Math.sin(angM) / Math.sin(angJ);
+        var Tx = Jx + t * Math.cos(angJ);
+        var Ty = lineY - t * Math.sin(angJ);
+
+        var T = board.create('point', [Tx, Ty], {
+            name: 'T', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -10] }
+        });
+
+        // ── Dashed segments JT and MT ───────────────────────────────────
+        board.create('segment', [J, T], {
+            strokeColor: '#555555', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [M, T], {
+            strokeColor: '#555555', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Angle arc: ∠MJT = 28° at J (between JK and JT, below line) ─
+        board.create('nonReflexAngle', [T, J, K], {
+            radius: 0.9,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // Angle label for ∠MJT = 28°
+        var bisectorJ = -angJ / 2;
+        board.create('text', [
+            Jx + 1.5 * Math.cos(bisectorJ),
+            lineY + 1.5 * Math.sin(bisectorJ),
+            '28\\degree'
+        ], {
+            useKatex: true, fontSize: 12, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle', fixed: true
+        });
+
+        // ── Angle arc: ∠TMK = 56° at M (between MK and MT, below line) ─
+        board.create('nonReflexAngle', [T, M, K], {
+            radius: 0.9,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // Angle label for ∠TMK = 56°
+        var bisectorM = -angM / 2;
+        board.create('text', [
+            Mx + 1.5 * Math.cos(bisectorM),
+            lineY + 1.5 * Math.sin(bisectorM),
+            '56\\degree'
+        ], {
+            useKatex: true, fontSize: 12, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle', fixed: true
+        });
+
+        // ── Distance label: JM = 3.4 mi (closer to the line) ───────────
+        board.create('text', [
+            (Jx + Mx) / 2,
+            lineY + 0.45,
+            '3.4 \\text{ mi}'
+        ], {
+            useKatex: true, fontSize: 13, color: '#3B82F6',
+            anchorX: 'middle', anchorY: 'middle', fixed: true,
+            cssStyle: 'font-weight: bold'
+        });
+
+    </script>
+</body>
+</html>
