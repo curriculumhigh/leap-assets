@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rhombus FHGK</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var s = 4;
+        var h = s * Math.sqrt(3) / 2;
+        var rot = 45 * Math.PI / 180;
+
+        function rotate(x, y) {
+            return [
+                x * Math.cos(rot) - y * Math.sin(rot),
+                x * Math.sin(rot) + y * Math.cos(rot)
+            ];
+        }
+
+        var Hpos = rotate(-s / 2, 0);
+        var Kpos = rotate(s / 2, 0);
+        var Fpos = rotate(0, h);
+        var Gpos = rotate(0, -h);
+        var Mpos = [0, 0];
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 5, 5, -5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var F = board.create('point', Fpos, {
+            name: 'F', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-12, 10] }
+        });
+        var H = board.create('point', Hpos, {
+            name: 'H', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-14, -12] }
+        });
+        var G = board.create('point', Gpos, {
+            name: 'G', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, -14] }
+        });
+        var K = board.create('point', Kpos, {
+            name: 'K', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, 8] }
+        });
+
+        board.create('polygon', [F, H, G, K], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        board.create('segment', [H, K], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        board.create('segment', [F, G], {
+            strokeColor: '#555555', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        var M = board.create('point', Mpos, {
+            name: 'M', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -12] }
+        });
+    </script>
+</body>
+</html>
