@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle JKL</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 8, 10, -2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle vertices: K at top slanted southwest, J bottom-left, L bottom-right
+        var J = board.create('point', [1, 1], {
+            name: 'J', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-16, -14] }
+        });
+        var K = board.create('point', [2.5, 6.5], {
+            name: 'K', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-10, 12] }
+        });
+        var L = board.create('point', [9, 1], {
+            name: 'L', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, -14] }
+        });
+
+        // Triangle edges
+        var segJK = board.create('segment', [J, K], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        var segKL = board.create('segment', [K, L], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        var segJL = board.create('segment', [J, L], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // Side labels
+        // JK (left side) — label "7" at midpoint, offset to the left
+        var midJK_x = (J.X() + K.X()) / 2;
+        var midJK_y = (J.Y() + K.Y()) / 2;
+        board.create('text', [midJK_x - 0.7, midJK_y + 0.1, '7'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // JL (base) — label "8" at midpoint, offset below
+        var midJL_x = (J.X() + L.X()) / 2;
+        var midJL_y = (J.Y() + L.Y()) / 2;
+        board.create('text', [midJL_x, midJL_y - 0.7, '8'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Congruent angle marks at J and L
+        var ARC_RADIUS = 0.9;
+        var TICK_COLOR = '#DC2626';
+
+        // Angle arc at J (angle KJL)
+        var arcJ = board.create('nonReflexAngle', [K, J, L], {
+            radius: ARC_RADIUS,
+            fillColor: 'none', fillOpacity: 0,
+            strokeColor: TICK_COLOR, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Angle arc at L (angle JLK)
+        var arcL = board.create('nonReflexAngle', [J, L, K], {
+            radius: ARC_RADIUS,
+            fillColor: 'none', fillOpacity: 0,
+            strokeColor: TICK_COLOR, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Tick marks on arcs (small line segments along the bisector of each angle)
+        function angleBisectorDir(p1, vertex, p2) {
+            var dx1 = p1.X() - vertex.X();
+            var dy1 = p1.Y() - vertex.Y();
+            var dx2 = p2.X() - vertex.X();
+            var dy2 = p2.Y() - vertex.Y();
+            var len1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+            var len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+            var ux1 = dx1 / len1, uy1 = dy1 / len1;
+            var ux2 = dx2 / len2, uy2 = dy2 / len2;
+            var bx = ux1 + ux2, by = uy1 + uy2;
+            var blen = Math.sqrt(bx * bx + by * by);
+            return { x: bx / blen, y: by / blen };
+        }
+
+        function addTickOnArc(p1, vertex, p2) {
+            var bis = angleBisectorDir(p1, vertex, p2);
+            // Point on bisector at arc radius distance
+            var cx = vertex.X() + bis.x * ARC_RADIUS;
+            var cy = vertex.Y() + bis.y * ARC_RADIUS;
+            // Perpendicular to bisector
+            var px = -bis.y;
+            var py = bis.x;
+            var tickLen = 0.18;
+            board.create('segment', [
+                [cx - px * tickLen, cy - py * tickLen],
+                [cx + px * tickLen, cy + py * tickLen]
+            ], {
+                strokeColor: TICK_COLOR, strokeWidth: 1.8,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Tick on angle J (K-J-L)
+        addTickOnArc(K, J, L);
+
+        // Tick on angle L (J-L-K)
+        addTickOnArc(J, L, K);
+    </script>
+</body>
+</html>
