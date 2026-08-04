@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Isosceles Triangle JKL</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 5.5, 4, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle vertices
+        var J = board.create('point', [0, 4.2], {
+            name: 'J', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [0, 14] }
+        });
+        var K = board.create('point', [-2.8, -1.2], {
+            name: 'K', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-16, -10] }
+        });
+        var L = board.create('point', [2.8, -1.2], {
+            name: 'L', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [10, -10] }
+        });
+
+        // Triangle sides
+        var sideJK = board.create('segment', [J, K], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        var sideJL = board.create('segment', [J, L], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        var sideKL = board.create('segment', [K, L], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // Congruence tick marks on JK
+        var midJK_x = (J.X() + K.X()) / 2;
+        var midJK_y = (J.Y() + K.Y()) / 2;
+        var dxJK = K.X() - J.X();
+        var dyJK = K.Y() - J.Y();
+        var lenJK = Math.sqrt(dxJK * dxJK + dyJK * dyJK);
+        var perpJK_x = -dyJK / lenJK;
+        var perpJK_y = dxJK / lenJK;
+        var tickLen = 0.2;
+
+        board.create('segment', [
+            [midJK_x + perpJK_x * tickLen, midJK_y + perpJK_y * tickLen],
+            [midJK_x - perpJK_x * tickLen, midJK_y - perpJK_y * tickLen]
+        ], { strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Congruence tick marks on JL
+        var midJL_x = (J.X() + L.X()) / 2;
+        var midJL_y = (J.Y() + L.Y()) / 2;
+        var dxJL = L.X() - J.X();
+        var dyJL = L.Y() - J.Y();
+        var lenJL = Math.sqrt(dxJL * dxJL + dyJL * dyJL);
+        var perpJL_x = -dyJL / lenJL;
+        var perpJL_y = dxJL / lenJL;
+
+        board.create('segment', [
+            [midJL_x + perpJL_x * tickLen, midJL_y + perpJL_y * tickLen],
+            [midJL_x - perpJL_x * tickLen, midJL_y - perpJL_y * tickLen]
+        ], { strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Angle arc at J (vertex angle = 34°)
+        board.create('nonReflexAngle', [K, J, L], {
+            radius: 0.6,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // Angle label at J
+        var bisJ_x = ((K.X() + L.X()) / 2) - J.X();
+        var bisJ_y = ((K.Y() + L.Y()) / 2) - J.Y();
+        var bisJ_len = Math.sqrt(bisJ_x * bisJ_x + bisJ_y * bisJ_y);
+        var labelJ_dist = 1.1;
+        board.create('text', [
+            J.X() + (bisJ_x / bisJ_len) * labelJ_dist,
+            J.Y() + (bisJ_y / bisJ_len) * labelJ_dist,
+            '34^\\circ'
+        ], { useKatex: true, fontSize: 13, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+        // Angle arc at L (base angle = x°)
+        board.create('nonReflexAngle', [J, L, K], {
+            radius: 0.6,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // Angle label at L
+        var dirLJ_x = J.X() - L.X();
+        var dirLJ_y = J.Y() - L.Y();
+        var dirLJ_len = Math.sqrt(dirLJ_x * dirLJ_x + dirLJ_y * dirLJ_y);
+        var dirLK_x = K.X() - L.X();
+        var dirLK_y = K.Y() - L.Y();
+        var dirLK_len = Math.sqrt(dirLK_x * dirLK_x + dirLK_y * dirLK_y);
+        var bisL_x = dirLJ_x / dirLJ_len + dirLK_x / dirLK_len;
+        var bisL_y = dirLJ_y / dirLJ_len + dirLK_y / dirLK_len;
+        var bisL_len = Math.sqrt(bisL_x * bisL_x + bisL_y * bisL_y);
+        var labelL_dist = 1.1;
+        board.create('text', [
+            L.X() + (bisL_x / bisL_len) * labelL_dist,
+            L.Y() + (bisL_y / bisL_len) * labelL_dist,
+            'x^\\circ'
+        ], { useKatex: true, fontSize: 13, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+    </script>
+</body>
+</html>
