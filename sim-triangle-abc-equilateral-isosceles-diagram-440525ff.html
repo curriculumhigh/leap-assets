@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle ABC with Equilateral ABD and Isosceles BDC</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 5.5, 9.5, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Coordinates ─────────────────────────────────────────────────
+        var sideLen = 3;
+        var Ax = 0, Ay = 0;
+        var Dx = 3, Dy = 0;
+        var Bx = 1.5, By = sideLen * Math.sqrt(3) / 2;
+        var Cx = Dx + sideLen, Cy = 0;
+
+        // ── Points (invisible, for construction) ────────────────────────
+        var A = board.create('point', [Ax, Ay], { name: '', visible: false, fixed: true });
+        var B = board.create('point', [Bx, By], { name: '', visible: false, fixed: true });
+        var C = board.create('point', [Cx, Cy], { name: '', visible: false, fixed: true });
+        var D = board.create('point', [Dx, Dy], { name: '', visible: false, fixed: true });
+
+        // ── Polygon edges (segments) ────────────────────────────────────
+        board.create('segment', [A, B], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [B, D], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [A, D], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [B, C], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [D, C], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+
+        // ── Vertex dots ─────────────────────────────────────────────────
+        board.create('point', [Ax, Ay], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        board.create('point', [Bx, By], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        board.create('point', [Cx, Cy], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        board.create('point', [Dx, Dy], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+
+        // ── Vertex labels ───────────────────────────────────────────────
+        board.create('text', [Ax - 0.4, Ay - 0.4, 'A'], { fontSize: 15, color: '#222222', fixed: true, highlight: false, cssStyle: 'font-weight:bold' });
+        board.create('text', [Bx - 0.1, By + 0.35, 'B'], { fontSize: 15, color: '#222222', fixed: true, highlight: false, cssStyle: 'font-weight:bold' });
+        board.create('text', [Cx + 0.25, Cy - 0.4, 'C'], { fontSize: 15, color: '#222222', fixed: true, highlight: false, cssStyle: 'font-weight:bold' });
+        board.create('text', [Dx - 0.1, Dy - 0.5, 'D'], { fontSize: 15, color: '#222222', fixed: true, highlight: false, cssStyle: 'font-weight:bold' });
+
+        // ── Tick mark helper ────────────────────────────────────────────
+        function drawTickMarks(p1, p2, numTicks, color) {
+            var mx = (p1[0] + p2[0]) / 2;
+            var my = (p1[1] + p2[1]) / 2;
+            var dx = p2[0] - p1[0];
+            var dy = p2[1] - p1[1];
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var ax = dx / len;
+            var ay = dy / len;
+            var tickHalf = 0.18;
+            var spacing = 0.12;
+
+            for (var i = 0; i < numTicks; i++) {
+                var offset = (i - (numTicks - 1) / 2) * spacing;
+                var cx = mx + offset * ax;
+                var cy = my + offset * ay;
+                board.create('segment', [
+                    [cx - tickHalf * px, cy - tickHalf * py],
+                    [cx + tickHalf * px, cy + tickHalf * py]
+                ], { strokeColor: color, strokeWidth: 1.8, fixed: true, highlight: false });
+            }
+        }
+
+        // Double tick marks on AB, BD, AD, DC (all equal = sideLen)
+        var tickColor = '#DC2626';
+        drawTickMarks([Ax, Ay], [Bx, By], 2, tickColor);
+        drawTickMarks([Bx, By], [Dx, Dy], 2, tickColor);
+        drawTickMarks([Ax, Ay], [Dx, Dy], 2, tickColor);
+        drawTickMarks([Dx, Dy], [Cx, Cy], 2, tickColor);
+
+        // ── Angle arcs ──────────────────────────────────────────────────
+        board.create('nonReflexAngle', [C, D, B], {
+            radius: 0.5,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [B, C, D], {
+            radius: 0.5,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // ── Angle labels ────────────────────────────────────────────────
+        var angBDC_bisX = (function() {
+            var vbx = Bx - Dx, vby = By - Dy;
+            var vcx = Cx - Dx, vcy = Cy - Dy;
+            var lb = Math.sqrt(vbx*vbx + vby*vby);
+            var lc = Math.sqrt(vcx*vcx + vcy*vcy);
+            var bx = vbx/lb + vcx/lc;
+            var by = vby/lb + vcy/lc;
+            var bl = Math.sqrt(bx*bx + by*by);
+            return Dx + 0.85 * bx/bl;
+        })();
+        var angBDC_bisY = (function() {
+            var vbx = Bx - Dx, vby = By - Dy;
+            var vcx = Cx - Dx, vcy = Cy - Dy;
+            var lb = Math.sqrt(vbx*vbx + vby*vby);
+            var lc = Math.sqrt(vcx*vcx + vcy*vcy);
+            var bx = vbx/lb + vcx/lc;
+            var by = vby/lb + vcy/lc;
+            var bl = Math.sqrt(bx*bx + by*by);
+            return Dy + 0.85 * by/bl;
+        })();
+
+        board.create('text', [angBDC_bisX, angBDC_bisY, 'x\\degree'], {
+            fontSize: 13, color: '#DC2626', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        var angBCA_bisX = (function() {
+            var vbx = Bx - Cx, vby = By - Cy;
+            var vdx = Dx - Cx, vdy = Dy - Cy;
+            var lb = Math.sqrt(vbx*vbx + vby*vby);
+            var ld = Math.sqrt(vdx*vdx + vdy*vdy);
+            var bx = vbx/lb + vdx/ld;
+            var by = vby/lb + vdy/ld;
+            var bl = Math.sqrt(bx*bx + by*by);
+            return Cx + 0.9 * bx/bl;
+        })();
+        var angBCA_bisY = (function() {
+            var vbx = Bx - Cx, vby = By - Cy;
+            var vdx = Dx - Cx, vdy = Dy - Cy;
+            var lb = Math.sqrt(vbx*vbx + vby*vby);
+            var ld = Math.sqrt(vdx*vdx + vdy*vdy);
+            var bx = vbx/lb + vdx/ld;
+            var by = vby/lb + vdy/ld;
+            var bl = Math.sqrt(bx*bx + by*by);
+            return Cy + 0.9 * by/bl;
+        })();
+
+        board.create('text', [angBCA_bisX, angBCA_bisY, 'y\\degree'], {
+            fontSize: 13, color: '#DC2626', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+    </script>
+</body>
+</html>
