@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lighthouse Bearing Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var angB = 35 * Math.PI / 180;
+        var angLPC = 70 * Math.PI / 180;
+        var BP = 4.2;
+
+        var angP_int = Math.PI - angLPC;
+        var angL_int = Math.PI - angB - angP_int;
+
+        var BL = BP * Math.sin(angP_int) / Math.sin(angL_int);
+
+        var Bx = 1, By = 4;
+        var Px = Bx + BP, Py = By;
+        var Lx = Bx + BL * Math.cos(-angB);
+        var Ly = By + BL * Math.sin(-angB);
+
+        var Cx = Px + 2.0, Cy = Py;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 6.5, 9, -3.5],
+            axis: false, grid: false,
+            keepAspectRatio: true,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        board.create('line', [[Bx, By], [Cx, Cy]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false,
+            straightFirst: true, straightLast: true,
+            firstArrow: false, lastArrow: { type: 2, size: 5 }
+        });
+
+        board.create('segment', [[Bx, By], [Lx, Ly]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[Px, Py], [Lx, Ly]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var ptB = board.create('point', [Bx, By], {
+            name: 'B', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-5, 12] }
+        });
+        var ptP = board.create('point', [Px, Py], {
+            name: 'P', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-2, 12] }
+        });
+        var ptC = board.create('point', [Cx, Cy], {
+            name: 'C', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [5, 12] }
+        });
+        var ptL = board.create('point', [Lx, Ly], {
+            name: 'L', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-5, -14] }
+        });
+
+        var midBPx = (Bx + Px) / 2;
+        var midBPy = By + 0.45;
+        board.create('text', [midBPx, midBPy, '4.2 \\text{ mi}'], {
+            anchorX: 'middle', anchorY: 'bottom', fontSize: 13, color: '#222222',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        var arcB = board.create('nonReflexAngle', [ptL, ptB, ptC], {
+            radius: 0.7,
+            fillColor: '#2563EB', fillOpacity: 0.08,
+            strokeColor: '#2563EB', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        var bisB_angle = -angB / 2;
+        var bisB_r = 1.0;
+        var lblBx = Bx + bisB_r * Math.cos(bisB_angle);
+        var lblBy = By + bisB_r * Math.sin(bisB_angle);
+        board.create('text', [lblBx, lblBy, '35\\degree'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12, color: '#2563EB',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        var arcP = board.create('nonReflexAngle', [ptC, ptP, ptL], {
+            radius: 0.7,
+            fillColor: '#059669', fillOpacity: 0.08,
+            strokeColor: '#059669', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        var anglePL = Math.atan2(Ly - Py, Lx - Px);
+        var anglePC = 0;
+        var bisP_angle = (anglePC + anglePL) / 2;
+        var bisP_r = 1.0;
+        var lblPx = Px + bisP_r * Math.cos(bisP_angle);
+        var lblPy = Py + bisP_r * Math.sin(bisP_angle);
+        board.create('text', [lblPx, lblPy, '70\\degree'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12, color: '#059669',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
