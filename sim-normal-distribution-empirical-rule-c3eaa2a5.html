@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Normal Distribution — ACT Scores</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 0.105, 38.5, -0.035],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        var mu = 19;
+        var sigma = 5;
+
+        // Normal PDF
+        function normalPDF(x) {
+            var z = (x - mu) / sigma;
+            return (1 / (sigma * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * z * z);
+        }
+
+        // Shading colors for bands (symmetric from center out)
+        var COL_BAND1 = '#2563EB';  // ±1σ (innermost)
+        var COL_BAND2 = '#059669';  // ±2σ
+        var COL_BAND3 = '#D97706';  // ±3σ (outermost)
+
+        // Helper: shade a region under the curve
+        function shadeBand(xMin, xMax, color, opacity) {
+            var pts = [];
+            pts.push([xMin, 0]);
+            var steps = 80;
+            var dx = (xMax - xMin) / steps;
+            for (var i = 0; i <= steps; i++) {
+                var x = xMin + i * dx;
+                pts.push([x, normalPDF(x)]);
+            }
+            pts.push([xMax, 0]);
+            var xCoords = pts.map(function(p) { return p[0]; });
+            var yCoords = pts.map(function(p) { return p[1]; });
+            board.create('polygon', pts.map(function(p) {
+                return board.create('point', p, { visible: false, fixed: true, name: '' });
+            }), {
+                fillColor: color, fillOpacity: opacity,
+                borders: { visible: false },
+                vertices: { visible: false },
+                fixed: true, highlight: false
+            });
+        }
+
+        // Shade bands (outer to inner so inner draws on top)
+        // ±3σ band (4 to 9 and 29 to 34)
+        shadeBand(4, 9, COL_BAND3, 0.15);
+        shadeBand(29, 34, COL_BAND3, 0.15);
+
+        // ±2σ band (9 to 14 and 24 to 29)
+        shadeBand(9, 14, COL_BAND2, 0.15);
+        shadeBand(24, 29, COL_BAND2, 0.15);
+
+        // ±1σ band (14 to 19 and 19 to 24)
+        shadeBand(14, 19, COL_BAND1, 0.15);
+        shadeBand(19, 24, COL_BAND1, 0.15);
+
+        // Draw the bell curve
+        board.create('functiongraph', [normalPDF, 1, 37], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // X-axis line
+        board.create('segment', [[1, 0], [37, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Vertical dashed reference lines at each σ
+        var sigmaValues = [4, 9, 14, 19, 24, 29, 34];
+        for (var i = 0; i < sigmaValues.length; i++) {
+            var xv = sigmaValues[i];
+            var yTop = normalPDF(xv);
+            board.create('segment', [[xv, 0], [xv, yTop]], {
+                strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Tick marks and numeric labels on x-axis
+        for (var i = 0; i < sigmaValues.length; i++) {
+            var xv = sigmaValues[i];
+            // Tick mark
+            board.create('segment', [[xv, -0.002], [xv, 0.002]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            // Numeric label
+            var isBold = (xv === 19);
+            board.create('text', [xv, -0.009, String(xv)], {
+                anchorX: 'middle', anchorY: 'top', fontSize: 12,
+                color: '#222222', fixed: true, highlight: false,
+                cssStyle: isBold ? 'font-weight:bold' : ''
+            });
+        }
+
+        // Percentage labels in each band
+        var bandLabels = [
+            { x: 6.5, text: '2.35%', color: COL_BAND3 },
+            { x: 11.5, text: '13.5%', color: COL_BAND2 },
+            { x: 16.5, text: '34%', color: COL_BAND1 },
+            { x: 21.5, text: '34%', color: COL_BAND1 },
+            { x: 26.5, text: '13.5%', color: COL_BAND2 },
+            { x: 31.5, text: '2.35%', color: COL_BAND3 }
+        ];
+
+        for (var i = 0; i < bandLabels.length; i++) {
+            var bl = bandLabels[i];
+            var yPos = normalPDF(bl.x) * 0.45;
+            board.create('text', [bl.x, yPos, bl.text], {
+                anchorX: 'middle', anchorY: 'middle', fontSize: 11,
+                color: bl.color, fixed: true, highlight: false,
+                cssStyle: 'font-weight:600'
+            });
+        }
+
+        // Outer tail labels (0.15%)
+        board.create('text', [2.5, 0.008, '0.15%'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 9,
+            color: '#888888', fixed: true, highlight: false
+        });
+        board.create('text', [35.5, 0.008, '0.15%'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 9,
+            color: '#888888', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
