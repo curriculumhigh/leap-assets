@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polar Graph with Points A, B, C, D</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7.5, 7.5, 7.5, -7.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var GRID_COL = '#D1D5DB';
+        var GRID_W = 0.4;
+        var AXIS_COL = '#444444';
+        var CURVE_COL = '#2563EB';
+        var PT_COL = '#DC2626';
+
+        // Polar grid: concentric circles
+        var radii = [1, 2, 3, 4, 5, 6];
+        for (var i = 0; i < radii.length; i++) {
+            board.create('circle', [[0, 0], radii[i]], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W,
+                fillColor: 'none', fixed: true, highlight: false
+            });
+        }
+
+        // Polar grid: angular lines every 30 degrees
+        for (var a = 0; a < 360; a += 30) {
+            var rad = a * Math.PI / 180;
+            var x2 = 6.8 * Math.cos(rad);
+            var y2 = 6.8 * Math.sin(rad);
+            board.create('segment', [[0, 0], [x2, y2]], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Polar axis (horizontal arrow)
+        board.create('arrow', [[0, 0], [7.2, 0]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [6.0, 0.55, '<i>polar axis</i>'], {
+            fontSize: 13, color: AXIS_COL, fixed: true, highlight: false
+        });
+
+        // Radial labels along polar axis
+        board.create('text', [2, -0.5, '2'], { fontSize: 11, color: '#666666', anchorX: 'middle', fixed: true, highlight: false });
+        board.create('text', [4, -0.5, '4'], { fontSize: 11, color: '#666666', anchorX: 'middle', fixed: true, highlight: false });
+        board.create('text', [6, -0.5, '6'], { fontSize: 11, color: '#666666', anchorX: 'middle', fixed: true, highlight: false });
+
+        // Pole point O
+        board.create('point', [0, 0], {
+            name: 'O', size: 3, color: '#222222', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [8, -12] }
+        });
+
+        // Limacon curve: r = 2 - 4cos(theta)
+        board.create('curve', [
+            function(t) { return (2 - 4 * Math.cos(t)) * Math.cos(t); },
+            function(t) { return (2 - 4 * Math.cos(t)) * Math.sin(t); },
+            0, 2 * Math.PI
+        ], {
+            strokeColor: CURVE_COL, strokeWidth: 1.8,
+            fixed: true, highlight: false,
+            numberPointsHigh: 800
+        });
+
+        // Points on the curve r = 2 - 4cos(theta)
+        function polarR(t) { return 2 - 4 * Math.cos(t); }
+        function polarX(t) { return polarR(t) * Math.cos(t); }
+        function polarY(t) { return polarR(t) * Math.sin(t); }
+
+        var tA = 5 * Math.PI / 12;
+        var tB = Math.PI / 2;
+        var tC = 2 * Math.PI / 3;
+        var tD = Math.PI;
+
+        board.create('point', [polarX(tA), polarY(tA)], {
+            name: 'A', size: 5, color: PT_COL, fixed: true, highlight: false,
+            label: { fontSize: 14, color: PT_COL, offset: [10, 4], cssStyle: 'font-weight:bold' }
+        });
+
+        board.create('point', [polarX(tB), polarY(tB)], {
+            name: 'B', size: 5, color: PT_COL, fixed: true, highlight: false,
+            label: { fontSize: 14, color: PT_COL, offset: [10, 6], cssStyle: 'font-weight:bold' }
+        });
+
+        board.create('point', [polarX(tC), polarY(tC)], {
+            name: 'C', size: 5, color: PT_COL, fixed: true, highlight: false,
+            label: { fontSize: 14, color: PT_COL, offset: [-18, 8], cssStyle: 'font-weight:bold' }
+        });
+
+        board.create('point', [polarX(tD), polarY(tD)], {
+            name: 'D', size: 5, color: PT_COL, fixed: true, highlight: false,
+            label: { fontSize: 14, color: PT_COL, offset: [-8, -16], cssStyle: 'font-weight:bold' }
+        });
+    </script>
+</body>
+</html>
