@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>r vs θ Cartesian Plot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var PI = Math.PI;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.6, 7.8, 7.2, -5.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Grid (horizontal lines) ──────
+        var gridYvals = [-4, -2, 2, 4, 6];
+        var i;
+        for (i = 0; i < gridYvals.length; i++) {
+            board.create('line', [[0, gridYvals[i]], [1, gridYvals[i]]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                straightFirst: true, straightLast: true,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Vertical grid lines at each pi/4
+        var gridXvals = [PI/4, PI/2, 3*PI/4, PI, 5*PI/4, 3*PI/2, 7*PI/4, 2*PI];
+        for (i = 0; i < gridXvals.length; i++) {
+            board.create('segment', [[gridXvals[i], -5.5], [gridXvals[i], 7.5]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Axes ────────────────────────────────────────────────────────
+        // Horizontal axis (θ)
+        board.create('arrow', [[-0.4, 0], [7.0, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Vertical axis (r)
+        board.create('arrow', [[0, -5.5], [0, 7.5]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // ── Axis labels ─────────────────────────────────────────────────
+        board.create('text', [6.8, -0.6, '\\theta'], {
+            useKatex: true, fontSize: 14, fixed: true, highlight: false
+        });
+        board.create('text', [-0.45, 7.3, 'r'], {
+            useKatex: true, fontSize: 14, fixed: true, highlight: false
+        });
+
+        // ── Tick marks on θ-axis ────────────────────────────────────────
+        var tickLength = 0.2;
+        for (i = 0; i < gridXvals.length; i++) {
+            board.create('segment', [[gridXvals[i], -tickLength], [gridXvals[i], tickLength]], {
+                strokeColor: '#444444', strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+        }
+
+        // θ-axis KaTeX labels
+        var thetaLabels = [
+            { x: PI/4, text: '\\tfrac{\\pi}{4}' },
+            { x: PI/2, text: '\\tfrac{\\pi}{2}' },
+            { x: 3*PI/4, text: '\\tfrac{3\\pi}{4}' },
+            { x: PI, text: '\\pi' },
+            { x: 5*PI/4, text: '\\tfrac{5\\pi}{4}' },
+            { x: 3*PI/2, text: '\\tfrac{3\\pi}{2}' },
+            { x: 7*PI/4, text: '\\tfrac{7\\pi}{4}' },
+            { x: 2*PI, text: '2\\pi' }
+        ];
+
+        for (i = 0; i < thetaLabels.length; i++) {
+            board.create('text', [thetaLabels[i].x, -0.7, thetaLabels[i].text], {
+                useKatex: true, fontSize: 11, anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false, color: '#333'
+            });
+        }
+
+        // ── Tick marks on r-axis ────────────────────────────────────────
+        var rTicks = [-4, -2, 2, 4, 6];
+        for (i = 0; i < rTicks.length; i++) {
+            board.create('segment', [[-0.12, rTicks[i]], [0.12, rTicks[i]]], {
+                strokeColor: '#444444', strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            board.create('text', [-0.35, rTicks[i], String(rTicks[i])], {
+                fontSize: 11, anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false, color: '#333'
+            });
+        }
+
+        // ── Function: r(θ) = 1 − 5cos(θ) ──────────────────────────────
+        board.create('functiongraph', [
+            function(theta) { return 1 - 5 * Math.cos(theta); },
+            0, 2 * PI
+        ], {
+            strokeColor: '#2563EB', strokeWidth: 2.0,
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
