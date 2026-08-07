@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Tree Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 4px; height: calc(100% - 8px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 10.5, 14.5, -0.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        var COL_MORN = '#222222';
+        var COL_AFT = '#2563EB';
+        var COL_EVE = '#059669';
+
+        // Layout columns
+        var xRoot = 0.5;
+        var xL1 = 3.2;   // Morning choices
+        var xL2 = 7.5;   // Afternoon choices
+        var xL3 = 11.5;  // Evening choices
+
+        // Header row
+        var hdrY = 10.0;
+        board.create('text', [xL1, hdrY, 'Morning'], { fontSize: 7, color: '#666', anchorX: 'middle', fixed: true, highlight: false });
+        board.create('text', [xL2, hdrY, 'Afternoon'], { fontSize: 7, color: '#666', anchorX: 'middle', fixed: true, highlight: false });
+        board.create('text', [xL3, hdrY, 'Evening'], { fontSize: 7, color: '#666', anchorX: 'middle', fixed: true, highlight: false });
+
+        // Y positions
+        var morning = ['Yoga', 'Swim'];
+        var afternoon = ['Paint', 'Music', 'Drama'];
+        var evening = ['Quiz', 'Debate'];
+
+        // Level 1: 2 nodes, spread across vertical center
+        var l1Ys = [7.5, 3.0];
+
+        // Level 2: each L1 branches to 3 → 6 nodes
+        // Top group (Yoga): y = 9.0, 7.5, 6.0
+        // Bottom group (Swim): y = 4.5, 3.0, 1.5
+        var l2Ys = [[9.0, 7.5, 6.0], [4.5, 3.0, 1.5]];
+
+        // Level 3: each L2 branches to 2 → 12 nodes
+        // Spread 0.5 above and below each L2 node
+        var l3Offset = 0.45;
+
+        // Root point
+        var root = board.create('point', [xRoot, 5.25], { name: '', size: 1.5, color: '#222222', fixed: true, highlight: false });
+
+        // Draw tree
+        var l1Points = [];
+        var l2Points = [];
+        var l3Points = [];
+
+        for (var i = 0; i < 2; i++) {
+            // Level 1 node
+            var p1 = board.create('point', [xL1, l1Ys[i]], { name: '', size: 1.5, color: COL_MORN, fixed: true, highlight: false });
+            l1Points.push(p1);
+
+            // Branch from root to L1
+            board.create('segment', [root, p1], { strokeColor: COL_MORN, strokeWidth: 1.0, fixed: true, highlight: false });
+
+            // Label for L1
+            board.create('text', [xL1 + 0.15, l1Ys[i] + 0.45, morning[i]], { fontSize: 7, color: COL_MORN, anchorX: 'left', fixed: true, highlight: false });
+
+            for (var j = 0; j < 3; j++) {
+                // Level 2 node
+                var p2 = board.create('point', [xL2, l2Ys[i][j]], { name: '', size: 1.5, color: COL_AFT, fixed: true, highlight: false });
+                l2Points.push(p2);
+
+                // Branch from L1 to L2
+                board.create('segment', [p1, p2], { strokeColor: COL_AFT, strokeWidth: 0.8, fixed: true, highlight: false });
+
+                // Label for L2
+                board.create('text', [xL2 + 0.15, l2Ys[i][j] + 0.4, afternoon[j]], { fontSize: 6, color: COL_AFT, anchorX: 'left', fixed: true, highlight: false });
+
+                for (var k = 0; k < 2; k++) {
+                    // Level 3 node
+                    var yOff = (k === 0) ? l3Offset : -l3Offset;
+                    var l3Y = l2Ys[i][j] + yOff;
+                    var p3 = board.create('point', [xL3, l3Y], { name: '', size: 1.5, color: COL_EVE, fixed: true, highlight: false });
+                    l3Points.push(p3);
+
+                    // Branch from L2 to L3
+                    board.create('segment', [p2, p3], { strokeColor: COL_EVE, strokeWidth: 0.6, fixed: true, highlight: false });
+
+                    // Label for L3
+                    board.create('text', [xL3 + 0.15, l3Y, evening[k]], { fontSize: 6, color: COL_EVE, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false });
+                }
+            }
+        }
+    </script>
+</body>
+</html>
