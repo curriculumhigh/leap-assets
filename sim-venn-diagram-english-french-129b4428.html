@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venn Diagram — English and French</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 5, 6.5, -4.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Colors
+        var COL_ENG = '#2563EB';
+        var COL_FRE = '#059669';
+        var COL_BORDER = '#555555';
+        var COL_NEITHER = '#666666';
+        var COL_BOTH = '#222222';
+
+        // Universal set rectangle
+        var rectPts = [
+            board.create('point', [-5.5, 4], { visible: false, fixed: true, name: '' }),
+            board.create('point', [5.5, 4], { visible: false, fixed: true, name: '' }),
+            board.create('point', [5.5, -3.5], { visible: false, fixed: true, name: '' }),
+            board.create('point', [-5.5, -3.5], { visible: false, fixed: true, name: '' })
+        ];
+        board.create('polygon', rectPts, {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_BORDER, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Circle centers and radius
+        var cxL = -1.5, cxR = 1.5, cy = 0.3, r = 2.5;
+
+        // Left circle — English
+        board.create('circle', [[cxL, cy], r], {
+            strokeColor: COL_ENG, strokeWidth: 2,
+            fillColor: 'none', fillOpacity: 0,
+            fixed: true, highlight: false
+        });
+
+        // Right circle — French
+        board.create('circle', [[cxR, cy], r], {
+            strokeColor: COL_FRE, strokeWidth: 2,
+            fillColor: 'none', fillOpacity: 0,
+            fixed: true, highlight: false
+        });
+
+        // Set labels (outside/above circles)
+        board.create('text', [cxL - 0.8, cy + r + 0.5, '\\text{English}'], {
+            fontSize: 14, color: COL_ENG, useKatex: true,
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [cxR + 0.8, cy + r + 0.5, '\\text{French}'], {
+            fontSize: 14, color: COL_FRE, useKatex: true,
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Universal set label — top-left
+        board.create('text', [-5.1, 3.6, 'S'], {
+            fontSize: 15, color: COL_BORDER, useKatex: true,
+            fixed: true, highlight: false
+        });
+
+        // Region labels (numbers)
+        // English only — left region
+        board.create('text', [cxL - 1.3, cy, '\\textbf{200}'], {
+            fontSize: 16, color: COL_ENG, useKatex: true,
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Both — overlap region
+        board.create('text', [0, cy, '\\textbf{150}'], {
+            fontSize: 16, color: COL_BOTH, useKatex: true,
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // French only — right region
+        board.create('text', [cxR + 1.3, cy, '\\textbf{250}'], {
+            fontSize: 16, color: COL_FRE, useKatex: true,
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Neither — outside circles, inside rectangle (bottom-right area)
+        board.create('text', [4.2, -2.8, '\\textbf{100}'], {
+            fontSize: 15, color: COL_NEITHER, useKatex: true,
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
