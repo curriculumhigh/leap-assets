@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venn Diagram — X subset of Y</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 4, 5, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Universal set rectangle
+        var uTL = board.create('point', [-4.2, 3.2], { visible: false, fixed: true, name: '' });
+        var uTR = board.create('point', [4.2, 3.2], { visible: false, fixed: true, name: '' });
+        var uBR = board.create('point', [4.2, -3.2], { visible: false, fixed: true, name: '' });
+        var uBL = board.create('point', [-4.2, -3.2], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [uTL, uTR, uBR, uBL], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Circle Y (larger, centered slightly right)
+        var centerY = board.create('point', [0.3, -0.1], { visible: false, fixed: true, name: '' });
+        board.create('circle', [centerY, 2.6], {
+            strokeColor: '#555555', strokeWidth: 1.5,
+            fillColor: '#D97706', fillOpacity: 0.10,
+            fixed: true, highlight: false
+        });
+
+        // Circle X (smaller, entirely inside Y, offset left-ish)
+        var centerX = board.create('point', [-0.5, -0.1], { visible: false, fixed: true, name: '' });
+        board.create('circle', [centerX, 1.3], {
+            strokeColor: '#555555', strokeWidth: 1.5,
+            fillColor: '#2563EB', fillOpacity: 0.10,
+            fixed: true, highlight: false
+        });
+
+        // Label: U = [0, 5] — top-left corner
+        board.create('text', [-3.9, 2.8, 'U = [0,\\,5]'], {
+            useKatex: true, fontSize: 13, color: '#555555',
+            fixed: true, highlight: false
+        });
+
+        // Label: Y — in the region of Y outside X (right side)
+        board.create('text', [1.9, -0.1, 'Y'], {
+            useKatex: true, fontSize: 15, color: '#D97706',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+
+        // Label: X — centered in circle X
+        board.create('text', [-0.5, -0.1, 'X'], {
+            useKatex: true, fontSize: 15, color: '#2563EB',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+    </script>
+</body>
+</html>
