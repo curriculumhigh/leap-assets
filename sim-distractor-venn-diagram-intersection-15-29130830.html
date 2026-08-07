@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distractor Venn Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.2, 5.2, 6.2, -4.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Universal set rectangle
+        var rectP1 = board.create('point', [-5.5, -3.2], { visible: false, fixed: true, name: '' });
+        var rectP2 = board.create('point', [5.5, -3.2], { visible: false, fixed: true, name: '' });
+        var rectP3 = board.create('point', [5.5, 4.5], { visible: false, fixed: true, name: '' });
+        var rectP4 = board.create('point', [-5.5, 4.5], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [rectP1, rectP2, rectP3, rectP4], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // "The Class" label — bottom-left inside the rectangle, moved up
+        board.create('text', [-5.0, -2.5, 'The Class'], {
+            fontSize: 10, color: '#444444', anchorX: 'left', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // "30" label — bottom-right inside the rectangle, moved up
+        board.create('text', [4.8, -2.5, '30'], {
+            fontSize: 10, color: '#444444', anchorX: 'middle', anchorY: 'top',
+            cssStyle: 'font-weight:700', fixed: true, highlight: false
+        });
+
+        // Circle centers and radius
+        var cx1 = -1.4, cx2 = 1.4, cy = 0.2, r = 2.5;
+
+        // Left circle (blue)
+        board.create('circle', [[cx1, cy], r], {
+            strokeColor: '#555555', strokeWidth: 2,
+            fillColor: '#2563EB', fillOpacity: 0.10,
+            fixed: true, highlight: false
+        });
+
+        // Right circle (green)
+        board.create('circle', [[cx2, cy], r], {
+            strokeColor: '#555555', strokeWidth: 2,
+            fillColor: '#059669', fillOpacity: 0.10,
+            fixed: true, highlight: false
+        });
+
+        // Region values — bold, black
+        // Left-only region
+        board.create('text', [cx1 - 1.0, cy, '30'], {
+            fontSize: 16, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:700', fixed: true, highlight: false
+        });
+
+        // Intersection region
+        board.create('text', [(cx1 + cx2) / 2, cy, '15'], {
+            fontSize: 16, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:700', fixed: true, highlight: false
+        });
+
+        // Right-only region
+        board.create('text', [cx2 + 1.0, cy, '25'], {
+            fontSize: 16, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:700', fixed: true, highlight: false
+        });
+
+        // Circle labels — above each circle
+        // Left circle: "Scoring between" on top, "50% and 70%" below
+        board.create('text', [cx1 - 0.2, cy + r + 1.1, 'Scoring between'], {
+            fontSize: 10, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [cx1 - 0.2, cy + r + 0.5, '50% and 70%'], {
+            fontSize: 10, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Right circle: "Scoring at" on top, "least 70%" below
+        board.create('text', [cx2 + 0.2, cy + r + 1.1, 'Scoring at'], {
+            fontSize: 10, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [cx2 + 0.2, cy + r + 0.5, 'least 70%'], {
+            fontSize: 10, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
