@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venn Diagram — X and Y Partially Overlapping</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 5.5, 9.5, -0.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Universal set rectangle
+        var rectP1 = board.create('point', [0.5, 0.5], { visible: false, fixed: true, name: '' });
+        var rectP2 = board.create('point', [9.0, 0.5], { visible: false, fixed: true, name: '' });
+        var rectP3 = board.create('point', [9.0, 5.0], { visible: false, fixed: true, name: '' });
+        var rectP4 = board.create('point', [0.5, 5.0], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [rectP1, rectP2, rectP3, rectP4], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Universal set label
+        board.create('text', [1.0, 4.6, 'S = [0, 5]'], {
+            fontSize: 13, color: '#555555', fixed: true, highlight: false
+        });
+
+        // Circle centers — offset so they overlap but neither contains the other
+        var cxLeft = 3.6;
+        var cxRight = 5.9;
+        var cy = 2.6;
+        var radius = 1.7;
+
+        // Left circle (X) — blue
+        var centerX = board.create('point', [cxLeft, cy], { visible: false, fixed: true, name: '' });
+        board.create('circle', [centerX, radius], {
+            strokeColor: '#2563EB', strokeWidth: 1.5,
+            fillColor: '#2563EB', fillOpacity: 0.10,
+            fixed: true, highlight: false
+        });
+
+        // Right circle (Y) — orange
+        var centerY = board.create('point', [cxRight, cy], { visible: false, fixed: true, name: '' });
+        board.create('circle', [centerY, radius], {
+            strokeColor: '#D97706', strokeWidth: 1.5,
+            fillColor: '#D97706', fillOpacity: 0.10,
+            fixed: true, highlight: false
+        });
+
+        // Labels — positioned in the non-overlapping part of each circle
+        board.create('text', [2.6, 2.5, 'X'], {
+            fontSize: 16, color: '#2563EB', cssStyle: 'font-weight:bold; font-style:italic',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [6.9, 2.5, 'Y'], {
+            fontSize: 16, color: '#D97706', cssStyle: 'font-weight:bold; font-style:italic',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
