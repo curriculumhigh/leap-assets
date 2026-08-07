@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incorrect Venn Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 8.5, 11.5, -0.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Rectangle (universal set)
+        var rectP1 = board.create('point', [0.3, 0.3], { visible: false, fixed: true, name: '' });
+        var rectP2 = board.create('point', [11.2, 0.3], { visible: false, fixed: true, name: '' });
+        var rectP3 = board.create('point', [11.2, 8.2], { visible: false, fixed: true, name: '' });
+        var rectP4 = board.create('point', [0.3, 8.2], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [rectP1, rectP2, rectP3, rectP4], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            fixed: true, hasInnerPoints: false
+        });
+
+        // "S" label top-left
+        board.create('text', [0.8, 7.7, '<i style="font-size:18px; color:#555555;">S</i>'], {
+            fontSize: 18, fixed: true, highlight: false
+        });
+
+        // Circle centers and radius
+        var cxL = 4.2, cxR = 7.3, cy = 4.2, r = 2.8;
+
+        // English circle (blue, no fill)
+        var centerL = board.create('point', [cxL, cy], { visible: false, fixed: true, name: '' });
+        board.create('circle', [centerL, r], {
+            strokeColor: '#2563EB', strokeWidth: 2.2,
+            fillColor: 'none', fillOpacity: 0,
+            fixed: true, highlight: false
+        });
+
+        // French circle (green, no fill)
+        var centerR = board.create('point', [cxR, cy], { visible: false, fixed: true, name: '' });
+        board.create('circle', [centerR, r], {
+            strokeColor: '#059669', strokeWidth: 2.2,
+            fillColor: 'none', fillOpacity: 0,
+            fixed: true, highlight: false
+        });
+
+        // Circle labels above
+        board.create('text', [cxL - 0.8, cy + r + 0.5, 'English'], {
+            fontSize: 15, color: '#2563EB', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600;'
+        });
+        board.create('text', [cxR + 0.2, cy + r + 0.5, 'French'], {
+            fontSize: 15, color: '#059669', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600;'
+        });
+
+        // Region values — intentionally incorrect (neither region omitted)
+        // English only (left region): 350
+        var midOverlapX = (cxL + cxR) / 2;
+        board.create('text', [cxL - 1.2, cy, '350'], {
+            fontSize: 18, color: '#2563EB', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:700;'
+        });
+
+        // Overlap (middle): 150
+        board.create('text', [midOverlapX, cy, '150'], {
+            fontSize: 18, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:700;'
+        });
+
+        // French only (right region): 250
+        board.create('text', [cxR + 1.2, cy, '250'], {
+            fontSize: 18, color: '#059669', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:700;'
+        });
+
+        // No "neither" value shown — this is the intentional error
+        // Total inside circles = 350 + 150 + 250 = 750 ≠ 700
+        // (Neither = 100 is omitted, so values inside don't reconcile with total)
+    </script>
+</body>
+</html>
