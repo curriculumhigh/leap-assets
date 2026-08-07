@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venn Diagram — A subset of B</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 4.5, 6, -4.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Universal set rectangle
+        var rectPts = [
+            board.create('point', [-5.2, 3.8], { visible: false, fixed: true, name: '' }),
+            board.create('point', [5.2, 3.8], { visible: false, fixed: true, name: '' }),
+            board.create('point', [5.2, -3.8], { visible: false, fixed: true, name: '' }),
+            board.create('point', [-5.2, -3.8], { visible: false, fixed: true, name: '' })
+        ];
+        board.create('polygon', rectPts, {
+            fillColor: '#f9f9f9', fillOpacity: 0.3,
+            borders: { strokeColor: '#555555', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Circle B (larger) — the outer circle
+        var centerB = board.create('point', [-0.3, -0.2], { visible: false, fixed: true, name: '' });
+        board.create('circle', [centerB, 3.2], {
+            strokeColor: '#555555', strokeWidth: 1.5,
+            fillColor: '#059669', fillOpacity: 0.08,
+            fixed: true, highlight: false
+        });
+
+        // Circle A (smaller, nested inside B) — A is a subset of B
+        var centerA = board.create('point', [0.8, -0.5], { visible: false, fixed: true, name: '' });
+        board.create('circle', [centerA, 1.3], {
+            strokeColor: '#555555', strokeWidth: 1.5,
+            fillColor: '#2563EB', fillOpacity: 0.12,
+            fixed: true, highlight: false
+        });
+
+        // Label S — top-left corner
+        board.create('text', [-4.6, 3.3, 'S'], {
+            fontSize: 16, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600; font-style:italic;'
+        });
+
+        // Label B — upper-left inside B but outside A
+        board.create('text', [-2.2, 1.8, 'B'], {
+            fontSize: 16, color: '#059669', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600; font-style:italic;'
+        });
+
+        // Label A — centered inside A (the smaller circle)
+        board.create('text', [0.5, -0.6, 'A'], {
+            fontSize: 15, color: '#2563EB', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:600; font-style:italic;'
+        });
+    </script>
+</body>
+</html>
