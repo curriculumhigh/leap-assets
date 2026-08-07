@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tree Diagram — Candy, Toy, Card</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 14, 18, -1],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Colors
+        var COL_ROOT = '#222222';
+        var COL_CANDY = '#2563EB';
+        var COL_TOY = '#059669';
+        var COL_CARD = '#D97706';
+        var COL_EDGE = '#555555';
+
+        // X positions for each level
+        var X_ROOT = 1;
+        var X_CANDY = 5;
+        var X_TOY = 10;
+        var X_CARD = 15;
+
+        // Y positions — 12 endpoints evenly spaced
+        var Y_TOP = 12.5;
+        var Y_BOT = 1;
+        var endpointYs = [];
+        var i;
+        for (i = 0; i < 12; i++) {
+            endpointYs.push(Y_TOP - i * (Y_TOP - Y_BOT) / 11);
+        }
+
+        // Compute center Y for a group of children
+        function centerY(indices) {
+            var sum = 0;
+            for (var j = 0; j < indices.length; j++) {
+                sum += indices[j];
+            }
+            return sum / indices.length;
+        }
+
+        // Level 3 (Card): 12 endpoints
+        var cardLabels = ['Birthday', 'Thank-you'];
+        var cardNodes = [];
+        for (i = 0; i < 12; i++) {
+            var cp = board.create('point', [X_CARD, endpointYs[i]], {
+                name: '', size: 4, color: COL_CARD, fixed: true, highlight: false
+            });
+            cardNodes.push(cp);
+            board.create('text', [X_CARD + 0.3, endpointYs[i], cardLabels[i % 2]], {
+                fontSize: 12, color: COL_CARD, anchorX: 'left', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Level 2 (Toy): 6 nodes
+        var toyLabels = ['Car', 'Doll', 'Puzzle'];
+        var toyNodes = [];
+        for (i = 0; i < 6; i++) {
+            var childIdx1 = i * 2;
+            var childIdx2 = i * 2 + 1;
+            var toyY = centerY([endpointYs[childIdx1], endpointYs[childIdx2]]);
+            var tp = board.create('point', [X_TOY, toyY], {
+                name: '', size: 4, color: COL_TOY, fixed: true, highlight: false
+            });
+            toyNodes.push(tp);
+            board.create('text', [X_TOY - 0.3, toyY, toyLabels[i % 3]], {
+                fontSize: 12, color: COL_TOY, anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+            board.create('segment', [tp, cardNodes[childIdx1]], {
+                strokeColor: COL_EDGE, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('segment', [tp, cardNodes[childIdx2]], {
+                strokeColor: COL_EDGE, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+
+        // Level 1 (Candy): 2 nodes
+        var candyLabels = ['Chocolate', 'Gummy'];
+        var candyNodes = [];
+        for (i = 0; i < 2; i++) {
+            var toyChild1 = i * 3;
+            var toyChild2 = i * 3 + 1;
+            var toyChild3 = i * 3 + 2;
+            var candyY = centerY([toyNodes[toyChild1].Y(), toyNodes[toyChild2].Y(), toyNodes[toyChild3].Y()]);
+            var canP = board.create('point', [X_CANDY, candyY], {
+                name: '', size: 4, color: COL_CANDY, fixed: true, highlight: false
+            });
+            candyNodes.push(canP);
+            board.create('text', [X_CANDY - 0.3, candyY, candyLabels[i]], {
+                fontSize: 12, color: COL_CANDY, anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+            board.create('segment', [canP, toyNodes[toyChild1]], {
+                strokeColor: COL_EDGE, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('segment', [canP, toyNodes[toyChild2]], {
+                strokeColor: COL_EDGE, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('segment', [canP, toyNodes[toyChild3]], {
+                strokeColor: COL_EDGE, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+
+        // Root node
+        var rootY = centerY([candyNodes[0].Y(), candyNodes[1].Y()]);
+        var rootNode = board.create('point', [X_ROOT, rootY], {
+            name: '', size: 5, color: COL_ROOT, fixed: true, highlight: false
+        });
+        board.create('segment', [rootNode, candyNodes[0]], {
+            strokeColor: COL_EDGE, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [rootNode, candyNodes[1]], {
+            strokeColor: COL_EDGE, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        // Column headers
+        var headerY = 13.5;
+        board.create('text', [X_CANDY, headerY, 'Candy'], {
+            fontSize: 15, color: COL_CANDY, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+        board.create('text', [X_TOY, headerY, 'Toy'], {
+            fontSize: 15, color: COL_TOY, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+        board.create('text', [X_CARD, headerY, 'Card'], {
+            fontSize: 15, color: COL_CARD, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+    </script>
+</body>
+</html>
