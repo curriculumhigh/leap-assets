@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venn Diagram — Ice Cream and Cake</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 5.5, 6, -4.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Universal set rectangle
+        var rectLeft = -5.2, rectRight = 5.2, rectTop = 4.5, rectBot = -3.5;
+        var rp1 = board.create('point', [rectLeft, rectBot], { visible: false, fixed: true, name: '' });
+        var rp2 = board.create('point', [rectRight, rectBot], { visible: false, fixed: true, name: '' });
+        var rp3 = board.create('point', [rectRight, rectTop], { visible: false, fixed: true, name: '' });
+        var rp4 = board.create('point', [rectLeft, rectTop], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [rp1, rp2, rp3, rp4], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // "Total: 1000" label at top-left
+        board.create('text', [rectLeft + 0.3, rectTop - 0.4, '<b>Total: 1000</b>'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false, anchorX: 'left'
+        });
+
+        // Circle centers and radius
+        var cxLeft = -1.6, cxRight = 1.6, cy = 0.3, radius = 2.5;
+
+        // Ice Cream circle (left)
+        board.create('circle', [[cxLeft, cy], radius], {
+            strokeColor: '#2563EB', strokeWidth: 1.8,
+            fillColor: '#2563EB', fillOpacity: 0.15,
+            fixed: true, highlight: false
+        });
+
+        // Cake circle (right)
+        board.create('circle', [[cxRight, cy], radius], {
+            strokeColor: '#059669', strokeWidth: 1.8,
+            fillColor: '#059669', fillOpacity: 0.15,
+            fixed: true, highlight: false
+        });
+
+        // Circle labels above
+        board.create('text', [cxLeft - 0.8, cy + radius + 0.5, '<b>Ice Cream</b>'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [cxRight + 0.8, cy + radius + 0.5, '<b>Cake</b>'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Region values — bold, centered in each region
+        // Ice Cream only (left crescent)
+        board.create('text', [cxLeft - 1.1, cy, '<b>400</b>'], {
+            fontSize: 16, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Both (overlap center)
+        var overlapX = (cxLeft + cxRight) / 2;
+        board.create('text', [overlapX, cy, '<b>100</b>'], {
+            fontSize: 16, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Cake only (right crescent)
+        board.create('text', [cxRight + 1.1, cy, '<b>400</b>'], {
+            fontSize: 16, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Neither (outside circles — bottom-right corner)
+        board.create('text', [rectRight - 0.8, rectBot + 0.6, '<b>100</b>'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
