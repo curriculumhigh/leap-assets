@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venn Diagram — Ice Cream and Cake</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 5.5, 7, -5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Universal set rectangle
+        var rectPts = [
+            board.create('point', [-6, 4.5], { visible: false, fixed: true, name: '' }),
+            board.create('point', [6, 4.5], { visible: false, fixed: true, name: '' }),
+            board.create('point', [6, -4], { visible: false, fixed: true, name: '' }),
+            board.create('point', [-6, -4], { visible: false, fixed: true, name: '' })
+        ];
+        board.create('polygon', rectPts, {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Circle centers — overlapping
+        var cxLeft = -1.5;
+        var cxRight = 1.5;
+        var cy = 0;
+        var radius = 2.8;
+
+        // Ice Cream circle (left)
+        var centerLeft = board.create('point', [cxLeft, cy], { visible: false, fixed: true, name: '' });
+        board.create('circle', [centerLeft, radius], {
+            strokeColor: '#2563EB', strokeWidth: 1.8,
+            fillColor: '#2563EB', fillOpacity: 0.15,
+            fixed: true, highlight: false
+        });
+
+        // Cake circle (right)
+        var centerRight = board.create('point', [cxRight, cy], { visible: false, fixed: true, name: '' });
+        board.create('circle', [centerRight, radius], {
+            strokeColor: '#059669', strokeWidth: 1.8,
+            fillColor: '#059669', fillOpacity: 0.15,
+            fixed: true, highlight: false
+        });
+
+        // "Total: 1000" label — top-left corner
+        board.create('text', [-5.6, 4.0, 'Total: 1000'], {
+            fontSize: 13, color: '#222222', anchorX: 'left', anchorY: 'middle',
+            cssStyle: 'font-weight:bold', fixed: true, highlight: false
+        });
+
+        // Set name labels
+        board.create('text', [cxLeft - 0.3, cy + 3.2, 'Ice Cream'], {
+            fontSize: 13, color: '#2563EB', anchorX: 'middle',
+            cssStyle: 'font-weight:bold', fixed: true, highlight: false
+        });
+        board.create('text', [cxRight + 0.3, cy + 3.2, 'Cake'], {
+            fontSize: 13, color: '#059669', anchorX: 'middle',
+            cssStyle: 'font-weight:bold', fixed: true, highlight: false
+        });
+
+        // Region value labels
+        // Left only (Ice Cream only = 200)
+        board.create('text', [cxLeft - 1.2, cy, '200'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:bold', fixed: true, highlight: false
+        });
+
+        // Overlap (both = 100)
+        board.create('text', [0, cy, '100'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:bold', fixed: true, highlight: false
+        });
+
+        // Right only (Cake only = 300)
+        board.create('text', [cxRight + 1.2, cy, '300'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:bold', fixed: true, highlight: false
+        });
+
+        // Outside (neither = 200)
+        board.create('text', [4.8, 3.5, '200'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:bold', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
