@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venn Diagram — Disjoint Sets X and Y</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 6, 11, -1],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: true
+        });
+
+        // Outer rectangle (sample space)
+        var outerLeft = 1, outerRight = 9, outerTop = 4.5, outerBot = 0.5;
+        var midX = (outerLeft + outerRight) / 2;
+
+        // Outer rectangle border
+        var pO1 = board.create('point', [outerLeft, outerTop], { visible: false, fixed: true, name: '' });
+        var pO2 = board.create('point', [outerRight, outerTop], { visible: false, fixed: true, name: '' });
+        var pO3 = board.create('point', [outerRight, outerBot], { visible: false, fixed: true, name: '' });
+        var pO4 = board.create('point', [outerLeft, outerBot], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [pO1, pO2, pO3, pO4], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Left region (X) — blue fill
+        var pX1 = board.create('point', [outerLeft, outerTop], { visible: false, fixed: true, name: '' });
+        var pX2 = board.create('point', [midX, outerTop], { visible: false, fixed: true, name: '' });
+        var pX3 = board.create('point', [midX, outerBot], { visible: false, fixed: true, name: '' });
+        var pX4 = board.create('point', [outerLeft, outerBot], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [pX1, pX2, pX3, pX4], {
+            fillColor: '#2563EB', fillOpacity: 0.10,
+            borders: { strokeColor: '#555555', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Right region (Y) — orange fill
+        var pY1 = board.create('point', [midX, outerTop], { visible: false, fixed: true, name: '' });
+        var pY2 = board.create('point', [outerRight, outerTop], { visible: false, fixed: true, name: '' });
+        var pY3 = board.create('point', [outerRight, outerBot], { visible: false, fixed: true, name: '' });
+        var pY4 = board.create('point', [midX, outerBot], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [pY1, pY2, pY3, pY4], {
+            fillColor: '#D97706', fillOpacity: 0.10,
+            borders: { strokeColor: '#555555', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Label: S = [0, 5] — top left outside
+        board.create('text', [outerLeft, outerTop + 0.7, 'S = [0,\\,5]'], {
+            fontSize: 14, color: '#333333', useKatex: true, fixed: true, highlight: false
+        });
+
+        // Label: X — centered in left half
+        board.create('text', [(outerLeft + midX) / 2, (outerTop + outerBot) / 2, '\\textbf{X}'], {
+            fontSize: 22, color: '#2563EB', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Label: Y — centered in right half
+        board.create('text', [(midX + outerRight) / 2, (outerTop + outerBot) / 2, '\\textbf{Y}'], {
+            fontSize: 22, color: '#D97706', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
