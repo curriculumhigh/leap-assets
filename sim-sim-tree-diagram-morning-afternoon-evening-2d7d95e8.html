@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tree Diagram — Activity Combinations</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 13, 17, -1],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_MORNING = '#2563EB';
+        var COL_AFTERNOON = '#059669';
+        var COL_EVENING = '#D97706';
+        var COL_LINE = '#555555';
+        var COL_HEADER = '#444444';
+
+        var X_ROOT = 1;
+        var X_MORNING = 4.5;
+        var X_AFTERNOON = 9;
+        var X_EVENING = 13.5;
+        var Y_HEADER = 12.4;
+
+        var morningItems = ['Yoga', 'Swimming'];
+        var afternoonItems = ['Painting', 'Music', 'Drama'];
+        var eveningItems = ['Quiz', 'Debate'];
+
+        var numEndpoints = 12;
+        var ySpacing = 0.85;
+        var totalHeight = (numEndpoints - 1) * ySpacing;
+        var yStart = 6 + totalHeight / 2;
+
+        var endpointYs = [];
+        for (var i = 0; i < numEndpoints; i++) {
+            endpointYs.push(yStart - i * ySpacing);
+        }
+
+        var afternoonYs = [];
+        for (var a = 0; a < 6; a++) {
+            var ey1 = endpointYs[a * 2];
+            var ey2 = endpointYs[a * 2 + 1];
+            afternoonYs.push((ey1 + ey2) / 2);
+        }
+
+        var morningYs = [];
+        for (var m = 0; m < 2; m++) {
+            var ay1 = afternoonYs[m * 3];
+            var ay2 = afternoonYs[m * 3 + 1];
+            var ay3 = afternoonYs[m * 3 + 2];
+            morningYs.push((ay1 + ay2 + ay3) / 3);
+        }
+
+        var rootY = (morningYs[0] + morningYs[1]) / 2;
+
+        board.create('text', [X_MORNING, Y_HEADER, 'Morning'], {
+            fontSize: 13, color: COL_MORNING, anchorX: 'middle', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+        board.create('text', [X_AFTERNOON, Y_HEADER, 'Afternoon'], {
+            fontSize: 13, color: COL_AFTERNOON, anchorX: 'middle', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+        board.create('text', [X_EVENING, Y_HEADER, 'Evening'], {
+            fontSize: 13, color: COL_EVENING, anchorX: 'middle', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        var rootPt = board.create('point', [X_ROOT, rootY], {
+            name: '', size: 3, color: COL_HEADER, fixed: true, highlight: false
+        });
+
+        var morningPts = [];
+        for (var m = 0; m < 2; m++) {
+            var pt = board.create('point', [X_MORNING, morningYs[m]], {
+                name: '', size: 3, color: COL_MORNING, fixed: true, highlight: false
+            });
+            morningPts.push(pt);
+
+            board.create('segment', [rootPt, pt], {
+                strokeColor: COL_LINE, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+
+            board.create('text', [X_MORNING + 0.15, morningYs[m] + 0.35, morningItems[m]], {
+                fontSize: 12, color: COL_MORNING, anchorX: 'middle', fixed: true, highlight: false
+            });
+        }
+
+        var afternoonPts = [];
+        for (var m = 0; m < 2; m++) {
+            for (var a = 0; a < 3; a++) {
+                var idx = m * 3 + a;
+                var pt = board.create('point', [X_AFTERNOON, afternoonYs[idx]], {
+                    name: '', size: 3, color: COL_AFTERNOON, fixed: true, highlight: false
+                });
+                afternoonPts.push(pt);
+
+                board.create('segment', [morningPts[m], pt], {
+                    strokeColor: COL_LINE, strokeWidth: 1.0, fixed: true, highlight: false
+                });
+
+                board.create('text', [X_AFTERNOON + 0.15, afternoonYs[idx] + 0.35, afternoonItems[a]], {
+                    fontSize: 11, color: COL_AFTERNOON, anchorX: 'middle', fixed: true, highlight: false
+                });
+            }
+        }
+
+        for (var a = 0; a < 6; a++) {
+            for (var e = 0; e < 2; e++) {
+                var idx = a * 2 + e;
+                var pt = board.create('point', [X_EVENING, endpointYs[idx]], {
+                    name: '', size: 3, color: COL_EVENING, fixed: true, highlight: false
+                });
+
+                board.create('segment', [afternoonPts[a], pt], {
+                    strokeColor: COL_LINE, strokeWidth: 0.8, fixed: true, highlight: false
+                });
+
+                board.create('text', [X_EVENING + 0.15, endpointYs[idx] + 0.35, eveningItems[e]], {
+                    fontSize: 11, color: COL_EVENING, anchorX: 'middle', fixed: true, highlight: false
+                });
+            }
+        }
+    </script>
+</body>
+</html>
