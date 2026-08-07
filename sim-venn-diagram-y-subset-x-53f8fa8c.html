@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venn Diagram — Y subset of X</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 8.5, 10.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: true
+        });
+
+        // ── Universal set U: outermost rectangle ────────────────────────
+        var uP1 = board.create('point', [0, 0], { visible: false, fixed: true, name: '' });
+        var uP2 = board.create('point', [10, 0], { visible: false, fixed: true, name: '' });
+        var uP3 = board.create('point', [10, 7.5], { visible: false, fixed: true, name: '' });
+        var uP4 = board.create('point', [0, 7.5], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [uP1, uP2, uP3, uP4], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // U label — top-left inside
+        board.create('text', [0.4, 7.0, '<b>U</b> = [0, 5]'], {
+            fontSize: 13, color: '#555555', fixed: true, highlight: false
+        });
+
+        // ── Set X: middle rectangle (blue) ──────────────────────────────
+        var xP1 = board.create('point', [1.2, 1.0], { visible: false, fixed: true, name: '' });
+        var xP2 = board.create('point', [9.0, 1.0], { visible: false, fixed: true, name: '' });
+        var xP3 = board.create('point', [9.0, 6.2], { visible: false, fixed: true, name: '' });
+        var xP4 = board.create('point', [1.2, 6.2], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [xP1, xP2, xP3, xP4], {
+            fillColor: '#2563EB', fillOpacity: 0.10,
+            borders: { strokeColor: '#2563EB', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // X label — top-left inside
+        board.create('text', [1.6, 5.6, '<b>X</b>'], {
+            fontSize: 14, color: '#2563EB', fixed: true, highlight: false
+        });
+
+        // ── Set Y: innermost rectangle (orange) ─────────────────────────
+        var yP1 = board.create('point', [3.0, 2.0], { visible: false, fixed: true, name: '' });
+        var yP2 = board.create('point', [7.5, 2.0], { visible: false, fixed: true, name: '' });
+        var yP3 = board.create('point', [7.5, 5.0], { visible: false, fixed: true, name: '' });
+        var yP4 = board.create('point', [3.0, 5.0], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [yP1, yP2, yP3, yP4], {
+            fillColor: '#D97706', fillOpacity: 0.10,
+            borders: { strokeColor: '#D97706', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Y label — center
+        board.create('text', [4.9, 3.4, '<b>Y</b>'], {
+            fontSize: 14, color: '#D97706', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
