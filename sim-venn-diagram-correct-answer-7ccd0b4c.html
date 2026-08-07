@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venn Diagram — Correct Answer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 4px; height: calc(100% - 8px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 10.5, 15.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Universal set rectangle
+        var rectPts = [
+            board.create('point', [0.5, 0], { visible: false, fixed: true, name: '' }),
+            board.create('point', [15, 0], { visible: false, fixed: true, name: '' }),
+            board.create('point', [15, 10], { visible: false, fixed: true, name: '' }),
+            board.create('point', [0.5, 10], { visible: false, fixed: true, name: '' })
+        ];
+        board.create('polygon', rectPts, {
+            fillColor: '#ffffff', fillOpacity: 1,
+            borders: { strokeColor: '#555555', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true
+        });
+
+        // "The Class (50)" label — top-left inside rectangle
+        board.create('text', [1.2, 9.3, 'The Class (50)'], {
+            fontSize: 10, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        // Left circle — "Scored at least 70%" with 20
+        var cLeft = board.create('point', [4.8, 4.8], { visible: false, fixed: true, name: '' });
+        board.create('circle', [cLeft, 2.8], {
+            strokeColor: '#2563EB', strokeWidth: 1.5,
+            fillColor: '#2563EB', fillOpacity: 0.12,
+            fixed: true, highlight: false
+        });
+
+        // Left circle label (category name)
+        board.create('text', [4.8, 5.8, 'Scored at least'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 9, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [4.8, 4.9, '70%'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 9, color: '#222222', fixed: true, highlight: false
+        });
+        // Left circle count
+        board.create('text', [4.8, 3.6, '20'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#2563EB', fixed: true, highlight: false,
+            cssStyle: 'font-weight:700'
+        });
+
+        // Right circle — "Scored between 50% and 70%" with 15
+        var cRight = board.create('point', [10.7, 4.8], { visible: false, fixed: true, name: '' });
+        board.create('circle', [cRight, 2.8], {
+            strokeColor: '#059669', strokeWidth: 1.5,
+            fillColor: '#059669', fillOpacity: 0.12,
+            fixed: true, highlight: false
+        });
+
+        // Right circle label (category name)
+        board.create('text', [10.7, 6.2, 'Scored between'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 9, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [10.7, 5.3, '50% and 70%'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 9, color: '#222222', fixed: true, highlight: false
+        });
+        // Right circle count
+        board.create('text', [10.7, 3.8, '15'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#059669', fixed: true, highlight: false,
+            cssStyle: 'font-weight:700'
+        });
+
+        // "Did not appear (15)" — outside both circles, bottom area
+        board.create('text', [7.75, 0.8, 'Did not appear (15)'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 9, color: '#555555', fixed: true, highlight: false,
+            cssStyle: 'font-style:italic'
+        });
+    </script>
+</body>
+</html>
