@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distractor Venn Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; height: 100%; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [0, 10, 15, 0],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        // Universal set rectangle
+        var rp1 = board.create('point', [0.5, 0.5], { visible: false, fixed: true, name: '' });
+        var rp2 = board.create('point', [14.5, 0.5], { visible: false, fixed: true, name: '' });
+        var rp3 = board.create('point', [14.5, 9.5], { visible: false, fixed: true, name: '' });
+        var rp4 = board.create('point', [0.5, 9.5], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [rp1, rp2, rp3, rp4], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#222222', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Circle parameters
+        var cx1 = 5.8, cy = 4.8, r = 3.2;
+        var cx2 = 9.2;
+
+        // Left circle
+        var c1 = board.create('point', [cx1, cy], { visible: false, fixed: true, name: '' });
+        board.create('circle', [c1, r], {
+            strokeColor: '#222222', strokeWidth: 1.5,
+            fillColor: 'none', fillOpacity: 0,
+            fixed: true, highlight: false
+        });
+
+        // Right circle
+        var c2 = board.create('point', [cx2, cy], { visible: false, fixed: true, name: '' });
+        board.create('circle', [c2, r], {
+            strokeColor: '#222222', strokeWidth: 1.5,
+            fillColor: 'none', fillOpacity: 0,
+            fixed: true, highlight: false
+        });
+
+        // Circle labels INSIDE (upper portion, small font, two lines)
+        // Left circle label
+        board.create('text', [cx1 - 1.2, cy + 1.8, 'scored at'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 9, color: '#555555', fixed: true, highlight: false
+        });
+        board.create('text', [cx1 - 1.2, cy + 1.1, 'least 70%'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 9, color: '#555555', fixed: true, highlight: false
+        });
+
+        // Right circle label
+        board.create('text', [cx2 + 1.2, cy + 1.8, 'scored between'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 9, color: '#555555', fixed: true, highlight: false
+        });
+        board.create('text', [cx2 + 1.2, cy + 1.1, '50% and 70%'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 9, color: '#555555', fixed: true, highlight: false
+        });
+
+        // Region values (bold, 14px)
+        // Left-only: 20
+        board.create('text', [cx1 - 1.4, cy - 0.5, '20'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold;'
+        });
+
+        // Overlap: 5
+        var overlapX = (cx1 + cx2) / 2;
+        board.create('text', [overlapX, cy - 0.5, '5'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold;'
+        });
+
+        // Right-only: 15
+        board.create('text', [cx2 + 1.4, cy - 0.5, '15'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold;'
+        });
+
+        // Outside: 10
+        board.create('text', [13.2, 1.5, '10'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold;'
+        });
+
+        // Universal set label top-left
+        board.create('text', [1.0, 9.0, 'The Class (50)'], {
+            anchorX: 'left', anchorY: 'middle',
+            fontSize: 9, color: '#222222', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
