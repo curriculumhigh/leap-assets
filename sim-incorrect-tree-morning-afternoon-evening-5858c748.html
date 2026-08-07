@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incorrect Tree Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { height: 100%; padding: 0; }
+        .board-wrapper { background: white; border-radius: 8px; height: 100%; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.3, 10.8, 15.8, -0.2],
+            axis: false, grid: false,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        var COL_L1 = '#222222';
+        var COL_L2 = '#2563EB';
+        var COL_L3 = '#059669';
+        var COL_HDR = '#555555';
+
+        // X positions for each level
+        var X0 = 1.0;
+        var X1 = 4.2;
+        var X2 = 8.5;
+        var X3 = 12.5;
+
+        // Headers
+        board.create('text', [X1, 10.3, 'Morning'], { fontSize: 8, color: COL_HDR, anchorX: 'middle', fixed: true, highlight: false, cssStyle: 'font-weight:600' });
+        board.create('text', [X2, 10.3, 'Afternoon'], { fontSize: 8, color: COL_HDR, anchorX: 'middle', fixed: true, highlight: false, cssStyle: 'font-weight:600' });
+        board.create('text', [X3, 10.3, 'Evening'], { fontSize: 8, color: COL_HDR, anchorX: 'middle', fixed: true, highlight: false, cssStyle: 'font-weight:600' });
+
+        // Root
+        var root = board.create('point', [X0, 5.3], {
+            name: '', size: 2.5, color: COL_L1, fixed: true, highlight: false
+        });
+
+        // Level 1: Morning — Yoga, Swimming, Drama
+        var l1Names = ['Yoga', 'Swimming', 'Drama'];
+        var l1Ys = [8.5, 5.3, 2.1];
+
+        // Level 2: Afternoon — Painting, Music (per L1 node)
+        var l2Names = ['Painting', 'Music'];
+        var l2Offsets = [0.9, -0.9];
+
+        // Level 3: Evening — Quiz, Debate (per L2 node)
+        // INTENTIONAL ERROR: omit some routes
+        var l3Names = ['Quiz', 'Debate'];
+        var l3Offsets = [0.45, -0.45];
+
+        // Build tree
+        for (var i = 0; i < l1Ys.length; i++) {
+            var y1 = l1Ys[i];
+
+            var p1 = board.create('point', [X1, y1], {
+                name: '', size: 2, color: COL_L1, fixed: true, highlight: false
+            });
+            board.create('segment', [root, p1], {
+                strokeColor: COL_L1, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [X1 + 0.4, y1 + 0.4, l1Names[i]], {
+                fontSize: 7, color: COL_L1, anchorX: 'left', fixed: true, highlight: false
+            });
+
+            for (var j = 0; j < l2Offsets.length; j++) {
+                var y2 = y1 + l2Offsets[j];
+
+                var p2 = board.create('point', [X2, y2], {
+                    name: '', size: 1.5, color: COL_L2, fixed: true, highlight: false
+                });
+                board.create('segment', [p1, p2], {
+                    strokeColor: COL_L2, strokeWidth: 0.8, fixed: true, highlight: false
+                });
+                board.create('text', [X2 - 1.4, y2 + 0.35, l2Names[j]], {
+                    fontSize: 7, color: COL_L2, anchorX: 'left', fixed: true, highlight: false
+                });
+
+                // Determine which L3 branches to draw
+                // Omit: i=0,j=0 (Yoga->Painting) only gets Quiz (omit Debate)
+                // Omit: i=2,j=1 (Drama->Music) only gets Debate (omit Quiz)
+                var branches = [0, 1];
+                if (i === 0 && j === 0) {
+                    branches = [0];
+                }
+                if (i === 2 && j === 1) {
+                    branches = [1];
+                }
+
+                for (var b = 0; b < branches.length; b++) {
+                    var k = branches[b];
+                    var y3 = y2 + l3Offsets[k];
+
+                    var p3 = board.create('point', [X3, y3], {
+                        name: '', size: 1.5, color: COL_L3, fixed: true, highlight: false
+                    });
+                    board.create('segment', [p2, p3], {
+                        strokeColor: COL_L3, strokeWidth: 0.7, fixed: true, highlight: false
+                    });
+                    board.create('text', [X3 + 0.25, y3, l3Names[k]], {
+                        fontSize: 7, color: COL_L3, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>
