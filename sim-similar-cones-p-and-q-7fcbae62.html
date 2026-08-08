@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Similar Cones — P and Q</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 10, 15, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        var COL_P = '#2563EB';
+        var COL_Q = '#059669';
+        var COL_REF = '#DC2626';
+
+        // ── Cone P (smaller) ────────────────────────────────────────────
+        var pCx = 3.5;
+        var pBy = 1.5;
+        var pH = 3.2;
+        var pR = 1.2;
+
+        var pApex = [pCx, pBy + pH];
+
+        board.create('segment', [[pCx - pR, pBy], pApex], {
+            strokeColor: COL_P, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [[pCx + pR, pBy], pApex], {
+            strokeColor: COL_P, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        board.create('curve', [
+            function(t) { return pCx + pR * Math.cos(t); },
+            function(t) { return pBy + 0.35 * Math.sin(t); },
+            Math.PI, 2 * Math.PI
+        ], { strokeColor: COL_P, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        board.create('curve', [
+            function(t) { return pCx + pR * Math.cos(t); },
+            function(t) { return pBy + 0.35 * Math.sin(t); },
+            0, Math.PI
+        ], { strokeColor: COL_P, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false });
+
+        board.create('polygon', [
+            [pCx - pR, pBy], [pCx + pR, pBy], pApex
+        ], {
+            fillColor: COL_P, fillOpacity: 0.06,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        board.create('segment', [[pCx, pBy], [pCx, pBy + pH]], {
+            strokeColor: COL_REF, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[pCx - 0.25, pBy], [pCx + 0.25, pBy]], {
+            strokeColor: COL_REF, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[pCx - 0.25, pBy + pH], [pCx + 0.25, pBy + pH]], {
+            strokeColor: COL_REF, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        board.create('text', [pCx + 0.5, pBy + pH / 2, '2 \\text{ cm}'], {
+            useKatex: true, fontSize: 12, color: COL_REF, fixed: true, highlight: false
+        });
+
+        board.create('text', [pCx, pBy + pH + 0.7, '\\textbf{P}'], {
+            useKatex: true, fontSize: 14, color: COL_P, anchorX: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('text', [pCx, pBy - 1.0, 'V = 24\\pi \\text{ cm}^3'], {
+            useKatex: true, fontSize: 12, color: COL_P, anchorX: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Cone Q (larger) ─────────────────────────────────────────────
+        var qCx = 10.5;
+        var qBy = 1.5;
+        var qH = 7.0;
+        var qR = 2.6;
+
+        var qApex = [qCx, qBy + qH];
+
+        board.create('segment', [[qCx - qR, qBy], qApex], {
+            strokeColor: COL_Q, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [[qCx + qR, qBy], qApex], {
+            strokeColor: COL_Q, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        board.create('curve', [
+            function(t) { return qCx + qR * Math.cos(t); },
+            function(t) { return qBy + 0.55 * Math.sin(t); },
+            Math.PI, 2 * Math.PI
+        ], { strokeColor: COL_Q, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        board.create('curve', [
+            function(t) { return qCx + qR * Math.cos(t); },
+            function(t) { return qBy + 0.55 * Math.sin(t); },
+            0, Math.PI
+        ], { strokeColor: COL_Q, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false });
+
+        board.create('polygon', [
+            [qCx - qR, qBy], [qCx + qR, qBy], qApex
+        ], {
+            fillColor: COL_Q, fillOpacity: 0.06,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        board.create('segment', [[qCx, qBy], [qCx, qBy + qH]], {
+            strokeColor: COL_REF, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[qCx - 0.25, qBy], [qCx + 0.25, qBy]], {
+            strokeColor: COL_REF, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[qCx - 0.25, qBy + qH], [qCx + 0.25, qBy + qH]], {
+            strokeColor: COL_REF, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        board.create('text', [qCx + 0.6, qBy + qH / 2, '8 \\text{ cm}'], {
+            useKatex: true, fontSize: 12, color: COL_REF, fixed: true, highlight: false
+        });
+
+        board.create('text', [qCx, qBy + qH + 0.7, '\\textbf{Q}'], {
+            useKatex: true, fontSize: 14, color: COL_Q, anchorX: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('text', [qCx, qBy - 1.0, 'V = \\text{ ?}'], {
+            useKatex: true, fontSize: 12, color: COL_Q, anchorX: 'middle', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
