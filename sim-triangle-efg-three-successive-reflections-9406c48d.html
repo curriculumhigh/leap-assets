@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three Successive Reflections of Triangle EFG</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 580px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-9, 9, 9, -9],
+            axis: false, grid: false,
+            keepAspectRatio: true,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_ORIG_EDGE = '#1a1a6e';
+        var COL_ORIG_FILL = '#c8cef8';
+        var COL_IMG_EDGE = '#2563EB';
+        var COL_IMG_FILL = '#2563EB';
+        var COL_LABEL_ORIG = '#DC2626';
+        var COL_LABEL_IMG = '#7C3AED';
+
+        // ── Reflection helper ───────────────────────────────────────────
+        function reflectPt(px, py, ax, ay, bx, by) {
+            var dx = bx - ax, dy = by - ay;
+            var len2 = dx * dx + dy * dy;
+            var t = ((px - ax) * dx + (py - ay) * dy) / len2;
+            var projX = ax + t * dx;
+            var projY = ay + t * dy;
+            return [2 * projX - px, 2 * projY - py];
+        }
+
+        // ── Original triangle EFG ───────────────────────────────────────
+        var Ex = -3.5, Ey = -4.5;
+        var Fx = 4, Fy = -6;
+        var Gx = 0.5, Gy = 0;
+
+        // ── Reflection 1: Reflect △EFG over edge EG → F reflects ────────
+        var F1 = reflectPt(Fx, Fy, Ex, Ey, Gx, Gy);
+        var E1x = Ex, E1y = Ey;
+        var G1x = Gx, G1y = Gy;
+        var F1x = F1[0], F1y = F1[1];
+
+        // ── Reflection 2: Reflect △E₁F₁G₁ over edge F₁G₁ → E₁ reflects ─
+        var E2 = reflectPt(E1x, E1y, F1x, F1y, G1x, G1y);
+        var E2x = E2[0], E2y = E2[1];
+        var F2x = F1x, F2y = F1y;
+        var G2x = G1x, G2y = G1y;
+
+        // ── Reflection 3: Reflect △E₂F₂G₂ over edge E₂G₂ → F₂ reflects ─
+        var F3 = reflectPt(F2x, F2y, E2x, E2y, G2x, G2y);
+        var E3x = E2x, E3y = E2y;
+        var G3x = G2x, G3y = G2y;
+        var F3x = F3[0], F3y = F3[1];
+
+        // ── Draw helper ─────────────────────────────────────────────────
+        function drawTriangle(coords, edgeColor, fillColor, fillOpacity, strokeWidth) {
+            var pts = [];
+            for (var i = 0; i < 3; i++) {
+                pts.push(board.create('point', [coords[i][0], coords[i][1]], {
+                    visible: false, fixed: true, name: ''
+                }));
+            }
+            board.create('polygon', [pts[0], pts[1], pts[2]], {
+                fillColor: fillColor, fillOpacity: fillOpacity,
+                borders: { strokeColor: edgeColor, strokeWidth: strokeWidth },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        function drawVertex(x, y, name, labelColor, ptColor, offset, size) {
+            return board.create('point', [x, y], {
+                name: name, fixed: true, size: size || 3, color: ptColor,
+                highlight: false, showInfobox: false,
+                label: { fontSize: 14, color: labelColor, offset: offset, highlight: false }
+            });
+        }
+
+        // ── Draw image triangles first (behind original) ────────────────
+        // Image 3
+        drawTriangle(
+            [[E3x, E3y], [F3x, F3y], [G3x, G3y]],
+            COL_IMG_EDGE, COL_IMG_FILL, 0.08, 1.5
+        );
+
+        // Image 2
+        drawTriangle(
+            [[E2x, E2y], [F2x, F2y], [G2x, G2y]],
+            COL_IMG_EDGE, COL_IMG_FILL, 0.08, 1.5
+        );
+
+        // Image 1
+        drawTriangle(
+            [[E1x, E1y], [F1x, F1y], [G1x, G1y]],
+            COL_IMG_EDGE, COL_IMG_FILL, 0.08, 1.5
+        );
+
+        // Original triangle (on top, darker/thicker)
+        drawTriangle(
+            [[Ex, Ey], [Fx, Fy], [Gx, Gy]],
+            COL_ORIG_EDGE, COL_ORIG_FILL, 0.15, 2.2
+        );
+
+        // ── Vertex points and labels ────────────────────────────────────
+        // Original vertices — red labels, dark navy points, larger
+        drawVertex(Ex, Ey, 'E', COL_LABEL_ORIG, COL_ORIG_EDGE, [4, -18], 4);
+        drawVertex(Fx, Fy, 'F', COL_LABEL_ORIG, COL_ORIG_EDGE, [8, -8], 4);
+        drawVertex(Gx, Gy, 'G', COL_LABEL_ORIG, COL_ORIG_EDGE, [-6, -20], 4);
+
+        // Image 1 vertices
+        drawVertex(E1x, E1y, 'E\u2081', COL_LABEL_IMG, COL_IMG_EDGE, [-26, 6], 3);
+        drawVertex(F1x, F1y, 'F\u2081', COL_LABEL_IMG, COL_IMG_EDGE, [-20, -16], 3);
+        drawVertex(G1x, G1y, 'G\u2081', COL_LABEL_IMG, COL_IMG_EDGE, [-28, -4], 3);
+
+        // Image 2 vertices
+        drawVertex(E2x, E2y, 'E\u2082', COL_LABEL_IMG, COL_IMG_EDGE, [-18, 14], 3);
+        drawVertex(F2x, F2y, 'F\u2082', COL_LABEL_IMG, COL_IMG_EDGE, [4, 16], 3);
+        drawVertex(G2x, G2y, 'G\u2082', COL_LABEL_IMG, COL_IMG_EDGE, [-18, 18], 3);
+
+        // Image 3 vertices
+        drawVertex(E3x, E3y, 'E\u2083', COL_LABEL_IMG, COL_IMG_EDGE, [10, 10], 3);
+        drawVertex(F3x, F3y, 'F\u2083', COL_LABEL_IMG, COL_IMG_EDGE, [8, -4], 3);
+        drawVertex(G3x, G3y, 'G\u2083', COL_LABEL_IMG, COL_IMG_EDGE, [14, -2], 3);
+    </script>
+</body>
+</html>
