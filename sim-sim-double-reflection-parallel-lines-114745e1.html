@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Reflection Across Parallel Lines</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 10.5, 11, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Layout constants
+        var LINE_K_Y = 6.5;
+        var LINE_M_Y = 3.0;
+        var LINE_X1 = 0;
+        var LINE_X2 = 10;
+
+        // Original segment JK — above line k
+        var Jx = 2.5, Jy = 8.5;
+        var Kx = 6.5, Ky = 9.0;
+
+        // Reflect a point across a horizontal line
+        function reflectY(px, py, lineY) {
+            return [px, 2 * lineY - py];
+        }
+
+        // First reflection across k
+        var Jp = reflectY(Jx, Jy, LINE_K_Y);
+        var Kp = reflectY(Kx, Ky, LINE_K_Y);
+
+        // Second reflection across m
+        var Jpp = reflectY(Jp[0], Jp[1], LINE_M_Y);
+        var Kpp = reflectY(Kp[0], Kp[1], LINE_M_Y);
+
+        // Foot of perpendicular from J to line k
+        var Bx = Jx, By = LINE_K_Y;
+        // Foot of perpendicular from J' to line m
+        var Dx = Jp[0], Dy = LINE_M_Y;
+
+        // Parallel lines k and m
+        board.create('line', [[LINE_X1, LINE_K_Y], [LINE_X2, LINE_K_Y]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false,
+            straightFirst: false, straightLast: false,
+            point1: { visible: false }, point2: { visible: false }
+        });
+        board.create('line', [[LINE_X1, LINE_M_Y], [LINE_X2, LINE_M_Y]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false,
+            straightFirst: false, straightLast: false,
+            point1: { visible: false }, point2: { visible: false }
+        });
+
+        // Line labels
+        board.create('text', [LINE_X2 + 0.3, LINE_K_Y, '<i>k</i>'], {
+            fontSize: 14, color: '#555555', fixed: true, highlight: false
+        });
+        board.create('text', [LINE_X2 + 0.3, LINE_M_Y, '<i>m</i>'], {
+            fontSize: 14, color: '#555555', fixed: true, highlight: false
+        });
+
+        // Perpendicular dashed segments (cyan)
+        // J to B (J down to line k)
+        board.create('segment', [[Jx, Jy], [Bx, By]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        // B to J' (line k down to J')
+        board.create('segment', [[Bx, By], [Jp[0], Jp[1]]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        // J' to D (J' down to line m)
+        board.create('segment', [[Jp[0], Jp[1]], [Dx, Dy]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        // D to J'' (line m down to J'')
+        board.create('segment', [[Dx, Dy], [Jpp[0], Jpp[1]]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // Right angle markers at B and D
+        var RA_SIZE = 0.35;
+
+        // Right angle at B
+        board.create('polygon', [
+            [Bx, By],
+            [Bx + RA_SIZE, By],
+            [Bx + RA_SIZE, By + RA_SIZE],
+            [Bx, By + RA_SIZE]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Right angle at D
+        board.create('polygon', [
+            [Dx, Dy],
+            [Dx + RA_SIZE, Dy],
+            [Dx + RA_SIZE, Dy + RA_SIZE],
+            [Dx, Dy + RA_SIZE]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Original segment JK (black)
+        board.create('segment', [[Jx, Jy], [Kx, Ky]], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('point', [Jx, Jy], {
+            name: 'J', size: 2, color: '#222222', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-14, 4] }
+        });
+        board.create('point', [Kx, Ky], {
+            name: 'K', size: 2, color: '#222222', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [6, 4] }
+        });
+
+        // First image J'K' (blue)
+        board.create('segment', [[Jp[0], Jp[1]], [Kp[0], Kp[1]]], {
+            strokeColor: '#2563EB', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('point', [Jp[0], Jp[1]], {
+            name: "J'", size: 2, color: '#2563EB', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#2563EB', offset: [-16, -10] }
+        });
+        board.create('point', [Kp[0], Kp[1]], {
+            name: "K'", size: 2, color: '#2563EB', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#2563EB', offset: [6, -10] }
+        });
+
+        // Second image J''K'' (green)
+        board.create('segment', [[Jpp[0], Jpp[1]], [Kpp[0], Kpp[1]]], {
+            strokeColor: '#059669', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('point', [Jpp[0], Jpp[1]], {
+            name: "J''", size: 2, color: '#059669', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#059669', offset: [-18, -10] }
+        });
+        board.create('point', [Kpp[0], Kpp[1]], {
+            name: "K''", size: 2, color: '#059669', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#059669', offset: [6, -10] }
+        });
+
+        // Points B and D (labels to the left)
+        board.create('point', [Bx, By], {
+            name: 'B', size: 1.5, color: '#222222', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-14, -2] }
+        });
+        board.create('point', [Dx, Dy], {
+            name: 'D', size: 1.5, color: '#222222', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-14, -2] }
+        });
+    </script>
+</body>
+</html>
