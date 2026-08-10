@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangles WXY and DCF</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 7.5, 13, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_PAIR1 = '#2563EB'; // ∠W = ∠D = 48° (single arc)
+        var COL_PAIR2 = '#059669'; // ∠X = ∠C = 71° (double arc)
+
+        // ── Triangle WXY (left side) ────────────────────────────────────
+        var W = board.create('point', [0.5, 1], {
+            name: 'W', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [-16, -10], highlight: false }
+        });
+        var Y = board.create('point', [4.5, 1], {
+            name: 'Y', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, -10], highlight: false }
+        });
+
+        // X position: angle at W is 48°
+        var angleW_rad = 48 * Math.PI / 180;
+        var wxLen = 4.0;
+        var Xx = W.X() + wxLen * Math.cos(angleW_rad);
+        var Xy = W.Y() + wxLen * Math.sin(angleW_rad);
+
+        var X = board.create('point', [Xx, Xy], {
+            name: 'X', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, 10], highlight: false }
+        });
+
+        // Triangle polygon
+        board.create('polygon', [W, X, Y], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, highlight: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        // ── Angle arc at W (single arc) — ∠YWX = 48° ───────────────────
+        board.create('nonReflexAngle', [Y, W, X], {
+            radius: 0.55,
+            fillColor: COL_PAIR1, fillOpacity: 0.06,
+            strokeColor: COL_PAIR1, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Single tick on angle W
+        var wBisect = angleW_rad / 2;
+        var wTickR = 0.55;
+        var wTickLen = 0.08;
+        var wTickMidX = W.X() + wTickR * Math.cos(wBisect);
+        var wTickMidY = W.Y() + wTickR * Math.sin(wBisect);
+        var wPerpAngle = wBisect + Math.PI / 2;
+        board.create('segment', [
+            [wTickMidX - wTickLen * Math.cos(wPerpAngle), wTickMidY - wTickLen * Math.sin(wPerpAngle)],
+            [wTickMidX + wTickLen * Math.cos(wPerpAngle), wTickMidY + wTickLen * Math.sin(wPerpAngle)]
+        ], { strokeColor: COL_PAIR1, strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // Label 48° at W
+        var wLabelDist = 0.9;
+        board.create('text', [
+            W.X() + wLabelDist * Math.cos(wBisect),
+            W.Y() + wLabelDist * Math.sin(wBisect),
+            '48°'
+        ], { fontSize: 12, color: COL_PAIR1, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+        // ── Angle arc at X (double arc) — ∠WXY = 71° ───────────────────
+        var xAngArc = board.create('nonReflexAngle', [W, X, Y], {
+            radius: 0.5,
+            fillColor: COL_PAIR2, fillOpacity: 0.06,
+            strokeColor: COL_PAIR2, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Bisector angle at X for label/tick placement
+        var xToW = Math.atan2(W.Y() - X.Y(), W.X() - X.X());
+        var xToY = Math.atan2(Y.Y() - X.Y(), Y.X() - X.X());
+        var xAngDiff = xToY - xToW;
+        if (xAngDiff < 0) xAngDiff += 2 * Math.PI;
+        if (xAngDiff > Math.PI) {
+            xAngDiff = 2 * Math.PI - xAngDiff;
+            var xBisect = xToW - xAngDiff / 2;
+        } else {
+            var xBisect = xToW + xAngDiff / 2;
+        }
+
+        // Double tick on angle X
+        var xTickR = 0.5;
+        var xTickLen = 0.08;
+        var xTickOffset = 0.04;
+        for (var i = -1; i <= 1; i += 2) {
+            var xTickMidX = X.X() + (xTickR + i * xTickOffset) * Math.cos(xBisect);
+            var xTickMidY = X.Y() + (xTickR + i * xTickOffset) * Math.sin(xBisect);
+            var xPerpAngle = xBisect + Math.PI / 2;
+            board.create('segment', [
+                [xTickMidX - xTickLen * Math.cos(xPerpAngle), xTickMidY - xTickLen * Math.sin(xPerpAngle)],
+                [xTickMidX + xTickLen * Math.cos(xPerpAngle), xTickMidY + xTickLen * Math.sin(xPerpAngle)]
+            ], { strokeColor: COL_PAIR2, strokeWidth: 1.5, fixed: true, highlight: false });
+        }
+
+        // Label 71° at X
+        var xLabelDist = 0.85;
+        board.create('text', [
+            X.X() + xLabelDist * Math.cos(xBisect),
+            X.Y() + xLabelDist * Math.sin(xBisect),
+            '71°'
+        ], { fontSize: 12, color: COL_PAIR2, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+        // ── Triangle DCF (right side) ───────────────────────────────────
+        var C = board.create('point', [7.5, 1], {
+            name: 'C', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [-16, -10], highlight: false }
+        });
+        var F = board.create('point', [12, 1], {
+            name: 'F', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, -10], highlight: false }
+        });
+
+        // ∠C = 71° (angle at C between CF and CD)
+        var angleC_rad = 71 * Math.PI / 180;
+        var cdLen = 3.8;
+        var Dx = C.X() + cdLen * Math.cos(angleC_rad);
+        var Dy = C.Y() + cdLen * Math.sin(angleC_rad);
+
+        var D = board.create('point', [Dx, Dy], {
+            name: 'D', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, 10], highlight: false }
+        });
+
+        // Triangle polygon
+        board.create('polygon', [C, D, F], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, highlight: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        // ── Angle arc at C (double arc) — ∠FCD = 71° ───────────────────
+        board.create('nonReflexAngle', [F, C, D], {
+            radius: 0.5,
+            fillColor: COL_PAIR2, fillOpacity: 0.06,
+            strokeColor: COL_PAIR2, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Bisector angle at C for ticks/label
+        var cBisect = angleC_rad / 2;
+
+        // Double tick on angle C
+        var cTickR = 0.5;
+        var cTickLen = 0.08;
+        var cTickOffset = 0.04;
+        for (var j = -1; j <= 1; j += 2) {
+            var cTickMidX = C.X() + (cTickR + j * cTickOffset) * Math.cos(cBisect);
+            var cTickMidY = C.Y() + (cTickR + j * cTickOffset) * Math.sin(cBisect);
+            var cPerpAngle = cBisect + Math.PI / 2;
+            board.create('segment', [
+                [cTickMidX - cTickLen * Math.cos(cPerpAngle), cTickMidY - cTickLen * Math.sin(cPerpAngle)],
+                [cTickMidX + cTickLen * Math.cos(cPerpAngle), cTickMidY + cTickLen * Math.sin(cPerpAngle)]
+            ], { strokeColor: COL_PAIR2, strokeWidth: 1.5, fixed: true, highlight: false });
+        }
+
+        // Label 71° at C
+        var cLabelDist = 0.85;
+        board.create('text', [
+            C.X() + cLabelDist * Math.cos(cBisect),
+            C.Y() + cLabelDist * Math.sin(cBisect),
+            '71°'
+        ], { fontSize: 12, color: COL_PAIR2, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+        // ── Angle arc at D (single arc) — ∠D = 48° ─────────────────────
+        var dAngArc = board.create('nonReflexAngle', [C, D, F], {
+            radius: 0.55,
+            fillColor: COL_PAIR1, fillOpacity: 0.06,
+            strokeColor: COL_PAIR1, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Bisector angle at D for tick/label
+        var dToC = Math.atan2(C.Y() - D.Y(), C.X() - D.X());
+        var dToF = Math.atan2(F.Y() - D.Y(), F.X() - D.X());
+        var dAngDiff = dToF - dToC;
+        if (dAngDiff < 0) dAngDiff += 2 * Math.PI;
+        if (dAngDiff > Math.PI) {
+            dAngDiff = 2 * Math.PI - dAngDiff;
+            var dBisect = dToC - dAngDiff / 2;
+        } else {
+            var dBisect = dToC + dAngDiff / 2;
+        }
+
+        // Single tick on angle D
+        var dTickR = 0.55;
+        var dTickLen = 0.08;
+        var dTickMidX = D.X() + dTickR * Math.cos(dBisect);
+        var dTickMidY = D.Y() + dTickR * Math.sin(dBisect);
+        var dPerpAngle = dBisect + Math.PI / 2;
+        board.create('segment', [
+            [dTickMidX - dTickLen * Math.cos(dPerpAngle), dTickMidY - dTickLen * Math.sin(dPerpAngle)],
+            [dTickMidX + dTickLen * Math.cos(dPerpAngle), dTickMidY + dTickLen * Math.sin(dPerpAngle)]
+        ], { strokeColor: COL_PAIR1, strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // Label 48° at D
+        var dLabelDist = 0.9;
+        board.create('text', [
+            D.X() + dLabelDist * Math.cos(dBisect),
+            D.Y() + dLabelDist * Math.sin(dBisect),
+            '48°'
+        ], { fontSize: 12, color: COL_PAIR1, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+    </script>
+</body>
+</html>
