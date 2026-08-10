@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangles GHK and RST</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 5.5, 13, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_SINGLE = '#2563EB';
+        var COL_DOUBLE = '#059669';
+        var COL_EDGE = '#555555';
+
+        // Triangle GHK
+        var G = board.create('point', [0.5, 0], { name: 'G', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [-16, -10] } });
+        var K = board.create('point', [4.5, 0], { name: 'K', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [8, -10] } });
+        var H = board.create('point', [2.2, 4], { name: 'H', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [-4, 12] } });
+
+        board.create('segment', [G, K], { strokeColor: COL_EDGE, strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [K, H], { strokeColor: COL_EDGE, strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [H, G], { strokeColor: COL_EDGE, strokeWidth: 2, fixed: true, highlight: false });
+
+        board.create('polygon', [G, K, H], { fillColor: 'none', fillOpacity: 0, borders: { visible: false }, vertices: { visible: false }, fixed: true, highlight: false });
+
+        // Angle arc at G (single arc, blue, 74)
+        board.create('nonReflexAngle', [K, G, H], {
+            radius: 0.6,
+            fillColor: COL_SINGLE, fillOpacity: 0.08,
+            strokeColor: COL_SINGLE, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        board.create('text', [1.2, 0.55, '74\u00B0'], {
+            fontSize: 12, color: COL_SINGLE, fixed: true, highlight: false
+        });
+
+        // Angle arc at K (double arc, green, 52)
+        board.create('nonReflexAngle', [H, K, G], {
+            radius: 0.55,
+            fillColor: COL_DOUBLE, fillOpacity: 0.08,
+            strokeColor: COL_DOUBLE, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        board.create('nonReflexAngle', [H, K, G], {
+            radius: 0.75,
+            fillColor: 'none', fillOpacity: 0,
+            strokeColor: COL_DOUBLE, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        board.create('text', [3.3, 0.55, '52\u00B0'], {
+            fontSize: 12, color: COL_DOUBLE, fixed: true, highlight: false
+        });
+
+        // Triangle RST
+        var R = board.create('point', [7.5, 0], { name: 'R', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [-16, -10] } });
+        var T = board.create('point', [12, 0], { name: 'T', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [8, -10] } });
+        var S = board.create('point', [9.5, 4.2], { name: 'S', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [-4, 12] } });
+
+        board.create('segment', [R, T], { strokeColor: COL_EDGE, strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [T, S], { strokeColor: COL_EDGE, strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [S, R], { strokeColor: COL_EDGE, strokeWidth: 2, fixed: true, highlight: false });
+
+        board.create('polygon', [R, T, S], { fillColor: 'none', fillOpacity: 0, borders: { visible: false }, vertices: { visible: false }, fixed: true, highlight: false });
+
+        // Angle arc at R (single arc, blue — matches G)
+        board.create('nonReflexAngle', [T, R, S], {
+            radius: 0.6,
+            fillColor: COL_SINGLE, fillOpacity: 0.08,
+            strokeColor: COL_SINGLE, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Angle arc at T (double arc, green — matches K)
+        board.create('nonReflexAngle', [S, T, R], {
+            radius: 0.55,
+            fillColor: COL_DOUBLE, fillOpacity: 0.08,
+            strokeColor: COL_DOUBLE, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        board.create('nonReflexAngle', [S, T, R], {
+            radius: 0.75,
+            fillColor: 'none', fillOpacity: 0,
+            strokeColor: COL_DOUBLE, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // "?" label at vertex S
+        board.create('text', [9.2, 3.3, '?'], {
+            fontSize: 18, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:bold'
+        });
+
+    </script>
+</body>
+</html>
