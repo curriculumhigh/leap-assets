@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polygons A and B</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 8.5, 17, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Polygon A: Concave pentagon (left side) ──────────────────────
+        var A1 = [1, 3];
+        var A2 = [2.5, 7];
+        var A3 = [3.8, 4.8];
+        var A4 = [5.5, 7.2];
+        var A5 = [5.8, 3.2];
+
+        var polyAVertices = [A1, A2, A3, A4, A5];
+        var polyALabels = ['P', 'Q', 'R', 'S', 'T'];
+        var polyAPoints = [];
+
+        var polyAOffsets = [
+            [-14, -6],
+            [-6, 10],
+            [-4, -14],
+            [4, 10],
+            [8, -8]
+        ];
+
+        for (var i = 0; i < polyAVertices.length; i++) {
+            polyAPoints.push(board.create('point', polyAVertices[i], {
+                name: polyALabels[i], size: 2, color: '#222222', fixed: true,
+                highlight: false, showInfobox: false,
+                label: { fontSize: 12, color: '#222222', offset: polyAOffsets[i] }
+            }));
+        }
+
+        board.create('polygon', polyAPoints, {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Label "Polygon A" below polygon A
+        board.create('text', [3.4, 1.8, '<b style="font-size:15px;">Polygon A</b>'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Polygon B: Convex irregular heptagon (right side) ────────────
+        var B1 = [9.5, 3.2];
+        var B2 = [9.8, 5.5];
+        var B3 = [11.2, 7];
+        var B4 = [13.2, 7.2];
+        var B5 = [15, 5.8];
+        var B6 = [15.5, 3.8];
+        var B7 = [12.8, 2.8];
+
+        var polyBVertices = [B1, B2, B3, B4, B5, B6, B7];
+        var polyBLabels = ['D', 'E', 'F', 'G', 'H', 'I', 'J'];
+        var polyBPoints = [];
+
+        var polyBOffsets = [
+            [-14, -4],
+            [-14, 4],
+            [-4, 10],
+            [4, 10],
+            [10, 4],
+            [10, -6],
+            [2, -12]
+        ];
+
+        for (var j = 0; j < polyBVertices.length; j++) {
+            polyBPoints.push(board.create('point', polyBVertices[j], {
+                name: polyBLabels[j], size: 2, color: '#222222', fixed: true,
+                highlight: false, showInfobox: false,
+                label: { fontSize: 12, color: '#222222', offset: polyBOffsets[j] }
+            }));
+        }
+
+        board.create('polygon', polyBPoints, {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Label "Polygon B" below polygon B
+        board.create('text', [12.5, 1.8, '<b style="font-size:15px;">Polygon B</b>'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
