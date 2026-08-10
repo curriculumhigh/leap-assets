@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regular Pentagon vs Irregular Hexagon</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 5, 7, -4],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_OUTLINE = '#555555';
+        var COL_MARKS = '#DC2626';
+        var STROKE_W = 2.0;
+
+        // ── FIGURE A: Regular Pentagon ──────────────────────────────────
+        var centerA = [-3.5, 1];
+        var radiusA = 2.2;
+        var pentVerts = [];
+        var i, angle;
+
+        for (i = 0; i < 5; i++) {
+            // Start from top (90°) and go clockwise
+            angle = Math.PI / 2 + i * 2 * Math.PI / 5;
+            pentVerts.push(board.create('point', [
+                centerA[0] + radiusA * Math.cos(angle),
+                centerA[1] + radiusA * Math.sin(angle)
+            ], { visible: false, fixed: true, name: '' }));
+        }
+
+        // Draw pentagon edges
+        var pentSegments = [];
+        for (i = 0; i < 5; i++) {
+            var next = (i + 1) % 5;
+            pentSegments.push(board.create('segment', [pentVerts[i], pentVerts[next]], {
+                strokeColor: COL_OUTLINE, strokeWidth: STROKE_W, fixed: true, highlight: false
+            }));
+        }
+
+        // Tick marks on each side (single tick at midpoint, perpendicular to side)
+        for (i = 0; i < 5; i++) {
+            var next = (i + 1) % 5;
+            var mx = (pentVerts[i].X() + pentVerts[next].X()) / 2;
+            var my = (pentVerts[i].Y() + pentVerts[next].Y()) / 2;
+            var dx = pentVerts[next].X() - pentVerts[i].X();
+            var dy = pentVerts[next].Y() - pentVerts[i].Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            // Perpendicular unit vector
+            var px = -dy / len;
+            var py = dx / len;
+            var tickLen = 0.18;
+            board.create('segment', [
+                [mx - px * tickLen, my - py * tickLen],
+                [mx + px * tickLen, my + py * tickLen]
+            ], {
+                strokeColor: COL_MARKS, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+        }
+
+        // Angle arcs at each vertex
+        for (i = 0; i < 5; i++) {
+            var prev = (i + 4) % 5;
+            var next = (i + 1) % 5;
+            board.create('nonReflexAngle', [pentVerts[prev], pentVerts[i], pentVerts[next]], {
+                radius: 0.35,
+                strokeColor: COL_MARKS, strokeWidth: 1.2,
+                fillColor: COL_MARKS, fillOpacity: 0.06,
+                fixed: true, name: '', withLabel: false, highlight: false
+            });
+        }
+
+        // Label "Figure A"
+        board.create('text', [centerA[0], -2.8, 'Figure A'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        // ── FIGURE B: Irregular Hexagon ─────────────────────────────────
+        var centerB = [3.2, 0.8];
+        // Irregular vertices — visibly different side lengths and angles
+        var hexCoords = [
+            [centerB[0] - 1.0, centerB[1] + 2.2],
+            [centerB[0] + 1.3, centerB[1] + 1.8],
+            [centerB[0] + 2.4, centerB[1] + 0.3],
+            [centerB[0] + 1.6, centerB[1] - 1.6],
+            [centerB[0] - 0.8, centerB[1] - 1.9],
+            [centerB[0] - 2.2, centerB[1] + 0.2]
+        ];
+
+        var hexVerts = [];
+        for (i = 0; i < 6; i++) {
+            hexVerts.push(board.create('point', hexCoords[i], {
+                visible: false, fixed: true, name: ''
+            }));
+        }
+
+        // Draw hexagon edges
+        for (i = 0; i < 6; i++) {
+            var next = (i + 1) % 6;
+            board.create('segment', [hexVerts[i], hexVerts[next]], {
+                strokeColor: COL_OUTLINE, strokeWidth: STROKE_W, fixed: true, highlight: false
+            });
+        }
+
+        // No tick marks, no arc marks on Figure B
+
+        // Label "Figure B"
+        board.create('text', [centerB[0], -2.8, 'Figure B'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+    </script>
+</body>
+</html>
