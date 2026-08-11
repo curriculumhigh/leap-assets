@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>volume-known-cross-section-slice</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 520px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+      // Build the board only after all scripts (including KaTeX) have loaded,
+      // so useKatex:true labels render as math, not raw text.
+      window.addEventListener('load', function () {
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.0, 7.2, 8.4, -1.8],
+            axis: true,
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 },
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', drawLabels: false, minorTicks: 0, ticksDistance: 1 }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', drawLabels: false, minorTicks: 0, ticksDistance: 1 }
+                }
+            }
+        });
+
+        // Palette
+        var COL_F   = '#222222';   // top curve f(x)
+        var COL_G   = '#2563EB';   // bottom curve g(x)
+        var COL_SLICE = '#DC2626'; // representative slice (attention reference)
+        var COL_SQ  = '#059669';   // square cross-section face
+
+        var A = 0.6, B = 7.4;      // base region interval [a, b]
+
+        // Top curve f(x): concave-down arc sitting above the region
+        function f(x) { return -0.18 * (x - 4) * (x - 4) + 5.2; }
+        // Bottom curve g(x): gentle rising curve below f over [A,B]
+        function g(x) { return 0.5 + 0.10 * x + 0.02 * (x - 1) * (x - 1); }
+
+        // --- Shaded base region between the two curves ---
+        var regionPts = [];
+        var N = 60, i, t, xx;
+        for (i = 0; i <= N; i++) { xx = A + (B - A) * i / N; regionPts.push([xx, f(xx)]); }
+        for (i = N; i >= 0; i--) { xx = A + (B - A) * i / N; regionPts.push([xx, g(xx)]); }
+        board.create('polygon', regionPts, {
+            borders: { strokeColor: 'none', strokeWidth: 0 },
+            fillColor: '#888888', fillOpacity: 0.15,
+            vertices: { visible: false }, fixed: true, highlight: false, withLines: false
+        });
+
+        // --- The two boundary curves ---
+        board.create('functiongraph', [g, A, B], {
+            strokeColor: COL_G, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('functiongraph', [f, A, B], {
+            strokeColor: COL_F, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Vertical end-caps closing the region at x = a and x = b
+        board.create('segment', [[A, g(A)], [A, f(A)]], { strokeColor: '#888888', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+        board.create('segment', [[B, g(B)], [B, f(B)]], { strokeColor: '#888888', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+
+        // --- Representative slice at x = c ---
+        var C = 4.4;
+        var gc = g(C), fc = f(C);
+
+        // --- Dashed reference drop-lines from the region down to the x-axis ---
+        // at the left endpoint a, the right endpoint b, and the slice position c.
+        var COL_DROP = '#DC2626';
+        board.create('segment', [[A, g(A)], [A, 0]], { strokeColor: COL_DROP, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+        board.create('segment', [[B, g(B)], [B, 0]], { strokeColor: COL_DROP, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+        board.create('segment', [[C, gc],   [C, 0]], { strokeColor: COL_DROP, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+
+        // The vertical slice segment from g(c) to f(c) = side length s
+        board.create('segment', [[C, gc], [C, fc]], {
+            strokeColor: COL_SLICE, strokeWidth: 2.6, fixed: true, highlight: false, layer: 7
+        });
+        // small endpoint ticks on the curves
+        board.create('point', [C, fc], { name: '', size: 2.5, color: COL_F, fixed: true, highlight: false, showInfobox: false });
+        board.create('point', [C, gc], { name: '', size: 2.5, color: COL_G, fixed: true, highlight: false, showInfobox: false });
+
+        // --- Oblique 3D-look SQUARE standing perpendicular on the slice ---
+        // The slice (side length s) is the front-left edge. We push it "out of the page"
+        // by a fixed oblique offset vector, giving a parallelogram that reads as a square.
+        var s = fc - gc;                 // side length of the square
+        var dx = 1.35, dy = 0.95;        // oblique depth offset (out-of-page direction)
+
+        // Square corners: front edge = slice (bottom-front, top-front),
+        // back edge = front edge translated by (dx, dy).
+        var bf = [C, gc];                // bottom front
+        var tf = [C, fc];                // top front
+        var bb = [C + dx, gc + dy];      // bottom back
+        var tb = [C + dx, fc + dy];      // top back
+
+        // Square face (oblique parallelogram)
+        board.create('polygon', [bf, tf, tb, bb], {
+            borders: { strokeColor: COL_SQ, strokeWidth: 1.6, highlight: false },
+            fillColor: COL_SQ, fillOpacity: 0.14,
+            vertices: { visible: false }, fixed: true, highlight: false, layer: 6
+        });
+        // depth edges emphasized to give the pop-out feel
+        board.create('segment', [bf, bb], { strokeColor: COL_SQ, strokeWidth: 1.6, fixed: true, highlight: false, layer: 6 });
+        board.create('segment', [tf, tb], { strokeColor: COL_SQ, strokeWidth: 1.6, fixed: true, highlight: false, layer: 6 });
+
+        // --- Labels ---
+        // s = f(c) - g(c) label beside the slice
+        board.create('text', [C - 0.25, (gc + fc) / 2, 's = f(c) - g(c)'], {
+            useKatex: true, fontSize: 13, color: COL_SLICE, anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // s^2 label on the square face
+        board.create('text', [C + dx / 2 + 0.12, (gc + fc) / 2 + dy / 2, 's^2'], {
+            useKatex: true, fontSize: 14, color: '#047857', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // curve name labels
+        board.create('text', [B + 0.05, f(B) + 0.55, 'f(x)'], { useKatex: true, fontSize: 13, color: COL_F, anchorX: 'left', fixed: true, highlight: false });
+        board.create('text', [B + 0.05, g(B) - 0.05, 'g(x)'], { useKatex: true, fontSize: 13, color: COL_G, anchorX: 'left', fixed: true, highlight: false });
+
+        // a, b, c position labels at the feet of the drop-lines on the x-axis
+        board.create('text', [A, -0.45, 'a'], { useKatex: true, fontSize: 13, color: '#222222', anchorX: 'middle', fixed: true, highlight: false });
+        board.create('text', [B, -0.45, 'b'], { useKatex: true, fontSize: 13, color: '#222222', anchorX: 'middle', fixed: true, highlight: false });
+        board.create('text', [C, -0.45, 'c'], { useKatex: true, fontSize: 13, color: '#222222', anchorX: 'middle', fixed: true, highlight: false });
+
+        // Axis labels near arrow tips (right end of x-axis, top of y-axis) — KaTeX math italics
+        board.create('text', [8.0, -0.4, 'x'], { useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+        board.create('text', [0.28, 6.95, 'y'], { useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+      });
+    </script>
+</body>
+</html>
