@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>volume-disk-method</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 520px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+      // Build the board only after all scripts (including KaTeX) have loaded,
+      // so useKatex:true labels render as math, not raw text.
+      window.addEventListener('load', function () {
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.0, 4.0, 8.4, -3.2],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', drawLabels: false, minorTicks: 0, ticksDistance: 1 }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: { strokeColor: '#444444', drawLabels: false, minorTicks: 0, ticksDistance: 1 }
+                }
+            }
+        });
+
+        // Palette
+        var COL_F    = '#222222';   // curve y = f(x)
+        var COL_DISK = '#2563EB';   // representative disk
+        var COL_REF  = '#DC2626';   // radius / reference markers
+        var COL_AX   = '#222222';
+
+        var A = 0.7, B = 7.4;       // interval [a, b]
+
+        // Illustrative increasing curve, gentle sqrt-like shape: y = sqrt(x + 0.4)
+        function f(x) { return Math.sqrt(x + 0.4); }
+
+        // --- Shaded region under the curve (above the x-axis) over [A, B] ---
+        var regionPts = [];
+        var N = 60, i, xx;
+        regionPts.push([A, 0]);
+        for (i = 0; i <= N; i++) { xx = A + (B - A) * i / N; regionPts.push([xx, f(xx)]); }
+        regionPts.push([B, 0]);
+        board.create('polygon', regionPts, {
+            borders: { strokeColor: 'none', strokeWidth: 0 },
+            fillColor: '#888888', fillOpacity: 0.15,
+            vertices: { visible: false }, fixed: true, highlight: false, withLines: false
+        });
+
+        // Faint mirrored curve below the x-axis suggesting the surface of revolution
+        function fNeg(x) { return -f(x); }
+        board.create('functiongraph', [fNeg, A, B], {
+            strokeColor: COL_F, strokeWidth: 1.0, dash: 2, opacity: 0.35,
+            fixed: true, highlight: false
+        });
+
+        // --- The curve y = f(x) ---
+        board.create('functiongraph', [f, A, B], {
+            strokeColor: COL_F, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Vertical end-caps closing the region at x = a and x = b
+        board.create('segment', [[A, 0], [A, f(A)]], { strokeColor: '#888888', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+        board.create('segment', [[B, 0], [B, f(B)]], { strokeColor: '#888888', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+
+        // --- Representative disk at x = c (a short cylinder: "coin seen at an angle") ---
+        var C = 5.0;                     // x-position of the FRONT face
+        var R = f(C);                    // radius of the disk = f(c)
+        var TX = 0.55;                   // exaggerated thickness dx (offset along x-axis)
+
+        // Each circular face lies in a plane perpendicular to the x-axis. In oblique
+        // projection a face is an ellipse: full vertical extent (radius R) and a narrow
+        // horizontal extent (foreshortened depth). Parameterize the rim by angle t:
+        //   x = cx + W * cos(t)     (W = foreshortened horizontal half-width)
+        //   y = 0  + R * sin(t)     (full vertical radius R, centered on the axis)
+        var W = 0.22;                    // foreshortened half-width of each face ellipse
+        function faceX(cx, t) { return cx + W * Math.cos(t); }
+        function faceY(t)     { return R * Math.sin(t); }
+
+        // x-position of each face's center: front face at C, back face offset by +TX
+        var CXF = C;                     // front face center x
+        var CXB = C + TX;                // back face center x
+
+        // The right edge of each ellipse (t = 0) is the rim point nearest the viewer's
+        // right; the back-face arc with x < CXB and tucked behind the front face is the
+        // occluded portion. With the front face to the LEFT of the back face, the back
+        // face's LEFT half (t in [PI/2, 3PI/2]) is hidden behind the front disk body.
+
+        // BACK face — hidden (occluded) portion: dashed/faded, drawn first (underneath)
+        board.create('curve', [
+            function (t) { return faceX(CXB, t); },
+            function (t) { return faceY(t); },
+            Math.PI / 2, 3 * Math.PI / 2
+        ], {
+            strokeColor: COL_DISK, strokeWidth: 1.2, dash: 2, opacity: 0.5,
+            fixed: true, highlight: false, layer: 4
+        });
+        // BACK face — visible (right) portion: solid
+        board.create('curve', [
+            function (t) { return faceX(CXB, t); },
+            function (t) { return faceY(t); },
+            -Math.PI / 2, Math.PI / 2
+        ], {
+            strokeColor: COL_DISK, strokeWidth: 1.5, opacity: 0.85,
+            fixed: true, highlight: false, layer: 4
+        });
+
+        // Outer connecting (tangent) edges joining front & back faces at top and bottom
+        board.create('segment', [[faceX(CXF, Math.PI / 2), faceY(Math.PI / 2)],
+                                  [faceX(CXB, Math.PI / 2), faceY(Math.PI / 2)]], {
+            strokeColor: COL_DISK, strokeWidth: 1.5, fixed: true, highlight: false, layer: 5
+        });
+        board.create('segment', [[faceX(CXF, -Math.PI / 2), faceY(-Math.PI / 2)],
+                                  [faceX(CXB, -Math.PI / 2), faceY(-Math.PI / 2)]], {
+            strokeColor: COL_DISK, strokeWidth: 1.5, fixed: true, highlight: false, layer: 5
+        });
+
+        // FRONT face — full closed ellipse, filled, drawn on top (occludes back-left arc)
+        board.create('curve', [
+            function (t) { return faceX(CXF, t); },
+            function (t) { return faceY(t); },
+            0, 2 * Math.PI
+        ], {
+            strokeColor: COL_DISK, strokeWidth: 1.6,
+            fillColor: COL_DISK, fillOpacity: 0.18,
+            fixed: true, highlight: false, layer: 6
+        });
+
+        // --- Radius R = f(c): vertical segment on the FRONT face, axis up to the curve ---
+        board.create('segment', [[CXF, 0], [CXF, R]], {
+            strokeColor: COL_REF, strokeWidth: 1.6, fixed: true, highlight: false, layer: 8
+        });
+        // center dot on the axis and rim dot on the curve
+        board.create('point', [CXF, 0], { name: '', size: 2, color: COL_REF, fixed: true, highlight: false, showInfobox: false, layer: 8 });
+        board.create('point', [CXF, R], { name: '', size: 2.5, color: COL_F, fixed: true, highlight: false, showInfobox: false, layer: 8 });
+
+        // dx bracket under the slab on the x-axis (from front face to back face)
+        board.create('segment', [[C, -0.18], [C + TX, -0.18]], { strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false });
+        board.create('segment', [[C, -0.10], [C, -0.26]], { strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false });
+        board.create('segment', [[C + TX, -0.10], [C + TX, -0.26]], { strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false });
+        board.create('text', [C + TX / 2, -0.52, 'dx'], { useKatex: true, fontSize: 12, color: '#555555', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+
+        // --- Labels ---
+        // y = f(x) near the curve, above a relatively flat upper section
+        board.create('text', [B - 0.1, f(B) + 0.42, 'y = f(x)'], {
+            useKatex: true, fontSize: 13, color: COL_F, anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // R = f(x) beside the radius segment
+        board.create('text', [C - 0.18, R / 2, 'R'], {
+            useKatex: true, fontSize: 13, color: COL_REF, anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // a, b position labels at the feet of the interval ends
+        board.create('text', [A, -0.45, 'a'], { useKatex: true, fontSize: 13, color: COL_AX, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+        board.create('text', [B, -0.45, 'b'], { useKatex: true, fontSize: 13, color: COL_AX, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+
+        // Axis labels near arrow tips
+        board.create('text', [8.05, -0.38, 'x'], { useKatex: true, fontSize: 14, color: COL_AX, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+        board.create('text', [0.28, 3.78, 'y'], { useKatex: true, fontSize: 14, color: COL_AX, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+      });
+    </script>
+</body>
+</html>
