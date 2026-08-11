@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperature vs Ice Cream Cones Sold</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 130px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 14px;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 8px;
+        }
+        .panel-msg {
+            font-size: 12px; color: #555; line-height: 1.5;
+        }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-label">Instructions</div>
+                <div class="panel-msg">Hover over the points to see their coordinates.</div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [45, 65, 105, -5],
+            axis: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            grid: false
+        });
+
+        // Manual axes
+        var xAxis = board.create('arrow', [[45, 0], [105, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false
+        });
+        var yAxis = board.create('arrow', [[50, -5], [50, 65]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false
+        });
+
+        // Grid lines
+        var gridColor = '#D1D5DB';
+        var gridWidth = 0.4;
+
+        for (var gx = 50; gx <= 100; gx += 10) {
+            board.create('segment', [[gx, -5], [gx, 65]], {
+                strokeColor: gridColor, strokeWidth: gridWidth, fixed: true, highlight: false
+            });
+        }
+        for (var gy = 0; gy <= 60; gy += 10) {
+            board.create('segment', [[45, gy], [105, gy]], {
+                strokeColor: gridColor, strokeWidth: gridWidth, fixed: true, highlight: false
+            });
+        }
+
+        // X-axis tick labels
+        for (var tx = 50; tx <= 100; tx += 10) {
+            board.create('text', [tx, -3, String(tx)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+        // Y-axis tick labels
+        for (var ty = 0; ty <= 60; ty += 10) {
+            board.create('text', [48, ty, String(ty)], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Tick marks on x-axis
+        for (var tmx = 50; tmx <= 100; tmx += 10) {
+            board.create('segment', [[tmx, -0.8], [tmx, 0.8]], {
+                strokeColor: '#444444', strokeWidth: 1, fixed: true, highlight: false
+            });
+        }
+        // Tick marks on y-axis
+        for (var tmy = 0; tmy <= 60; tmy += 10) {
+            board.create('segment', [[49.5, tmy], [50.5, tmy]], {
+                strokeColor: '#444444', strokeWidth: 1, fixed: true, highlight: false
+            });
+        }
+
+        // Data points with hover tooltips
+        var data = [
+            [55, 10], [60, 15], [65, 20], [72, 28],
+            [78, 35], [84, 40], [90, 50], [95, 55]
+        ];
+
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+        var COL_PT = '#2563EB';
+
+        function showTooltip(pt) {
+            var xCoord = pt.X();
+            var yCoord = pt.Y();
+            var latex = '\\color{' + COL_PT + '}{(' + Math.round(xCoord) + ',\\,' + Math.round(yCoord) + ')}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = COL_PT;
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xCoord, yCoord], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+        }
+
+        for (var i = 0; i < data.length; i++) {
+            var pt = board.create('point', [data[i][0], data[i][1]], {
+                name: '', size: 4, color: COL_PT, fixed: true,
+                showInfobox: false, highlight: true,
+                highlightFillColor: COL_PT, highlightStrokeColor: COL_PT,
+                highlightSize: 6
+            });
+            pt.on('over', (function(p) {
+                return function() { showTooltip(p); };
+            })(pt));
+            pt.on('out', function() { hideTooltip(); });
+        }
+    </script>
+</body>
+</html>
