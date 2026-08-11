@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hours of Practice vs Free Throws Made</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.2, 10.5, 7.5, -1.8],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [4.2, -1.2, '\\textit{Hours of Practice}'], {
+            fontSize: 13, fixed: true, highlight: false, useKatex: true, anchorX: 'middle'
+        });
+        board.create('text', [0.2, 10.0, '\\textit{Free Throws Made}'], {
+            fontSize: 13, fixed: true, highlight: false, useKatex: true
+        });
+
+        // Data points
+        var points = [[1,3], [2,5], [3,4], [4,7], [5,8]];
+
+        for (var i = 0; i < points.length; i++) {
+            var px = points[i][0];
+            var py = points[i][1];
+
+            board.create('point', [px, py], {
+                name: '',
+                size: 5,
+                color: '#222222',
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+
+            // Coordinate label
+            var offX = 0.15;
+            var offY = 0.45;
+
+            board.create('text', [px + offX, py + offY, '(' + px + ',\\,' + py + ')'], {
+                fontSize: 12,
+                color: '#222222',
+                fixed: true,
+                highlight: false,
+                useKatex: true
+            });
+        }
+    </script>
+</body>
+</html>
