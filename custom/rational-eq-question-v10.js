@@ -3276,7 +3276,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                         var $fb = $("#" + self.uid + "-fb-" + sec.id + "-" + ri);
                         $fb.html('<span style="color:#3a9447;font-size:16px;">&#10003;</span>');
                         row.inputs.forEach(function (inp, ii) {
-                            var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii);
+                            if (inp.type === "dropdown") { var _ddr = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ri + "-" + ii); if (_ddr) { $(_ddr).addClass("correct"); if (_ddr.setDisabled) _ddr.setDisabled(true); } return; } var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ri + "-" + ii);
                             if (slot) { slot.style.pointerEvents = "none"; $(slot).addClass("correct"); }
                         });
                         $("#" + self.uid + "-rowbtn-" + sec.id + "-" + ri).hide();
@@ -3321,7 +3321,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     sec.inputs.forEach(function (inp, ii) {
                         if (inp.type === "dropdown") {
                             var dd = document.getElementById(self.uid + "-dd-" + sec.id + "-" + ii);
-                            if (dd && dd.setDisabled) dd.setDisabled(true);
+                            if (dd) { $(dd).addClass("correct"); if (dd.setDisabled) dd.setDisabled(true); }
                         } else {
                             var slot = document.getElementById(self.uid + "-mq-" + sec.id + "-" + ii);
                             if (slot) { slot.style.pointerEvents = "none"; $(slot).addClass("correct"); }
