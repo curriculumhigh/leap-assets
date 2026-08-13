@@ -3114,7 +3114,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                 var ddId = self.uid + "-dd-" + key;
                 var select = document.getElementById(ddId);
                 if (select && saved.value) {
-                    select.value = saved.value;
+                    if (select.setValue) { select.setValue(saved.value); } else { select.value = saved.value; }
                 }
             } else if (saved.latex !== undefined) {
                 // MQ field
