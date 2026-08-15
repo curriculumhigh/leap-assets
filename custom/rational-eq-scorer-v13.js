@@ -34,7 +34,10 @@ LearnosityAmd.define([], function () {
         var completed = parseInt(parts[0]) || 0;
         var total = parseInt(parts[1]) || 1;
         if (completed >= total) return this.maxScore();
-        return Math.round((completed / total) * this.maxScore());
+        // Guard: a partial response must never round up to full marks —
+        // platforms treat score == max_score as "question finished" and stop
+        // syncing/saving later steps (stale-score seal bug, item 2535).
+        return Math.min(Math.round((completed / total) * this.maxScore()), this.maxScore() - 1);
     };
 
     Scorer.prototype.maxScore = function () {
