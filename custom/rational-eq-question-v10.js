@@ -286,13 +286,18 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     // ── Render hint HTML: "Hint:" label + KaTeX math rendering for $...$ blocks ──
     Question.prototype._renderHint = function (hintText) {
         // Render $...$ and $$...$$ as KaTeX
-        var rendered = hintText.replace(/\$\$([^$]+)\$\$/g, function (m, latex) {
+        // Escape-aware delimiters: \$ is a literal dollar (currency), never a
+        // math delimiter — mirrors KaTeX auto-render used for prose fields
+        // (hints previously paired the $ of \$ and swallowed text between).
+        var rendered = hintText.replace(/\$\$((?:\\.|[^$])+?)\$\$/g, function (m, latex) {
             try { return '<div class="katex-display">' + katex.renderToString(latex.trim(), { throwOnError: false, displayMode: true, trust: true }) + '</div>'; }
             catch (e) { return m; }
-        }).replace(/\$([^$]+)\$/g, function (m, latex) {
+        }).replace(/\$((?:\\.|[^$])+?)\$/g, function (m, latex) {
             try { return katex.renderToString(latex.trim(), { throwOnError: false, trust: true }); }
             catch (e) { return m; }
         });
+        // Literal \$ outside math zones renders as a plain dollar sign
+        rendered = rendered.replace(/\\\$/g, "$");
         // Single-line: no newlines, no display math, no <br>, no block tags
         var isMultiline = /\n|<br|<div|<p |<ul|<ol|katex-display/.test(hintText) || /katex-display/.test(rendered);
         var modeClass = isMultiline ? 'req-hint-multiline' : 'req-hint-inline';
