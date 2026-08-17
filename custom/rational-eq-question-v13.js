@@ -562,7 +562,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     Question.prototype._markContainerBounds = function (tpl, secId, rowIdx) {
         var prefix = "REQCB" + secId.replace(/[^a-zA-Z0-9]/g, "") + "R" + rowIdx;
         var ci = 0;
-        tpl = tpl.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function (mathBlock) {
+        tpl = tpl.replace(/(\$\$[\s\S]*?\$\$|\$(?:\\.|[^$])*?\$)/g, function (mathBlock) {
             return mathBlock.replace(/<<([\s\S]*?)>>/g, function (m, content) {
                 return "\\htmlId{" + prefix + "C" + (ci++) + "}{" + content + "}";
             });
@@ -578,7 +578,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
     // e.g. "$x = {{0}}$" → "$x =$ {{0}}" when input 0 is a dropdown.
     Question.prototype._extractDNFromMath = function (tpl, inputs) {
         if (!inputs) return tpl;
-        return tpl.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function (mathBlock) {
+        return tpl.replace(/(\$\$[\s\S]*?\$\$|\$(?:\\.|[^$])*?\$)/g, function (mathBlock) {
             // v13: brace-depth-aware walk. Only TOP-LEVEL (depth 0) dropdown
             // placeholders are extracted to prose (v10 behavior). A {{N}}
             // nested inside any {...} group (\frac/\sqrt/^{}/_{} args) is
@@ -1891,7 +1891,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         // Check if any {{N}} sits inside a $...$ or $$...$$ math zone.
         // If so, use marker-based rendering so KaTeX sees complete LaTeX.
         var hasMathInputs = false;
-        var mathRe = /\$\$[\s\S]*?\$\$|\$[^$]*?\$/g;
+        var mathRe = /\$\$[\s\S]*?\$\$|\$(?:\\.|[^$])*?\$/g;
         var mm;
         while ((mm = mathRe.exec(tpl)) !== null) {
             if (/\{\{\d+\}\}/.test(mm[0])) { hasMathInputs = true; break; }
@@ -1902,7 +1902,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             // inside math zones, let KaTeX handle all layout natively
             var prefix = "REQPH" + sec.id.replace(/[^a-zA-Z0-9]/g, "") + "X";
 
-            var marked = tpl.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function (mathBlock) {
+            var marked = tpl.replace(/(\$\$[\s\S]*?\$\$|\$(?:\\.|[^$])*?\$)/g, function (mathBlock) {
                 var b = mathBlock.replace(/\{\{(\d+)\}\}/g, function (m, n) {
                     return "\\htmlId{" + prefix + n + "}{\\boxed{\\strut\\phantom{x}}}";
                 });
@@ -2152,7 +2152,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         }
 
         // Inside math zones ($...$, $$...$$): replace {{N}} with \htmlId placeholder boxes
-        var marked = tpl.replace(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/g, function (mathBlock) {
+        var marked = tpl.replace(/(\$\$[\s\S]*?\$\$|\$(?:\\.|[^$])*?\$)/g, function (mathBlock) {
             var b = mathBlock.replace(/\{\{(\d+)\}\}/g, function (m, n) {
                 return "\\htmlId{" + prefix + n + "}{\\boxed{\\strut\\phantom{x}}}";
             });
