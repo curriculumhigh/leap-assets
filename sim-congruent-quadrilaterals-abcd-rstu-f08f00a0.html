@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Quadrilaterals ABCD and RSTU</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 8.5, 15, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var OUTLINE = '#555555';
+        var MARK_COL = '#DC2626';
+        var VERT_COL = '#222222';
+
+        // ── Quadrilateral ABCD (left) ───────────────────────────────────
+        var A = [1, 1];
+        var B = [0.5, 5];
+        var C = [3.5, 7];
+        var D = [5.5, 3.5];
+
+        var pA = board.create('point', A, { name: 'A', size: 2, color: VERT_COL, fixed: true, highlight: false, label: { fontSize: 14, color: VERT_COL, offset: [-5, -15] } });
+        var pB = board.create('point', B, { name: 'B', size: 2, color: VERT_COL, fixed: true, highlight: false, label: { fontSize: 14, color: VERT_COL, offset: [-15, 5] } });
+        var pC = board.create('point', C, { name: 'C', size: 2, color: VERT_COL, fixed: true, highlight: false, label: { fontSize: 14, color: VERT_COL, offset: [0, 10] } });
+        var pD = board.create('point', D, { name: 'D', size: 2, color: VERT_COL, fixed: true, highlight: false, label: { fontSize: 14, color: VERT_COL, offset: [8, -5] } });
+
+        board.create('polygon', [pA, pB, pC, pD], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: OUTLINE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Quadrilateral RSTU (right, rotated ~120° clockwise from ABCD shape) ──
+        var cx1 = (A[0] + B[0] + C[0] + D[0]) / 4;
+        var cy1 = (A[1] + B[1] + C[1] + D[1]) / 4;
+        var rotAngle = -120 * Math.PI / 180;
+
+        function rotatePoint(p, cx, cy, angle) {
+            var dx = p[0] - cx;
+            var dy = p[1] - cy;
+            var cosA = Math.cos(angle);
+            var sinA = Math.sin(angle);
+            return [cx + dx * cosA - dy * sinA, cy + dx * sinA + dy * cosA];
+        }
+
+        var rR = rotatePoint(C, cx1, cy1, rotAngle);
+        var rS = rotatePoint(D, cx1, cy1, rotAngle);
+        var rT = rotatePoint(A, cx1, cy1, rotAngle);
+        var rU = rotatePoint(B, cx1, cy1, rotAngle);
+
+        var shiftX = 8.5;
+        var shiftY = 0.5;
+        var R2 = [rR[0] + shiftX, rR[1] + shiftY];
+        var S2 = [rS[0] + shiftX, rS[1] + shiftY];
+        var T2 = [rT[0] + shiftX, rT[1] + shiftY];
+        var U2 = [rU[0] + shiftX, rU[1] + shiftY];
+
+        var pR = board.create('point', R2, { name: 'R', size: 2, color: VERT_COL, fixed: true, highlight: false, label: { fontSize: 14, color: VERT_COL, offset: [8, 5] } });
+        var pS = board.create('point', S2, { name: 'S', size: 2, color: VERT_COL, fixed: true, highlight: false, label: { fontSize: 14, color: VERT_COL, offset: [8, -10] } });
+        var pT = board.create('point', T2, { name: 'T', size: 2, color: VERT_COL, fixed: true, highlight: false, label: { fontSize: 14, color: VERT_COL, offset: [-15, -10] } });
+        var pU = board.create('point', U2, { name: 'U', size: 2, color: VERT_COL, fixed: true, highlight: false, label: { fontSize: 14, color: VERT_COL, offset: [-15, 10] } });
+
+        board.create('polygon', [pR, pS, pT, pU], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: OUTLINE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Helper: draw perpendicular tick marks on a segment midpoint ──
+        function drawTicks(p1, p2, count) {
+            var mx = (p1[0] + p2[0]) / 2;
+            var my = (p1[1] + p2[1]) / 2;
+            var dx = p2[0] - p1[0];
+            var dy = p2[1] - p1[1];
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var ax = dx / len;
+            var ay = dy / len;
+
+            var tickLen = 0.3;
+            var spacing = 0.2;
+            var startOffset = -(count - 1) * spacing / 2;
+
+            for (var i = 0; i < count; i++) {
+                var offset = startOffset + i * spacing;
+                var cx2 = mx + offset * ax;
+                var cy2 = my + offset * ay;
+                var x1 = cx2 - tickLen * px;
+                var y1 = cy2 - tickLen * py;
+                var x2 = cx2 + tickLen * px;
+                var y2 = cy2 + tickLen * py;
+                board.create('segment', [[x1, y1], [x2, y2]], {
+                    strokeColor: MARK_COL, strokeWidth: 1.5, fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── Helper: draw "X" cross marks (visually distinct from perpendicular ticks) ──
+        function drawCrossMarks(p1, p2, count) {
+            var mx = (p1[0] + p2[0]) / 2;
+            var my = (p1[1] + p2[1]) / 2;
+            var dx = p2[0] - p1[0];
+            var dy = p2[1] - p1[1];
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var ax = dx / len;
+            var ay = dy / len;
+
+            var tickLen = 0.25;
+            var spacing = 0.35;
+            var startOffset = -(count - 1) * spacing / 2;
+
+            for (var i = 0; i < count; i++) {
+                var offset = startOffset + i * spacing;
+                var cx2 = mx + offset * ax;
+                var cy2 = my + offset * ay;
+                var angle1 = Math.atan2(py, px) + Math.PI / 4;
+                var angle2 = Math.atan2(py, px) - Math.PI / 4;
+                board.create('segment', [
+                    [cx2 - tickLen * Math.cos(angle1), cy2 - tickLen * Math.sin(angle1)],
+                    [cx2 + tickLen * Math.cos(angle1), cy2 + tickLen * Math.sin(angle1)]
+                ], { strokeColor: MARK_COL, strokeWidth: 1.5, fixed: true, highlight: false });
+                board.create('segment', [
+                    [cx2 - tickLen * Math.cos(angle2), cy2 - tickLen * Math.sin(angle2)],
+                    [cx2 + tickLen * Math.cos(angle2), cy2 + tickLen * Math.sin(angle2)]
+                ], { strokeColor: MARK_COL, strokeWidth: 1.5, fixed: true, highlight: false });
+            }
+        }
+
+        // ── Helper: draw angle arcs at a vertex ─────────────────────────
+        function drawAngleArcs(vertex, prev, next, count) {
+            var baseRadius = 0.5;
+            var arcSpacing = 0.18;
+
+            for (var i = 0; i < count; i++) {
+                var radius = baseRadius + i * arcSpacing;
+                var a1 = Math.atan2(prev[1] - vertex[1], prev[0] - vertex[0]);
+                var a2 = Math.atan2(next[1] - vertex[1], next[0] - vertex[0]);
+
+                var diff = a2 - a1;
+                if (diff > Math.PI) diff -= 2 * Math.PI;
+                if (diff < -Math.PI) diff += 2 * Math.PI;
+
+                var startAngle, endAngle;
+                if (diff > 0) {
+                    startAngle = a1;
+                    endAngle = a1 + diff;
+                } else {
+                    startAngle = a2;
+                    endAngle = a2 - diff;
+                }
+
+                if (endAngle - startAngle > Math.PI) {
+                    var tmp = startAngle;
+                    startAngle = endAngle;
+                    endAngle = tmp + 2 * Math.PI;
+                }
+
+                var sa = startAngle;
+                var ea = endAngle;
+
+                board.create('curve', [
+                    function(r, v) { return function(t) { return v[0] + r * Math.cos(t); }; }(radius, vertex),
+                    function(r, v) { return function(t) { return v[1] + r * Math.sin(t); }; }(radius, vertex),
+                    sa,
+                    ea
+                ], {
+                    strokeColor: MARK_COL, strokeWidth: 1.3, fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── Tick marks for ABCD ─────────────────────────────────────────
+        drawTicks(A, B, 1);
+        drawTicks(B, C, 2);
+        drawTicks(C, D, 3);
+        drawCrossMarks(D, A, 1);
+
+        // ── Tick marks for RSTU ─────────────────────────────────────────
+        drawTicks(T2, U2, 1);
+        drawTicks(U2, R2, 2);
+        drawTicks(R2, S2, 3);
+        drawCrossMarks(S2, T2, 1);
+
+        // ── Angle arcs for ABCD ─────────────────────────────────────────
+        drawAngleArcs(A, D, B, 1);
+        drawAngleArcs(B, A, C, 2);
+        drawAngleArcs(C, B, D, 3);
+        drawAngleArcs(D, C, A, 4);
+
+        // ── Angle arcs for RSTU ─────────────────────────────────────────
+        drawAngleArcs(T2, S2, U2, 1);
+        drawAngleArcs(U2, T2, R2, 2);
+        drawAngleArcs(R2, U2, S2, 3);
+        drawAngleArcs(S2, R2, T2, 4);
+
+    </script>
+</body>
+</html>
