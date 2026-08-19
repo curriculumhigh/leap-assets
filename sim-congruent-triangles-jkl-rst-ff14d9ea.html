@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Triangles △JKL and △RST</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 10, 18, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var OUTLINE = '#555555';
+        var MARK_COL = '#DC2626';
+        var LABEL_COL = '#222222';
+
+        // ── △JKL (left, obtuse at L) ─────────────────────────────────
+        var J = board.create('point', [0.5, 7.5], { name: 'J', fixed: true, size: 0, visible: false });
+        var K = board.create('point', [6.0, 8.8], { name: 'K', fixed: true, size: 0, visible: false });
+        var L = board.create('point', [4.8, 2.5], { name: 'L', fixed: true, size: 0, visible: false });
+
+        var triJKL = board.create('polygon', [J, K, L], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: OUTLINE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Vertex labels for JKL
+        board.create('text', [-0.2, 7.7, 'J'], { fontSize: 14, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+        board.create('text', [6.4, 9.4, 'K'], { fontSize: 14, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+        board.create('text', [5.1, 1.8, 'L'], { fontSize: 14, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+        // ── △RST (right, rotated ~45° about R then reflected over ST) ─
+        // Correspondence: J↔S, K↔T, L↔R
+        var Jrel = [0.5 - 4.8, 7.5 - 2.5];
+        var Krel = [6.0 - 4.8, 8.8 - 2.5];
+
+        var cos45 = Math.cos(-Math.PI / 4);
+        var sin45 = Math.sin(-Math.PI / 4);
+
+        // Rotate -45°
+        var Jrot = [Jrel[0] * cos45 - Jrel[1] * sin45, Jrel[0] * sin45 + Jrel[1] * cos45];
+        var Krot = [Krel[0] * cos45 - Krel[1] * sin45, Krel[0] * sin45 + Krel[1] * cos45];
+
+        // Reflect origin (R at 0,0) over line Jrot-Krot
+        function reflectOverLine(P, A, B) {
+            var dx = B[0] - A[0];
+            var dy = B[1] - A[1];
+            var t = ((P[0] - A[0]) * dx + (P[1] - A[1]) * dy) / (dx * dx + dy * dy);
+            var projX = A[0] + t * dx;
+            var projY = A[1] + t * dy;
+            return [2 * projX - P[0], 2 * projY - P[1]];
+        }
+
+        var Rrel = reflectOverLine([0, 0], Jrot, Krot);
+        var Srel = Jrot;
+        var Trel = Krot;
+
+        // Find bounding box of the transformed triangle to center it
+        var minX = Math.min(Rrel[0], Srel[0], Trel[0]);
+        var maxX = Math.max(Rrel[0], Srel[0], Trel[0]);
+        var minY = Math.min(Rrel[1], Srel[1], Trel[1]);
+        var maxY = Math.max(Rrel[1], Srel[1], Trel[1]);
+
+        // Place so the triangle fits in right half of board with margin
+        var offsetX = 13.0 - (minX + maxX) / 2;
+        var offsetY = 5.0 - (minY + maxY) / 2;
+
+        var Rx = Rrel[0] + offsetX;
+        var Ry = Rrel[1] + offsetY;
+        var Sx = Srel[0] + offsetX;
+        var Sy = Srel[1] + offsetY;
+        var Tx = Trel[0] + offsetX;
+        var Ty = Trel[1] + offsetY;
+
+        var R_pt = board.create('point', [Rx, Ry], { name: 'R', fixed: true, size: 0, visible: false });
+        var S_pt = board.create('point', [Sx, Sy], { name: 'S', fixed: true, size: 0, visible: false });
+        var T_pt = board.create('point', [Tx, Ty], { name: 'T', fixed: true, size: 0, visible: false });
+
+        var triRST = board.create('polygon', [R_pt, S_pt, T_pt], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: OUTLINE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Vertex labels for RST
+        function labelOffset(pt, tri_pts, dist) {
+            var cx = (tri_pts[0].X() + tri_pts[1].X() + tri_pts[2].X()) / 3;
+            var cy = (tri_pts[0].Y() + tri_pts[1].Y() + tri_pts[2].Y()) / 3;
+            var dx = pt.X() - cx;
+            var dy = pt.Y() - cy;
+            var len = Math.sqrt(dx * dx + dy * dy);
+            return [pt.X() + dist * dx / len, pt.Y() + dist * dy / len];
+        }
+
+        var Roff = labelOffset(R_pt, [R_pt, S_pt, T_pt], 0.7);
+        var Soff = labelOffset(S_pt, [R_pt, S_pt, T_pt], 0.7);
+        var Toff = labelOffset(T_pt, [R_pt, S_pt, T_pt], 0.7);
+
+        board.create('text', [Roff[0], Roff[1], 'R'], { fontSize: 14, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+        board.create('text', [Soff[0], Soff[1], 'S'], { fontSize: 14, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+        board.create('text', [Toff[0], Toff[1], 'T'], { fontSize: 14, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+        // ── Angle arc marks ─────────────────────────────────────────────
+        function drawAngleArc(p1, vertex, p2, numArcs, radius0) {
+            var spacing = 0.15;
+            for (var i = 0; i < numArcs; i++) {
+                var r = radius0 + i * spacing;
+                board.create('nonReflexAngle', [p1, vertex, p2], {
+                    radius: r,
+                    fillColor: 'none', fillOpacity: 0,
+                    strokeColor: MARK_COL, strokeWidth: 1.2,
+                    fixed: true, name: '', withLabel: false, highlight: false
+                });
+            }
+        }
+
+        // △JKL angles:
+        drawAngleArc(K, J, L, 1, 0.7);
+        drawAngleArc(J, K, L, 2, 0.55);
+        drawAngleArc(K, L, J, 3, 0.55);
+
+        // △RST angles:
+        drawAngleArc(T_pt, S_pt, R_pt, 1, 0.7);
+        drawAngleArc(S_pt, T_pt, R_pt, 2, 0.55);
+        drawAngleArc(T_pt, R_pt, S_pt, 3, 0.55);
+
+        // ── Side tick marks ─────────────────────────────────────────────
+        function drawTicks(p1, p2, numTicks, tickLen) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var ax = dx / len;
+            var ay = dy / len;
+
+            var spacing = 0.18;
+            var startOffset = -(numTicks - 1) * spacing / 2;
+
+            for (var i = 0; i < numTicks; i++) {
+                var offset = startOffset + i * spacing;
+                var cx = mx + offset * ax;
+                var cy = my + offset * ay;
+                var x1 = cx + tickLen * px;
+                var y1 = cy + tickLen * py;
+                var x2 = cx - tickLen * px;
+                var y2 = cy - tickLen * py;
+                board.create('segment', [[x1, y1], [x2, y2]], {
+                    strokeColor: MARK_COL, strokeWidth: 1.5,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        var TICK_LEN = 0.25;
+
+        // △JKL sides:
+        drawTicks(J, K, 1, TICK_LEN);
+        drawTicks(K, L, 2, TICK_LEN);
+        drawTicks(J, L, 3, TICK_LEN);
+
+        // △RST sides:
+        drawTicks(S_pt, T_pt, 1, TICK_LEN);
+        drawTicks(T_pt, R_pt, 2, TICK_LEN);
+        drawTicks(S_pt, R_pt, 3, TICK_LEN);
+
+    </script>
+</body>
+</html>
