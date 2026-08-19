@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Triangles JKL and WXY</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 7, 17, -2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Triangle JKL (left) ─────────────────────────────────────────
+        var J = board.create('point', [1, 0.5], { name: 'J', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', fontWeight: 'bold', offset: [-16, -10] } });
+        var K = board.create('point', [5.5, 5.5], { name: 'K', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', fontWeight: 'bold', offset: [-4, 10] } });
+        var L = board.create('point', [7, 0.5], { name: 'L', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', fontWeight: 'bold', offset: [8, -10] } });
+
+        var triJKL = board.create('polygon', [J, K, L], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: true },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Triangle WXY (right) ────────────────────────────────────────
+        var W = board.create('point', [9.5, 0.5], { name: 'W', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', fontWeight: 'bold', offset: [-16, -10] } });
+        var X = board.create('point', [14, 5.5], { name: 'X', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', fontWeight: 'bold', offset: [-4, 10] } });
+        var Y = board.create('point', [15.5, 0.5], { name: 'Y', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', fontWeight: 'bold', offset: [8, -10] } });
+
+        var triWXY = board.create('polygon', [W, X, Y], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: true },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Helper: draw tick marks on a segment ────────────────────────
+        function drawTicks(p1, p2, numTicks) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var ax = dx / len;
+            var ay = dy / len;
+            var tickLen = 0.3;
+            var spacing = 0.2;
+
+            for (var i = 0; i < numTicks; i++) {
+                var offset = (i - (numTicks - 1) / 2) * spacing;
+                var cx = mx + offset * ax;
+                var cy = my + offset * ay;
+                board.create('segment', [
+                    [cx - tickLen * px, cy - tickLen * py],
+                    [cx + tickLen * px, cy + tickLen * py]
+                ], {
+                    strokeColor: '#DC2626', strokeWidth: 1.8,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── Tick marks: JK↔WX (single), KL↔XY (double), JL↔WY (triple) ──
+        drawTicks(J, K, 1);
+        drawTicks(W, X, 1);
+
+        drawTicks(K, L, 2);
+        drawTicks(X, Y, 2);
+
+        drawTicks(J, L, 3);
+        drawTicks(W, Y, 3);
+
+        // ── Helper: draw angle arc marks ────────────────────────────────
+        function drawAngleArcs(vertex, arm1, arm2, numArcs) {
+            var baseRadius = 0.55;
+            var arcSpacing = 0.18;
+            for (var i = 0; i < numArcs; i++) {
+                var r = baseRadius + i * arcSpacing;
+                board.create('nonReflexAngle', [arm1, vertex, arm2], {
+                    radius: r,
+                    fillColor: 'none', fillOpacity: 0,
+                    strokeColor: '#DC2626', strokeWidth: 1.5,
+                    fixed: true, highlight: false,
+                    name: '', withLabel: false
+                });
+            }
+        }
+
+        // ── Arc marks: ∠J↔∠W (single), ∠K↔∠X (double), ∠L↔∠Y (triple) ──
+        drawAngleArcs(J, L, K, 1);
+        drawAngleArcs(W, Y, X, 1);
+
+        drawAngleArcs(K, J, L, 2);
+        drawAngleArcs(X, W, Y, 2);
+
+        drawAngleArcs(L, K, J, 3);
+        drawAngleArcs(Y, X, W, 3);
+    </script>
+</body>
+</html>
