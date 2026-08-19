@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Hexagons ABCDEF and GHIJKL</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 9.5, 19.5, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Hexagon 1: ABCDEF (enlarged ~1.4x) ─────────────────────────
+        var A = [1.5, 6.8];
+        var B = [4.6, 8.0];
+        var C = [7.4, 6.5];
+        var D = [7.7, 3.2];
+        var E = [4.3, 1.2];
+        var F = [1.2, 3.2];
+
+        // SVG gradient defs
+        var svg = board.renderer.container.querySelector('svg');
+        var defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+
+        var grad1 = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+        grad1.setAttribute('id', 'hexGrad1');
+        grad1.setAttribute('x1', '0%'); grad1.setAttribute('y1', '0%');
+        grad1.setAttribute('x2', '100%'); grad1.setAttribute('y2', '100%');
+        var stop1a = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+        stop1a.setAttribute('offset', '0%'); stop1a.setAttribute('style', 'stop-color:#DBEAFE;stop-opacity:0.8');
+        var stop1b = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+        stop1b.setAttribute('offset', '100%'); stop1b.setAttribute('style', 'stop-color:#93C5FD;stop-opacity:0.8');
+        grad1.appendChild(stop1a); grad1.appendChild(stop1b);
+        defs.appendChild(grad1);
+
+        var grad2 = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+        grad2.setAttribute('id', 'hexGrad2');
+        grad2.setAttribute('x1', '0%'); grad2.setAttribute('y1', '0%');
+        grad2.setAttribute('x2', '100%'); grad2.setAttribute('y2', '100%');
+        var stop2a = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+        stop2a.setAttribute('offset', '0%'); stop2a.setAttribute('style', 'stop-color:#D1FAE5;stop-opacity:0.8');
+        var stop2b = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+        stop2b.setAttribute('offset', '100%'); stop2b.setAttribute('style', 'stop-color:#6EE7B7;stop-opacity:0.8');
+        grad2.appendChild(stop2a); grad2.appendChild(stop2b);
+        defs.appendChild(grad2);
+
+        svg.insertBefore(defs, svg.firstChild);
+
+        // Create polygon 1 points
+        var pA = board.create('point', A, { name: 'A', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [-14, 6] } });
+        var pB = board.create('point', B, { name: 'B', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [0, 12] } });
+        var pC = board.create('point', C, { name: 'C', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [10, 6] } });
+        var pD = board.create('point', D, { name: 'D', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [10, -6] } });
+        var pE = board.create('point', E, { name: 'E', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [0, -16] } });
+        var pF = board.create('point', F, { name: 'F', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [-14, -6] } });
+
+        var poly1 = board.create('polygon', [pA, pB, pC, pD, pE, pF], {
+            fillColor: '#BFDBFE',
+            fillOpacity: 0.5,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        setTimeout(function() {
+            var polyEl = poly1.rendNode;
+            if (polyEl) {
+                polyEl.setAttribute('fill', 'url(#hexGrad1)');
+                polyEl.setAttribute('fill-opacity', '1');
+            }
+        }, 100);
+
+        // ── Hexagon 2: GHIJKL (shifted right) ──────────────────────────
+        var off = 10.5;
+        var G = [A[0] + off, A[1]];
+        var H = [B[0] + off, B[1]];
+        var I = [C[0] + off, C[1]];
+        var J = [D[0] + off, D[1]];
+        var K = [E[0] + off, E[1]];
+        var L = [F[0] + off, F[1]];
+
+        var pG = board.create('point', G, { name: 'G', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [-14, 6] } });
+        var pH = board.create('point', H, { name: 'H', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [0, 12] } });
+        var pI = board.create('point', I, { name: 'I', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [10, 6] } });
+        var pJ = board.create('point', J, { name: 'J', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [10, -6] } });
+        var pK = board.create('point', K, { name: 'K', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [0, -16] } });
+        var pL = board.create('point', L, { name: 'L', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [-14, -6] } });
+
+        var poly2 = board.create('polygon', [pG, pH, pI, pJ, pK, pL], {
+            fillColor: '#A7F3D0',
+            fillOpacity: 0.5,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        setTimeout(function() {
+            var polyEl = poly2.rendNode;
+            if (polyEl) {
+                polyEl.setAttribute('fill', 'url(#hexGrad2)');
+                polyEl.setAttribute('fill-opacity', '1');
+            }
+        }, 100);
+
+        // ── Side labels — Hexagon 1 ─────────────────────────────────────
+        var midAB = [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2];
+        board.create('text', [midAB[0] - 0.7, midAB[1] + 0.6, '5'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false, useKatex: true, anchorX: 'middle'
+        });
+
+        var midBC = [(B[0] + C[0]) / 2, (B[1] + C[1]) / 2];
+        board.create('text', [midBC[0] + 0.3, midBC[1] + 0.6, '3'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false, useKatex: true, anchorX: 'middle'
+        });
+
+        var midEF = [(E[0] + F[0]) / 2, (E[1] + F[1]) / 2];
+        board.create('text', [midEF[0] - 0.4, midEF[1] - 0.7, '3x - 1'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false, useKatex: true, anchorX: 'middle'
+        });
+
+        // ── Side labels — Hexagon 2 ─────────────────────────────────────
+        var midHI = [(H[0] + I[0]) / 2, (H[1] + I[1]) / 2];
+        board.create('text', [midHI[0] + 0.3, midHI[1] + 0.6, '2x + 1'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false, useKatex: true, anchorX: 'middle'
+        });
+
+        // ── Angle arcs — Hexagon 1 ─────────────────────────────────────
+        board.create('nonReflexAngle', [pA, pB, pC], {
+            radius: 0.6,
+            fillColor: '#2563EB', fillOpacity: 0.15,
+            strokeColor: '#2563EB', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        var angABC_bisect = [(A[0] + C[0]) / 2, (A[1] + C[1]) / 2];
+        var angABC_dir = [angABC_bisect[0] - B[0], angABC_bisect[1] - B[1]];
+        var angABC_len = Math.sqrt(angABC_dir[0] * angABC_dir[0] + angABC_dir[1] * angABC_dir[1]);
+        angABC_dir[0] /= angABC_len; angABC_dir[1] /= angABC_len;
+        board.create('text', [B[0] + angABC_dir[0] * 1.5, B[1] + angABC_dir[1] * 1.5, '120^\\circ'], {
+            fontSize: 12, color: '#2563EB', fixed: true, highlight: false, useKatex: true, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ── Angle arcs — Hexagon 2 ─────────────────────────────────────
+        // ∠GHI at vertex H
+        board.create('nonReflexAngle', [pG, pH, pI], {
+            radius: 0.6,
+            fillColor: '#059669', fillOpacity: 0.15,
+            strokeColor: '#059669', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        var angGHI_bisect = [(G[0] + I[0]) / 2, (G[1] + I[1]) / 2];
+        var angGHI_dir = [angGHI_bisect[0] - H[0], angGHI_bisect[1] - H[1]];
+        var angGHI_len = Math.sqrt(angGHI_dir[0] * angGHI_dir[0] + angGHI_dir[1] * angGHI_dir[1]);
+        angGHI_dir[0] /= angGHI_len; angGHI_dir[1] /= angGHI_len;
+        board.create('text', [H[0] + angGHI_dir[0] * 2.2, H[1] + angGHI_dir[1] * 2.2 + 0.7, '(5y+10)^\\circ'], {
+            fontSize: 12, color: '#059669', fixed: true, highlight: false, useKatex: true, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ∠HIJ at vertex I
+        board.create('nonReflexAngle', [pH, pI, pJ], {
+            radius: 0.6,
+            fillColor: '#D97706', fillOpacity: 0.15,
+            strokeColor: '#D97706', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        var angHIJ_bisect = [(H[0] + J[0]) / 2, (H[1] + J[1]) / 2];
+        var angHIJ_dir = [angHIJ_bisect[0] - I[0], angHIJ_bisect[1] - I[1]];
+        var angHIJ_len = Math.sqrt(angHIJ_dir[0] * angHIJ_dir[0] + angHIJ_dir[1] * angHIJ_dir[1]);
+        angHIJ_dir[0] /= angHIJ_len; angHIJ_dir[1] /= angHIJ_len;
+        board.create('text', [I[0] + angHIJ_dir[0] * 1.6, I[1] + angHIJ_dir[1] * 1.6, '(3y+6)^\\circ'], {
+            fontSize: 12, color: '#D97706', fixed: true, highlight: false, useKatex: true, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ── Title labels beneath each hexagon ───────────────────────────
+        var cx1 = (A[0] + B[0] + C[0] + D[0] + E[0] + F[0]) / 6;
+        var cx2 = (G[0] + H[0] + I[0] + J[0] + K[0] + L[0]) / 6;
+        board.create('text', [cx1, -1.0, '\\text{Tile 1: } ABCDEF'], {
+            fontSize: 13, color: '#333333', fixed: true, highlight: false, useKatex: true, anchorX: 'middle'
+        });
+        board.create('text', [cx2, -1.0, '\\text{Tile 2: } GHIJKL'], {
+            fontSize: 13, color: '#333333', fixed: true, highlight: false, useKatex: true, anchorX: 'middle'
+        });
+    </script>
+</body>
+</html>
