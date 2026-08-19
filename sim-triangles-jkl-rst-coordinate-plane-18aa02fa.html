@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangles JKL and RST</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 7, 12, -3],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false,
+                        drawLabels: true
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false,
+                        drawLabels: true
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [11.6, -0.4, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 6.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // ── Triangle JKL ────────────────────────────────────────────────
+        var J = board.create('point', [1, 2], {
+            name: 'J', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-16, -12], useKatex: true }
+        });
+        var K = board.create('point', [5, 2], {
+            name: 'K', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [6, -12], useKatex: true }
+        });
+        var L = board.create('point', [1, 5], {
+            name: 'L', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-16, 4], useKatex: true }
+        });
+
+        board.create('polygon', [J, K, L], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Triangle RST ────────────────────────────────────────────────
+        var R = board.create('point', [7, 2], {
+            name: 'R', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-16, 4], useKatex: true }
+        });
+        var S = board.create('point', [7, -2], {
+            name: 'S', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-16, -12], useKatex: true }
+        });
+        var T = board.create('point', [10, 2], {
+            name: 'T', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [6, 4], useKatex: true }
+        });
+
+        board.create('polygon', [R, S, T], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
