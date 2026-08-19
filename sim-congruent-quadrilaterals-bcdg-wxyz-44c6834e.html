@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Quadrilaterals BCDG and WXYZ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 6.5, 13, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── BCDG: irregular quadrilateral (left side) ───────────────────
+        var B = [1, 5];
+        var C = [3.5, 5.5];
+        var D = [4.5, 3];
+        var G = [1.5, 2];
+
+        var pB = board.create('point', B, { name: 'B', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [-12, 8] } });
+        var pC = board.create('point', C, { name: 'C', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [4, 8] } });
+        var pD = board.create('point', D, { name: 'D', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [8, -4] } });
+        var pG = board.create('point', G, { name: 'G', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [-12, -8] } });
+
+        board.create('polygon', [pB, pC, pD, pG], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── WXYZ: rotation (~120°) and reflection of BCDG (right side) ──
+        var angle = 120 * Math.PI / 180;
+        var cosA = Math.cos(angle);
+        var sinA = Math.sin(angle);
+
+        var cx = (B[0] + C[0] + D[0] + G[0]) / 4;
+        var cy = (B[1] + C[1] + D[1] + G[1]) / 4;
+
+        function transformPoint(pt) {
+            var dx = pt[0] - cx;
+            var dy = pt[1] - cy;
+            var rx = dx * cosA - dy * sinA;
+            var ry = dx * sinA + dy * cosA;
+            rx = -rx;
+            return [rx + 9.5, ry + 3.5];
+        }
+
+        var W = transformPoint(B);
+        var X = transformPoint(C);
+        var Y = transformPoint(D);
+        var Z = transformPoint(G);
+
+        var pW = board.create('point', W, { name: 'W', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [10, -10] } });
+        var pX = board.create('point', X, { name: 'X', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [8, -10] } });
+        var pY = board.create('point', Y, { name: 'Y', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [-18, 4] } });
+        var pZ = board.create('point', Z, { name: 'Z', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [-4, 12] } });
+
+        board.create('polygon', [pW, pX, pY, pZ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
