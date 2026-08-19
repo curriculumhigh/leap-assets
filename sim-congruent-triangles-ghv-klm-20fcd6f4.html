@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Triangles GHV and KLM</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); display: flex; flex-direction: column; }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; flex: 1; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 8, 14.5, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Triangle dimensions ─────────────────────────────────────────
+        // Angles: G↔K=44°, H↔L=58°, V↔M=78°
+        var sideGH = 4.5;
+        var angG = 44 * Math.PI / 180;
+        var angH = 58 * Math.PI / 180;
+        var angV = 78 * Math.PI / 180;
+
+        var scale = sideGH / Math.sin(angV);
+        var sideHV = scale * Math.sin(angG);
+        var sideGV = scale * Math.sin(angH);
+
+        // ── Triangle GHV (left) ─────────────────────────────────────────
+        var rotAngle1 = 5 * Math.PI / 180;
+        var Gx = 1.0, Gy = 2.0;
+
+        var Hx = Gx + sideGH * Math.cos(rotAngle1);
+        var Hy = Gy + sideGH * Math.sin(rotAngle1);
+
+        var angleFromG = rotAngle1 + angG;
+        var Vx = Gx + sideGV * Math.cos(angleFromG);
+        var Vy = Gy + sideGV * Math.sin(angleFromG);
+
+        var G = board.create('point', [Gx, Gy], {
+            name: 'G', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-14, -12] }
+        });
+        var H = board.create('point', [Hx, Hy], {
+            name: 'H', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, -12] }
+        });
+        var V = board.create('point', [Vx, Vy], {
+            name: 'V', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, 10] }
+        });
+
+        board.create('polygon', [G, H, V], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── Triangle KLM (right, reflected orientation) ─────────────────
+        var Kx = 10.5, Ky = 6.0;
+
+        var rotAngle2 = -160 * Math.PI / 180;
+
+        var Lx = Kx + sideGH * Math.cos(rotAngle2);
+        var Ly = Ky + sideGH * Math.sin(rotAngle2);
+
+        var angleFromK = rotAngle2 + angG;
+        var Mx = Kx + sideGV * Math.cos(angleFromK);
+        var My = Ky + sideGV * Math.sin(angleFromK);
+
+        var K_pt = board.create('point', [Kx, Ky], {
+            name: 'K', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, 8] }
+        });
+        var L_pt = board.create('point', [Lx, Ly], {
+            name: 'L', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-14, -10] }
+        });
+        var M_pt = board.create('point', [Mx, My], {
+            name: 'M', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, -10] }
+        });
+
+        board.create('polygon', [K_pt, L_pt, M_pt], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── Angle labels for △KLM ───────────────────────────────────────
+        function angleBisectorPos(vertex, p1, p2, dist) {
+            var a1 = Math.atan2(p1.Y() - vertex.Y(), p1.X() - vertex.X());
+            var a2 = Math.atan2(p2.Y() - vertex.Y(), p2.X() - vertex.X());
+            var diff = a2 - a1;
+            if (diff > Math.PI) diff -= 2 * Math.PI;
+            if (diff < -Math.PI) diff += 2 * Math.PI;
+            var mid = a1 + diff / 2;
+            var candidateX = vertex.X() + dist * Math.cos(mid);
+            var candidateY = vertex.Y() + dist * Math.sin(mid);
+            // Ensure interior direction
+            var cx = (p1.X() + p2.X() + vertex.X()) / 3;
+            var cy = (p1.Y() + p2.Y() + vertex.Y()) / 3;
+            var toCenter = Math.atan2(cy - vertex.Y(), cx - vertex.X());
+            var toCand = Math.atan2(candidateY - vertex.Y(), candidateX - vertex.X());
+            var checkDiff = Math.abs(toCenter - toCand);
+            if (checkDiff > Math.PI) checkDiff = 2 * Math.PI - checkDiff;
+            if (checkDiff > Math.PI / 2) {
+                mid = mid + Math.PI;
+                candidateX = vertex.X() + dist * Math.cos(mid);
+                candidateY = vertex.Y() + dist * Math.sin(mid);
+            }
+            return [candidateX, candidateY];
+        }
+
+        var posK = angleBisectorPos(K_pt, L_pt, M_pt, 1.1);
+        board.create('text', [posK[0], posK[1], '44°'], {
+            fontSize: 12, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var posL = angleBisectorPos(L_pt, K_pt, M_pt, 1.1);
+        board.create('text', [posL[0], posL[1], '58°'], {
+            fontSize: 12, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Congruence statement (on the board, centered between triangles) ──
+        board.create('text', [7, 0.2, '\\triangle GHV \\cong \\triangle KLM'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
