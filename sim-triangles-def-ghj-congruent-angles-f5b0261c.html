@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangles DEF and GHJ — Congruent Angles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 9, 17, -2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_SINGLE = '#2563EB';
+        var COL_DOUBLE = '#059669';
+        var COL_EDGE = '#555555';
+
+        function bisectorPoint(vertex, arm1, arm2, dist) {
+            var vx = vertex.X(), vy = vertex.Y();
+            var dx1 = arm1.X() - vx, dy1 = arm1.Y() - vy;
+            var dx2 = arm2.X() - vx, dy2 = arm2.Y() - vy;
+            var len1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+            var len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+            var ux1 = dx1 / len1, uy1 = dy1 / len1;
+            var ux2 = dx2 / len2, uy2 = dy2 / len2;
+            var bx = ux1 + ux2, by = uy1 + uy2;
+            var blen = Math.sqrt(bx * bx + by * by);
+            bx /= blen; by /= blen;
+            return [vx + dist * bx, vy + dist * by];
+        }
+
+        // Triangle DEF
+        var D = board.create('point', [2, 7.5], {
+            name: 'D', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-2, 10] }
+        });
+        var E = board.create('point', [0, 0.5], {
+            name: 'E', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-15, -8] }
+        });
+        var F = board.create('point', [6.5, 0.5], {
+            name: 'F', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [5, -8] }
+        });
+
+        board.create('segment', [D, E], { strokeColor: COL_EDGE, strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('segment', [E, F], { strokeColor: COL_EDGE, strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('segment', [F, D], { strokeColor: COL_EDGE, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        board.create('nonReflexAngle', [E, D, F], {
+            radius: 0.7,
+            fillColor: COL_SINGLE, fillOpacity: 0.1,
+            strokeColor: COL_SINGLE, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [D, E, F], {
+            radius: 0.6,
+            fillColor: COL_DOUBLE, fillOpacity: 0.1,
+            strokeColor: COL_DOUBLE, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+        board.create('nonReflexAngle', [D, E, F], {
+            radius: 0.85,
+            fillColor: 'none', fillOpacity: 0,
+            strokeColor: COL_DOUBLE, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        var lblPosD = bisectorPoint(D, E, F, 1.6);
+        board.create('text', [lblPosD[0], lblPosD[1], '47\u00B0'], {
+            fontSize: 13, color: COL_SINGLE, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var lblPosE = bisectorPoint(E, D, F, 1.6);
+        board.create('text', [lblPosE[0], lblPosE[1], '58\u00B0'], {
+            fontSize: 13, color: COL_DOUBLE, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Triangle GHJ
+        var G = board.create('point', [9.5, 0.8], {
+            name: 'G', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-15, -8] }
+        });
+        var H = board.create('point', [16, 1.5], {
+            name: 'H', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [5, -8] }
+        });
+        var J = board.create('point', [12.5, 7.8], {
+            name: 'J', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [5, 8] }
+        });
+
+        board.create('segment', [G, H], { strokeColor: COL_EDGE, strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('segment', [H, J], { strokeColor: COL_EDGE, strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('segment', [J, G], { strokeColor: COL_EDGE, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        board.create('nonReflexAngle', [H, G, J], {
+            radius: 0.7,
+            fillColor: COL_SINGLE, fillOpacity: 0.1,
+            strokeColor: COL_SINGLE, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [G, H, J], {
+            radius: 0.6,
+            fillColor: COL_DOUBLE, fillOpacity: 0.1,
+            strokeColor: COL_DOUBLE, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+        board.create('nonReflexAngle', [G, H, J], {
+            radius: 0.85,
+            fillColor: 'none', fillOpacity: 0,
+            strokeColor: COL_DOUBLE, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        var lblPosJ = bisectorPoint(J, G, H, 1.6);
+        board.create('text', [lblPosJ[0], lblPosJ[1], '?'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-weight:bold'
+        });
+    </script>
+</body>
+</html>
