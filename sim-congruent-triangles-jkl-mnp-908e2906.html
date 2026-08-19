@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Triangles JKL and MNP</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 8, 15, -2],
+            axis: false, grid: false,
+            keepAspectRatio: true,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false }
+        });
+
+        // ── Triangle JKL (left side, standard orientation) ──────────────
+        var J = board.create('point', [0.5, 0.5], { name: 'J', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [-16, -12] } });
+        var K = board.create('point', [6, 0.5], { name: 'K', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [8, -12] } });
+        var L = board.create('point', [2, 6], { name: 'L', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [-10, 10] } });
+
+        // Triangle JKL edges
+        board.create('segment', [J, K], { strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('segment', [K, L], { strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('segment', [L, J], { strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // ── Triangle MNP (right side, flipped V+H) ─────────────────────
+        var M = board.create('point', [14, 7], { name: 'M', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [10, 8] } });
+        var N = board.create('point', [8.5, 7], { name: 'N', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [-16, 8] } });
+        var P = board.create('point', [12.5, 1.5], { name: 'P', fixed: true, size: 2, color: '#222222', highlight: false, label: { fontSize: 14, color: '#222222', offset: [10, -8] } });
+
+        // Triangle MNP edges
+        board.create('segment', [M, N], { strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('segment', [N, P], { strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('segment', [P, M], { strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // ── Helper: draw angle arc with optional label ──────────────────
+        function drawAngleArc(vertex, p1, p2, radius, numArcs, label) {
+            var a1 = Math.atan2(p1.Y() - vertex.Y(), p1.X() - vertex.X());
+            var a2 = Math.atan2(p2.Y() - vertex.Y(), p2.X() - vertex.X());
+
+            var diff = a2 - a1;
+            if (diff > Math.PI) diff -= 2 * Math.PI;
+            if (diff < -Math.PI) diff += 2 * Math.PI;
+
+            var sa = a1;
+            var sw = diff;
+
+            // Draw multiple concentric arcs for congruence marking
+            var arcSpacing = 0.15;
+            for (var i = 0; i < numArcs; i++) {
+                var r = radius + i * arcSpacing;
+                (function(currentR) {
+                    board.create('curve', [
+                        function(t) { return vertex.X() + currentR * Math.cos(t); },
+                        function(t) { return vertex.Y() + currentR * Math.sin(t); },
+                        function() { return sa; },
+                        function() { return sa + sw; }
+                    ], {
+                        strokeColor: '#3B82F6', strokeWidth: 1.5, fixed: true, highlight: false
+                    });
+                })(r);
+            }
+
+            // Add label if provided
+            if (label) {
+                var midAngle = sa + sw / 2;
+                var labelR = radius + (numArcs - 1) * arcSpacing + 0.7;
+                var lx = vertex.X() + labelR * Math.cos(midAngle);
+                var ly = vertex.Y() + labelR * Math.sin(midAngle);
+                board.create('text', [lx, ly, label], {
+                    fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── Angle arcs for △JKL ─────────────────────────────────────────
+        // ∠KJL (at J) — single arc — labeled 72.3°
+        drawAngleArc(J, K, L, 0.8, 1, '72.3\u00B0');
+
+        // ∠JKL (at K) — double arc
+        drawAngleArc(K, J, L, 0.7, 2, null);
+
+        // ∠KLJ (at L) — triple arc
+        drawAngleArc(L, K, J, 0.6, 3, null);
+
+        // ── Angle arcs for △MNP ─────────────────────────────────────────
+        // ∠NMP (at M) — single arc (corresponds to J)
+        drawAngleArc(M, N, P, 0.8, 1, null);
+
+        // ∠MNP (at N) — double arc — labeled 53.5°
+        drawAngleArc(N, M, P, 0.7, 2, '53.5\u00B0');
+
+        // ∠MPN (at P) — triple arc (corresponds to L)
+        drawAngleArc(P, M, N, 0.6, 3, null);
+
+    </script>
+</body>
+</html>
