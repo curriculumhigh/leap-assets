@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Quadrilaterals ABCD and PQRS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 10.5, 17.5, -2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_OUTLINE = '#555555';
+        var COL_VERTEX = '#222222';
+        var COL_MEASURE = '#3B82F6';
+        var COL_ARC = '#DC2626';
+
+        // ── ABCD vertices (irregular quadrilateral, left side, scaled up ~1.5x) ──
+        var A = [0.5, 7.5];
+        var B = [4.7, 9.5];
+        var C = [6.8, 5.5];
+        var D = [3.0, 2.8];
+
+        // ── Transform ABCD to get PQRS ──────────────────────────────────
+        var rotAngle = 120 * Math.PI / 180;
+        var cosR = Math.cos(rotAngle);
+        var sinR = Math.sin(rotAngle);
+
+        // Centroid of ABCD for rotation center
+        var cx = (A[0] + B[0] + C[0] + D[0]) / 4;
+        var cy = (A[1] + B[1] + C[1] + D[1]) / 4;
+
+        function transformPoint(pt) {
+            var x = pt[0] - cx;
+            var y = pt[1] - cy;
+            // Rotate 120° anticlockwise
+            var rx = x * cosR - y * sinR;
+            var ry = x * sinR + y * cosR;
+            // Flip vertically (negate y)
+            ry = -ry;
+            return [rx, ry];
+        }
+
+        var pRaw = transformPoint(A);
+        var qRaw = transformPoint(B);
+        var rRaw = transformPoint(C);
+        var sRaw = transformPoint(D);
+
+        // Translate PQRS so it sits to the right with spacing
+        var offsetX = 12.5;
+        var offsetY = 5.5;
+        var P = [pRaw[0] + offsetX, pRaw[1] + offsetY];
+        var Q = [qRaw[0] + offsetX, qRaw[1] + offsetY];
+        var R = [rRaw[0] + offsetX, rRaw[1] + offsetY];
+        var S = [sRaw[0] + offsetX, sRaw[1] + offsetY];
+
+        // ── Draw ABCD polygon ───────────────────────────────────────────
+        var pA = board.create('point', A, { name: 'A', fixed: true, size: 2, color: COL_VERTEX, highlight: false, label: { fontSize: 14, color: COL_VERTEX, offset: [-14, 4] } });
+        var pB = board.create('point', B, { name: 'B', fixed: true, size: 2, color: COL_VERTEX, highlight: false, label: { fontSize: 14, color: COL_VERTEX, offset: [2, 10] } });
+        var pC = board.create('point', C, { name: 'C', fixed: true, size: 2, color: COL_VERTEX, highlight: false, label: { fontSize: 14, color: COL_VERTEX, offset: [8, -2] } });
+        var pD = board.create('point', D, { name: 'D', fixed: true, size: 2, color: COL_VERTEX, highlight: false, label: { fontSize: 14, color: COL_VERTEX, offset: [-4, -14] } });
+
+        board.create('polygon', [pA, pB, pC, pD], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_OUTLINE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── Draw PQRS polygon ───────────────────────────────────────────
+        var pP = board.create('point', P, { name: 'P', fixed: true, size: 2, color: COL_VERTEX, highlight: false, label: { fontSize: 14, color: COL_VERTEX, offset: [6, 6] } });
+        var pQ = board.create('point', Q, { name: 'Q', fixed: true, size: 2, color: COL_VERTEX, highlight: false, label: { fontSize: 14, color: COL_VERTEX, offset: [-4, -14] } });
+        var pR = board.create('point', R, { name: 'R', fixed: true, size: 2, color: COL_VERTEX, highlight: false, label: { fontSize: 14, color: COL_VERTEX, offset: [-16, -4] } });
+        var pS = board.create('point', S, { name: 'S', fixed: true, size: 2, color: COL_VERTEX, highlight: false, label: { fontSize: 14, color: COL_VERTEX, offset: [4, 10] } });
+
+        board.create('polygon', [pP, pQ, pR, pS], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_OUTLINE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── Angle arc at D (between sides DA and DC) ────────────────────
+        board.create('nonReflexAngle', [pA, pD, pC], {
+            radius: 0.6,
+            fillColor: COL_ARC, fillOpacity: 0.08,
+            strokeColor: COL_ARC, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // Angle D label
+        var midDA = [(D[0] + A[0]) / 2, (D[1] + A[1]) / 2];
+        var midDC = [(D[0] + C[0]) / 2, (D[1] + C[1]) / 2];
+        var bisD_x = (midDA[0] + midDC[0]) / 2 - D[0];
+        var bisD_y = (midDA[1] + midDC[1]) / 2 - D[1];
+        var bisD_len = Math.sqrt(bisD_x * bisD_x + bisD_y * bisD_y);
+        var labelD_x = D[0] + bisD_x / bisD_len * 1.6;
+        var labelD_y = D[1] + bisD_y / bisD_len * 1.6;
+
+        board.create('text', [labelD_x, labelD_y, '(3y+10)^\\circ'], {
+            useKatex: true, fontSize: 12, color: COL_MEASURE,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Angle arc at S (between sides SP and SR) ────────────────────
+        board.create('nonReflexAngle', [pP, pS, pR], {
+            radius: 0.6,
+            fillColor: COL_ARC, fillOpacity: 0.08,
+            strokeColor: COL_ARC, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // Angle S label
+        var midSP = [(S[0] + P[0]) / 2, (S[1] + P[1]) / 2];
+        var midSR = [(S[0] + R[0]) / 2, (S[1] + R[1]) / 2];
+        var bisS_x = (midSP[0] + midSR[0]) / 2 - S[0];
+        var bisS_y = (midSP[1] + midSR[1]) / 2 - S[1];
+        var bisS_len = Math.sqrt(bisS_x * bisS_x + bisS_y * bisS_y);
+        var labelS_x = S[0] + bisS_x / bisS_len * 1.6;
+        var labelS_y = S[1] + bisS_y / bisS_len * 1.6;
+
+        board.create('text', [labelS_x, labelS_y, '85^\\circ'], {
+            useKatex: true, fontSize: 12, color: COL_MEASURE,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Angle arc at Q (distractor) ─────────────────────────────────
+        board.create('nonReflexAngle', [pP, pQ, pR], {
+            radius: 0.6,
+            fillColor: COL_ARC, fillOpacity: 0.08,
+            strokeColor: COL_ARC, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // Angle Q label
+        var midQP = [(Q[0] + P[0]) / 2, (Q[1] + P[1]) / 2];
+        var midQR = [(Q[0] + R[0]) / 2, (Q[1] + R[1]) / 2];
+        var bisQ_x = (midQP[0] + midQR[0]) / 2 - Q[0];
+        var bisQ_y = (midQP[1] + midQR[1]) / 2 - Q[1];
+        var bisQ_len = Math.sqrt(bisQ_x * bisQ_x + bisQ_y * bisQ_y);
+        var labelQ_x = Q[0] + bisQ_x / bisQ_len * 1.6;
+        var labelQ_y = Q[1] + bisQ_y / bisQ_len * 1.6;
+
+        board.create('text', [labelQ_x, labelQ_y, '110^\\circ'], {
+            useKatex: true, fontSize: 12, color: COL_MEASURE,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Side label: AB = 5x - 2 ────────────────────────────────────
+        var midAB_x = (A[0] + B[0]) / 2;
+        var midAB_y = (A[1] + B[1]) / 2;
+        var abDx = B[0] - A[0];
+        var abDy = B[1] - A[1];
+        var abLen = Math.sqrt(abDx * abDx + abDy * abDy);
+        var abNx = -abDy / abLen;
+        var abNy = abDx / abLen;
+        var toCenter_x = cx - midAB_x;
+        var toCenter_y = cy - midAB_y;
+        var dot = abNx * toCenter_x + abNy * toCenter_y;
+        if (dot > 0) { abNx = -abNx; abNy = -abNy; }
+        var labelAB_x = midAB_x + abNx * 0.55;
+        var labelAB_y = midAB_y + abNy * 0.55;
+
+        board.create('text', [labelAB_x, labelAB_y, '5x - 2'], {
+            useKatex: true, fontSize: 12, color: COL_MEASURE,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Side label: PQ = 18 ─────────────────────────────────────────
+        var midPQ_x = (P[0] + Q[0]) / 2;
+        var midPQ_y = (P[1] + Q[1]) / 2;
+        var pqDx = Q[0] - P[0];
+        var pqDy = Q[1] - P[1];
+        var pqLen = Math.sqrt(pqDx * pqDx + pqDy * pqDy);
+        var pqNx = -pqDy / pqLen;
+        var pqNy = pqDx / pqLen;
+        var cx2 = (P[0] + Q[0] + R[0] + S[0]) / 4;
+        var cy2 = (P[1] + Q[1] + R[1] + S[1]) / 4;
+        var toCenter2_x = cx2 - midPQ_x;
+        var toCenter2_y = cy2 - midPQ_y;
+        var dot2 = pqNx * toCenter2_x + pqNy * toCenter2_y;
+        if (dot2 > 0) { pqNx = -pqNx; pqNy = -pqNy; }
+        var labelPQ_x = midPQ_x + pqNx * 0.5;
+        var labelPQ_y = midPQ_y + pqNy * 0.5;
+
+        board.create('text', [labelPQ_x, labelPQ_y, '18'], {
+            useKatex: true, fontSize: 12, color: COL_MEASURE,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Side label: QR = 12 (distractor) ────────────────────────────
+        var midQR_x = (Q[0] + R[0]) / 2;
+        var midQR_y = (Q[1] + R[1]) / 2;
+        var qrDx = R[0] - Q[0];
+        var qrDy = R[1] - Q[1];
+        var qrLen = Math.sqrt(qrDx * qrDx + qrDy * qrDy);
+        var qrNx = -qrDy / qrLen;
+        var qrNy = qrDx / qrLen;
+        var toCenter3_x = cx2 - midQR_x;
+        var toCenter3_y = cy2 - midQR_y;
+        var dot3 = qrNx * toCenter3_x + qrNy * toCenter3_y;
+        if (dot3 > 0) { qrNx = -qrNx; qrNy = -qrNy; }
+        var labelQR_x = midQR_x + qrNx * 0.5;
+        var labelQR_y = midQR_y + qrNy * 0.5;
+
+        board.create('text', [labelQR_x, labelQR_y, '12'], {
+            useKatex: true, fontSize: 12, color: COL_MEASURE,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Congruence statement (centered below) ───────────────────────
+        board.create('text', [8, -1.2, 'ABCD \\cong PQRS'], {
+            useKatex: true, fontSize: 14, color: COL_VERTEX,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
