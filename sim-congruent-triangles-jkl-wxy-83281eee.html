@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Triangles JKL and WXY</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 8, 17, -1],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_SIDE = '#555555';
+        var COL_ARC = '#2563EB';
+        var COL_TICK = '#D97706';
+
+        // ── Triangle JKL (left side) ────────────────────────────────────
+        var J = board.create('point', [3.5, 7], {
+            name: 'J', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-2, 12] }
+        });
+        var K = board.create('point', [1, 1], {
+            name: 'K', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, -8] }
+        });
+        var L = board.create('point', [6.5, 1], {
+            name: 'L', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -8] }
+        });
+
+        board.create('segment', [J, K], { strokeColor: COL_SIDE, strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [K, L], { strokeColor: COL_SIDE, strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [J, L], { strokeColor: COL_SIDE, strokeWidth: 2.0, fixed: true, highlight: false });
+
+        // ── Triangle WXY (right side) ───────────────────────────────────
+        var Y = board.create('point', [10, 6.5], {
+            name: 'Y', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, 6] }
+        });
+        var X = board.create('point', [10.5, 1.5], {
+            name: 'X', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-10, -14] }
+        });
+        var W = board.create('point', [15.5, 2.5], {
+            name: 'W', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -8] }
+        });
+
+        board.create('segment', [W, X], { strokeColor: COL_SIDE, strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [X, Y], { strokeColor: COL_SIDE, strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [W, Y], { strokeColor: COL_SIDE, strokeWidth: 2.0, fixed: true, highlight: false });
+
+        // ── Angle arcs (all blue) ───────────────────────────────────────
+        function drawAngleArcs(p1, vertex, p2, count, radius0) {
+            var spacing = 0.18;
+            for (var i = 0; i < count; i++) {
+                var r = radius0 + i * spacing;
+                board.create('nonReflexAngle', [p1, vertex, p2], {
+                    radius: r,
+                    fillColor: 'none', fillOpacity: 0,
+                    strokeColor: COL_ARC, strokeWidth: 1.5,
+                    fixed: true, name: '', withLabel: false,
+                    highlight: false
+                });
+            }
+        }
+
+        // K — single arc
+        drawAngleArcs(J, K, L, 1, 0.6);
+        // J — double arc
+        drawAngleArcs(K, J, L, 2, 0.55);
+        // L — triple arc
+        drawAngleArcs(K, L, J, 3, 0.5);
+
+        // X — single arc
+        drawAngleArcs(Y, X, W, 1, 0.6);
+        // W — double arc
+        drawAngleArcs(X, W, Y, 2, 0.55);
+        // Y — triple arc
+        drawAngleArcs(X, Y, W, 3, 0.5);
+
+        // ── Tick marks (all orange) ─────────────────────────────────────
+        function drawTicks(p1, p2, count) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var ax = dx / len;
+            var ay = dy / len;
+
+            var tickLen = 0.35;
+            var spacing = 0.25;
+            var startOffset = -(count - 1) * spacing / 2;
+
+            for (var i = 0; i < count; i++) {
+                var offset = startOffset + i * spacing;
+                var cx = mx + offset * ax;
+                var cy = my + offset * ay;
+                var x1 = cx + tickLen * px;
+                var y1 = cy + tickLen * py;
+                var x2 = cx - tickLen * px;
+                var y2 = cy - tickLen * py;
+                board.create('segment', [[x1, y1], [x2, y2]], {
+                    strokeColor: COL_TICK, strokeWidth: 2.0,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // JK — 1 tick, WX — 1 tick
+        drawTicks(J, K, 1);
+        drawTicks(W, X, 1);
+
+        // KL — 2 ticks, XY — 2 ticks
+        drawTicks(K, L, 2);
+        drawTicks(X, Y, 2);
+
+        // JL — 3 ticks, WY — 3 ticks
+        drawTicks(J, L, 3);
+        drawTicks(W, Y, 3);
+    </script>
+</body>
+</html>
