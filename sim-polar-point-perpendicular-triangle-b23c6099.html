@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polar Point P(4, π/3) with Perpendicular to Polar Axis</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7.5, 7.5, 7.5, -7.5],
+            axis: false,
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 },
+            showNavigation: false,
+            showCopyright: false,
+            showInfobox: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R_MAX = 5;
+        var GRID_COL = '#9CA3AF';
+        var GRID_W = 1;
+
+        // ── Polar grid: concentric circles ──────────────────────────────
+        var i, ang;
+        for (i = 1; i <= R_MAX; i++) {
+            board.create('circle', [[0, 0], i], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W,
+                fillColor: 'none', fixed: true, highlight: false
+            });
+        }
+
+        // ── Polar grid: radial lines (every π/12 = 24 spokes) ───────────
+        for (i = 0; i < 24; i++) {
+            ang = i * Math.PI / 12;
+            board.create('segment', [[0, 0], [R_MAX * Math.cos(ang), R_MAX * Math.sin(ang)]], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Polar axis (0-direction, darkened) ──────────────────────────
+        board.create('segment', [[0, 0], [R_MAX + 0.8, 0]], {
+            strokeColor: '#222222', strokeWidth: 2.2,
+            fixed: true, highlight: false
+        });
+
+        // Tick marks on polar axis at each ring
+        for (i = 1; i <= R_MAX; i++) {
+            board.create('segment', [[i, -0.13], [i, 0.13]], {
+                strokeColor: '#222222', strokeWidth: 1.8,
+                fixed: true, highlight: false
+            });
+            board.create('text', [i, -0.45, String(i)], {
+                fontSize: 11, color: '#555555', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Angle labels (π/6 family) ───────────────────────────────────
+        var angleLabels = [
+            [Math.PI / 6, '\\pi/6'],
+            [Math.PI / 3, '\\pi/3'],
+            [Math.PI / 2, '\\pi/2'],
+            [2 * Math.PI / 3, '2\\pi/3'],
+            [5 * Math.PI / 6, '5\\pi/6'],
+            [Math.PI, '\\pi'],
+            [7 * Math.PI / 6, '7\\pi/6'],
+            [4 * Math.PI / 3, '4\\pi/3'],
+            [3 * Math.PI / 2, '3\\pi/2'],
+            [5 * Math.PI / 3, '5\\pi/3'],
+            [11 * Math.PI / 6, '11\\pi/6']
+        ];
+
+        var labelR = R_MAX + 1.1;
+        for (i = 0; i < angleLabels.length; i++) {
+            ang = angleLabels[i][0];
+            board.create('text', [
+                labelR * Math.cos(ang),
+                labelR * Math.sin(ang),
+                angleLabels[i][1]
+            ], {
+                useKatex: true, fontSize: 13, color: '#374151',
+                anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // 0 and 2π labels at polar axis end
+        board.create('text', [R_MAX + 1.1, 0.35, '0'], {
+            fontSize: 13, color: '#374151', anchorX: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [R_MAX + 1.1, -0.35, '2\\pi'], {
+            useKatex: true, fontSize: 13, color: '#374151', anchorX: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Pole (O) ────────────────────────────────────────────────────
+        board.create('point', [0, 0], {
+            name: '', size: 3, color: '#222222', fixed: true,
+            highlight: false, showInfobox: false
+        });
+        board.create('text', [-0.5, -0.55, '\\boldsymbol{O}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            fixed: true, highlight: false
+        });
+
+        // ── Point P at (4, π/3) ─────────────────────────────────────────
+        var r_P = 4;
+        var theta_P = Math.PI / 3;
+        var Px = r_P * Math.cos(theta_P);
+        var Py = r_P * Math.sin(theta_P);
+
+        board.create('point', [Px, Py], {
+            name: '', size: 6, color: '#DC2626', fixed: true,
+            highlight: false, showInfobox: false
+        });
+        board.create('text', [Px + 0.35, Py + 0.4, '\\boldsymbol{P}'], {
+            useKatex: true, fontSize: 15, color: '#DC2626',
+            fixed: true, highlight: false
+        });
+
+        // ── Blue segment O → P ──────────────────────────────────────────
+        board.create('segment', [[0, 0], [Px, Py]], {
+            strokeColor: '#2563EB', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        // ── Point M (foot of perpendicular on polar axis) ───────────────
+        var Mx = Px;
+        var My = 0;
+
+        board.create('point', [Mx, My], {
+            name: '', size: 6, color: '#DC2626', fixed: true,
+            highlight: false, showInfobox: false
+        });
+        board.create('text', [Mx + 0.35, -0.55, '\\boldsymbol{M}'], {
+            useKatex: true, fontSize: 15, color: '#DC2626',
+            anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // ── Red dashed segment P → M (vertical drop) ────────────────────
+        board.create('segment', [[Px, Py], [Mx, My]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── Red dashed segment O → M (horizontal projection) ────────────
+        board.create('segment', [[0, 0], [Mx, My]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── Right angle marker at M ─────────────────────────────────────
+        var sq = 0.35;
+        board.create('segment', [[Mx, sq], [Mx - sq, sq]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[Mx - sq, sq], [Mx - sq, 0]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        // ── Label "y" on PM (midpoint, offset right) ────────────────────
+        board.create('text', [Px + 0.4, Py / 2, 'y'], {
+            useKatex: true, fontSize: 14, color: '#DC2626',
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Label "x" on OM (midpoint, offset below) ────────────────────
+        board.create('text', [Mx / 2, -0.55, 'x'], {
+            useKatex: true, fontSize: 14, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // ── Angle arc at O with arrow (green/teal, showing π/3) ─────────
+        var ARC_COL = '#059669';
+        var arcRadius = 1.1;
+
+        board.create('curve', [
+            function(t) { return arcRadius * Math.cos(t); },
+            function(t) { return arcRadius * Math.sin(t); },
+            0, theta_P
+        ], {
+            strokeColor: ARC_COL, strokeWidth: 1.8,
+            fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        // π/3 label along the arc (at midpoint angle)
+        board.create('text', [
+            1.55 * Math.cos(theta_P / 2),
+            1.55 * Math.sin(theta_P / 2),
+            '\\pi/3'
+        ], {
+            useKatex: true, fontSize: 13, color: ARC_COL,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
