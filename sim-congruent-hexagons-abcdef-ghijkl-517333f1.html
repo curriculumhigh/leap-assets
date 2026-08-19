@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Hexagons ABCDEF and GHIJKL</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-9.5, 7.5, 9.5, -7],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: true
+        });
+
+        // ── Hexagon geometry ────────────────────────────────────────────
+        var R = 3.2;
+
+        // Centers
+        var cx1 = -4.5, cy1 = 1.0;
+        var cx2 = 4.5, cy2 = 1.0;
+
+        // Pointy-top hexagon vertex angles (starting from top, clockwise)
+        var angles = [90, 30, -30, -90, -150, 150]; // B, C, D, E, F, A order
+
+        function hexVertices(cx, cy, r) {
+            var pts = [];
+            for (var i = 0; i < 6; i++) {
+                var a = angles[i] * Math.PI / 180;
+                pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+            }
+            return pts;
+        }
+
+        var hex1Coords = hexVertices(cx1, cy1, R);
+        var hex2Coords = hexVertices(cx2, cy2, R);
+
+        // Create points for hex 1
+        var pts1 = [];
+        for (var i = 0; i < 6; i++) {
+            pts1.push(board.create('point', hex1Coords[i], {
+                name: '', fixed: true, size: 3, color: '#222222', highlight: false,
+                showInfobox: false
+            }));
+        }
+
+        // Create points for hex 2
+        var pts2 = [];
+        for (var i = 0; i < 6; i++) {
+            pts2.push(board.create('point', hex2Coords[i], {
+                name: '', fixed: true, size: 3, color: '#222222', highlight: false,
+                showInfobox: false
+            }));
+        }
+
+        // ── Polygons (filled) ───────────────────────────────────────────
+        board.create('polygon', pts1, {
+            fillColor: '#DBEAFE', fillOpacity: 0.5,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('polygon', pts2, {
+            fillColor: '#D1FAE5', fillOpacity: 0.5,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Make vertex points visible on top
+        for (var i = 0; i < 6; i++) {
+            pts1[i].setAttribute({ layer: 9 });
+            pts2[i].setAttribute({ layer: 9 });
+        }
+
+        // ── Vertex labels ───────────────────────────────────────────────
+        var labelOffset = 0.45;
+
+        function labelPos(cx, cy, idx) {
+            var a = angles[idx] * Math.PI / 180;
+            return [cx + (R + labelOffset) * Math.cos(a), cy + (R + labelOffset) * Math.sin(a)];
+        }
+
+        var lblNames1 = ['B', 'C', 'D', 'E', 'F', 'A'];
+        for (var i = 0; i < 6; i++) {
+            var pos = labelPos(cx1, cy1, i);
+            board.create('text', [pos[0], pos[1], lblNames1[i]], {
+                fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false, cssStyle: 'font-weight:bold; font-style:italic;'
+            });
+        }
+
+        var lblNames2 = ['H', 'I', 'J', 'K', 'L', 'G'];
+        for (var i = 0; i < 6; i++) {
+            var pos = labelPos(cx2, cy2, i);
+            board.create('text', [pos[0], pos[1], lblNames2[i]], {
+                fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false, cssStyle: 'font-weight:bold; font-style:italic;'
+            });
+        }
+
+        // ── Side labels ─────────────────────────────────────────────────
+        function sideMidOutward(cx, cy, coords, idx1, idx2, offset) {
+            var mx = (coords[idx1][0] + coords[idx2][0]) / 2;
+            var my = (coords[idx1][1] + coords[idx2][1]) / 2;
+            var dx = mx - cx;
+            var dy = my - cy;
+            var len = Math.sqrt(dx * dx + dy * dy);
+            return [mx + offset * dx / len, my + offset * dy / len];
+        }
+
+        // AB: indices 5(A) → 0(B) — top-left side
+        var posAB = sideMidOutward(cx1, cy1, hex1Coords, 5, 0, 0.55);
+        board.create('text', [posAB[0], posAB[1], '5'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold;'
+        });
+
+        // BC: indices 0(B) → 1(C) — top-right side
+        var posBC = sideMidOutward(cx1, cy1, hex1Coords, 0, 1, 0.55);
+        board.create('text', [posBC[0], posBC[1], '3'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold;'
+        });
+
+        // EF: indices 3(E) → 4(F) — bottom-left side
+        var posEF = sideMidOutward(cx1, cy1, hex1Coords, 3, 4, 0.65);
+        board.create('text', [posEF[0], posEF[1], '3x - 1'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        // Hex 2: HI = 2x+1 (indices 0(H) → 1(I)) — top-right side
+        var posHI = sideMidOutward(cx2, cy2, hex2Coords, 0, 1, 0.6);
+        board.create('text', [posHI[0], posHI[1], '2x + 1'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        // ── Angle arcs ──────────────────────────────────────────────────
+        // Hex 1: ∠ABC at B (index 0), arms to A (index 5) and C (index 1)
+        board.create('nonReflexAngle', [pts1[5], pts1[0], pts1[1]], {
+            radius: 0.45,
+            fillColor: '#2563EB', fillOpacity: 0.08,
+            strokeColor: '#2563EB', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Hex 2: ∠GHI at H (index 0), arms to G (index 5) and I (index 1)
+        board.create('nonReflexAngle', [pts2[5], pts2[0], pts2[1]], {
+            radius: 0.45,
+            fillColor: '#059669', fillOpacity: 0.08,
+            strokeColor: '#059669', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Hex 2: ∠HIJ at I (index 1), arms to H (index 0) and J (index 2)
+        board.create('nonReflexAngle', [pts2[0], pts2[1], pts2[2]], {
+            radius: 0.45,
+            fillColor: '#D97706', fillOpacity: 0.08,
+            strokeColor: '#D97706', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // ── Angle labels ────────────────────────────────────────────────
+        // ∠ABC label — inside hex 1, near vertex B
+        board.create('text', [cx1 + 0.2, cy1 + 1.6, '120^\\circ'], {
+            fontSize: 13, color: '#2563EB', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        // ∠GHI label — inside hex 2, close to angle at H
+        board.create('text', [cx2 + 0.0, cy2 + 2.0, '(5y + 10)^\\circ'], {
+            fontSize: 12, color: '#059669', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        // ∠HIJ label — inside hex 2, near vertex I side
+        board.create('text', [cx2 + 1.2, cy2 + 1.0, '(3y + 6)^\\circ'], {
+            fontSize: 12, color: '#D97706', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        // ── Tile titles ─────────────────────────────────────────────────
+        board.create('text', [cx1, cy1 - R - 1.5, '\\text{Tile 1: }\\textit{ABCDEF}'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        board.create('text', [cx2, cy2 - R - 1.5, '\\text{Tile 2: }\\textit{GHIJKL}'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+    </script>
+</body>
+</html>
