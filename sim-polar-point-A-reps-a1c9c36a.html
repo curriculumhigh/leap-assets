@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+html, body { height: 100%; overflow: hidden; margin: 0; padding: 0; background: #ffffff; }
+.container { height: calc(100% - 12px); padding: 6px; max-width: 560px; margin: 0 auto; }
+#board { height: 100%; width: 100%; }
+</style>
+</head>
+<body>
+<div class="container"><div id="board"></div></div>
+<script>
+function _initSim() {
+window.board = JXG.JSXGraph.initBoard('board', { boundingbox: [-8.5, 8.5, 8.5, -8.5], axis: false, showCopyright: false, showNavigation: false, keepAspectRatio: true, pan: {enabled:false}, zoom: {enabled:false} });
+
+for (var r = 1; r <= 6; r++) {
+  board.create('circle', [[0,0], r], { strokeColor: '#9CA3AF', strokeWidth: 1, fixed: true, highlight: false });
+}
+[0.261799,0.523599,0.785398,1.047198,1.308997,1.570796,1.832596,2.094395,2.356194,2.617994,2.879793,3.141593,3.403392,3.665191,3.926991,4.188790,4.450590,4.712389,4.974188,5.235988,5.497787,5.759587,6.021386].forEach(function(a) {
+  board.create('segment', [[0,0], [6*Math.cos(a), 6*Math.sin(a)]], { strokeColor: '#9CA3AF', strokeWidth: 1, fixed: true, highlight: false });
+});
+board.create('segment', [[0,0], [6.9, 0]], { strokeColor: '#222222', strokeWidth: 2.2, fixed: true, highlight: false });
+for (var t = 1; t <= 6; t++) {
+  board.create('segment', [[t, -0.13], [t, 0.13]], { strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false });
+}
+board.create('point', [0,0], { name: '', size: 2.5, color: '#222222', fixed: true, highlight: false, showInfobox: false });
+
+[1,2,3,4,5,6].forEach(function(t) {
+  board.create('text', [t, -0.48, String(t)], { fontSize: 11, color: '#555555', anchorX: 'middle', fixed: true, highlight: false });
+});
+board.create('text', [7.25, 0.5, '0'], { fontSize: 13, color: '#374151', useKatex: true, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false });
+board.create('text', [7.25, -0.55, '2\\pi'], { fontSize: 13, color: '#374151', useKatex: true, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false });
+board.create('text', [6.149, 3.550, '\\pi/6'], { fontSize: 13, color: '#374151', useKatex: true, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+board.create('text', [3.550, 6.149, '\\pi/3'], { fontSize: 13, color: '#374151', useKatex: true, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+board.create('text', [0.000, 7.100, '\\pi/2'], { fontSize: 13, color: '#374151', useKatex: true, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+board.create('text', [-3.550, 6.149, '2\\pi/3'], { fontSize: 13, color: '#374151', useKatex: true, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+board.create('text', [-6.149, 3.550, '5\\pi/6'], { fontSize: 13, color: '#374151', useKatex: true, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+board.create('text', [-7.100, 0.000, '\\pi'], { fontSize: 13, color: '#374151', useKatex: true, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+board.create('text', [-6.149, -3.550, '7\\pi/6'], { fontSize: 13, color: '#374151', useKatex: true, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+board.create('text', [-3.550, -6.149, '4\\pi/3'], { fontSize: 13, color: '#374151', useKatex: true, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+board.create('text', [-0.000, -7.100, '3\\pi/2'], { fontSize: 13, color: '#374151', useKatex: true, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+board.create('text', [3.550, -6.149, '5\\pi/3'], { fontSize: 13, color: '#374151', useKatex: true, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+board.create('text', [6.149, -3.550, '11\\pi/6'], { fontSize: 13, color: '#374151', useKatex: true, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+board.create('segment', [[0,0], [5.1962, -3.0000]], { strokeColor: '#4B5563', strokeWidth: 2, dash: 2, fixed: true, highlight: false });
+board.create('segment', [[0,0], [-2.5981, 1.5000]], { strokeColor: '#2563EB', strokeWidth: 1.8, fixed: true, highlight: false });
+board.create('point', [-2.5981, 1.5000], { name: '', size: 4, color: '#DC2626', fixed: true, highlight: false, showInfobox: false });
+board.create('text', [-2.3481, 2.2000, '\\textbf{A}'], { fontSize: 14, color: '#DC2626', useKatex: true, fixed: true, highlight: false });
+}
+(function waitForSize(n) {
+  var el = document.getElementById('board');
+  if (el.clientWidth > 10 && el.clientHeight > 10) { _initSim(); return; }
+  if (n > 600) { _initSim(); return; }
+  setTimeout(function() { waitForSize(n + 1); }, 50);
+})(0);
+window.addEventListener('resize', function() {
+  var el = document.getElementById('board');
+  if (el.clientWidth > 10 && el.clientHeight > 10 && window.board && board.resizeContainer) {
+    board.resizeContainer(el.clientWidth, el.clientHeight, true);
+  }
+});
+</script>
+</body>
+</html>
