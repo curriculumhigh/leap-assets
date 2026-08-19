@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Triangles RST and FGH</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 10.5, 19, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Triangle RST (left side) ────────────────────────────────────
+        var R = board.create('point', [0.5, 0.5], { visible: false, fixed: true, name: '' });
+        var S = board.create('point', [7.5, 0.5], { visible: false, fixed: true, name: '' });
+        var T = board.create('point', [4.2, 7.2], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [R, S, T], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Vertex labels for RST
+        board.create('text', [-0.1, -0.2, 'R'], { fontSize: 14, color: '#222222', fixed: true, highlight: false, anchorX: 'middle' });
+        board.create('text', [8.0, -0.2, 'S'], { fontSize: 14, color: '#222222', fixed: true, highlight: false, anchorX: 'middle' });
+        board.create('text', [4.2, 7.9, 'T'], { fontSize: 14, color: '#222222', fixed: true, highlight: false, anchorX: 'middle' });
+
+        // Angle arcs for RST
+        board.create('nonReflexAngle', [S, R, T], {
+            radius: 0.85,
+            fillColor: '#3B82F6', fillOpacity: 0.08,
+            strokeColor: '#3B82F6', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        board.create('nonReflexAngle', [T, S, R], {
+            radius: 0.85,
+            fillColor: '#3B82F6', fillOpacity: 0.08,
+            strokeColor: '#3B82F6', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Angle labels for RST
+        board.create('text', [1.8, 1.6, '48^{\\circ}'], { fontSize: 12, color: '#3B82F6', fixed: true, highlight: false, useKatex: true });
+        board.create('text', [4.8, 1.6, '(5y-7)^{\\circ}'], { fontSize: 12, color: '#3B82F6', fixed: true, highlight: false, useKatex: true });
+
+        // ── Triangle FGH (right side) ───────────────────────────────────
+        var F = board.create('point', [10.5, 0.5], { visible: false, fixed: true, name: '' });
+        var G = board.create('point', [17.8, 0.5], { visible: false, fixed: true, name: '' });
+        var H = board.create('point', [14.0, 7.2], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [F, G, H], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Vertex labels for FGH
+        board.create('text', [10.0, -0.2, 'F'], { fontSize: 14, color: '#222222', fixed: true, highlight: false, anchorX: 'middle' });
+        board.create('text', [18.3, -0.2, 'G'], { fontSize: 14, color: '#222222', fixed: true, highlight: false, anchorX: 'middle' });
+        board.create('text', [14.0, 7.9, 'H'], { fontSize: 14, color: '#222222', fixed: true, highlight: false, anchorX: 'middle' });
+
+        // Angle arcs for FGH
+        board.create('nonReflexAngle', [H, G, F], {
+            radius: 0.85,
+            fillColor: '#3B82F6', fillOpacity: 0.08,
+            strokeColor: '#3B82F6', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        board.create('nonReflexAngle', [F, H, G], {
+            radius: 1.0,
+            fillColor: '#3B82F6', fillOpacity: 0.08,
+            strokeColor: '#3B82F6', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Angle labels for FGH
+        board.create('text', [16.0, 1.6, '73^{\\circ}'], { fontSize: 12, color: '#3B82F6', fixed: true, highlight: false, useKatex: true });
+        board.create('text', [13.0, 5.5, '(3x+11)^{\\circ}'], { fontSize: 12, color: '#3B82F6', fixed: true, highlight: false, useKatex: true });
+
+        // ── Triangle name labels ────────────────────────────────────────
+        board.create('text', [4.0, -1.5, '\\triangle RST'], { fontSize: 13, color: '#222222', fixed: true, highlight: false, useKatex: true, anchorX: 'middle' });
+        board.create('text', [14.2, -1.5, '\\triangle FGH'], { fontSize: 13, color: '#222222', fixed: true, highlight: false, useKatex: true, anchorX: 'middle' });
+
+    </script>
+</body>
+</html>
