@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Triangles GIJ and JLH</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 8.5, 11, -3.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertex coordinates
+        var G = [0, 0];
+        var H = [6, 0];
+        var J = [2, 0];
+
+        // I: GI = 4, HI = 5
+        var Ix = 2.25;
+        var Iy = Math.sqrt(16 - Ix * Ix);
+        var I = [Ix, Iy];
+
+        // L: HL = 5, JL = 6
+        var Lx = 5.375;
+        var Ly = Math.sqrt(25 - (Lx - 6) * (Lx - 6));
+        var L = [Lx, Ly];
+
+        // Create points
+        var ptStyle = { size: 3, color: '#DC2626', fixed: true, highlight: false, showInfobox: false };
+
+        var pG = board.create('point', G, Object.assign({}, ptStyle, {
+            name: 'G', label: { fontSize: 15, color: '#B91C1C', offset: [-18, -10], fontWeight: 'bold' }
+        }));
+        var pH = board.create('point', H, Object.assign({}, ptStyle, {
+            name: 'H', label: { fontSize: 15, color: '#B91C1C', offset: [8, -10], fontWeight: 'bold' }
+        }));
+        var pJ = board.create('point', J, Object.assign({}, ptStyle, {
+            name: 'J', label: { fontSize: 15, color: '#B91C1C', offset: [-4, -18], fontWeight: 'bold' }
+        }));
+        var pI = board.create('point', I, Object.assign({}, ptStyle, {
+            name: 'I', label: { fontSize: 15, color: '#B91C1C', offset: [-8, 10], fontWeight: 'bold' }
+        }));
+        var pL = board.create('point', L, Object.assign({}, ptStyle, {
+            name: 'L', label: { fontSize: 15, color: '#B91C1C', offset: [6, 10], fontWeight: 'bold' }
+        }));
+
+        // Segments
+        var segStyle = { strokeColor: '#2563EB', strokeWidth: 2.2, fixed: true, highlight: false };
+
+        // Left triangle GIJ
+        board.create('segment', [pG, pI], segStyle);  // GI
+        board.create('segment', [pG, pJ], segStyle);  // GJ (base left)
+
+        // Right triangle JLH
+        board.create('segment', [pJ, pL], segStyle);  // JL
+        board.create('segment', [pL, pH], segStyle);  // LH
+        board.create('segment', [pJ, pH], segStyle);  // JH (base right)
+
+        // Segment IH (diagonal crossing)
+        board.create('segment', [pI, pH], segStyle);  // IH
+
+        // Dimension arrow for GH = 6 (dashed, below base)
+        var dimY = -1.2;
+        board.create('arrow', [[0, dimY], [6, dimY]], {
+            strokeColor: '#333333', strokeWidth: 1.2, dash: 2,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        // GH = 6 label centered on dimension arrow
+        board.create('text', [3, dimY - 0.6, '6'], {
+            fontSize: 13, color: '#333333', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Side length labels (GI=4, HL=5)
+        var lblStyle = { fontSize: 13, color: '#333333', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' };
+
+        // GI = 4 (left side)
+        var giMidX = (G[0] + I[0]) / 2;
+        var giMidY = (G[1] + I[1]) / 2;
+        board.create('text', [giMidX - 0.55, giMidY + 0.1, '4'], lblStyle);
+
+        // HL = 5 (right side)
+        var hlMidX = (H[0] + L[0]) / 2;
+        var hlMidY = (H[1] + L[1]) / 2;
+        board.create('text', [hlMidX + 0.5, hlMidY + 0.1, '5'], lblStyle);
+
+    </script>
+</body>
+</html>
