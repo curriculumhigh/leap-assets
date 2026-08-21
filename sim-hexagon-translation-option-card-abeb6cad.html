@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hexagon Translation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 4px; height: calc(100% - 8px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7.8, 7.8, 7.8, -7.8],
+            axis: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Create axes manually with forced ticksDistance = 1
+        var xAxis = board.create('axis', [[0, 0], [1, 0]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 4 },
+            ticks: {
+                strokeColor: '#444444',
+                label: { fontSize: 9 },
+                minorTicks: 0,
+                ticksDistance: 1,
+                insertTicks: false,
+                drawZero: false
+            }
+        });
+
+        var yAxis = board.create('axis', [[0, 0], [0, 1]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 4 },
+            ticks: {
+                strokeColor: '#444444',
+                label: { fontSize: 9 },
+                minorTicks: 0,
+                ticksDistance: 1,
+                insertTicks: false,
+                drawZero: false
+            }
+        });
+
+        // Axis labels
+        board.create('text', [7.3, -0.5, '<i>x</i>'], { fontSize: 11, fixed: true, highlight: false });
+        board.create('text', [0.3, 7.3, '<i>y</i>'], { fontSize: 11, fixed: true, highlight: false });
+
+        // Hexagon vertices (from the image)
+        var vertices = [
+            [-6, 2],   // E'
+            [-4, 4],   // F'
+            [-2, 4],   // G'
+            [-1, 2],   // H'
+            [-3, 0],   // I'
+            [-4, 0]    // J'
+        ];
+
+        var names = ["E'", "F'", "G'", "H'", "I'", "J'"];
+        var offsets = [
+            [-0.9, 0.3],   // E' — left
+            [-0.3, 0.7],   // F' — above
+            [0.3, 0.7],    // G' — above-right
+            [0.7, 0.3],    // H' — right
+            [-0.1, -0.8],  // I' — below
+            [-0.9, -0.8]   // J' — below-left
+        ];
+
+        var COL_EDGE = '#2563EB';
+        var COL_POINT = '#DC2626';
+
+        // Create points
+        var pts = [];
+        for (var i = 0; i < vertices.length; i++) {
+            var pt = board.create('point', vertices[i], {
+                name: '',
+                size: 3,
+                color: COL_POINT,
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+            pts.push(pt);
+
+            // Labels in red KaTeX
+            board.create('text', [
+                vertices[i][0] + offsets[i][0],
+                vertices[i][1] + offsets[i][1],
+                names[i]
+            ], {
+                fontSize: 10,
+                color: COL_POINT,
+                useKatex: true,
+                fixed: true,
+                highlight: false,
+                anchorX: 'middle',
+                anchorY: 'middle'
+            });
+        }
+
+        // Create polygon edges
+        for (var i = 0; i < pts.length; i++) {
+            var next = (i + 1) % pts.length;
+            board.create('segment', [pts[i], pts[next]], {
+                strokeColor: COL_EDGE,
+                strokeWidth: 1.5,
+                fixed: true,
+                highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
