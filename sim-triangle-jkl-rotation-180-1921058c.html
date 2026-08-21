@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle JKL and J''K''L'' — Rotation 180°</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 175px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 6px;
+        }
+        .vertex-group { margin-bottom: 4px; }
+        .vertex-row {
+            display: flex; align-items: center; gap: 8px;
+            padding: 4px 0;
+        }
+        .vertex-swatch { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .vertex-name { font-size: 13px; font-weight: 600; min-width: 28px; }
+        .vertex-coord { font-size: 13px; color: #555; min-height: 20px; }
+        .hover-hint {
+            font-size: 11px; color: #999; line-height: 1.4;
+            border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: auto;
+        }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-section">
+                    <div class="panel-label">△JKL</div>
+                    <div class="vertex-group">
+                        <div class="vertex-row">
+                            <div class="vertex-swatch" style="background: #222222;"></div>
+                            <span class="vertex-name" style="color: #222222;">J</span>
+                            <span class="vertex-coord" id="coord-J"></span>
+                        </div>
+                        <div class="vertex-row">
+                            <div class="vertex-swatch" style="background: #222222;"></div>
+                            <span class="vertex-name" style="color: #222222;">K</span>
+                            <span class="vertex-coord" id="coord-K"></span>
+                        </div>
+                        <div class="vertex-row">
+                            <div class="vertex-swatch" style="background: #222222;"></div>
+                            <span class="vertex-name" style="color: #222222;">L</span>
+                            <span class="vertex-coord" id="coord-L"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-section">
+                    <div class="panel-label">△J''K''L''</div>
+                    <div class="vertex-group">
+                        <div class="vertex-row">
+                            <div class="vertex-swatch" style="background: #2563EB;"></div>
+                            <span class="vertex-name" style="color: #2563EB;">J''</span>
+                            <span class="vertex-coord" id="coord-Jpp"></span>
+                        </div>
+                        <div class="vertex-row">
+                            <div class="vertex-swatch" style="background: #2563EB;"></div>
+                            <span class="vertex-name" style="color: #2563EB;">K''</span>
+                            <span class="vertex-coord" id="coord-Kpp"></span>
+                        </div>
+                        <div class="vertex-row">
+                            <div class="vertex-swatch" style="background: #2563EB;"></div>
+                            <span class="vertex-name" style="color: #2563EB;">L''</span>
+                            <span class="vertex-coord" id="coord-Lpp"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hover-hint">Hover over a vertex to see its coordinates.</div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 6, 6, -6],
+            axis: true,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [5.6, -0.4, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 5.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_TRI1 = '#222222';
+        var COL_TRI2 = '#2563EB';
+
+        // ── Tooltip setup ───────────────────────────────────────────────
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function showTooltip(pt, color, name) {
+            var latex = '\\color{' + color + '}{' + name + '\\left(' + Math.round(pt.X()) + ',\\,' + Math.round(pt.Y()) + '\\right)}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [pt.X(), pt.Y()], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+        // ── Triangle JKL (Quadrant I) ───────────────────────────────────
+        var J = board.create('point', [1, 4], {
+            name: 'J', size: 5, color: COL_TRI1, fixed: true, showInfobox: false,
+            highlight: true, highlightFillColor: COL_TRI1, highlightStrokeColor: COL_TRI1,
+            label: { fontSize: 13, color: COL_TRI1, offset: [-12, 8] }
+        });
+        var K = board.create('point', [1, 1], {
+            name: 'K', size: 5, color: COL_TRI1, fixed: true, showInfobox: false,
+            highlight: true, highlightFillColor: COL_TRI1, highlightStrokeColor: COL_TRI1,
+            label: { fontSize: 13, color: COL_TRI1, offset: [-12, -8] }
+        });
+        var L = board.create('point', [4, 1], {
+            name: 'L', size: 5, color: COL_TRI1, fixed: true, showInfobox: false,
+            highlight: true, highlightFillColor: COL_TRI1, highlightStrokeColor: COL_TRI1,
+            label: { fontSize: 13, color: COL_TRI1, offset: [8, -8] }
+        });
+
+        board.create('polygon', [J, K, L], {
+            fillColor: COL_TRI1, fillOpacity: 0.08,
+            borders: { strokeColor: COL_TRI1, strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Triangle J''K''L'' (Quadrant III) ───────────────────────────
+        var Jpp = board.create('point', [-1, -4], {
+            name: "J''", size: 5, color: COL_TRI2, fixed: true, showInfobox: false,
+            highlight: true, highlightFillColor: COL_TRI2, highlightStrokeColor: COL_TRI2,
+            label: { fontSize: 13, color: COL_TRI2, offset: [8, -8] }
+        });
+        var Kpp = board.create('point', [-1, -1], {
+            name: "K''", size: 5, color: COL_TRI2, fixed: true, showInfobox: false,
+            highlight: true, highlightFillColor: COL_TRI2, highlightStrokeColor: COL_TRI2,
+            label: { fontSize: 13, color: COL_TRI2, offset: [8, 8] }
+        });
+        var Lpp = board.create('point', [-4, -1], {
+            name: "L''", size: 5, color: COL_TRI2, fixed: true, showInfobox: false,
+            highlight: true, highlightFillColor: COL_TRI2, highlightStrokeColor: COL_TRI2,
+            label: { fontSize: 13, color: COL_TRI2, offset: [-12, 8] }
+        });
+
+        board.create('polygon', [Jpp, Kpp, Lpp], {
+            fillColor: COL_TRI2, fillOpacity: 0.08,
+            borders: { strokeColor: COL_TRI2, strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Hover events — tooltip + panel ──────────────────────────────
+        var pointMap = [
+            { pt: J, color: COL_TRI1, name: 'J', panelId: 'coord-J' },
+            { pt: K, color: COL_TRI1, name: 'K', panelId: 'coord-K' },
+            { pt: L, color: COL_TRI1, name: 'L', panelId: 'coord-L' },
+            { pt: Jpp, color: COL_TRI2, name: "J''", panelId: 'coord-Jpp' },
+            { pt: Kpp, color: COL_TRI2, name: "K''", panelId: 'coord-Kpp' },
+            { pt: Lpp, color: COL_TRI2, name: "L''", panelId: 'coord-Lpp' }
+        ];
+
+        pointMap.forEach(function(item) {
+            item.pt.on('over', function() {
+                showTooltip(item.pt, item.color, item.name);
+                var latex = '\\color{' + item.color + '}{(' + Math.round(item.pt.X()) + ',\\,' + Math.round(item.pt.Y()) + ')}';
+                katex.render(latex, document.getElementById(item.panelId), { throwOnError: false });
+            });
+            item.pt.on('out', function() {
+                hideTooltip();
+                document.getElementById(item.panelId).innerHTML = '';
+            });
+        });
+    </script>
+</body>
+</html>
