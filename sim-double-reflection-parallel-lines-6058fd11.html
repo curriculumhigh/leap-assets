@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Reflection Across Parallel Lines</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-10, 7, 14, -7],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Colors
+        var COL_TRI1 = '#222222';
+        var COL_TRI2 = '#2563EB';
+        var COL_TRI3 = '#059669';
+        var COL_LINE = '#DC2626';
+        var COL_DASH = '#0EA5E9';
+
+        // Lines p and q positions
+        var pX = -1;
+        var qX = 5;
+
+        // △DEF vertices (to the left of line p)
+        var D = [-5, 3];
+        var E = [-3, -2];
+        var F = [-7, -2];
+
+        // Reflect a point across a vertical line x = a
+        function reflectX(pt, a) {
+            return [2 * a - pt[0], pt[1]];
+        }
+
+        // △D'E'F' — reflection of △DEF across line p
+        var D1 = reflectX(D, pX);
+        var E1 = reflectX(E, pX);
+        var F1 = reflectX(F, pX);
+
+        // △D''E''F'' — reflection of △D'E'F' across line q
+        var D2 = reflectX(D1, qX);
+        var E2 = reflectX(E1, qX);
+        var F2 = reflectX(F1, qX);
+
+        // ── Lines p and q ───────────────────────────────────────────────
+        board.create('line', [[pX, 0], [pX, 1]], {
+            strokeColor: COL_LINE, strokeWidth: 1.5, fixed: true, highlight: false,
+            straightFirst: true, straightLast: true,
+            firstArrow: false, lastArrow: false
+        });
+        board.create('line', [[qX, 0], [qX, 1]], {
+            strokeColor: COL_LINE, strokeWidth: 1.5, fixed: true, highlight: false,
+            straightFirst: true, straightLast: true,
+            firstArrow: false, lastArrow: false
+        });
+
+        // Line labels
+        board.create('text', [pX - 0.5, 6.2, '<i>p</i>'], {
+            fontSize: 15, color: COL_LINE, fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [qX + 0.5, 6.2, '<i>q</i>'], {
+            fontSize: 15, color: COL_LINE, fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // ── △DEF ────────────────────────────────────────────────────────
+        var ptD = board.create('point', D, { name: '', size: 3, color: COL_TRI1, fixed: true, highlight: false });
+        var ptE = board.create('point', E, { name: '', size: 3, color: COL_TRI1, fixed: true, highlight: false });
+        var ptF = board.create('point', F, { name: '', size: 3, color: COL_TRI1, fixed: true, highlight: false });
+
+        board.create('polygon', [ptD, ptE, ptF], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_TRI1, strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Labels for △DEF
+        board.create('text', [D[0] - 0.3, D[1] + 0.6, 'D'], { fontSize: 13, color: COL_TRI1, fixed: true, highlight: false, anchorX: 'middle' });
+        board.create('text', [E[0] + 0.5, E[1] - 0.5, 'E'], { fontSize: 13, color: COL_TRI1, fixed: true, highlight: false, anchorX: 'middle' });
+        board.create('text', [F[0] - 0.5, F[1] - 0.5, 'F'], { fontSize: 13, color: COL_TRI1, fixed: true, highlight: false, anchorX: 'middle' });
+
+        // ── △D'E'F' ─────────────────────────────────────────────────────
+        var ptD1 = board.create('point', D1, { name: '', size: 3, color: COL_TRI2, fixed: true, highlight: false });
+        var ptE1 = board.create('point', E1, { name: '', size: 3, color: COL_TRI2, fixed: true, highlight: false });
+        var ptF1 = board.create('point', F1, { name: '', size: 3, color: COL_TRI2, fixed: true, highlight: false });
+
+        board.create('polygon', [ptD1, ptE1, ptF1], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_TRI2, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Labels for △D'E'F'
+        board.create('text', [D1[0] + 0.3, D1[1] + 0.6, "D'"], { fontSize: 13, color: COL_TRI2, fixed: true, highlight: false, anchorX: 'middle', useKatex: true });
+        board.create('text', [E1[0] - 0.5, E1[1] - 0.5, "E'"], { fontSize: 13, color: COL_TRI2, fixed: true, highlight: false, anchorX: 'middle', useKatex: true });
+        board.create('text', [F1[0] + 0.5, F1[1] - 0.5, "F'"], { fontSize: 13, color: COL_TRI2, fixed: true, highlight: false, anchorX: 'middle', useKatex: true });
+
+        // ── △D''E''F'' ──────────────────────────────────────────────────
+        var ptD2 = board.create('point', D2, { name: '', size: 3, color: COL_TRI3, fixed: true, highlight: false });
+        var ptE2 = board.create('point', E2, { name: '', size: 3, color: COL_TRI3, fixed: true, highlight: false });
+        var ptF2 = board.create('point', F2, { name: '', size: 3, color: COL_TRI3, fixed: true, highlight: false });
+
+        board.create('polygon', [ptD2, ptE2, ptF2], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_TRI3, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Labels for △D''E''F''
+        board.create('text', [D2[0] + 0.3, D2[1] + 0.6, "D''"], { fontSize: 13, color: COL_TRI3, fixed: true, highlight: false, anchorX: 'middle', useKatex: true });
+        board.create('text', [E2[0] + 0.6, E2[1] - 0.5, "E''"], { fontSize: 13, color: COL_TRI3, fixed: true, highlight: false, anchorX: 'middle', useKatex: true });
+        board.create('text', [F2[0] - 0.5, F2[1] - 0.5, "F''"], { fontSize: 13, color: COL_TRI3, fixed: true, highlight: false, anchorX: 'middle', useKatex: true });
+
+        // ── Dashed connectors (corresponding vertices) ──────────────────
+        // D ↔ D' ↔ D''
+        board.create('segment', [ptD, ptD1], { strokeColor: COL_DASH, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+        board.create('segment', [ptD1, ptD2], { strokeColor: COL_DASH, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+
+        // E ↔ E' ↔ E''
+        board.create('segment', [ptE, ptE1], { strokeColor: COL_DASH, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+        board.create('segment', [ptE1, ptE2], { strokeColor: COL_DASH, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+
+        // F ↔ F' ↔ F''
+        board.create('segment', [ptF, ptF1], { strokeColor: COL_DASH, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+        board.create('segment', [ptF1, ptF2], { strokeColor: COL_DASH, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+    </script>
+</body>
+</html>
