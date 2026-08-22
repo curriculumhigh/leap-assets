@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Right Isosceles Triangles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 9, 14, -1],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Triangle 1: △GHJ ─────────────────────────────────────────
+        var G = board.create('point', [2, 1], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        var J = board.create('point', [-2, 1], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        var H = board.create('point', [2, 5], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+
+        board.create('segment', [J, G], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [G, H], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [H, J], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+
+        // ── Triangle 2: △PQR ─────────────────────────────────────────
+        var P = board.create('point', [6, 1], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        var R = board.create('point', [12, 1], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        var Q = board.create('point', [6, 7], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+
+        board.create('segment', [R, P], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [P, Q], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [Q, R], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+
+        // ── Right angle markers ──────────────────────────────────────
+        var raSize = 0.45;
+        var G_ra1 = board.create('point', [2 - raSize, 1], { visible: false, fixed: true, name: '' });
+        var G_ra2 = board.create('point', [2 - raSize, 1 + raSize], { visible: false, fixed: true, name: '' });
+        var G_ra3 = board.create('point', [2, 1 + raSize], { visible: false, fixed: true, name: '' });
+        board.create('segment', [G_ra1, G_ra2], { strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false });
+        board.create('segment', [G_ra2, G_ra3], { strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false });
+
+        var P_ra1 = board.create('point', [6 + raSize, 1], { visible: false, fixed: true, name: '' });
+        var P_ra2 = board.create('point', [6 + raSize, 1 + raSize], { visible: false, fixed: true, name: '' });
+        var P_ra3 = board.create('point', [6, 1 + raSize], { visible: false, fixed: true, name: '' });
+        board.create('segment', [P_ra1, P_ra2], { strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false });
+        board.create('segment', [P_ra2, P_ra3], { strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false });
+
+        // ── Vertex labels (KaTeX) ────────────────────────────────────
+        board.create('text', [2.4, 0.4, 'G'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [-2.6, 0.4, 'J'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [2.4, 5.2, 'H'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+
+        board.create('text', [5.4, 0.4, 'P'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [12.3, 0.4, 'R'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [5.4, 7.2, 'Q'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+
+        // ── Leg length labels ────────────────────────────────────────
+        board.create('text', [-0.2, 0.3, '4'], { useKatex: true, fontSize: 13, fixed: true, highlight: false, anchorX: 'middle' });
+        board.create('text', [2.5, 3, '4'], { useKatex: true, fontSize: 13, fixed: true, highlight: false });
+        board.create('text', [9, 0.3, '6'], { useKatex: true, fontSize: 13, fixed: true, highlight: false, anchorX: 'middle' });
+        board.create('text', [5.2, 4, '6'], { useKatex: true, fontSize: 13, fixed: true, highlight: false });
+
+        // ── Parallel marks (chevron arrows on JG and RP) ─────────────
+        var chevronSize = 0.3;
+        var chevronColor = '#DC2626';
+        var chevronWidth = 1.8;
+
+        var jgMidX = 0;
+        var jgMidY = 1;
+        board.create('segment', [[jgMidX - chevronSize, jgMidY + chevronSize], [jgMidX, jgMidY]], {
+            strokeColor: chevronColor, strokeWidth: chevronWidth, fixed: true, highlight: false
+        });
+        board.create('segment', [[jgMidX - chevronSize, jgMidY - chevronSize], [jgMidX, jgMidY]], {
+            strokeColor: chevronColor, strokeWidth: chevronWidth, fixed: true, highlight: false
+        });
+
+        var rpMidX = 9;
+        var rpMidY = 1;
+        board.create('segment', [[rpMidX - chevronSize, rpMidY + chevronSize], [rpMidX, rpMidY]], {
+            strokeColor: chevronColor, strokeWidth: chevronWidth, fixed: true, highlight: false
+        });
+        board.create('segment', [[rpMidX - chevronSize, rpMidY - chevronSize], [rpMidX, rpMidY]], {
+            strokeColor: chevronColor, strokeWidth: chevronWidth, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
