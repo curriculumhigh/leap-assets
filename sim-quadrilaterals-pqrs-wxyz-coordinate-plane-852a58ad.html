@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadrilaterals PQRS and WXYZ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 6, 10, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Manual grid lines at every integer ──────────────────────────
+        var xMin = -3, xMax = 10, yMin = -4, yMax = 6;
+        var i;
+
+        // Vertical grid lines
+        for (i = Math.ceil(xMin); i <= Math.floor(xMax); i++) {
+            board.create('segment', [[i, yMin], [i, yMax]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+        // Horizontal grid lines
+        for (i = Math.ceil(yMin); i <= Math.floor(yMax); i++) {
+            board.create('segment', [[xMin, i], [xMax, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Manual axes ─────────────────────────────────────────────────
+        board.create('segment', [[xMin, 0], [xMax, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        board.create('segment', [[0, yMin], [0, yMax]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // X-axis ticks and labels
+        for (i = -2; i <= 9; i++) {
+            if (i === 0) continue;
+            board.create('segment', [[i, -0.12], [i, 0.12]], {
+                strokeColor: '#444444', strokeWidth: 1, fixed: true, highlight: false
+            });
+            board.create('text', [i, -0.45, String(i)], {
+                fontSize: 11, anchorX: 'middle', anchorY: 'top', color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        // Y-axis ticks and labels
+        for (i = -3; i <= 5; i++) {
+            if (i === 0) continue;
+            board.create('segment', [[-0.12, i], [0.12, i]], {
+                strokeColor: '#444444', strokeWidth: 1, fixed: true, highlight: false
+            });
+            board.create('text', [-0.35, i, String(i)], {
+                fontSize: 11, anchorX: 'right', anchorY: 'middle', color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        // Axis labels
+        board.create('text', [9.6, -0.4, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 5.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Colors
+        var COL_BLUE = '#2563EB';
+        var COL_GREEN = '#059669';
+
+        // ── Quadrilateral PQRS (blue) ───────────────────────────────────
+        var P = board.create('point', [2, -2], {
+            name: '', size: 4, color: COL_BLUE, fixed: true, highlight: false, showInfobox: false
+        });
+        var Q = board.create('point', [6, -2], {
+            name: '', size: 4, color: COL_BLUE, fixed: true, highlight: false, showInfobox: false
+        });
+        var R = board.create('point', [8, 2], {
+            name: '', size: 4, color: COL_BLUE, fixed: true, highlight: false, showInfobox: false
+        });
+        var S = board.create('point', [4, 2], {
+            name: '', size: 4, color: COL_BLUE, fixed: true, highlight: false, showInfobox: false
+        });
+
+        board.create('polygon', [P, Q, R, S], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_BLUE, strokeWidth: 2.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // PQRS labels — tight to vertices
+        board.create('text', [1.7, -2.5, 'P'], { useKatex: true, fontSize: 13, color: COL_BLUE, anchorX: 'middle', anchorY: 'top', fixed: true, highlight: false });
+        board.create('text', [6.3, -2.5, 'Q'], { useKatex: true, fontSize: 13, color: COL_BLUE, anchorX: 'middle', anchorY: 'top', fixed: true, highlight: false });
+        board.create('text', [8.35, 2.2, 'R'], { useKatex: true, fontSize: 13, color: COL_BLUE, anchorX: 'left', anchorY: 'bottom', fixed: true, highlight: false });
+        board.create('text', [3.65, 2.2, 'S'], { useKatex: true, fontSize: 13, color: COL_BLUE, anchorX: 'right', anchorY: 'bottom', fixed: true, highlight: false });
+
+        // ── Quadrilateral WXYZ (green) ──────────────────────────────────
+        var W = board.create('point', [1, 1], {
+            name: '', size: 4, color: COL_GREEN, fixed: true, highlight: false, showInfobox: false
+        });
+        var X = board.create('point', [1, 3], {
+            name: '', size: 4, color: COL_GREEN, fixed: true, highlight: false, showInfobox: false
+        });
+        var Y = board.create('point', [-1, 4], {
+            name: '', size: 4, color: COL_GREEN, fixed: true, highlight: false, showInfobox: false
+        });
+        var Z = board.create('point', [-1, 2], {
+            name: '', size: 4, color: COL_GREEN, fixed: true, highlight: false, showInfobox: false
+        });
+
+        board.create('polygon', [W, X, Y, Z], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_GREEN, strokeWidth: 2.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // WXYZ labels — tight to vertices
+        board.create('text', [1.3, 0.7, 'W'], { useKatex: true, fontSize: 13, color: COL_GREEN, anchorX: 'left', anchorY: 'top', fixed: true, highlight: false });
+        board.create('text', [1.3, 3.15, 'X'], { useKatex: true, fontSize: 13, color: COL_GREEN, anchorX: 'left', anchorY: 'bottom', fixed: true, highlight: false });
+        board.create('text', [-1.3, 4.2, 'Y'], { useKatex: true, fontSize: 13, color: COL_GREEN, anchorX: 'right', anchorY: 'bottom', fixed: true, highlight: false });
+        board.create('text', [-1.3, 1.75, 'Z'], { useKatex: true, fontSize: 13, color: COL_GREEN, anchorX: 'right', anchorY: 'top', fixed: true, highlight: false });
+    </script>
+</body>
+</html>
