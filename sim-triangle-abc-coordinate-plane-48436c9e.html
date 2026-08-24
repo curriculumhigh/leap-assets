@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle ABC on Coordinate Plane</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 9, 11, -5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Draw grid lines manually at every integer
+        var i;
+        for (i = -1; i <= 10; i++) {
+            board.create('line', [[i, -5], [i, 9]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false, straightFirst: true, straightLast: true,
+                point1: { visible: false }, point2: { visible: false }
+            });
+        }
+        for (i = -4; i <= 8; i++) {
+            board.create('line', [[-2, i], [11, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false, straightFirst: true, straightLast: true,
+                point1: { visible: false }, point2: { visible: false }
+            });
+        }
+
+        // X-axis
+        board.create('arrow', [[-2, 0], [11, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        // Y-axis
+        board.create('arrow', [[0, -5], [0, 9]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Tick marks and labels on x-axis
+        for (i = -1; i <= 10; i++) {
+            if (i === 0) continue;
+            board.create('segment', [[i, -0.15], [i, 0.15]], {
+                strokeColor: '#444444', strokeWidth: 1, fixed: true, highlight: false
+            });
+            board.create('text', [i, -0.6, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Tick marks and labels on y-axis
+        for (i = -4; i <= 8; i++) {
+            if (i === 0) continue;
+            board.create('segment', [[-0.15, i], [0.15, i]], {
+                strokeColor: '#444444', strokeWidth: 1, fixed: true, highlight: false
+            });
+            board.create('text', [-0.4, i, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Axis labels
+        board.create('text', [10.6, -0.4, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 8.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Vertices
+        var A = board.create('point', [4, 6], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        var B = board.create('point', [4, -2], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        var C = board.create('point', [8, -2], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Triangle polygon — blue thick edges, no fill
+        board.create('polygon', [A, B, C], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: {
+                strokeColor: '#2563EB',
+                strokeWidth: 2.5
+            },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // Vertex labels (KaTeX)
+        board.create('text', [3.5, 6.5, 'A'], { useKatex: true, fontSize: 14, color: '#222222', fixed: true, highlight: false });
+        board.create('text', [3.5, -2.7, 'B'], { useKatex: true, fontSize: 14, color: '#222222', fixed: true, highlight: false });
+        board.create('text', [8.3, -2.7, 'C'], { useKatex: true, fontSize: 14, color: '#222222', fixed: true, highlight: false });
+    </script>
+</body>
+</html>
