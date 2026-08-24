@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangles DEF and GHI</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.2, 9, 8.2, -2.8],
+            axis: true,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 12 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 12 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [7.8, -0.45, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 8.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        var COL = '#2563EB';
+
+        // ── Triangle DEF: D(2,3), E(4,7), F(6,3) ────────────────────────────
+        var D = board.create('point', [2, 3], {
+            name: '', fixed: true, size: 4, color: COL, highlight: false
+        });
+        var E = board.create('point', [4, 7], {
+            name: '', fixed: true, size: 4, color: COL, highlight: false
+        });
+        var F = board.create('point', [6, 3], {
+            name: '', fixed: true, size: 4, color: COL, highlight: false
+        });
+
+        board.create('polygon', [D, E, F], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL, strokeWidth: 1.8, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // DEF labels with coordinates
+        board.create('text', [2, 3, 'D(2,\\,3)'], {
+            useKatex: true, fontSize: 13, color: COL, fixed: true, highlight: false,
+            anchorX: 'right', anchorY: 'top', offset: [-8, -4]
+        });
+        board.create('text', [4, 7, 'E(4,\\,7)'], {
+            useKatex: true, fontSize: 13, color: COL, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'bottom', offset: [0, 10]
+        });
+        board.create('text', [6, 3, 'F(6,\\,3)'], {
+            useKatex: true, fontSize: 13, color: COL, fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'top', offset: [8, -4]
+        });
+
+        // ── Triangle GHI: G(2,-1), H(4,1), I(6,-1) ─────────────────────────
+        var G = board.create('point', [2, -1], {
+            name: '', fixed: true, size: 4, color: COL, highlight: false
+        });
+        var H = board.create('point', [4, 1], {
+            name: '', fixed: true, size: 4, color: COL, highlight: false
+        });
+        var I = board.create('point', [6, -1], {
+            name: '', fixed: true, size: 4, color: COL, highlight: false
+        });
+
+        board.create('polygon', [G, H, I], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL, strokeWidth: 1.8, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // GHI labels with coordinates
+        board.create('text', [2, -1, 'G(2,\\,-1)'], {
+            useKatex: true, fontSize: 13, color: COL, fixed: true, highlight: false,
+            anchorX: 'right', anchorY: 'top', offset: [-6, -4]
+        });
+        board.create('text', [4, 1, 'H(4,\\,1)'], {
+            useKatex: true, fontSize: 13, color: COL, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'bottom', offset: [0, 10]
+        });
+        board.create('text', [6, -1, 'I(6,\\,-1)'], {
+            useKatex: true, fontSize: 13, color: COL, fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'top', offset: [8, -4]
+        });
+    </script>
+</body>
+</html>
