@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Regular Hexagons — Fountain and Coaster</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8, 6, 8, -6],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Large hexagon (Fountain) — flat-top, teal fill, black edges ─
+        var bigR = 3.5;
+        var bigCx = -3.2, bigCy = -0.3;
+
+        var bigVerts = [];
+        for (var i = 0; i < 6; i++) {
+            var angle = i * Math.PI / 3;
+            bigVerts.push(board.create('point', [
+                bigCx + bigR * Math.cos(angle),
+                bigCy + bigR * Math.sin(angle)
+            ], { visible: false, fixed: true, name: '' }));
+        }
+
+        board.create('polygon', bigVerts, {
+            fillColor: '#2DD4BF', fillOpacity: 0.35,
+            borders: { strokeColor: '#222222', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // "Fountain" label above
+        board.create('text', [bigCx, bigCy + bigR + 0.8, '\\textbf{Fountain}'], {
+            anchorX: 'middle', anchorY: 'bottom', fontSize: 15,
+            color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        // Dimension on top edge (between vertex 1 at 60° and vertex 2 at 120°)
+        var topEdgeMidX = (bigVerts[1].X() + bigVerts[2].X()) / 2;
+        var topEdgeMidY = (bigVerts[1].Y() + bigVerts[2].Y()) / 2;
+
+        var tickLen = 0.25;
+        board.create('segment', [[bigVerts[1].X(), bigVerts[1].Y() + 0.3], [bigVerts[1].X(), bigVerts[1].Y() + 0.3 + tickLen]], {
+            strokeColor: '#3B82F6', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[bigVerts[2].X(), bigVerts[2].Y() + 0.3], [bigVerts[2].X(), bigVerts[2].Y() + 0.3 + tickLen]], {
+            strokeColor: '#3B82F6', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[bigVerts[1].X(), bigVerts[1].Y() + 0.3 + tickLen / 2], [bigVerts[2].X(), bigVerts[2].Y() + 0.3 + tickLen / 2]], {
+            strokeColor: '#3B82F6', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [topEdgeMidX, topEdgeMidY + 0.9, '9 \\text{ ft}'], {
+            anchorX: 'middle', anchorY: 'bottom', fontSize: 13,
+            color: '#3B82F6', useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Small hexagon (Coaster) — pointy-top, tan/brown fill, gray edges ─
+        var smallR = 1.0;
+        var smallCx = 4.0, smallCy = -0.3;
+
+        var smallVerts = [];
+        for (var j = 0; j < 6; j++) {
+            var sAngle = Math.PI / 2 + j * Math.PI / 3;
+            smallVerts.push(board.create('point', [
+                smallCx + smallR * Math.cos(sAngle),
+                smallCy + smallR * Math.sin(sAngle)
+            ], { visible: false, fixed: true, name: '' }));
+        }
+
+        board.create('polygon', smallVerts, {
+            fillColor: '#D2A679', fillOpacity: 0.45,
+            borders: { strokeColor: '#6B7280', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // "Coaster" label above
+        board.create('text', [smallCx, smallCy + smallR + 0.8, '\\textbf{Coaster}'], {
+            anchorX: 'middle', anchorY: 'bottom', fontSize: 15,
+            color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        // Dimension on right vertical edge (vertex 5 at 30° and vertex 4 at 330°)
+        var rv1 = smallVerts[5]; // 30°
+        var rv2 = smallVerts[4]; // 330°
+        var rightEdgeMidX = (rv1.X() + rv2.X()) / 2;
+        var rightEdgeMidY = (rv1.Y() + rv2.Y()) / 2;
+
+        var sTickLen = 0.2;
+        board.create('segment', [[rv1.X() + 0.25, rv1.Y()], [rv1.X() + 0.25 + sTickLen, rv1.Y()]], {
+            strokeColor: '#3B82F6', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[rv2.X() + 0.25, rv2.Y()], [rv2.X() + 0.25 + sTickLen, rv2.Y()]], {
+            strokeColor: '#3B82F6', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[rv1.X() + 0.25 + sTickLen / 2, rv1.Y()], [rv2.X() + 0.25 + sTickLen / 2, rv2.Y()]], {
+            strokeColor: '#3B82F6', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [rightEdgeMidX + 0.75, rightEdgeMidY, '1.5 \\text{ in.}'], {
+            anchorX: 'left', anchorY: 'middle', fontSize: 13,
+            color: '#3B82F6', useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
