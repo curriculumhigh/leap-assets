@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suspension Bridge — Parabolic Cable</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-185, 85, 185, -15],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 50
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 10
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [178, -2.5, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [4, 82, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Parabola: y = (7/2250) x^2
+        var cableFunc = function(x) { return (7 / 2250) * x * x; };
+
+        // Parabolic cable — primary curve
+        board.create('functiongraph', [cableFunc, -150, 150], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Roadway — horizontal line at y = -5
+        board.create('segment', [[-175, -5], [175, -5]], {
+            strokeColor: '#555555', strokeWidth: 2.5, fixed: true, highlight: false
+        });
+
+        // Towers — vertical segments at x = ±150, from roadway (y=-5) to top (y=75)
+        board.create('segment', [[-150, -5], [-150, 75]], {
+            strokeColor: '#555555', strokeWidth: 2.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[150, -5], [150, 75]], {
+            strokeColor: '#555555', strokeWidth: 2.5, fixed: true, highlight: false
+        });
+
+        // Vertical cables (hangers) every 50 ft: x = -100, -50, 0, 50, 100
+        var hangerXs = [-100, -50, 0, 50, 100];
+        for (var i = 0; i < hangerXs.length; i++) {
+            var hx = hangerXs[i];
+            var hy = cableFunc(hx);
+            board.create('segment', [[hx, -5], [hx, hy]], {
+                strokeColor: '#9CA3AF', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+
+        // Key points
+        // Vertex (0, 0)
+        board.create('point', [0, 0], {
+            name: '', size: 4, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Cable anchor points at towers (±150, 70)
+        board.create('point', [-150, 70], {
+            name: '', size: 4, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [150, 70], {
+            name: '', size: 4, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Labels — KaTeX
+        // Vertex label
+        board.create('text', [5, 4, '(0,\\,0)'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Tower anchor labels
+        board.create('text', [-150, 74, '(-150,\\,70)'], {
+            useKatex: true, fontSize: 11, color: '#222222', fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [150, 74, '(150,\\,70)'], {
+            useKatex: true, fontSize: 11, color: '#222222', fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Roadway label — positioned inside the bounding box, left side
+        board.create('text', [-175, -8.5, 'y = -5'], {
+            useKatex: true, fontSize: 11, color: '#555555', fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
