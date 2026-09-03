@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyperbola — x²/16 − y²/9 = 1</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8.5, 6.5, 8.5, -6.5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 1,
+                        ticksDistance: 2,
+                        minorHeight: 4,
+                        majorHeight: 7
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 1,
+                        ticksDistance: 2,
+                        minorHeight: 4,
+                        majorHeight: 7
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [8.0, -0.5, 'x'], { useKatex: true, fontSize: 12, fixed: true, highlight: false });
+        board.create('text', [0.3, 6.1, 'y'], { useKatex: true, fontSize: 12, fixed: true, highlight: false });
+
+        // Right branch
+        board.create('curve', [
+            function(t) { return 4 * Math.cosh(t); },
+            function(t) { return 3 * Math.sinh(t); },
+            -2.0, 2.0
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Left branch
+        board.create('curve', [
+            function(t) { return -4 * Math.cosh(t); },
+            function(t) { return 3 * Math.sinh(t); },
+            -2.0, 2.0
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Asymptotes: y = (3/4)x and y = -(3/4)x (cyan, dashed)
+        board.create('functiongraph', [function(x) { return 0.75 * x; }], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('functiongraph', [function(x) { return -0.75 * x; }], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // Vertices at (±4, 0)
+        board.create('point', [4, 0], {
+            name: '', size: 4, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [-4, 0], {
+            name: '', size: 4, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+    </script>
+</body>
+</html>
