@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parabolic Tunnel Clearance</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var H = 24;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-65, 33, 65, -10],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        function archY(x) {
+            return H * (1 - (x * x) / 2500);
+        }
+
+        // Parabolic arch
+        board.create('functiongraph', [
+            function(x) { return archY(x); }, -50, 50
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Ground line
+        board.create('segment', [[-55, 0], [55, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Road shading using closed curve
+        var shadePtsX = [];
+        var shadePtsYtop = [];
+        var numPts = 60;
+        var i;
+        for (i = 0; i <= numPts; i++) {
+            var xv = -25 + (50 * i / numPts);
+            shadePtsX.push(xv);
+            shadePtsYtop.push(archY(xv));
+        }
+
+        var shadeXcoords = [];
+        var shadeYcoords = [];
+        for (i = 0; i < shadePtsX.length; i++) {
+            shadeXcoords.push(shadePtsX[i]);
+            shadeYcoords.push(shadePtsYtop[i]);
+        }
+        shadeXcoords.push(25);
+        shadeYcoords.push(0);
+        shadeXcoords.push(-25);
+        shadeYcoords.push(0);
+
+        board.create('curve', [shadeXcoords, shadeYcoords], {
+            strokeWidth: 0, fillColor: '#888888', fillOpacity: 0.08,
+            fixed: true, highlight: false, isClosed: true
+        });
+
+        // Root points
+        board.create('point', [-50, 0], {
+            name: '', size: 4, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [50, 0], {
+            name: '', size: 4, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Vertex point
+        board.create('point', [0, H], {
+            name: '', size: 4, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Vertical dashed lines at road edges (x = +/-25)
+        board.create('segment', [[-25, 0], [-25, archY(-25)]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [[25, 0], [25, archY(25)]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // Horizontal dashed clearance line at y = 18
+        board.create('segment', [[-25, 18], [25, 18]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // Clearance points at (+/-25, 18)
+        board.create('point', [-25, 18], {
+            name: '', size: 4, color: '#DC2626', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [25, 18], {
+            name: '', size: 4, color: '#DC2626', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Vertical dashed line from vertex to ground
+        board.create('segment', [[0, 0], [0, H]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // "Maximum Clearance = ?" label
+        board.create('text', [3, H - 3.5, '\\text{Max Clearance} = \\, ?'], {
+            fontSize: 13, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        // "Min Clearance = 18 ft" label
+        board.create('text', [-54, 16.5, '\\text{Min Clearance}'], {
+            fontSize: 10, color: '#DC2626', useKatex: true, fixed: true, highlight: false, anchorX: 'left'
+        });
+        board.create('text', [-54, 14.5, '= 18 \\text{ ft}'], {
+            fontSize: 10, color: '#DC2626', useKatex: true, fixed: true, highlight: false, anchorX: 'left'
+        });
+
+        // "25" distance labels from origin to +/-25
+        board.create('arrow', [[-25, 1.8], [0, 1.8]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, firstArrow: { type: 2, size: 4 }
+        });
+        board.create('text', [-12.5, 3.2, '25'], {
+            fontSize: 11, color: '#444444', fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        board.create('arrow', [[0, 1.8], [25, 1.8]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, firstArrow: { type: 2, size: 4 }
+        });
+        board.create('text', [12.5, 3.2, '25'], {
+            fontSize: 11, color: '#444444', fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Road Width double-arrow
+        board.create('arrow', [[-25, -3.5], [25, -3.5]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }, firstArrow: { type: 2, size: 5 }
+        });
+        board.create('text', [0, -5.2, '\\text{Road Width} = 50 \\text{ ft}'], {
+            fontSize: 11, color: '#444444', useKatex: true, fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Arch width (100 ft) double-arrow
+        board.create('arrow', [[-50, -7], [50, -7]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }, firstArrow: { type: 2, size: 5 }
+        });
+        board.create('text', [0, -8.7, '100 \\text{ ft}'], {
+            fontSize: 12, color: '#222222', useKatex: true, fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Tick marks at roots
+        board.create('segment', [[-50, -0.6], [-50, 0.6]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[50, -0.6], [50, 0.6]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
