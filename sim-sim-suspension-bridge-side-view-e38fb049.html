@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suspension Bridge Side View</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-280, 130, 280, -30],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Constants ───────────────────────────────────────────────────
+        var TOWER_X = 200;
+        var TOWER_H = 100;
+        var CABLE_MIN = 4;
+        var A_COEFF = (TOWER_H - CABLE_MIN) / (TOWER_X * TOWER_X);
+
+        function cableY(x) {
+            return A_COEFF * x * x + CABLE_MIN;
+        }
+
+        // ── Road deck ───────────────────────────────────────────────────
+        board.create('segment', [[-240, 0], [240, 0]], {
+            strokeColor: '#555555', strokeWidth: 2.5, fixed: true, highlight: false
+        });
+
+        board.create('polygon', [[-240, 0], [240, 0], [240, -6], [-240, -6]], {
+            fillColor: '#9CA3AF', fillOpacity: 0.15,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── Towers ──────────────────────────────────────────────────────
+        board.create('segment', [[-TOWER_X, 0], [-TOWER_X, TOWER_H]], {
+            strokeColor: '#555555', strokeWidth: 3.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[TOWER_X, 0], [TOWER_X, TOWER_H]], {
+            strokeColor: '#555555', strokeWidth: 3.5, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[-TOWER_X - 6, TOWER_H], [-TOWER_X + 6, TOWER_H]], {
+            strokeColor: '#555555', strokeWidth: 3.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[TOWER_X - 6, TOWER_H], [TOWER_X + 6, TOWER_H]], {
+            strokeColor: '#555555', strokeWidth: 3.5, fixed: true, highlight: false
+        });
+
+        // ── Parabolic main cable ────────────────────────────────────────
+        board.create('functiongraph', [
+            function(x) { return cableY(x); },
+            -TOWER_X, TOWER_X
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Vertical support cables (at 50-ft intervals) ───────────────
+        var intervals = [-150, -100, -50, 0, 50, 100, 150];
+        for (var i = 0; i < intervals.length; i++) {
+            var xv = intervals[i];
+            var yv = cableY(xv);
+            board.create('segment', [[xv, 0], [xv, yv]], {
+                strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+            board.create('point', [xv, yv], {
+                name: '', size: 1.5, color: '#0EA5E9', fixed: true,
+                highlight: false, showInfobox: false
+            });
+        }
+
+        // ── Key points on cable (towers and center) ─────────────────────
+        board.create('point', [-TOWER_X, TOWER_H], {
+            name: '', size: 2, color: '#222222', fixed: true,
+            highlight: false, showInfobox: false
+        });
+        board.create('point', [TOWER_X, TOWER_H], {
+            name: '', size: 2, color: '#222222', fixed: true,
+            highlight: false, showInfobox: false
+        });
+        board.create('point', [0, CABLE_MIN], {
+            name: '', size: 3, color: '#DC2626', fixed: true,
+            highlight: false, showInfobox: false
+        });
+
+        // ── Dimension: 400 ft span (below road) ────────────────────────
+        var dimSpanY = -16;
+        board.create('arrow', [[-TOWER_X, dimSpanY], [-25, dimSpanY]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }, firstArrow: { type: 2, size: 5 }
+        });
+        board.create('arrow', [[25, dimSpanY], [TOWER_X, dimSpanY]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }, firstArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[-TOWER_X, 0], [-TOWER_X, dimSpanY + 4]], {
+            strokeColor: '#AAAAAA', strokeWidth: 0.6, dash: 3, fixed: true, highlight: false
+        });
+        board.create('segment', [[TOWER_X, 0], [TOWER_X, dimSpanY + 4]], {
+            strokeColor: '#AAAAAA', strokeWidth: 0.6, dash: 3, fixed: true, highlight: false
+        });
+        board.create('text', [0, dimSpanY, '400\\text{ ft}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Dimension: 100 ft tower height (left tower, outside) ────────
+        var dimTowerX = -TOWER_X - 22;
+        board.create('arrow', [[dimTowerX, 0], [dimTowerX, 46]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }, firstArrow: { type: 2, size: 5 }
+        });
+        board.create('arrow', [[dimTowerX, 54], [dimTowerX, TOWER_H]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }, firstArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[-TOWER_X, 0], [dimTowerX + 4, 0]], {
+            strokeColor: '#AAAAAA', strokeWidth: 0.6, dash: 3, fixed: true, highlight: false
+        });
+        board.create('segment', [[-TOWER_X, TOWER_H], [dimTowerX + 4, TOWER_H]], {
+            strokeColor: '#AAAAAA', strokeWidth: 0.6, dash: 3, fixed: true, highlight: false
+        });
+        board.create('text', [dimTowerX, 50, '100\\text{ ft}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Dimension: 4 ft at center (label ABOVE vertex, centered) ────
+        board.create('segment', [[0, CABLE_MIN], [0, 16]], {
+            strokeColor: '#DC2626', strokeWidth: 0.7, dash: 3, fixed: true, highlight: false
+        });
+        board.create('text', [0, 19, '4\\text{ ft}'], {
+            useKatex: true, fontSize: 12, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── 50-ft interval label ────────────────────────────────────────
+        var intLabelY = -9;
+        board.create('segment', [[0, intLabelY - 1.5], [50, intLabelY - 1.5]], {
+            strokeColor: '#0EA5E9', strokeWidth: 0.8, fixed: true, highlight: false
+        });
+        board.create('segment', [[0, intLabelY - 3], [0, intLabelY]], {
+            strokeColor: '#0EA5E9', strokeWidth: 0.8, fixed: true, highlight: false
+        });
+        board.create('segment', [[50, intLabelY - 3], [50, intLabelY]], {
+            strokeColor: '#0EA5E9', strokeWidth: 0.8, fixed: true, highlight: false
+        });
+        board.create('text', [25, intLabelY + 2.5, '50\\text{ ft}'], {
+            useKatex: true, fontSize: 10, color: '#0EA5E9',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── "Roadway" label ─────────────────────────────────────────────
+        board.create('text', [232, -8, '\\text{roadway}'], {
+            useKatex: true, fontSize: 11, color: '#888888',
+            anchorX: 'right', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
