@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Line through (-3,-1) and (1,7)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 4px; height: calc(100% - 8px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.8, 9.5, 3.8, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Manual grid lines at integer intervals
+        var bb = board.getBoundingBox();
+        var xMin = Math.ceil(bb[0]);
+        var xMax = Math.floor(bb[2]);
+        var yMin = Math.ceil(bb[3]);
+        var yMax = Math.floor(bb[1]);
+        var i;
+
+        for (i = xMin; i <= xMax; i++) {
+            if (i === 0) continue;
+            board.create('line', [[i, 0], [i, 1]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+        for (i = yMin; i <= yMax; i++) {
+            if (i === 0) continue;
+            board.create('line', [[0, i], [1, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Axes
+        var xAxis = board.create('axis', [[0, 0], [1, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 5 },
+            highlight: false,
+            ticks: {
+                strokeColor: '#444444',
+                label: { fontSize: 9, offset: [-2, -10] },
+                minorTicks: 0,
+                ticksDistance: 1,
+                insertTicks: false,
+                includeBoundaries: false
+            }
+        });
+
+        var yAxis = board.create('axis', [[0, 0], [0, 1]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 5 },
+            highlight: false,
+            ticks: {
+                strokeColor: '#444444',
+                label: { fontSize: 9, offset: [-14, 0] },
+                minorTicks: 0,
+                ticksDistance: 2,
+                insertTicks: false,
+                includeBoundaries: false
+            }
+        });
+
+        // Axis labels
+        board.create('text', [3.3, -0.5, '<i>x</i>'], { fontSize: 11, fixed: true, highlight: false });
+        board.create('text', [0.25, 9.0, '<i>y</i>'], { fontSize: 11, fixed: true, highlight: false });
+
+        // Base line through both points
+        var P1x = -3, P1y = -1;
+        var P2x = 1, P2y = 7;
+
+        board.create('line', [[P1x, P1y], [P2x, P2y]], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false,
+            layer: 5
+        });
+
+        // Direction unit vector
+        var dx = P2x - P1x;
+        var dy = P2y - P1y;
+        var len = Math.sqrt(dx * dx + dy * dy);
+        var ux = dx / len;
+        var uy = dy / len;
+
+        // Place directional arrow segments along the line
+        var segLen = 0.5;
+        var tValues = [-7, -4.5, -2, 0.5, 3, 5.5, 8];
+
+        for (i = 0; i < tValues.length; i++) {
+            var t = tValues[i];
+            var ax = P1x + t * ux;
+            var ay = P1y + t * uy;
+            var bx = ax + segLen * ux;
+            var by = ay + segLen * uy;
+
+            // Check midpoint is within visible bounds
+            var mx = (ax + bx) / 2;
+            var my = (ay + by) / 2;
+            if (mx > -5.6 && mx < 3.6 && my > -3.3 && my < 9.3) {
+                board.create('segment', [[ax, ay], [bx, by]], {
+                    strokeColor: '#222222',
+                    strokeWidth: 1.8,
+                    fixed: true,
+                    highlight: false,
+                    lastArrow: { type: 2, size: 5 },
+                    layer: 8
+                });
+            }
+        }
+
+        // Two given points — large, drawn on top
+        board.create('point', [P1x, P1y], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false, layer: 9
+        });
+        board.create('point', [P2x, P2y], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false, layer: 9
+        });
+    </script>
+</body>
+</html>
