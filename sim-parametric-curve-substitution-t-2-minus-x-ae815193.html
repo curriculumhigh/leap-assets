@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parametric Curve: x = 2 − t, y = t² − 1</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 10, 8, -3],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [7.6, -0.4, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 9.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        var COL = '#222222';
+
+        // Parametric curve: x = 2 - t, y = t^2 - 1
+        board.create('curve', [
+            function(t) { return 2 - t; },
+            function(t) { return t * t - 1; },
+            -2.5, 4.5
+        ], { strokeColor: COL, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // ── Direction arrows along the curve ────────────────────────────
+        function drawArrow(tVal) {
+            var x0 = 2 - tVal;
+            var y0 = tVal * tVal - 1;
+            var dx = -1;
+            var dy = 2 * tVal;
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var ux = dx / len;
+            var uy = dy / len;
+            var s = 0.18;
+            var tx = x0 + ux * s;
+            var ty = y0 + uy * s;
+            var bx = x0 - ux * s * 0.3;
+            var by = y0 - uy * s * 0.3;
+            var nx = -uy;
+            var ny = ux;
+            var hw = s * 0.32;
+            var p1 = board.create('point', [tx, ty], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [bx + nx * hw, by + ny * hw], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [bx - nx * hw, by - ny * hw], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [p1, p2, p3], {
+                fillColor: COL, fillOpacity: 0.9,
+                borders: { strokeColor: COL, strokeWidth: 0.3 },
+                vertices: { visible: false },
+                fixed: true, highlight: false, hasInnerPoints: false
+            });
+        }
+
+        drawArrow(-1.5);
+        drawArrow(0.5);
+        drawArrow(1.5);
+        drawArrow(3.5);
+
+        // ── Sample points with t-value labels ───────────────────────────
+        var samples = [
+            { t: -2, lx: 4.4,  ly: 3.4,  ax: 'left',  label: 't = -2' },
+            { t: -1, lx: 3.4,  ly: 0.5,  ax: 'left',  label: 't = -1' },
+            { t:  0, lx: 2.4,  ly: -1.0, ax: 'left',  label: 't = 0' },
+            { t:  1, lx: -0.4, ly: 0.5,  ax: 'right', label: 't = 1' },
+            { t:  2, lx: -1.4, ly: 3.4,  ax: 'right', label: 't = 2' }
+        ];
+
+        for (var i = 0; i < samples.length; i++) {
+            var s = samples[i];
+            var ptx = 2 - s.t;
+            var pty = s.t * s.t - 1;
+
+            board.create('point', [ptx, pty], {
+                name: '', size: 5, color: COL, fixed: true, highlight: false, showInfobox: false
+            });
+
+            board.create('text', [s.lx, s.ly, s.label], {
+                useKatex: true,
+                fontSize: 13,
+                color: COL,
+                fixed: true,
+                highlight: false,
+                anchorX: s.ax,
+                anchorY: 'middle'
+            });
+        }
+    </script>
+</body>
+</html>
