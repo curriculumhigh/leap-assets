@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Line through (-1,-3) and (7,1)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 4.2, 9.5, -5.2],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 4 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 4 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [9.0, -0.55, '\\textit{x}'], { fontSize: 11, useKatex: true, fixed: true, highlight: false });
+        board.create('text', [0.3, 3.8, '\\textit{y}'], { fontSize: 11, useKatex: true, fixed: true, highlight: false });
+
+        // Define the two points
+        var P1 = board.create('point', [-1, -3], {
+            name: '', size: 4, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        var P2 = board.create('point', [7, 1], {
+            name: '', size: 4, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Line through both points — no endpoint arrows
+        board.create('line', [P1, P2], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Direction vector from P1 to P2
+        var dx = 7 - (-1);
+        var dy = 1 - (-3);
+        var len = Math.sqrt(dx * dx + dy * dy);
+        var ux = dx / len;
+        var uy = dy / len;
+
+        // Chevron dimensions
+        var chevronLen = 0.4;
+        var chevronW = 0.25;
+
+        // 3 chevron marks along the line at parametric t = 0.25, 0.5, 0.75
+        var tValues = [0.25, 0.5, 0.75];
+
+        for (var i = 0; i < tValues.length; i++) {
+            (function(t) {
+                // Tip of the chevron (center point on the line)
+                var tipX = -1 + t * dx;
+                var tipY = -3 + t * dy;
+
+                // Two tail ends of the chevron (open V shape pointing in direction of travel)
+                var tailLeftX = tipX - chevronLen * ux + chevronW * uy;
+                var tailLeftY = tipY - chevronLen * uy - chevronW * ux;
+
+                var tailRightX = tipX - chevronLen * ux - chevronW * uy;
+                var tailRightY = tipY - chevronLen * uy + chevronW * ux;
+
+                // Left arm of chevron
+                board.create('segment', [[tailLeftX, tailLeftY], [tipX, tipY]], {
+                    strokeColor: '#222222',
+                    strokeWidth: 1.5,
+                    fixed: true,
+                    highlight: false
+                });
+
+                // Right arm of chevron
+                board.create('segment', [[tailRightX, tailRightY], [tipX, tipY]], {
+                    strokeColor: '#222222',
+                    strokeWidth: 1.5,
+                    fixed: true,
+                    highlight: false
+                });
+            })(tValues[i]);
+        }
+    </script>
+</body>
+</html>
