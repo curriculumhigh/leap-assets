@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complex Conjugate Reflection</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 195px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 10px;
+            box-sizing: border-box;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 4px;
+        }
+        .readout-line {
+            min-height: 24px; margin-bottom: 4px;
+        }
+        .prop-section { border-top: 1px solid #e5e7eb; padding-top: 10px; }
+        .prop-line {
+            font-size: 13px; line-height: 1.55; margin-bottom: 6px; min-height: 22px;
+        }
+        .explainer-section { border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: auto; }
+        .explainer-text { font-size: 12px; color: #888; line-height: 1.5; font-style: italic; }
+        .explainer-text .katex { font-style: normal; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; min-width: 0; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div>
+                    <div class="panel-label">Coordinates</div>
+                    <div class="readout-line" id="readout-z"></div>
+                    <div class="readout-line" id="readout-zbar"></div>
+                </div>
+                <div class="prop-section">
+                    <div class="panel-label">Properties</div>
+                    <div class="prop-line" id="prop-real"></div>
+                    <div class="prop-line" id="prop-imag"></div>
+                </div>
+                <div class="explainer-section">
+                    <div class="explainer-text" id="explainer-text"></div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ── Render explainer with inline KaTeX ─────────────────────────── */
+        (function() {
+            var el = document.getElementById('explainer-text');
+            var span1 = document.createElement('span');
+            var span2 = document.createElement('span');
+            katex.render('z', span1, { throwOnError: false });
+            katex.render('\\overline{z}', span2, { throwOnError: false });
+            el.appendChild(document.createTextNode('Drag '));
+            el.appendChild(span1);
+            el.appendChild(document.createTextNode(' and observe the position of '));
+            el.appendChild(span2);
+            el.appendChild(document.createTextNode(' relative to it.'));
+        })();
+
+        /* ── Board ──────────────────────────────────────────────────────── */
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7.5, 7.5, 7.5, -7.5],
+            axis: true,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        /* ── Real-axis accent (mirror line) ─────────────────────────────── */
+        board.create('line', [[0, 0], [1, 0]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, strokeOpacity: 0.25,
+            straightFirst: true, straightLast: true,
+            fixed: true, highlight: false, dash: 0, layer: 0
+        });
+
+        /* ── Heavier real axis overlay ──────────────────────────────────── */
+        board.create('segment', [[-7.5, 0], [7.5, 0]], {
+            strokeColor: '#444444', strokeWidth: 2.2,
+            fixed: true, highlight: false, layer: 1
+        });
+
+        /* ── Axis labels ────────────────────────────────────────────────── */
+        board.create('text', [-5.6, 0.7, 'Real'], {
+            fontSize: 14, color: '#444444', fixed: true, highlight: false,
+            cssStyle: 'font-style:italic; font-weight:600;'
+        });
+        board.create('text', [0.35, 5.8, 'Imaginary'], {
+            fontSize: 14, color: '#444444', fixed: true, highlight: false,
+            cssStyle: 'font-style:italic; font-weight:600;'
+        });
+
+        /* ── "mirror line" caption ──────────────────────────────────────── */
+        board.create('text', [-2.6, -1.0, 'mirror line'], {
+            fontSize: 11, color: '#999999', fixed: true, highlight: false,
+            cssStyle: 'font-style:italic;'
+        });
+
+        /* ── Colors ─────────────────────────────────────────────────────── */
+        var COL_Z = '#2563EB';
+        var COL_ZBAR = '#059669';
+        var COL_REF = '#DC2626';
+        var COL_REAL_PROP = '#7C3AED';
+        var COL_IMAG_PROP = '#DC2626';
+
+        /* ── Draggable point z ──────────────────────────────────────────── */
+        var z = board.create('point', [5, 2], {
+            name: '',
+            face: '<>', size: 5, color: COL_Z,
+            snapToGrid: true, snapSizeX: 1, snapSizeY: 1,
+            showInfobox: false,
+            highlight: true,
+            highlightFillColor: COL_Z,
+            highlightStrokeColor: COL_Z
+        });
+
+        /* z label — KaTeX */
+        board.create('text', [
+            function() { return z.X() + 0.35; },
+            function() { return z.Y() + 0.45; },
+            'z'
+        ], {
+            fontSize: 16, color: COL_Z, fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        /* ── Computed point z̄ ───────────────────────────────────────────── */
+        var zBar = board.create('point', [
+            function() { return z.X(); },
+            function() { return -z.Y(); }
+        ], {
+            name: '',
+            size: 5, color: COL_ZBAR,
+            fixed: true, highlight: false,
+            showInfobox: false
+        });
+
+        /* z̄ label — KaTeX */
+        board.create('text', [
+            function() { return zBar.X() + 0.35; },
+            function() { return zBar.Y() - 0.6; },
+            '\\overline{z}'
+        ], {
+            fontSize: 16, color: COL_ZBAR, fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        /* ── Dashed connector z → z̄ ─────────────────────────────────────── */
+        var connector = board.create('segment', [z, zBar], {
+            strokeColor: COL_REF, strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        /* ── Gap annotations (distance from real axis) ──────────────────── */
+        var gapLabelTop = board.create('text', [
+            function() { return z.X() + 0.45; },
+            function() { return z.Y() / 2; },
+            function() {
+                var b = Math.abs(Math.round(z.Y()));
+                return b === 0 ? '' : String(b);
+            }
+        ], {
+            fontSize: 13, color: COL_REF, fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle',
+            cssStyle: 'font-weight:600;'
+        });
+
+        var gapLabelBot = board.create('text', [
+            function() { return zBar.X() + 0.45; },
+            function() { return zBar.Y() / 2; },
+            function() {
+                var b = Math.abs(Math.round(z.Y()));
+                return b === 0 ? '' : String(b);
+            }
+        ], {
+            fontSize: 13, color: COL_REF, fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle',
+            cssStyle: 'font-weight:600;'
+        });
+
+        /* ── Small tick mark on dashed segment at real axis ─────────────── */
+        var tickMark = board.create('segment', [
+            [function() { return z.X() - 0.2; }, 0],
+            [function() { return z.X() + 0.2; }, 0]
+        ], {
+            strokeColor: COL_REF, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        /* ── Visibility: hide connector & gaps when z is on real axis ───── */
+        function updateVisibility() {
+            var b = Math.round(z.Y());
+            var onAxis = (b === 0);
+            connector.setAttribute({ visible: !onAxis });
+            gapLabelTop.setAttribute({ visible: !onAxis });
+            gapLabelBot.setAttribute({ visible: !onAxis });
+            tickMark.setAttribute({ visible: !onAxis });
+        }
+
+        z.on('drag', updateVisibility);
+
+        /* ── Panel updates ──────────────────────────────────────────────── */
+        function fmtComplexLatex(a, b) {
+            var result = '';
+            if (b === 0) {
+                result = String(a);
+            } else if (a === 0) {
+                if (b === 1) result = 'i';
+                else if (b === -1) result = '-i';
+                else result = b + 'i';
+            } else {
+                var absB = Math.abs(b);
+                var bPart = (absB === 1) ? 'i' : absB + 'i';
+                if (b > 0) {
+                    result = a + ' + ' + bPart;
+                } else {
+                    result = a + ' - ' + bPart;
+                }
+            }
+            return result;
+        }
+
+        function updatePanel() {
+            var a = Math.round(z.X());
+            var b = Math.round(z.Y());
+
+            /* z and z̄ readouts */
+            katex.render(
+                '\\color{' + COL_Z + '}{z = ' + fmtComplexLatex(a, b) + '}',
+                document.getElementById('readout-z'),
+                { throwOnError: false }
+            );
+            katex.render(
+                '\\color{' + COL_ZBAR + '}{\\overline{z} = ' + fmtComplexLatex(a, -b) + '}',
+                document.getElementById('readout-zbar'),
+                { throwOnError: false }
+            );
+
+            /* Real part */
+            katex.render(
+                '\\color{' + COL_REAL_PROP + '}{\\text{Real: } ' + a + ' \\text{ (same)}}',
+                document.getElementById('prop-real'),
+                { throwOnError: false }
+            );
+
+            /* Imaginary part */
+            var imagLatex;
+            if (b === 0) {
+                imagLatex = '\\color{' + COL_IMAG_PROP + '}{\\text{Imag: } 0 \\text{ (both)}}';
+            } else {
+                imagLatex = '\\color{' + COL_IMAG_PROP + '}{\\text{Imag: } ' + b + ' \\text{ and } ' + (-b) + '}';
+            }
+            katex.render(imagLatex, document.getElementById('prop-imag'), { throwOnError: false });
+        }
+
+        board.on('update', updatePanel);
+
+        /* Initial state */
+        updateVisibility();
+        updatePanel();
+    </script>
+</body>
+</html>

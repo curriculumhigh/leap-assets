@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Argand Plane — Complex Numbers</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 190px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 4px;
+        }
+        .readout-line { min-height: 26px; margin-bottom: 4px; }
+        .fixed-section { border-top: 1px solid #e5e7eb; padding-top: 10px; }
+        .fixed-line { min-height: 22px; margin-bottom: 3px; }
+        .caption {
+            border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: auto;
+            font-size: 11px; color: #999; line-height: 1.5;
+        }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-section">
+                    <div class="panel-label">Point P (drag me)</div>
+                    <div class="readout-line" id="readout-p"></div>
+                    <div class="readout-line" id="readout-re"></div>
+                    <div class="readout-line" id="readout-im"></div>
+                </div>
+                <div class="panel-section fixed-section">
+                    <div class="panel-label">Fixed points</div>
+                    <div class="fixed-line" id="fixed-z1"></div>
+                    <div class="fixed-line" id="fixed-z2"></div>
+                </div>
+                <div class="caption">
+                    Drag <b>P</b>. Its horizontal position is the real part; its vertical position is the imaginary part.
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ── Colors ─────────────────────────────────────────────────── */
+        var COL_Z1 = '#2563EB';
+        var COL_Z2 = '#059669';
+        var COL_P  = '#D97706';
+        var COL_RE = '#DC2626';   // vertical drop → real part
+        var COL_IM = '#7C3AED';   // horizontal drop → imaginary part
+        var COL_GRAY_DROP = '#AAAAAA';
+
+        /* ── Board ──────────────────────────────────────────────────── */
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 7, 7, -7],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        /* ── Axis labels (custom: Real / Imaginary) ─────────────────── */
+        board.create('text', [5.0, 0.6, '\\text{Real}'], {
+            fontSize: 14, fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [0.3, 6.5, '\\text{Imaginary}'], {
+            fontSize: 14, fixed: true, highlight: false, useKatex: true
+        });
+
+        /* ── Helper: gray dashed drop lines for fixed points ────────── */
+        function makeFixedDrops(px, py) {
+            // vertical drop: (px, py) → (px, 0)
+            board.create('segment', [[px, py], [px, 0]], {
+                strokeColor: COL_GRAY_DROP, strokeWidth: 0.8, dash: 2, fixed: true, highlight: false
+            });
+            // horizontal drop: (px, py) → (0, py)
+            board.create('segment', [[px, py], [0, py]], {
+                strokeColor: COL_GRAY_DROP, strokeWidth: 0.8, dash: 2, fixed: true, highlight: false
+            });
+            // small dots on axes
+            board.create('point', [px, 0], {
+                name: '', size: 1.5, color: COL_GRAY_DROP, fixed: true, highlight: false, showInfobox: false
+            });
+            board.create('point', [0, py], {
+                name: '', size: 1.5, color: COL_GRAY_DROP, fixed: true, highlight: false, showInfobox: false
+            });
+        }
+
+        /* ── Fixed point z1 = 2 + 3i ────────────────────────────────── */
+        makeFixedDrops(2, 3);
+        board.create('point', [2, 3], {
+            name: '', size: 5, color: COL_Z1, fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [2.4, 3.5, 'z_1 = 2+3i'], {
+            fontSize: 13, color: COL_Z1, useKatex: true, fixed: true, highlight: false
+        });
+
+        /* ── Fixed point z2 = -3 - 4i ───────────────────────────────── */
+        makeFixedDrops(-3, -4);
+        board.create('point', [-3, -4], {
+            name: '', size: 5, color: COL_Z2, fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [-6.2, -4.6, 'z_2 = -3-4i'], {
+            fontSize: 13, color: COL_Z2, useKatex: true, fixed: true, highlight: false
+        });
+
+        /* ── Draggable point P ──────────────────────────────────────── */
+        var P = board.create('point', [4, 2], {
+            name: '', face: '<>', size: 5, color: COL_P,
+            snapToGrid: true, snapSizeX: 1, snapSizeY: 1,
+            showInfobox: false,
+            highlightFillColor: COL_P, highlightStrokeColor: COL_P
+        });
+
+        /* P label — static KaTeX, moves with point */
+        board.create('text', [
+            function() { return P.X() + 0.4; },
+            function() { return P.Y() + 0.5; },
+            'P'
+        ], {
+            fontSize: 14, color: COL_P, useKatex: true, fixed: true, highlight: false
+        });
+
+        /* ── Colored drop lines for P ───────────────────────────────── */
+        // Vertical drop (red) → real axis
+        var dropVert = board.create('segment', [
+            [function() { return P.X(); }, function() { return P.Y(); }],
+            [function() { return P.X(); }, 0]
+        ], {
+            strokeColor: COL_RE, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // Horizontal drop (purple) → imaginary axis
+        var dropHoriz = board.create('segment', [
+            [function() { return P.X(); }, function() { return P.Y(); }],
+            [0, function() { return P.Y(); }]
+        ], {
+            strokeColor: COL_IM, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // Small dots where drops meet axes
+        board.create('point', [function() { return P.X(); }, 0], {
+            name: '', size: 2, color: COL_RE, fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [0, function() { return P.Y(); }], {
+            name: '', size: 2, color: COL_IM, fixed: true, highlight: false, showInfobox: false
+        });
+
+        /* ── Panel update ───────────────────────────────────────────── */
+        function formatComplex(a, b) {
+            var real = Math.round(a);
+            var imag = Math.round(b);
+            if (imag === 0) return String(real);
+            var imagPart = '';
+            if (imag === 1) imagPart = '+i';
+            else if (imag === -1) imagPart = '-i';
+            else if (imag > 0) imagPart = '+' + imag + 'i';
+            else imagPart = imag + 'i';
+            if (real === 0) {
+                if (imag === 1) return 'i';
+                if (imag === -1) return '-i';
+                return imag + 'i';
+            }
+            return real + imagPart;
+        }
+
+        function updatePanel() {
+            var a = Math.round(P.X());
+            var b = Math.round(P.Y());
+
+            katex.render(
+                'P = ' + formatComplex(a, b),
+                document.getElementById('readout-p'),
+                { throwOnError: false }
+            );
+
+            katex.render(
+                '\\color{' + COL_RE + '}{\\operatorname{Re}(P) = ' + a + '}',
+                document.getElementById('readout-re'),
+                { throwOnError: false }
+            );
+
+            katex.render(
+                '\\color{' + COL_IM + '}{\\operatorname{Im}(P) = ' + b + '}',
+                document.getElementById('readout-im'),
+                { throwOnError: false }
+            );
+        }
+
+        /* Fixed-point labels in panel (render once) */
+        katex.render(
+            '\\color{' + COL_Z1 + '}{z_1 = 2 + 3i}',
+            document.getElementById('fixed-z1'),
+            { throwOnError: false }
+        );
+        katex.render(
+            '\\color{' + COL_Z2 + '}{z_2 = -3 - 4i}',
+            document.getElementById('fixed-z2'),
+            { throwOnError: false }
+        );
+
+        board.on('update', updatePanel);
+        updatePanel();
+    </script>
+</body>
+</html>
