@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cycloid Construction Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var a = 1.6;
+        var theta = 110 * Math.PI / 180;
+
+        /* ── Key points ──────────────────────────────────────────────── */
+        var Cx = a * theta, Cy = a;
+        var Dx = Cx, Dy = 0;
+        var Px = a * (theta - Math.sin(theta));
+        var Py = a * (1 - Math.cos(theta));
+        var Ax = Px, Ay = Cy;
+        var Bx = Px, By = 0;
+
+        /* x-positions for axis tick labels */
+        var xPiA = a * Math.PI;
+        var x3PiA = 3 * a * Math.PI;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.4, 5.2, 22.0, -2.0],
+            axis: false, grid: false,
+            keepAspectRatio: true,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false }
+        });
+
+        /* ── x-axis ──────────────────────────────────────────────────── */
+        board.create('arrow', [[-0.8, 0], [21.5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        board.create('text', [21.3, -0.35, 'x'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        /* x-axis tick marks and labels */
+        board.create('segment', [[xPiA, -0.12], [xPiA, 0.12]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [xPiA, -0.5, '\\pi a'], {
+            useKatex: true, fontSize: 11, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('segment', [[x3PiA, -0.12], [x3PiA, 0.12]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [x3PiA, -0.5, '3\\pi a'], {
+            useKatex: true, fontSize: 11, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        /* ── y-axis ──────────────────────────────────────────────────── */
+        board.create('arrow', [[0, -0.4], [0, 4.8]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        board.create('text', [0.25, 4.6, 'y'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            fixed: true, highlight: false
+        });
+
+        /* y-axis ticks */
+        var tickLen = 0.12;
+        board.create('segment', [[-tickLen, a], [tickLen, a]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [-0.4, a, 'a'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'right', anchorY: 'middle'
+        });
+        board.create('segment', [[-tickLen, 2 * a], [tickLen, 2 * a]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [-0.4, 2 * a, '2a'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'right', anchorY: 'middle'
+        });
+
+        /* Dashed horizontal guide lines */
+        board.create('segment', [[0, a], [21, a]], {
+            strokeColor: '#D1D5DB', strokeWidth: 0.4, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[0, 2 * a], [21, 2 * a]], {
+            strokeColor: '#D1D5DB', strokeWidth: 0.4, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        /* Origin */
+        board.create('text', [-0.35, -0.45, 'O'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            fixed: true, highlight: false
+        });
+
+        /* ── Full cycloid curve (0 to 4π) ────────────────────────────── */
+        board.create('curve', [
+            function(t) { return a * (t - Math.sin(t)); },
+            function(t) { return a * (1 - Math.cos(t)); },
+            0, 4 * Math.PI
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        /* ── Coordinate landmarks ────────────────────────────────────── */
+        var landmarks = [
+            { t: Math.PI, label: '(\\pi a,\\, 2a)', offX: 0.9, offY: 0.4 },
+            { t: 2 * Math.PI, label: '(2\\pi a,\\, 0)', offX: 0, offY: -0.9 },
+            { t: 3 * Math.PI, label: '(3\\pi a,\\, 2a)', offX: 1.4, offY: 0.45 },
+            { t: 4 * Math.PI, label: '(4\\pi a,\\, 0)', offX: 0, offY: -0.9 }
+        ];
+        for (var i = 0; i < landmarks.length; i++) {
+            var lm = landmarks[i];
+            var lx = a * (lm.t - Math.sin(lm.t));
+            var ly = a * (1 - Math.cos(lm.t));
+            board.create('point', [lx, ly], {
+                name: '', size: 2.5, color: '#222222', fixed: true, highlight: false
+            });
+            board.create('text', [lx + lm.offX, ly + lm.offY, lm.label], {
+                useKatex: true, fontSize: 11, color: '#222222',
+                fixed: true, highlight: false,
+                anchorX: 'middle',
+                anchorY: (lm.offY > 0) ? 'bottom' : 'top'
+            });
+        }
+
+        /* ── Circle (filled light blue) ──────────────────────────────── */
+        var ptCtr = board.create('point', [Cx, Cy], { visible: false, fixed: true, name: '' });
+        board.create('circle', [ptCtr, a], {
+            strokeColor: '#555555', strokeWidth: 1.8,
+            fillColor: '#DBEAFE', fillOpacity: 0.5,
+            fixed: true, highlight: false
+        });
+
+        /* ── Construction lines (dashed cyan) ────────────────────────── */
+        board.create('segment', [[Cx, Cy], [Dx, Dy]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[Ax, Ay], [Cx, Cy]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[Px, Py], [Ax, Ay]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[Ax, Ay], [Bx, By]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        /* ── Solid segments ──────────────────────────────────────────── */
+        board.create('segment', [[Cx, Cy], [Px, Py]], {
+            strokeColor: '#222222', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[0, 0], [Dx, 0]], {
+            strokeColor: '#222222', strokeWidth: 2.0,
+            fixed: true, highlight: false
+        });
+
+        /* ── Angle θ at C ────────────────────────────────────────────── */
+        var angCD = -Math.PI / 2;
+        var arcR = 0.42;
+        var arcEnd = angCD - theta;
+
+        board.create('curve', [
+            function(t) { return Cx + arcR * Math.cos(t); },
+            function(t) { return Cy + arcR * Math.sin(t); },
+            arcEnd, angCD
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        var angMid = (angCD + arcEnd) / 2;
+        board.create('text', [
+            Cx + (arcR + 0.35) * Math.cos(angMid),
+            Cy + (arcR + 0.35) * Math.sin(angMid),
+            '\\theta'
+        ], {
+            useKatex: true, fontSize: 13, color: '#DC2626',
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        /* ── Right-angle marker at A (larger, high layer, dark) ──────── */
+        var sq = 0.25;
+        board.create('segment', [[Ax + sq, Ay], [Ax + sq, Ay + sq]], {
+            strokeColor: '#222222', strokeWidth: 1.5,
+            fixed: true, highlight: false, layer: 9
+        });
+        board.create('segment', [[Ax + sq, Ay + sq], [Ax, Ay + sq]], {
+            strokeColor: '#222222', strokeWidth: 1.5,
+            fixed: true, highlight: false, layer: 9
+        });
+
+        /* ── Visible points ──────────────────────────────────────────── */
+        board.create('point', [0, 0], { name: '', size: 2.5, color: '#222222', fixed: true, highlight: false });
+        board.create('point', [Dx, Dy], { name: '', size: 2.5, color: '#222222', fixed: true, highlight: false });
+        board.create('point', [Cx, Cy], { name: '', size: 2.5, color: '#222222', fixed: true, highlight: false });
+        board.create('point', [Px, Py], { name: '', size: 3, color: '#DC2626', fixed: true, highlight: false, layer: 9 });
+        board.create('point', [Ax, Ay], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        board.create('point', [Bx, By], { name: '', size: 2.5, color: '#222222', fixed: true, highlight: false });
+
+        /* ── Point labels ────────────────────────────────────────────── */
+        board.create('text', [Px - 0.15, Py + 0.35, 'P = (x,\\, y)'], {
+            useKatex: true, fontSize: 12, color: '#DC2626',
+            fixed: true, highlight: false, anchorX: 'right'
+        });
+        board.create('text', [Cx + 0.25, Cy + 0.35, 'C'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Ax - 0.25, Ay + 0.15, 'A'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'right'
+        });
+        board.create('text', [Bx, -0.45, 'B'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [Dx + 0.25, -0.45, 'D'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'left'
+        });
+
+        /* ── Dimension labels ────────────────────────────────────────── */
+        var bracketY = -0.8;
+        board.create('segment', [[0, bracketY + 0.1], [0, bracketY - 0.1]], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[0, bracketY], [Dx, bracketY]], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[Dx, bracketY + 0.1], [Dx, bracketY - 0.1]], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        /* a label on CD */
+        board.create('text', [Cx + 0.3, Cy / 2, 'a'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            fixed: true, highlight: false
+        });
+
+        /* ── Parametric equations text box ────────────────────────────── */
+        board.create('text', [7.0, 4.5, '\\text{Cycloid:}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'left'
+        });
+        board.create('text', [7.0, 3.9, 'x = a(\\theta - \\sin\\theta),\\quad y = a(1 - \\cos\\theta)'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'left'
+        });
+    </script>
+</body>
+</html>
