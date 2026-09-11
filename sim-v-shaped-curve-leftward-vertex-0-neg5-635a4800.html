@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V-shaped curve opening leftward</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4.5, 1.5, 1.5, -9.5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    firstArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 8, anchorY: 'top', offset: [0, -3] },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false,
+                        drawZero: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    firstArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 8, anchorX: 'right', offset: [-5, 0] },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false,
+                        drawZero: false
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [1.1, -0.35, 'x'], { useKatex: true, fontSize: 10, fixed: true, highlight: false });
+        board.create('text', [0.2, 1.1, 'y'], { useKatex: true, fontSize: 10, fixed: true, highlight: false });
+
+        // Upper-left branch: t from 0 to 4 → x = -t, y = t - 5
+        board.create('curve', [
+            function(t) { return -t; },
+            function(t) { return t - 5; },
+            0, 4
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Lower-left branch: t from -4 to 0 → x = t, y = t - 5
+        board.create('curve', [
+            function(t) { return t; },
+            function(t) { return t - 5; },
+            -4, 0
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Orientation arrows on upper-left branch (direction of increasing t: upward-left)
+        // Arrow 1: near t ~ 0.8
+        board.create('segment', [[-0.7, -4.3], [-1.1, -3.9]], {
+            strokeColor: '#222222', strokeWidth: 1.5,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        // Arrow 2: near t ~ 2
+        board.create('segment', [[-1.8, -3.2], [-2.3, -2.7]], {
+            strokeColor: '#222222', strokeWidth: 1.5,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        // Arrow 3: near t ~ 3.3
+        board.create('segment', [[-3.1, -1.9], [-3.5, -1.5]], {
+            strokeColor: '#222222', strokeWidth: 1.5,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        // Key points (no labels) — small dots at grid intersections
+        var keyPoints = [
+            [0, -5],
+            [-1, -4],
+            [-2, -3],
+            [-3, -2],
+            [-1, -6],
+            [-2, -7],
+            [-3, -8]
+        ];
+
+        for (var i = 0; i < keyPoints.length; i++) {
+            board.create('point', keyPoints[i], {
+                name: '', size: 2.5, color: '#222222', fixed: true,
+                highlight: false, showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
