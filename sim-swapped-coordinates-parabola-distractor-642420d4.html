@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distractor — Swapped Coordinates Parabola</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 19, 7.5, -3],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 8 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 4
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [6.8, -1.2, '<i>x</i>'], { fontSize: 11, fixed: true, highlight: false });
+        board.create('text', [0.4, 17.8, '<i>y</i>'], { fontSize: 11, fixed: true, highlight: false });
+
+        // The swapped-coordinate points: (5,0),(3,1),(1,4),(-1,9),(-3,16)
+        // Parametrically: t from 0 to 4, x(t) = 5 - 2t, y(t) = t^2
+
+        // Smooth curve through the points
+        board.create('curve', [
+            function(t) { return 5 - 2 * t; },
+            function(t) { return t * t; },
+            0, 4
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Key points (no labels)
+        var pts = [[5, 0], [3, 1], [1, 4], [-1, 9], [-3, 16]];
+        for (var i = 0; i < pts.length; i++) {
+            board.create('point', pts[i], {
+                name: '',
+                size: 3,
+                color: '#222222',
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+        }
+
+        // Orientation arrows along the curve (direction: t increasing, so (5,0) → (-3,16))
+        function arrowAt(t, dt) {
+            var x1 = 5 - 2 * t;
+            var y1 = t * t;
+            var x2 = 5 - 2 * (t + dt);
+            var y2 = (t + dt) * (t + dt);
+            board.create('arrow', [[x1, y1], [x2, y2]], {
+                strokeColor: '#222222',
+                strokeWidth: 1.6,
+                lastArrow: { type: 2, size: 5 },
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        arrowAt(1.0, 0.35);
+        arrowAt(2.8, 0.35);
+
+    </script>
+</body>
+</html>
