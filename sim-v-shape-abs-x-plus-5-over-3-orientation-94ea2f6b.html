@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V-shaped curve y=|x+5|/3</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-11.5, 4.2, 2.5, -1.8],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 4 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 8, anchorX: 'middle', offset: [0, -3] },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false,
+                        drawZero: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 4 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 8, anchorX: 'right', offset: [-4, 0] },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false,
+                        drawZero: false
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [1.9, -0.35, '<i>x</i>'], { fontSize: 10, fixed: true, highlight: false });
+        board.create('text', [0.2, 3.8, '<i>y</i>'], { fontSize: 10, fixed: true, highlight: false });
+
+        // Curve: y = |x + 5| / 3
+        // Left branch: for x <= -5, y = -(x+5)/3
+        board.create('functiongraph', [
+            function(x) { return (-x - 5) / 3; },
+            -11.5, -5
+        ], { strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Right branch: for x >= -5, y = (x+5)/3
+        board.create('functiongraph', [
+            function(x) { return (x + 5) / 3; },
+            -5, 2.5
+        ], { strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Key points (unlabeled)
+        // Vertex (-5, 0)
+        board.create('point', [-5, 0], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Left branch readable points
+        board.create('point', [-8, 1], {
+            name: '', size: 2.5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [-11, 2], {
+            name: '', size: 2.5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Right branch readable points
+        board.create('point', [-2, 1], {
+            name: '', size: 2.5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [1, 2], {
+            name: '', size: 2.5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Orientation arrows pointing to the right (direction of increasing parameter)
+        // Arrow on left branch: moving rightward toward vertex
+        var ax1 = -9.5;
+        var ay1 = (-ax1 - 5) / 3;
+        var ax1b = -8.9;
+        var ay1b = (-ax1b - 5) / 3;
+        board.create('arrow', [[ax1, ay1], [ax1b, ay1b]], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        // Arrow on right branch: moving rightward away from vertex
+        var ax2 = -0.5;
+        var ay2 = (ax2 + 5) / 3;
+        var ax2b = 0.1;
+        var ay2b = (ax2b + 5) / 3;
+        board.create('arrow', [[ax2, ay2], [ax2b, ay2b]], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+    </script>
+</body>
+</html>
