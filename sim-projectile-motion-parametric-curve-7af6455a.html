@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projectile Motion — v₀ = 96 ft/s, θ = 60°</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white; border-radius: 8px; padding: 10px;
+            height: calc(100% - 20px); position: relative;
+        }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+            <div class="coord-tooltip" id="tooltip"></div>
+        </div>
+    </div>
+
+    <script>
+        // ── Parameters ──────────────────────────────────────────────────
+        var v0 = 96;
+        var theta = 60 * Math.PI / 180;
+        var vx = v0 * Math.cos(theta);          // 48
+        var vy = v0 * Math.sin(theta);           // 48√3 ≈ 83.138
+        var g = 32;                               // gravity (ft/s²), so ½g = 16
+
+        // Key times
+        var tMax = vy / g;
+        var tLand = 2 * vy / g;
+
+        // Key coordinates
+        var xMax = vx * tMax;
+        var yMax = vy * tMax - 16 * tMax * tMax;  // 108
+        var xLand = vx * tLand;                    // ≈ 249.42
+
+        // ── Board ───────────────────────────────────────────────────────
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-25, 130, 300, -25],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 50
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 20
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // ── Axis labels ─────────────────────────────────────────────────
+        board.create('text', [288, -8, 'x \\text{ (ft)}'], {
+            fontSize: 13, fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [6, 125, 'y \\text{ (ft)}'], {
+            fontSize: 13, fixed: true, highlight: false, useKatex: true
+        });
+
+        // ── Parametric curve (trajectory) ───────────────────────────────
+        board.create('curve', [
+            function(t) { return vx * t; },
+            function(t) { return vy * t - 16 * t * t; },
+            0, tLand
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Reference lines ─────────────────────────────────────────────
+        board.create('segment', [[xMax, yMax], [xMax, 0]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        board.create('segment', [[0, yMax], [xMax, yMax]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [-18, yMax, '108'], {
+            fontSize: 11, color: '#DC2626', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Key points ──────────────────────────────────────────────────
+        var COL_PT = '#222222';
+
+        var ptLaunch = board.create('point', [0, 0], {
+            name: '', size: 5, color: COL_PT, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_PT, highlightStrokeColor: COL_PT
+        });
+
+        var ptMax = board.create('point', [xMax, yMax], {
+            name: '', size: 5, color: '#DC2626', fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: '#DC2626', highlightStrokeColor: '#DC2626'
+        });
+
+        var ptLand = board.create('point', [xLand, 0], {
+            name: '', size: 5, color: COL_PT, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_PT, highlightStrokeColor: COL_PT
+        });
+
+        // ── KaTeX Tooltip ───────────────────────────────────────────────
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function formatVal(v) {
+            if (Math.abs(v - Math.round(v)) < 0.01) return String(Math.round(v));
+            return v.toFixed(2);
+        }
+
+        function showTooltip(pt, color, customLatex) {
+            var latex;
+            if (customLatex) {
+                latex = '\\color{' + color + '}{' + customLatex + '}';
+            } else {
+                latex = '\\color{' + color + '}{\\left(' + formatVal(pt.X())
+                      + ',\\,' + formatVal(pt.Y()) + '\\right)}';
+            }
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [pt.X(), pt.Y()], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+        ptLaunch.on('over', function() {
+            showTooltip(ptLaunch, COL_PT, '(0,\\, 0)');
+        });
+        ptLaunch.on('out', hideTooltip);
+
+        ptMax.on('over', function() {
+            showTooltip(ptMax, '#DC2626',
+                '\\left(' + formatVal(xMax) + ',\\, 108\\right)');
+        });
+        ptMax.on('out', hideTooltip);
+
+        ptLand.on('over', function() {
+            showTooltip(ptLand, COL_PT,
+                '\\left(' + formatVal(xLand) + ',\\, 0\\right)');
+        });
+        ptLand.on('out', hideTooltip);
+
+    </script>
+</body>
+</html>
