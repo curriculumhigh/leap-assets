@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distance Triangle on the Argand Plane</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 660px; margin: 0; padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .sim-layout {
+            display: flex; gap: 12px; height: 100%;
+        }
+        .left-panel {
+            width: 180px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .explainer-text {
+            font-size: 13px; color: #444; line-height: 1.55;
+        }
+        .board-wrapper {
+            flex: 1; background: white; border-radius: 8px; padding: 10px;
+            height: calc(100% - 20px);
+        }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="explainer-text">
+                    The horizontal leg is the gap between the real parts; the vertical leg is the gap
+                    between the imaginary parts. <span id="cap-d"></span> is the distance between
+                    <span id="cap-w1"></span> and <span id="cap-w2"></span>.
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 10, 8, -1.5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // ── Axis labels ──────────────────────────────────────────────────
+        board.create('text', [6.0, -0.65, '\\text{Real}'], {
+            fontSize: 14, color: '#444444', fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [0.3, 8.5, '\\text{Imaginary}'], {
+            fontSize: 14, color: '#444444', fixed: true, highlight: false, useKatex: true
+        });
+
+        // ── Points ───────────────────────────────────────────────────────
+        var w1 = board.create('point', [5, 8], {
+            name: '', size: 5, color: '#222222', fixed: true,
+            highlight: false, showInfobox: false
+        });
+
+        var w2 = board.create('point', [-3, 2], {
+            name: '', size: 5, color: '#222222', fixed: true,
+            highlight: false, showInfobox: false
+        });
+
+        var C = board.create('point', [5, 2], {
+            name: '', size: 2, color: '#222222', fixed: true,
+            highlight: false, showInfobox: false
+        });
+
+        // ── Point labels ─────────────────────────────────────────────────
+        board.create('text', [4.9, 8.6, 'w_1 = 5+8i'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false, useKatex: true,
+            anchorX: 'left', anchorY: 'middle'
+        });
+
+        board.create('text', [-3.7, 1.25, 'w_2 = -3+2i'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false, useKatex: true,
+            anchorX: 'left', anchorY: 'middle'
+        });
+
+        // ── Hypotenuse (solid, primary weight) ──────────────────────────
+        board.create('segment', [w2, w1], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        // "D" label — above-left of midpoint
+        board.create('text', [-1.4, 5.4, 'D'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, useKatex: true,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ── Horizontal leg (dashed, construction cyan) ───────────────────
+        board.create('segment', [w2, C], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── Vertical leg (dashed, construction cyan) ─────────────────────
+        board.create('segment', [C, w1], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at C ──────────────────────────────────────
+        var sqSize = 0.45;
+        board.create('segment', [[5, 2 + sqSize], [5 - sqSize, 2 + sqSize]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[5 - sqSize, 2 + sqSize], [5 - sqSize, 2]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        /* Caption math */
+        katex.render('D',   document.getElementById('cap-d'),  { throwOnError: false });
+        katex.render('w_1', document.getElementById('cap-w1'), { throwOnError: false });
+        katex.render('w_2', document.getElementById('cap-w2'), { throwOnError: false });
+    </script>
+</body>
+</html>
