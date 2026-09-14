@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distance on the Argand Plane</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 210px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 10px;
+            overflow-y: auto;
+            font-size: 13px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 4px;
+        }
+        .readout-line { line-height: 1.6; }
+        .sep { border-top: 1px solid #e5e7eb; margin: 4px 0; }
+        .accent { color: #DC2626; font-weight: 700; }
+        .caption {
+            font-size: 11px; color: #777; line-height: 1.5;
+            border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: auto;
+        }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; min-width: 0; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div>
+                    <div class="panel-label">Points</div>
+                    <div class="readout-line" id="r-w1"></div>
+                    <div class="readout-line" id="r-w2"></div>
+                </div>
+                <div class="sep"></div>
+                <div>
+                    <div class="panel-label">Triangle legs</div>
+                    <div class="readout-line" id="r-hleg"></div>
+                    <div class="readout-line" id="r-vleg"></div>
+                </div>
+                <div class="sep"></div>
+                <div>
+                    <div class="panel-label">From the triangle</div>
+                    <div class="readout-line" id="r-pyth"></div>
+                    <div class="readout-line accent" id="r-dist"></div>
+                </div>
+                <div class="caption">
+                    Drag either point. However you move them, the hypotenuse of the triangle equals the distance between the two complex numbers.
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7.5, 7.5, 7.5, -7.5],
+            axis: true,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [5.4, -1.25, '\\text{Real}'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+        board.create('text', [0.3, 5.8, '\\text{Imaginary}'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+
+        var COL_W1 = '#2563EB';
+        var COL_W2 = '#059669';
+        var COL_PRI = '#222222';
+        var COL_ACCENT = '#DC2626';
+
+        // ── Draggable points ────────────────────────────────────────────
+        var w1 = board.create('point', [4, 5], {
+            name: 'w_1',
+            face: '<>', size: 5, color: COL_W1,
+            snapToGrid: true, snapSizeX: 1, snapSizeY: 1,
+            showInfobox: false,
+            label: { fontSize: 14, color: COL_W1, offset: [12, 6], useKatex: true }
+        });
+
+        var w2 = board.create('point', [-3, 1], {
+            name: 'w_2',
+            face: '<>', size: 5, color: COL_W2,
+            snapToGrid: true, snapSizeX: 1, snapSizeY: 1,
+            showInfobox: false,
+            label: { fontSize: 14, color: COL_W2, offset: [-26, 14], useKatex: true }
+        });
+
+        // ── Corner point C = (Re(w1), Im(w2)) ──────────────────────────
+        var C = board.create('point', [
+            function() { return w1.X(); },
+            function() { return w2.Y(); }
+        ], {
+            name: '', visible: false, fixed: true, showInfobox: false
+        });
+
+        // ── Helper: are the two points at the same location? ────────────
+        function isDegenerate() {
+            return (Math.abs(w1.X() - w2.X()) < 0.01 && Math.abs(w1.Y() - w2.Y()) < 0.01);
+        }
+        function hLeg() { return Math.abs(w1.X() - w2.X()); }
+        function vLeg() { return Math.abs(w1.Y() - w2.Y()); }
+
+        // ── Hypotenuse segment ──────────────────────────────────────────
+        board.create('segment', [w1, w2], {
+            strokeColor: COL_PRI, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Dashed legs ─────────────────────────────────────────────────
+        board.create('segment', [w2, C], {
+            strokeColor: COL_PRI, strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false,
+            visible: function() { return hLeg() > 0.01 && !isDegenerate(); }
+        });
+
+        board.create('segment', [C, w1], {
+            strokeColor: COL_PRI, strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false,
+            visible: function() { return vLeg() > 0.01 && !isDegenerate(); }
+        });
+
+        // ── Right-angle marker at C ─────────────────────────────────────
+        var RA_SIZE = 0.35;
+
+        function raHDir() { return (w2.X() < w1.X()) ? -1 : 1; }
+        function raVDir() { return (w1.Y() > w2.Y()) ? 1 : -1; }
+
+        var raP1 = board.create('point', [
+            function() { return C.X() + raHDir() * RA_SIZE; },
+            function() { return C.Y(); }
+        ], { visible: false, fixed: true, name: '' });
+
+        var raP2 = board.create('point', [
+            function() { return C.X() + raHDir() * RA_SIZE; },
+            function() { return C.Y() + raVDir() * RA_SIZE; }
+        ], { visible: false, fixed: true, name: '' });
+
+        var raP3 = board.create('point', [
+            function() { return C.X(); },
+            function() { return C.Y() + raVDir() * RA_SIZE; }
+        ], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [C, raP1, raP2, raP3], {
+            fillColor: 'none', fillOpacity: 0,
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true,
+            borders: {
+                strokeColor: COL_PRI, strokeWidth: 1.0
+            },
+            visible: function() { return hLeg() > 0.5 && vLeg() > 0.5; }
+        });
+
+        // ── Leg-length annotations on the board ─────────────────────────
+        board.create('text', [
+            function() { return (w2.X() + w1.X()) / 2; },
+            function() {
+                var dir = (w1.Y() > w2.Y()) ? -0.45 : 0.45;
+                return w2.Y() + dir;
+            },
+            function() { return hLeg() > 0.01 ? String(Math.round(hLeg())) : ''; }
+        ], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12,
+            color: '#666', fixed: true, highlight: false,
+            visible: function() { return hLeg() > 0.01 && !isDegenerate(); }
+        });
+
+        board.create('text', [
+            function() {
+                var dir = (w2.X() < w1.X()) ? 0.45 : -0.45;
+                return w1.X() + dir;
+            },
+            function() { return (w2.Y() + w1.Y()) / 2; },
+            function() { return vLeg() > 0.01 ? String(Math.round(vLeg())) : ''; }
+        ], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12,
+            color: '#666', fixed: true, highlight: false,
+            visible: function() { return vLeg() > 0.01 && !isDegenerate(); }
+        });
+
+        // ── Panel update ────────────────────────────────────────────────
+        function fmtComplexTex(re, im) {
+            var r = Math.round(re);
+            var i = Math.round(im);
+            if (i === 0) return String(r);
+            var sign = (i >= 0) ? ' + ' : ' - ';
+            var absI = Math.abs(i);
+            var iStr = (absI === 1) ? 'i' : absI + 'i';
+            return r + sign + iStr;
+        }
+
+        function tex(id, latex) {
+            katex.render(latex, document.getElementById(id), { throwOnError: false });
+        }
+
+        function signed(v) {
+            return (v >= 0) ? String(v) : '(' + v + ')';
+        }
+
+        function updatePanel() {
+            var a = Math.round(w1.X());
+            var b = Math.round(w1.Y());
+            var c = Math.round(w2.X());
+            var d = Math.round(w2.Y());
+
+            var hl = Math.abs(a - c);
+            var vl = Math.abs(b - d);
+            var dist = Math.sqrt(hl * hl + vl * vl);
+
+            tex('r-w1', '\\color{' + COL_W1 + '}{w_1} = ' + fmtComplexTex(a, b));
+            tex('r-w2', '\\color{' + COL_W2 + '}{w_2} = ' + fmtComplexTex(c, d));
+
+            tex('r-hleg', '\\text{Horizontal leg } \\left|' + a + ' - ' + signed(c) + '\\right| = ' + hl);
+            tex('r-vleg', '\\text{Vertical leg } \\left|' + b + ' - ' + signed(d) + '\\right| = ' + vl);
+
+            tex('r-pyth', 'D = \\sqrt{' + hl + '^2 + ' + vl + '^2} = \\sqrt{' + (hl * hl + vl * vl) + '}');
+            tex('r-dist', '\\color{' + COL_ACCENT + '}{D = ' + dist.toFixed(2) + '}');
+        }
+
+        board.on('update', updatePanel);
+        updatePanel();
+    </script>
+</body>
+</html>
