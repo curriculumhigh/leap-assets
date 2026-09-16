@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Region under y = 1/sqrt(1 - x^2)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 480px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.3, 3.3, 1.3, -0.3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Axes (manual, to suppress default x-ticks and control styling) ── */
+
+        // x-axis
+        var xAxis = board.create('arrow', [[-1.25, 0], [1.25, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // y-axis
+        var yAxis = board.create('arrow', [[0, -0.2], [0, 3.2]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Axis name labels
+        board.create('text', [1.2, -0.12, 'x'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.08, 3.15, 'y'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+
+        /* ── Y-axis ticks: 1, 2, 3 ── */
+        var yTickVals = [1, 2, 3];
+        var tickLen = 0.025;
+        for (var i = 0; i < yTickVals.length; i++) {
+            var yv = yTickVals[i];
+            board.create('segment', [[-tickLen, yv], [tickLen, yv]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            if (yv === 1) {
+                // Place '1' label below the tick so it clears the curve minimum at (0,1)
+                board.create('text', [-0.1, 0.95, '1'], {
+                    fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'top',
+                    fixed: true, highlight: false
+                });
+            } else {
+                board.create('text', [-0.1, yv, String(yv)], {
+                    fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        /* ── X-axis ticks: -1, -1/2, 1/2, 1 ── */
+        // Tick marks
+        var xTickPositions = [-1, -0.5, 0.5, 1];
+        for (var j = 0; j < xTickPositions.length; j++) {
+            var xv = xTickPositions[j];
+            board.create('segment', [[xv, -tickLen], [xv, tickLen]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+        }
+
+        // Integer tick labels (plain)
+        board.create('text', [-1, -0.1, '-1'], {
+            fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+        board.create('text', [1, -0.1, '1'], {
+            fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // Fractional tick labels (KaTeX)
+        board.create('text', [-0.5, -0.1, '-\\tfrac{1}{2}'], {
+            useKatex: true, fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+        board.create('text', [0.5, -0.1, '\\tfrac{1}{2}'], {
+            useKatex: true, fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        /* ── The function f(x) = 1/sqrt(1 - x^2) ── */
+        var f = function(x) { return 1 / Math.sqrt(1 - x * x); };
+
+        /* ── Shaded region between x = -1/2 and x = 1/2 ── */
+        // Build polygon from curve samples + baseline
+        var shadingN = 120;
+        var shadingPts = [];
+        // Bottom-left corner
+        shadingPts.push(board.create('point', [-0.5, 0], { visible: false, fixed: true, name: '' }));
+        // Curve from -0.5 to 0.5
+        for (var s = 0; s <= shadingN; s++) {
+            var sx = -0.5 + (s / shadingN) * 1.0;
+            shadingPts.push(board.create('point', [sx, f(sx)], { visible: false, fixed: true, name: '' }));
+        }
+        // Bottom-right corner
+        shadingPts.push(board.create('point', [0.5, 0], { visible: false, fixed: true, name: '' }));
+
+        board.create('polygon', shadingPts, {
+            fillColor: '#222222', fillOpacity: 0.12,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        /* ── Vertical dashed reference lines at x = -1/2 and x = 1/2 ── */
+        board.create('segment', [[-0.5, 0], [-0.5, f(-0.5)]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[0.5, 0], [0.5, f(0.5)]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        /* ── Primary curve: y = 1/sqrt(1 - x^2), clipped to |x| <= 0.95 ── */
+        board.create('functiongraph', [
+            function(x) { return f(x); },
+            -0.95, 0.95
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        /* ── Function label (upper left, between y-axis and left branch) ── */
+        board.create('text', [-0.85, 2.55, 'f(x) = \\dfrac{1}{\\sqrt{1-x^2}}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
