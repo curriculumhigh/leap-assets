@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph of y = -(x+3)/(x-1)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 4px; height: calc(100% - 8px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 6, 6, -6],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Draw grid manually at integer intervals
+        var i;
+        for (i = -5; i <= 5; i++) {
+            if (i === 0) continue;
+            board.create('line', [[i, -6], [i, 6]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false,
+                straightFirst: false, straightLast: false
+            });
+            board.create('line', [[-6, i], [6, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false,
+                straightFirst: false, straightLast: false
+            });
+        }
+
+        // X-axis
+        var xAxis = board.create('axis', [[0, 0], [1, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 4 },
+            ticks: {
+                strokeColor: '#444444',
+                label: { fontSize: 8, offset: [-4, -12] },
+                minorTicks: 0,
+                ticksDistance: 1,
+                insertTicks: false,
+                drawZero: false
+            }
+        });
+
+        // Y-axis
+        var yAxis = board.create('axis', [[0, 0], [0, 1]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 4 },
+            ticks: {
+                strokeColor: '#444444',
+                label: { fontSize: 8, offset: [-14, -2] },
+                minorTicks: 0,
+                ticksDistance: 2,
+                insertTicks: false,
+                drawZero: false
+            }
+        });
+
+        // Axis labels
+        board.create('text', [5.4, -0.5, '<i>x</i>'], { fontSize: 11, fixed: true, highlight: false });
+        board.create('text', [0.3, 5.4, '<i>y</i>'], { fontSize: 11, fixed: true, highlight: false });
+
+        // f(x) = -(x+3)/(x-1)
+        function f(x) {
+            return -(x + 3) / (x - 1);
+        }
+
+        // Left branch: x < 1
+        board.create('functiongraph', [
+            function(x) { return f(x); }, -6, 0.97
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Right branch: x > 1
+        board.create('functiongraph', [
+            function(x) { return f(x); }, 1.03, 6
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Vertical asymptote x = 1 (cyan, dashed)
+        board.create('line', [[1, 0], [1, 1]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false,
+            straightFirst: true, straightLast: true
+        });
+
+        // Horizontal asymptote y = -1 (cyan, dashed)
+        board.create('line', [[0, -1], [1, -1]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false,
+            straightFirst: true, straightLast: true
+        });
+
+        // Key points (unlabeled)
+        board.create('point', [-3, 0], {
+            name: '', size: 4, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [0, 3], {
+            name: '', size: 4, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Orientation arrows (left-to-right)
+        var ax1 = -4;
+        var ay1 = f(ax1);
+        var ax1b = ax1 + 0.01;
+        var ay1b = f(ax1b);
+        var dx1 = ax1b - ax1;
+        var dy1 = ay1b - ay1;
+        var len1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+        dx1 /= len1; dy1 /= len1;
+
+        board.create('arrow', [[ax1 - dx1 * 0.4, ay1 - dy1 * 0.4], [ax1 + dx1 * 0.4, ay1 + dy1 * 0.4]], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        var ax2 = 4;
+        var ay2 = f(ax2);
+        var ax2b = ax2 + 0.01;
+        var ay2b = f(ax2b);
+        var dx2 = ax2b - ax2;
+        var dy2 = ay2b - ay2;
+        var len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+        dx2 /= len2; dy2 /= len2;
+
+        board.create('arrow', [[ax2 - dx2 * 0.4, ay2 - dy2 * 0.4], [ax2 + dx2 * 0.4, ay2 + dy2 * 0.4]], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
