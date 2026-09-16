@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parabola — Wrong Vertex (Reflected)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 12, 8, -1],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Manual grid at integer spacing only (no minor gridlines)
+        var bb = board.getBoundingBox();
+        var xMin = Math.ceil(bb[0]);
+        var xMax = Math.floor(bb[2]);
+        var yMin = Math.ceil(bb[3]);
+        var yMax = Math.floor(bb[1]);
+        var i;
+
+        for (i = xMin; i <= xMax; i++) {
+            board.create('line', [[i, 0], [i, 1]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false, dash: 0
+            });
+        }
+        for (i = yMin; i <= yMax; i++) {
+            board.create('line', [[0, i], [1, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false, dash: 0
+            });
+        }
+
+        // Create axes manually to force ticksDistance: 1 on both
+        var xAxis = board.create('axis', [[0, 0], [1, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            ticks: {
+                strokeColor: '#444444',
+                label: { fontSize: 9 },
+                minorTicks: 0,
+                ticksDistance: 1,
+                insertTicks: false
+            }
+        });
+
+        var yAxis = board.create('axis', [[0, 0], [0, 1]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            ticks: {
+                strokeColor: '#444444',
+                label: { fontSize: 9 },
+                minorTicks: 0,
+                ticksDistance: 1,
+                insertTicks: false
+            }
+        });
+
+        // Axis labels
+        board.create('text', [7.5, -0.45, 'x'], { useKatex: true, fontSize: 11, fixed: true, highlight: false });
+        board.create('text', [0.25, 11.4, 'y'], { useKatex: true, fontSize: 11, fixed: true, highlight: false });
+
+        // Parabola: y = (x - 3)^2 + 1  (wrong vertex at (3,1) — reflected across y-axis)
+        board.create('functiongraph', [
+            function(x) { return Math.pow(x - 3, 2) + 1; }
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Vertex key point at (3, 1)
+        board.create('point', [3, 1], {
+            name: '', size: 4, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Small directional arrow along the left branch pointing upward-left
+        var ax1 = 1.2;
+        var ay1 = Math.pow(ax1 - 3, 2) + 1;
+        var ax2 = 0.7;
+        var ay2 = Math.pow(ax2 - 3, 2) + 1;
+
+        board.create('arrow', [[ax1, ay1], [ax2, ay2]], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }
+        });
+
+        // Function label — name only
+        board.create('text', [5.8, 7, 'f(x)'], {
+            useKatex: true, fontSize: 10, color: '#222222', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
