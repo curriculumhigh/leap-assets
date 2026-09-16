@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Downward Parabola – Wrong Shape</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 4, 8, -5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            }
+        });
+
+        /* Parabola: y = -(x-3)^2 + 1 */
+        var f = function(x) { return -(x - 3) * (x - 3) + 1; };
+
+        /* Main curve — stops short to leave room for arrow segments */
+        board.create('functiongraph', [f, 0.5, 5.5], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        /* Vertex point */
+        board.create('point', [3, 1], {
+            name: '', size: 4, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false
+        });
+
+        /* ── LEFT orientation arrow ─────────────────────────────── */
+        var p1L = board.create('point', [0.5, f(0.5)], { visible: false, fixed: true, name: '' });
+        var p2L = board.create('point', [-0.2, f(-0.2)], { visible: false, fixed: true, name: '' });
+        board.create('arrow', [p1L, p2L], {
+            strokeColor: '#222222',
+            strokeWidth: 2.0,
+            lastArrow: { type: 2, size: 10 },
+            fixed: true,
+            highlight: false
+        });
+
+        /* ── RIGHT orientation arrow ────────────────────────────── */
+        var p1R = board.create('point', [5.5, f(5.5)], { visible: false, fixed: true, name: '' });
+        var p2R = board.create('point', [6.2, f(6.2)], { visible: false, fixed: true, name: '' });
+        board.create('arrow', [p1R, p2R], {
+            strokeColor: '#222222',
+            strokeWidth: 2.0,
+            lastArrow: { type: 2, size: 10 },
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
