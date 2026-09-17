@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Probability Histogram — Number of Customers</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.0, 0.52, 5.5, -0.13],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var xVals = [0, 1, 2, 3, 4];
+        var yVals = [0.130, 0.346, 0.346, 0.154, 0.026];
+        var barW = 0.5;
+        var BAR_FILL = '#2563EB';
+        var BAR_STROKE = '#2563EB';
+        var AXIS_COL = '#444444';
+        var GRID_COL = '#D1D5DB';
+
+        var gi;
+        for (gi = 0.05; gi <= 0.45; gi += 0.05) {
+            board.create('segment', [[-0.6, gi], [5.2, gi]], {
+                strokeColor: GRID_COL, strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+        for (gi = 0; gi <= 5; gi += 1) {
+            board.create('segment', [[gi, -0.02], [gi, 0.50]], {
+                strokeColor: GRID_COL, strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+
+        board.create('arrow', [[-0.6, 0], [5.2, 0]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        board.create('arrow', [[-0.5, -0.02], [-0.5, 0.50]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        var xi;
+        for (xi = 0; xi < xVals.length; xi++) {
+            var xv = xVals[xi];
+            board.create('segment', [[xv, -0.008], [xv, 0.008]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            board.create('text', [xv, -0.028, String(xv)], {
+                anchorX: 'middle', anchorY: 'top',
+                fontSize: 11, color: '#333',
+                fixed: true, highlight: false
+            });
+        }
+
+        var yTicks = [0.10, 0.20, 0.30, 0.40];
+        var yi;
+        for (yi = 0; yi < yTicks.length; yi++) {
+            var yv = yTicks[yi];
+            board.create('segment', [[-0.58, yv], [-0.42, yv]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            board.create('text', [-0.62, yv, yv.toFixed(2)], {
+                anchorX: 'right', anchorY: 'middle',
+                fontSize: 11, color: '#333',
+                fixed: true, highlight: false
+            });
+        }
+
+        board.create('text', [5.05, -0.028, '<i>x</i>'], {
+            fontSize: 14, color: '#333',
+            fixed: true, highlight: false
+        });
+        board.create('text', [-0.8, 0.48, 'P(x)'], {
+            fontSize: 14, color: '#333',
+            useKatex: true, anchorX: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [2, -0.075, 'Number of customers who make a purchase'], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 12, color: '#555',
+            fixed: true, highlight: false
+        });
+
+        var bi;
+        for (bi = 0; bi < xVals.length; bi++) {
+            (function(i) {
+                var x = xVals[i];
+                var h = yVals[i];
+                var x1 = x - barW;
+                var x2 = x + barW;
+
+                var p1 = board.create('point', [x1, 0], { visible: false, fixed: true, name: '' });
+                var p2 = board.create('point', [x2, 0], { visible: false, fixed: true, name: '' });
+                var p3 = board.create('point', [x2, h], { visible: false, fixed: true, name: '' });
+                var p4 = board.create('point', [x1, h], { visible: false, fixed: true, name: '' });
+
+                board.create('polygon', [p1, p2, p3, p4], {
+                    fillColor: BAR_FILL, fillOpacity: 0.35,
+                    borders: { strokeColor: BAR_STROKE, strokeWidth: 1.5 },
+                    vertices: { visible: false },
+                    hasInnerPoints: false, fixed: true, highlight: false
+                });
+
+                board.create('text', [x, h + 0.015, h.toFixed(3)], {
+                    anchorX: 'middle', anchorY: 'bottom',
+                    fontSize: 12, color: '#222222',
+                    fixed: true, highlight: false
+                });
+            })(bi);
+        }
+    </script>
+</body>
+</html>
