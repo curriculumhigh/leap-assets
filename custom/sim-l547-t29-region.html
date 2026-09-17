@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Region under the Witch of Agnesi</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 480px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8.4, 2.5, 8.4, -0.4],
+            axis: true,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        drawLabels: false,
+                        strokeColor: '#444444',
+                        strokeWidth: 0.8,
+                        majorHeight: 10,
+                        minorTicks: 0,
+                        ticksDistance: 2,
+                        drawZero: false,
+                        includeBoundaries: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        drawLabels: false,
+                        strokeColor: '#444444',
+                        strokeWidth: 0.8,
+                        majorHeight: 10,
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        drawZero: false
+                    }
+                }
+            }
+        });
+
+        /* ---- Manual x-axis tick labels at -6, -4, -2, 2, 4, 6 ---- */
+        var xTicks = [-6, -4, -2, 2, 4, 6];
+        for (var i = 0; i < xTicks.length; i++) {
+            board.create('text', [xTicks[i], -0.12, String(xTicks[i])], {
+                fontSize: 11,
+                anchorX: 'middle',
+                anchorY: 'top',
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        /* ---- Manual y-axis tick labels at 1 and 2, offset left ---- */
+        var yTicks = [1, 2];
+        for (var j = 0; j < yTicks.length; j++) {
+            board.create('text', [-0.35, yTicks[j], String(yTicks[j])], {
+                fontSize: 11,
+                anchorX: 'right',
+                anchorY: 'middle',
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        /* ---- Axis labels ---- */
+        board.create('text', [8.0, -0.12, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 2.35, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        /* ---- Witch of Agnesi function ---- */
+        function witch(x) {
+            return 8 / (x * x + 4);
+        }
+
+        /* ---- Shaded region between curve and x-axis ---- */
+        var N = 200;
+        var xMin = -9.5;
+        var xMax = 9.5;
+        var dx = (xMax - xMin) / N;
+
+        var shadedXcoords = [];
+        var shadedYcoords = [];
+
+        shadedXcoords.push(xMin);
+        shadedYcoords.push(0);
+
+        for (var k = 0; k <= N; k++) {
+            var xi = xMin + k * dx;
+            shadedXcoords.push(xi);
+            shadedYcoords.push(witch(xi));
+        }
+
+        shadedXcoords.push(xMax);
+        shadedYcoords.push(0);
+
+        board.create('polygon', shadedXcoords.map(function(x, idx) {
+            return board.create('point', [x, shadedYcoords[idx]], { visible: false, fixed: true, name: '' });
+        }), {
+            fillColor: '#222222',
+            fillOpacity: 0.12,
+            borders: { strokeWidth: 0, visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        /* ---- Primary curve ---- */
+        board.create('functiongraph', [witch, -9.5, 9.5], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        /* ---- Function label ---- */
+        board.create('text', [3.2, 1.6, 'y = \\dfrac{8}{x^2+4}'], {
+            useKatex: true,
+            fontSize: 13,
+            color: '#222222',
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>

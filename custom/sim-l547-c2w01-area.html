@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Region under y = 1/√x from x = c to x = 9</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 190px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .instruction {
+            font-size: 12px; color: #888; line-height: 1.4;
+        }
+        .slider-group { }
+        .slider-row {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 2px;
+        }
+        .slider-label { font-size: 14px; color: #DC2626; font-weight: 600; white-space: nowrap; }
+        .slider-input {
+            flex: 1; -webkit-appearance: none; appearance: none;
+            height: 5px; border-radius: 3px; background: #e5e7eb; outline: none;
+        }
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 15px; height: 15px; border-radius: 50%; background: #DC2626; cursor: pointer;
+        }
+        .slider-input::-moz-range-thumb {
+            width: 15px; height: 15px; border-radius: 50%; background: #DC2626; cursor: pointer; border: none;
+        }
+        .slider-val {
+            font-size: 14px; font-weight: 600; color: #DC2626;
+            width: 36px; text-align: right; font-variant-numeric: tabular-nums;
+        }
+        .readout-section {
+            border-top: 1px solid #e5e7eb; padding-top: 14px;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 4px;
+        }
+        .readout-line { min-height: 26px; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; min-width: 0; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="instruction">Use the slider to move <i>c</i>.</div>
+                <div class="slider-group">
+                    <div class="slider-row">
+                        <span class="slider-label"><i>c</i> =</span>
+                        <input type="range" id="slider-c" class="slider-input" min="0.01" max="9" step="0.01" value="1">
+                        <span class="slider-val" id="val-c">1.00</span>
+                    </div>
+                </div>
+                <div class="readout-section">
+                    <div class="panel-label">Area</div>
+                    <div class="readout-line" id="readout-formula"></div>
+                    <div class="readout-line" id="readout-substituted"></div>
+                    <div class="readout-line" id="readout-result"></div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var cVal = 1;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.6, 5.2, 10.6, -0.5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        insertTicks: false,
+                        ticksDistance: 1,
+                        majorHeight: 10,
+                        minorHeight: 0,
+                        drawZero: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        insertTicks: false,
+                        ticksDistance: 1,
+                        majorHeight: 10,
+                        minorHeight: 0,
+                        drawZero: false
+                    }
+                }
+            }
+        });
+
+        /* Axis labels */
+        board.create('text', [10.2, -0.25, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 4.9, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        /* Helper: clamped 1/sqrt(x) */
+        function f(x) {
+            if (x <= 0.001) return 5;
+            var val = 1 / Math.sqrt(x);
+            return val > 5 ? 5 : val;
+        }
+
+        /* Shaded region (c <= x <= 9) */
+        var shadedRegion = board.create('curve', [[], []], {
+            strokeWidth: 0,
+            fillColor: '#222222',
+            fillOpacity: 0.12,
+            fixed: true,
+            highlight: false
+        });
+
+        shadedRegion.updateDataArray = function () {
+            var xArr = [];
+            var yArr = [];
+            var lo = Math.max(cVal, 0.001);
+            var hi = 9;
+            if (lo >= hi) {
+                this.dataX = [];
+                this.dataY = [];
+                return;
+            }
+            var N = 200;
+            var dx = (hi - lo) / N;
+            xArr.push(lo);
+            yArr.push(0);
+            for (var i = 0; i <= N; i++) {
+                var xi = lo + i * dx;
+                xArr.push(xi);
+                yArr.push(f(xi));
+            }
+            xArr.push(hi);
+            yArr.push(0);
+            xArr.push(lo);
+            yArr.push(0);
+
+            this.dataX = xArr;
+            this.dataY = yArr;
+        };
+
+        /* Primary curve y = 1/sqrt(x) */
+        board.create('functiongraph', [
+            function (x) { return f(x); },
+            0.04, 10.5
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        /* Vertical dashed line at x = 9 (fixed) */
+        board.create('segment', [
+            [9, 0],
+            [9, f(9)]
+        ], {
+            strokeColor: '#DC2626',
+            strokeWidth: 1.0,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        /* Vertical dashed line at x = c (moves) */
+        board.create('segment', [
+            [function () { return cVal; }, 0],
+            [function () { return cVal; }, function () { return f(Math.max(cVal, 0.001)); }]
+        ], {
+            strokeColor: '#DC2626',
+            strokeWidth: 1.0,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        /* Curve label */
+        board.create('text', [4, 2.4, 'y = \\dfrac{1}{\\sqrt{x}}'], {
+            useKatex: true,
+            fontSize: 13,
+            color: '#222222',
+            fixed: true,
+            highlight: false
+        });
+
+        /* Slider wiring */
+        var sliderEl = document.getElementById('slider-c');
+        var valEl = document.getElementById('val-c');
+
+        function updateAll() {
+            cVal = parseFloat(sliderEl.value);
+            valEl.textContent = cVal.toFixed(2);
+            board.update();
+            updateReadout();
+        }
+
+        sliderEl.addEventListener('input', updateAll);
+
+        /* Readout panel (KaTeX) */
+        function updateReadout() {
+            var c = cVal;
+            var sqrtC = Math.sqrt(c);
+            var area = 6 - 2 * sqrtC;
+            if (area < 0) area = 0;
+
+            katex.render(
+                '= 6 - 2\\sqrt{c}',
+                document.getElementById('readout-formula'),
+                { throwOnError: false }
+            );
+
+            katex.render(
+                '= 6 - 2\\sqrt{' + c.toFixed(2) + '}',
+                document.getElementById('readout-substituted'),
+                { throwOnError: false }
+            );
+
+            katex.render(
+                '= ' + area.toFixed(4),
+                document.getElementById('readout-result'),
+                { throwOnError: false }
+            );
+        }
+
+        updateReadout();
+    </script>
+</body>
+</html>

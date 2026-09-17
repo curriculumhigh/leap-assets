@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Region under y = 1/x² from x = 1 to x = b</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 190px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .instruction {
+            font-size: 12px; color: #888; line-height: 1.4;
+        }
+        .slider-group { }
+        .slider-row {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 2px;
+        }
+        .slider-label { font-size: 14px; color: #DC2626; font-weight: 600; white-space: nowrap; }
+        .slider-input {
+            flex: 1; -webkit-appearance: none; appearance: none;
+            height: 5px; border-radius: 3px; background: #e5e7eb; outline: none;
+        }
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 15px; height: 15px; border-radius: 50%; background: #DC2626; cursor: pointer;
+        }
+        .slider-val {
+            font-size: 14px; font-weight: 600; color: #DC2626;
+            width: 36px; text-align: right; font-variant-numeric: tabular-nums;
+        }
+        .readout-section {
+            border-top: 1px solid #e5e7eb; padding-top: 14px;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 4px;
+        }
+        .readout-line { min-height: 26px; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; min-width: 0; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="instruction">Use the slider to move <i>b</i>.</div>
+                <div class="slider-group">
+                    <div class="slider-row">
+                        <span class="slider-label"><i>b</i> =</span>
+                        <input type="range" id="slider-b" class="slider-input" min="1" max="100" step="0.5" value="3">
+                        <span class="slider-val" id="val-b">3.0</span>
+                    </div>
+                </div>
+                <div class="readout-section">
+                    <div class="panel-label">Area</div>
+                    <div class="readout-line" id="readout-formula"></div>
+                    <div class="readout-line" id="readout-substituted"></div>
+                    <div class="readout-line" id="readout-result"></div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var bVal = 3;
+        var BB_XMAX = 12.6;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.6, 1.35, BB_XMAX, -0.15],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        majorHeight: 10,
+                        minorHeight: 0,
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        drawZero: false,
+                        label: { fontSize: 11 }
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        majorHeight: 10,
+                        minorHeight: 0,
+                        minorTicks: 0,
+                        ticksDistance: 0.5,
+                        drawZero: false,
+                        label: {
+                            fontSize: 11,
+                            visible: function() { return false; }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Manual y-axis tick labels
+        board.create('text', [-0.38, 0.5, '0.5'], { fontSize: 11, fixed: true, highlight: false, anchorX: 'middle' });
+        board.create('text', [-0.25, 1.0, '1'], { fontSize: 11, fixed: true, highlight: false, anchorX: 'middle' });
+
+        // Axis labels
+        board.create('text', [12.2, -0.06, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.15, 1.3, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Shaded region
+        var shadedRegion = board.create('curve', [[], []], {
+            strokeWidth: 0,
+            fillColor: '#222222',
+            fillOpacity: 0.12,
+            fixed: true,
+            highlight: false
+        });
+
+        shadedRegion.updateDataArray = function() {
+            var xArr = [];
+            var yArr = [];
+            var bDraw = Math.min(bVal, BB_XMAX);
+            var steps = 200;
+            var dx = (bDraw - 1) / steps;
+
+            xArr.push(1);
+            yArr.push(0);
+
+            for (var i = 0; i <= steps; i++) {
+                var xx = 1 + i * dx;
+                var yy = 1 / (xx * xx);
+                xArr.push(xx);
+                yArr.push(yy);
+            }
+
+            xArr.push(bDraw);
+            yArr.push(0);
+
+            this.dataX = xArr;
+            this.dataY = yArr;
+        };
+
+        // Primary curve
+        board.create('functiongraph', [
+            function(x) {
+                var y = 1 / (x * x);
+                return y > 1.3 ? NaN : y;
+            },
+            0.3, 12.5
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Function label
+        board.create('text', [4, 1.05, 'y = \\dfrac{1}{x^2}'], {
+            useKatex: true, fontSize: 13, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Fixed vertical dashed line at x = 1
+        board.create('segment', [
+            [1, 0],
+            [1, 1]
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // Moving vertical dashed line at x = b
+        board.create('segment', [
+            [function() { return Math.min(bVal, BB_XMAX); }, 0],
+            [function() { return Math.min(bVal, BB_XMAX); }, function() { var bDraw = Math.min(bVal, BB_XMAX); return 1 / (bDraw * bDraw); }]
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // Key point at (1, 1)
+        board.create('point', [1, 1], {
+            name: '', size: 4, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Key point at (b, 1/b²)
+        board.create('point', [
+            function() { return Math.min(bVal, BB_XMAX); },
+            function() { var bDraw = Math.min(bVal, BB_XMAX); return 1 / (bDraw * bDraw); }
+        ], {
+            name: '', size: 4, color: '#DC2626', fixed: true, highlight: false,
+            visible: function() { return bVal <= BB_XMAX + 0.5; }
+        });
+
+        // x=1 label
+        board.create('text', [1, -0.06, '1'], {
+            fontSize: 11, color: '#DC2626', anchorX: 'middle', fixed: true, highlight: false
+        });
+
+        // b label on x-axis
+        board.create('text', [
+            function() { return Math.min(bVal, BB_XMAX); },
+            -0.06,
+            function() { return 'b'; }
+        ], {
+            fontSize: 11, color: '#DC2626', anchorX: 'middle', fixed: true, highlight: false,
+            cssStyle: 'font-style:italic; font-weight:600',
+            visible: function() { return bVal <= BB_XMAX + 0.5; }
+        });
+
+        // Slider sync
+        var sliderEl = document.getElementById('slider-b');
+        var valEl = document.getElementById('val-b');
+
+        function updateAll() {
+            bVal = parseFloat(sliderEl.value);
+            valEl.textContent = bVal.toFixed(1);
+            board.update();
+            updateReadout();
+        }
+
+        sliderEl.addEventListener('input', updateAll);
+
+        function formatB(v) {
+            if (Math.abs(v - Math.round(v)) < 0.01) return String(Math.round(v));
+            return v.toFixed(1);
+        }
+
+        function updateReadout() {
+            var area = 1 - 1 / bVal;
+
+            katex.render(
+                '= 1 - \\dfrac{1}{b}',
+                document.getElementById('readout-formula'),
+                { throwOnError: false }
+            );
+
+            katex.render(
+                '= 1 - \\dfrac{1}{' + formatB(bVal) + '}',
+                document.getElementById('readout-substituted'),
+                { throwOnError: false }
+            );
+
+            katex.render(
+                '= ' + area.toFixed(4),
+                document.getElementById('readout-result'),
+                { throwOnError: false }
+            );
+        }
+
+        updateReadout();
+    </script>
+</body>
+</html>
