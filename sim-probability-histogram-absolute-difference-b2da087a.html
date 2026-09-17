@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Probability Histogram — Absolute Difference</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); position: relative; }
+        #board { width: 100%; height: 100%; }
+        .y-axis-label {
+            position: absolute;
+            left: 2px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-size: 13px;
+            color: #222;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #2563EB;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 15px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div class="y-axis-label" id="y-label"></div>
+            <div id="board"></div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+
+    <script>
+        katex.render('P(x)', document.getElementById('y-label'), { throwOnError: false });
+
+        var BAR_COLOR = '#2563EB';
+        var BAR_FILL_OPACITY = 0.55;
+        var BAR_HOVER_OPACITY = 0.8;
+
+        var xVals = [0, 1, 2, 3, 4, 5];
+        var numerators = [6, 10, 8, 6, 4, 2];
+        var denom = 36;
+        var heights = [];
+        var i;
+        for (i = 0; i < numerators.length; i++) {
+            heights.push(numerators[i] / denom);
+        }
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.2, 0.38, 6.5, -0.10],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // x-axis
+        board.create('arrow', [[-0.5, 0], [6.2, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        // y-axis
+        board.create('arrow', [[-0.5, -0.02], [-0.5, 0.35]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Grid lines
+        var gridYVals = [0.05, 0.10, 0.15, 0.20, 0.25, 0.30];
+        for (i = 0; i < gridYVals.length; i++) {
+            board.create('segment', [[-0.5, gridYVals[i]], [6.0, gridYVals[i]]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // Y-axis tick marks and labels
+        var yTickFracs = [
+            { num: 2, label: '\\tfrac{2}{36}' },
+            { num: 4, label: '\\tfrac{4}{36}' },
+            { num: 6, label: '\\tfrac{6}{36}' },
+            { num: 8, label: '\\tfrac{8}{36}' },
+            { num: 10, label: '\\tfrac{10}{36}' }
+        ];
+        for (i = 0; i < yTickFracs.length; i++) {
+            var yPos = yTickFracs[i].num / denom;
+            board.create('segment', [[-0.55, yPos], [-0.45, yPos]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [-0.62, yPos, yTickFracs[i].label], {
+                useKatex: true, fontSize: 10, anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // X-axis tick marks and labels
+        for (i = 0; i < xVals.length; i++) {
+            board.create('segment', [[xVals[i], -0.005], [xVals[i], 0.005]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [xVals[i], -0.02, String(xVals[i])], {
+                fontSize: 12, anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // X-axis name label
+        board.create('text', [2.75, -0.07, '\\text{Absolute Difference}\\,(x)'], {
+            useKatex: true, fontSize: 12, anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // Bars (width 1.0, no gaps)
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        for (i = 0; i < xVals.length; i++) {
+            (function(idx) {
+                var x = xVals[idx];
+                var h = heights[idx];
+                var left = x - 0.5;
+                var right = x + 0.5;
+
+                var p1 = board.create('point', [left, 0], { visible: false, fixed: true, name: '' });
+                var p2 = board.create('point', [right, 0], { visible: false, fixed: true, name: '' });
+                var p3 = board.create('point', [right, h], { visible: false, fixed: true, name: '' });
+                var p4 = board.create('point', [left, h], { visible: false, fixed: true, name: '' });
+
+                var poly = board.create('polygon', [p1, p2, p3, p4], {
+                    fillColor: BAR_COLOR,
+                    fillOpacity: BAR_FILL_OPACITY,
+                    borders: { strokeColor: BAR_COLOR, strokeWidth: 1.5 },
+                    vertices: { visible: false },
+                    hasInnerPoints: true,
+                    fixed: true,
+                    highlight: false
+                });
+
+                poly.on('over', function() {
+                    poly.setAttribute({ fillOpacity: BAR_HOVER_OPACITY });
+                    var latex = 'P(' + xVals[idx] + ') = \\dfrac{' + numerators[idx] + '}{' + denom + '}';
+                    katex.render(latex, tooltip, { throwOnError: false });
+                    tooltip.style.display = 'block';
+                });
+
+                poly.on('move', function(e) {
+                    var cx, cy;
+                    if (e.touches && e.touches.length > 0) {
+                        cx = e.touches[0].clientX;
+                        cy = e.touches[0].clientY;
+                    } else {
+                        cx = e.clientX;
+                        cy = e.clientY;
+                    }
+                    tooltip.style.left = (cx + 14) + 'px';
+                    tooltip.style.top = (cy - 44) + 'px';
+                });
+
+                poly.on('out', function() {
+                    poly.setAttribute({ fillOpacity: BAR_FILL_OPACITY });
+                    tooltip.style.display = 'none';
+                });
+            })(i);
+        }
+    </script>
+</body>
+</html>
