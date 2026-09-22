@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spinner Results Histogram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.8, 0.42, 12.8, -0.1],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var BAR_FILL = '#2563EB';
+        var BAR_STROKE = '#2563EB';
+        var AXIS_COL = '#444444';
+        var GRID_COL = '#D1D5DB';
+
+        // ── Data ────────────────────────────────────────────────────────
+        var centers = [2, 4, 6, 8, 10];
+        var heights = [0.2, 0.3, 0.3, 0.1, 0.1];
+        var barW = 2;
+
+        // ── Draw bars (polygons) ────────────────────────────────────────
+        for (var i = 0; i < centers.length; i++) {
+            var x1 = centers[i] - barW / 2;
+            var x2 = centers[i] + barW / 2;
+            var h = heights[i];
+            var p1 = board.create('point', [x1, 0], { visible: false, name: '' });
+            var p2 = board.create('point', [x2, 0], { visible: false, name: '' });
+            var p3 = board.create('point', [x2, h], { visible: false, name: '' });
+            var p4 = board.create('point', [x1, h], { visible: false, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: BAR_FILL, fillOpacity: 0.4,
+                borders: { strokeColor: BAR_STROKE, strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        // ── Axes ────────────────────────────────────────────────────────
+        board.create('arrow', [[0, 0], [12.2, 0]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        board.create('arrow', [[0, 0], [0, 0.395]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // ── X-axis ticks + labels ───────────────────────────────────────
+        for (var i = 0; i < centers.length; i++) {
+            var cx = centers[i];
+            board.create('segment', [[cx, -0.008], [cx, 0.008]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [cx, -0.03, String(cx)], {
+                fontSize: 12, color: '#333', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // X-axis label
+        board.create('text', [6, -0.075, '\\text{Number on spinner}'], {
+            fontSize: 13, color: '#333', anchorX: 'middle', anchorY: 'top',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Y-axis ticks + labels (fractions only) ──────────────────────
+        var yTicks = [0.1, 0.2, 0.3];
+        var yLabels = ['\\tfrac{1}{10}', '\\tfrac{1}{5}', '\\tfrac{3}{10}'];
+
+        for (var i = 0; i < yTicks.length; i++) {
+            var yv = yTicks[i];
+            board.create('segment', [[-0.2, yv], [0.2, yv]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('segment', [[0, yv], [11.5, yv]], {
+                strokeColor: GRID_COL, strokeWidth: 0.4, fixed: true, highlight: false
+            });
+            board.create('text', [-0.35, yv, yLabels[i]], {
+                fontSize: 12, color: '#333', anchorX: 'right', anchorY: 'middle',
+                useKatex: true, fixed: true, highlight: false
+            });
+        }
+
+        // Y-axis label
+        board.create('text', [-1.4, 0.2, '\\text{Probability}'], {
+            fontSize: 13, color: '#333', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false,
+            rotate: 90
+        });
+
+        // ── Title ───────────────────────────────────────────────────────
+        board.create('text', [6, 0.385, '\\textbf{Spinner Results}'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'bottom',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
