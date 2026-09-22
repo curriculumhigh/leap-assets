@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marble Draw Histogram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-outer { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); display: flex; align-items: center; }
+        .y-label {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            font-size: 13px;
+            color: #222222;
+            white-space: nowrap;
+            margin-right: 4px;
+            flex-shrink: 0;
+        }
+        .board-inner { flex: 1; height: 100%; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-outer">
+            <div class="y-label">Probability</div>
+            <div class="board-inner">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 0.44, 6.2, -0.1],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Constants ───────────────────────────────────────────────────
+        var BAR_FILL = '#2563EB';
+        var BAR_FILL_OP = 0.3;
+        var BAR_STROKE = '#2563EB';
+        var BAR_STROKE_W = 1.5;
+        var AXIS_COL = '#444444';
+        var GRID_COL = '#D1D5DB';
+
+        var categories = ['Red', 'Blue', 'Green', 'Yellow', 'White'];
+        var heights = [1/4, 1/3, 1/6, 1/6, 1/12];
+        var barWidth = 1;
+        var xStart = 0;
+
+        // ── Horizontal grid lines at y-tick values ──────────────────────
+        var yTicks = [1/12, 1/6, 1/4, 1/3];
+
+        for (var g = 0; g < yTicks.length; g++) {
+            board.create('segment', [[-0.05, yTicks[g]], [xStart + categories.length * barWidth, yTicks[g]]], {
+                strokeColor: GRID_COL, strokeWidth: 0.4, fixed: true, highlight: false, dash: 0
+            });
+        }
+
+        // ── Y-axis ─────────────────────────────────────────────────────
+        board.create('segment', [[0, 0], [0, 0.40]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // Y-axis tick marks and KaTeX fraction labels
+        var yTickLabels = ['\\tfrac{1}{12}', '\\tfrac{1}{6}', '\\tfrac{1}{4}', '\\tfrac{1}{3}'];
+        for (var t = 0; t < yTicks.length; t++) {
+            board.create('segment', [[-0.12, yTicks[t]], [0, yTicks[t]]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [-0.2, yTicks[t], yTickLabels[t]], {
+                useKatex: true, fontSize: 12, anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false, color: '#222222'
+            });
+        }
+
+        // ── X-axis (baseline) ───────────────────────────────────────────
+        board.create('segment', [[0, 0], [xStart + categories.length * barWidth, 0]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // X-axis label
+        board.create('text', [2.5, -0.045, '\\text{Color}'], {
+            useKatex: true, fontSize: 13, anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false, color: '#222222'
+        });
+
+        // ── Bars (adjacent, no gaps) ────────────────────────────────────
+        for (var i = 0; i < categories.length; i++) {
+            var x1 = xStart + i * barWidth;
+            var x2 = x1 + barWidth;
+            var h = heights[i];
+
+            var p1 = board.create('point', [x1, 0], { visible: false, name: '' });
+            var p2 = board.create('point', [x2, 0], { visible: false, name: '' });
+            var p3 = board.create('point', [x2, h], { visible: false, name: '' });
+            var p4 = board.create('point', [x1, h], { visible: false, name: '' });
+
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: BAR_FILL, fillOpacity: BAR_FILL_OP,
+                borders: { strokeColor: BAR_STROKE, strokeWidth: BAR_STROKE_W },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            board.create('text', [x1 + barWidth / 2, -0.02, categories[i]], {
+                fontSize: 12, anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false, color: '#222222'
+            });
+        }
+
+        // ── Title ───────────────────────────────────────────────────────
+        board.create('text', [2.5, 0.42, '\\textbf{Marble Draw}'], {
+            useKatex: true, fontSize: 15, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, color: '#222222'
+        });
+    </script>
+</body>
+</html>
