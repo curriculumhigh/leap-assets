@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Park and Playground Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        /* -- Scale: 1 km = 10 board units -- */
+        var S = 10;
+
+        /* Park: 1.0 km x 0.5 km -> 10 x 5 units */
+        var PW = 1.0 * S;   // 10
+        var PH = 0.5 * S;   // 5
+
+        /* Playground: 0.5 km x 0.2 km -> 5 x 2 units */
+        var GW = 0.5 * S;   // 5
+        var GH = 0.2 * S;   // 2
+
+        /* Park origin (bottom-left corner) */
+        var PX = 1;
+        var PY = 1;
+
+        /* Playground at bottom-left edge of park */
+        var GX = PX;
+        var GY = PY;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, PY + PH + 3, PX + PW + 4, -2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* -- Helper: rectangle from 4 corner coords -- */
+        function makeRect(x1, y1, x2, y2, fill, fillOp, stroke, sw) {
+            var p1 = board.create('point', [x1, y1], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [x2, y1], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [x2, y2], { visible: false, fixed: true, name: '' });
+            var p4 = board.create('point', [x1, y2], { visible: false, fixed: true, name: '' });
+            return board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: fill, fillOpacity: fillOp,
+                borders: { strokeColor: stroke, strokeWidth: sw },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        /* -- Helper: dimension line with end-ticks -- */
+        function dimLine(x1, y1, x2, y2, label, labelOffset, tickLen) {
+            /* Main line */
+            board.create('segment', [[x1, y1], [x2, y2]], {
+                strokeColor: '#333333', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+
+            /* Determine tick direction */
+            var dx = x2 - x1;
+            var dy = y2 - y1;
+            var len = Math.sqrt(dx * dx + dy * dy);
+            /* Perpendicular unit vector */
+            var px = -dy / len;
+            var py = dx / len;
+            var half = tickLen / 2;
+
+            /* End ticks */
+            board.create('segment', [
+                [x1 - px * half, y1 - py * half],
+                [x1 + px * half, y1 + py * half]
+            ], { strokeColor: '#333333', strokeWidth: 1.0, fixed: true, highlight: false });
+
+            board.create('segment', [
+                [x2 - px * half, y2 - py * half],
+                [x2 + px * half, y2 + py * half]
+            ], { strokeColor: '#333333', strokeWidth: 1.0, fixed: true, highlight: false });
+
+            /* Label at midpoint + offset */
+            var mx = (x1 + x2) / 2 + labelOffset[0];
+            var my = (y1 + y2) / 2 + labelOffset[1];
+            board.create('text', [mx, my, label], {
+                useKatex: true, fontSize: 13, color: '#222222',
+                anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        /* -- Park rectangle -- */
+        makeRect(PX, PY, PX + PW, PY + PH, '#F3F4F6', 0.6, '#555555', 2.0);
+
+        /* -- Playground rectangle (bottom-left edge) -- */
+        makeRect(GX, GY, GX + GW, GY + GH, '#BBF7D0', 0.7, '#059669', 2.0);
+
+        /* -- Dimension lines: Park -- */
+        /* Bottom: 1.0 km (below park) */
+        var dimY_bot = PY - 1.2;
+        dimLine(PX, dimY_bot, PX + PW, dimY_bot, '1.0 \\text{ km}', [0, -0.7], 0.6);
+
+        /* Right side: 0.5 km */
+        var dimX_right = PX + PW + 1.2;
+        dimLine(dimX_right, PY, dimX_right, PY + PH, '0.5 \\text{ km}', [1.2, 0], 0.6);
+
+        /* -- Dimension lines: Playground -- */
+        /* Top of playground: 0.5 km (inside park, above playground) */
+        var dimY_gTop = GY + GH + 0.5;
+        dimLine(GX, dimY_gTop, GX + GW, dimY_gTop, '0.5 \\text{ km}', [0, 0.6], 0.5);
+
+        /* Right side of playground: 0.2 km (inside park, right of playground) */
+        var dimX_gRight = GX + GW + 0.6;
+        dimLine(dimX_gRight, GY, dimX_gRight, GY + GH, '0.2 \\text{ km}', [1.2, 0], 0.5);
+
+        /* -- Text labels -- */
+        /* "Playground" centered inside the shaded rectangle */
+        board.create('text', [GX + GW / 2, GY + GH / 2, '\\text{Playground}'], {
+            useKatex: true, fontSize: 12, color: '#065F46',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        /* "Park" in the open upper-right area */
+        board.create('text', [PX + PW * 0.7, PY + PH * 0.7, '\\text{Park}'], {
+            useKatex: true, fontSize: 14, color: '#555555',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
