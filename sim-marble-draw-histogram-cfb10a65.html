@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marble Draw Results Histogram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.6, 0.58, 6.4, -0.12],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_BAR = '#2563EB';
+        var COL_AXIS = '#444444';
+        var COL_GRID = '#D1D5DB';
+
+        // ── Data ────────────────────────────────────────────────────────
+        var xVals = [1, 2, 3, 4, 5];
+        var yVals = [2/5, 1/5, 1/10, 1/5, 1/10];
+        var barW = 1.0;
+
+        // ── Horizontal gridlines at each 0.1 ────────────────────────────
+        var gridYvals = [0.1, 0.2, 0.3, 0.4, 0.5];
+        for (var g = 0; g < gridYvals.length; g++) {
+            board.create('segment', [[0.3, gridYvals[g]], [5.8, gridYvals[g]]], {
+                strokeColor: COL_GRID, strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Axes ────────────────────────────────────────────────────────
+        board.create('arrow', [[0.3, 0], [6.1, 0]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        board.create('arrow', [[0.5, -0.02], [0.5, 0.54]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // ── Y-axis tick marks and fraction labels ───────────────────────
+        var yTickLabels = ['\\tfrac{1}{10}', '\\tfrac{2}{10}', '\\tfrac{3}{10}', '\\tfrac{4}{10}'];
+        var yTickVals = [0.1, 0.2, 0.3, 0.4];
+        for (var t = 0; t < yTickVals.length; t++) {
+            board.create('segment', [[0.45, yTickVals[t]], [0.55, yTickVals[t]]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [-0.15, yTickVals[t], yTickLabels[t]], {
+                useKatex: true, fontSize: 11, color: '#222222',
+                anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+            });
+        }
+
+        // ── X-axis labels (centered under each bar) ────────────────────
+        for (var i = 0; i < xVals.length; i++) {
+            board.create('text', [xVals[i], -0.035, String(xVals[i])], {
+                fontSize: 12, color: '#222222',
+                anchorX: 'middle', anchorY: 'top', fixed: true, highlight: false
+            });
+        }
+
+        // ── Bars (no gaps — each bar spans [x-0.5, x+0.5]) ─────────────
+        for (var b = 0; b < xVals.length; b++) {
+            var x1 = xVals[b] - barW / 2;
+            var x2 = xVals[b] + barW / 2;
+            var h = yVals[b];
+
+            var p1 = board.create('point', [x1, 0], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [x2, 0], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [x2, h], { visible: false, fixed: true, name: '' });
+            var p4 = board.create('point', [x1, h], { visible: false, fixed: true, name: '' });
+
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: COL_BAR, fillOpacity: 0.35,
+                borders: { strokeColor: COL_BAR, strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        // ── Title ───────────────────────────────────────────────────────
+        board.create('text', [3.25, 0.545, '\\textbf{Marble Draw Results}'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Axis labels ─────────────────────────────────────────────────
+        board.create('text', [3.25, -0.085, '\\text{Number on marble}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('text', [-0.5, 0.27, '\\text{Probability}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false,
+            rotate: 90
+        });
+    </script>
+</body>
+</html>
