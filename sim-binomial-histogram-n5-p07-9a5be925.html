@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binomial Distribution Histogram (n=5, p=0.7)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); position: relative; }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); position: relative; }
+        #board { width: 100%; height: 100%; }
+        .y-axis-label {
+            position: absolute;
+            left: -6px;
+            top: 45%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-size: 13px;
+            color: #222222;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div class="y-axis-label" id="yAxisLabel"></div>
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        // Render y-axis label with KaTeX
+        katex.render('\\text{Probability}', document.getElementById('yAxisLabel'), { throwOnError: false });
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 0.44, 6.3, -0.075],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Data ────────────────────────────────────────────────────────
+        var xVals = [0, 1, 2, 3, 4, 5];
+        var pVals = [0.0024, 0.0284, 0.1323, 0.3087, 0.3602, 0.1681];
+
+        // ── Grid (horizontal lines at y-tick positions) ─────────────────
+        var yTicks = [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35];
+        for (var g = 0; g < yTicks.length; g++) {
+            board.create('segment', [[-0.5, yTicks[g]], [5.5, yTicks[g]]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Axes ────────────────────────────────────────────────────────
+        // x-axis
+        board.create('arrow', [[-0.7, 0], [6.0, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // y-axis
+        board.create('arrow', [[-0.5, -0.005], [-0.5, 0.42]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // ── Y-axis ticks & labels ───────────────────────────────────────
+        for (var yt = 0; yt < yTicks.length; yt++) {
+            var yv = yTicks[yt];
+            board.create('segment', [[-0.55, yv], [-0.45, yv]], {
+                strokeColor: '#444444', strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            board.create('text', [-0.62, yv, yv.toFixed(2)], {
+                anchorX: 'right', anchorY: 'middle',
+                fontSize: 10, color: '#444444',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── X-axis ticks & labels ───────────────────────────────────────
+        for (var t = 0; t <= 5; t++) {
+            board.create('segment', [[t, -0.006], [t, 0.006]], {
+                strokeColor: '#444444', strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            board.create('text', [t, -0.020, String(t)], {
+                anchorX: 'middle', anchorY: 'top',
+                fontSize: 11, color: '#444444',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── X-axis name label ───────────────────────────────────────────
+        board.create('text', [2.5, -0.050, '\\text{Number of Successes}'], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 13, color: '#222222',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Bars (adjacent, no gaps — bar width = 1) ────────────────────
+        for (var i = 0; i < xVals.length; i++) {
+            var x = xVals[i];
+            var h = pVals[i];
+            var x1 = x - 0.5;
+            var x2 = x + 0.5;
+
+            var bl = board.create('point', [x1, 0], { visible: false, fixed: true, name: '' });
+            var br = board.create('point', [x2, 0], { visible: false, fixed: true, name: '' });
+            var tr = board.create('point', [x2, h], { visible: false, fixed: true, name: '' });
+            var tl = board.create('point', [x1, h], { visible: false, fixed: true, name: '' });
+
+            board.create('polygon', [bl, br, tr, tl], {
+                fillColor: '#2563EB', fillOpacity: 0.30,
+                borders: { strokeColor: '#222222', strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            // Probability label above each bar
+            board.create('text', [x, h + 0.013, pVals[i].toFixed(4)], {
+                anchorX: 'middle', anchorY: 'bottom',
+                fontSize: 10, color: '#222222',
+                useKatex: true, fixed: true, highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
