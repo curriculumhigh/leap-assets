@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Probability Histogram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 420px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.4, 0.52, 6.8, -0.13],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var xVals = [0, 1, 2, 3, 4, 5];
+        var pVals = [0.168, 0.360, 0.309, 0.132, 0.028, 0.002];
+        var BAR_COL = '#2563EB';
+        var i;
+
+        // Manual axes
+        board.create('arrow', [[-0.7, 0], [6.4, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        board.create('arrow', [[-0.5, -0.005], [-0.5, 0.48]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // Grid lines (horizontal)
+        var yTicks = [0.1, 0.2, 0.3, 0.4];
+        for (i = 0; i < yTicks.length; i++) {
+            board.create('segment', [[-0.5, yTicks[i]], [5.8, yTicks[i]]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // Y-axis tick marks and labels
+        for (i = 0; i < yTicks.length; i++) {
+            board.create('segment', [[-0.58, yTicks[i]], [-0.42, yTicks[i]]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [-0.72, yTicks[i], yTicks[i].toFixed(1)], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+        // Origin label
+        board.create('text', [-0.72, 0, '0'], {
+            fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // X-axis tick marks and labels
+        for (i = 0; i < xVals.length; i++) {
+            board.create('segment', [[xVals[i], -0.008], [xVals[i], 0.008]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [xVals[i], -0.025, String(xVals[i])], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Axis labels
+        board.create('text', [2.75, -0.075, 'Number of households'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+        // P(x) label — moved left and down from arrow tip for visibility
+        board.create('text', [-1.15, 0.44, 'P(x)'], {
+            fontSize: 13, color: '#222222', anchorX: 'left', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // Histogram bars (flush, no gaps)
+        for (i = 0; i < xVals.length; i++) {
+            var xLeft = xVals[i] - 0.5;
+            var xRight = xVals[i] + 0.5;
+            var h = pVals[i];
+
+            var p1 = board.create('point', [xLeft, 0], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [xRight, 0], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [xRight, h], { visible: false, fixed: true, name: '' });
+            var p4 = board.create('point', [xLeft, h], { visible: false, fixed: true, name: '' });
+
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: BAR_COL, fillOpacity: 0.55,
+                borders: { strokeColor: BAR_COL, strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            // Value labels — offset more for very short bars
+            var labelOffset = (h < 0.05) ? 0.025 : 0.012;
+            board.create('text', [xVals[i], h + labelOffset, pVals[i].toFixed(3)], {
+                fontSize: 11, color: '#222222', anchorX: 'middle', anchorY: 'bottom',
+                fixed: true, highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
