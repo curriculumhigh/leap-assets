@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph of g(x) — distractor</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 8.5, 7.5, -2.5],
+            axis: true,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            }
+        });
+
+        // Manual grid lines
+        var GRID_COL = '#D1D5DB';
+        var GRID_W = 0.5;
+        var GRID_LAYER = 1;
+        var i;
+
+        for (i = -6; i <= 7; i++) {
+            if (i === 0) continue;
+            board.create('segment', [[i, -2.5], [i, 8.5]], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W,
+                fixed: true, highlight: false, layer: GRID_LAYER
+            });
+        }
+
+        for (i = -2; i <= 8; i++) {
+            if (i === 0) continue;
+            board.create('segment', [[-6.5, i], [7.5, i]], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W,
+                fixed: true, highlight: false, layer: GRID_LAYER
+            });
+        }
+
+        // Axis labels
+        board.create('text', [7.0, -0.45, '<i>x</i>'], { fontSize: 11, fixed: true, highlight: false });
+        board.create('text', [0.25, 8.0, '<i>y</i>'], { fontSize: 11, fixed: true, highlight: false });
+
+        // Vertical asymptote at x = 3 (red dashed reference line)
+        board.create('segment', [[3, -2.5], [3, 8.5]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false, layer: 5
+        });
+
+        // Function: g(x) = 1 + 1/(x-3)^2
+        // Continuous curve — no removable discontinuity markers
+        function g(x) {
+            return 1 + 1 / ((x - 3) * (x - 3));
+        }
+
+        // Left branch: x < 3
+        board.create('functiongraph', [
+            function(x) { return g(x); }, -7, 2.95
+        ], { strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Right branch: x > 3
+        board.create('functiongraph', [
+            function(x) { return g(x); }, 3.05, 8
+        ], { strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Function label — name only
+        board.create('text', [-5.5, 5.5, 'g(x)'], {
+            fontSize: 11, color: '#222222', useKatex: true,
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
