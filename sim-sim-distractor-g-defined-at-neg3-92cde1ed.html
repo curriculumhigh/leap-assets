@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distractor — g defined at x = −3</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 8px; height: calc(100% - 16px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 7.5, 6.5, -1.5],
+            axis: false,
+            keepAspectRatio: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // ── Manual axes with guaranteed tick labels ──────────────────────
+        var xAxis = board.create('axis', [[0, 0], [1, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            ticks: {
+                strokeColor: '#444444',
+                insertTicks: false,
+                ticksDistance: 1,
+                minorTicks: 0,
+                label: { fontSize: 9, offset: [0, -12] },
+                drawLabels: true,
+                drawZero: false
+            }
+        });
+
+        var yAxis = board.create('axis', [[0, 0], [0, 1]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            ticks: {
+                strokeColor: '#444444',
+                insertTicks: false,
+                ticksDistance: 1,
+                minorTicks: 0,
+                label: { fontSize: 9, offset: [-18, 0] },
+                drawLabels: true,
+                drawZero: false
+            }
+        });
+
+        // Axis labels
+        board.create('text', [6.1, -0.35, '<i>x</i>'], { fontSize: 13, fixed: true, highlight: false });
+        board.create('text', [0.2, 7.1, '<i>y</i>'], { fontSize: 13, fixed: true, highlight: false });
+
+        var COL = '#2563EB';
+        var COL_DOT = '#DC2626';
+
+        // ── Curve pieces ────────────────────────────────────────────────
+        function gLeft(x) {
+            return 0.06 * x * x - 0.34 * x + 3.44;
+        }
+
+        function gRight(x) {
+            var t = x - 2;
+            return -0.05 * t * t - 0.2 * t + 1;
+        }
+
+        // Left piece: x ∈ [−6.5, 2)
+        board.create('functiongraph', [gLeft, -6.5, 2], {
+            strokeColor: COL, strokeWidth: 2.5, fixed: true, highlight: false
+        });
+
+        // Right piece: x ∈ [2, 6.5]
+        board.create('functiongraph', [gRight, 2, 6.5], {
+            strokeColor: COL, strokeWidth: 2.5, fixed: true, highlight: false
+        });
+
+        // ── Key points (red) ────────────────────────────────────────────
+        // Closed dot at (−3, 5)
+        board.create('point', [-3, 5], {
+            name: '', size: 4, color: COL_DOT, fixed: true, highlight: false
+        });
+
+        // Open dot at (2, gLeft(2)) — left-hand limit
+        board.create('point', [2, gLeft(2)], {
+            name: '', size: 4, fillColor: '#ffffff', strokeColor: COL_DOT,
+            strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Closed dot at (2, 1) — g(2) = 1
+        board.create('point', [2, 1], {
+            name: '', size: 4, color: COL_DOT, fixed: true, highlight: false
+        });
+
+        // ── Function label ──────────────────────────────────────────────
+        board.create('text', [-5.8, 6.8, 'g(x)'], {
+            fontSize: 12, color: COL, useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
