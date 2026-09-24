@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parametric Curve</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        // ── Editable curve definition ───────────────────────────────────
+        var curveX = function(t) { return t * t - 1; };
+        var curveY = function(t) { return 2 * t; };
+        var T_MIN = -2, T_MAX = 2;
+        var DIR_SIGN = 1; // +1 = arrows toward increasing t, -1 = toward decreasing t
+
+        // Arrow t-values (two arrowheads on the curve)
+        var ARROW_T1 = -1;
+        var ARROW_T2 = 1;
+
+        // ── Derived values ──────────────────────────────────────────────
+        var endX0 = curveX(T_MIN), endY0 = curveY(T_MIN);
+        var endX1 = curveX(T_MAX), endY1 = curveY(T_MAX);
+
+        // Numerical tangent direction at a given t
+        var DT = 0.0001;
+        function tangentDir(t) {
+            var dx = (curveX(t + DT) - curveX(t - DT)) / (2 * DT);
+            var dy = (curveY(t + DT) - curveY(t - DT)) / (2 * DT);
+            var len = Math.sqrt(dx * dx + dy * dy);
+            if (len < 1e-12) return { dx: 0, dy: 0 };
+            return { dx: DIR_SIGN * dx / len, dy: DIR_SIGN * dy / len };
+        }
+
+        // ── Board ───────────────────────────────────────────────────────
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 5, 5, -5],
+            axis: true,
+            keepAspectRatio: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [4.6, -0.45, 'x'], { useKatex: true, fontSize: 11, fixed: true, highlight: false });
+        board.create('text', [0.25, 4.6, 'y'], { useKatex: true, fontSize: 11, fixed: true, highlight: false });
+
+        // ── Parametric curve ────────────────────────────────────────────
+        board.create('curve', [
+            function(t) { return curveX(t); },
+            function(t) { return curveY(t); },
+            T_MIN, T_MAX
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Endpoint dots ───────────────────────────────────────────────
+        board.create('point', [endX0, endY0], {
+            name: '', size: 4, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [endX1, endY1], {
+            name: '', size: 4, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // ── Orientation arrowheads on the curve ─────────────────────────
+        function drawArrowhead(t) {
+            var cx = curveX(t);
+            var cy = curveY(t);
+            var d = tangentDir(t);
+
+            // Arrow tip slightly ahead of the point along the tangent
+            var tipLen = 0.45;
+            var tipX = cx + d.dx * tipLen;
+            var tipY = cy + d.dy * tipLen;
+
+            // Two barb points
+            var barbLen = 0.35;
+            var barbAngle = 0.45; // radians (~26°)
+            var cosA = Math.cos(barbAngle), sinA = Math.sin(barbAngle);
+
+            // Rotate the negative-tangent direction by ±barbAngle
+            var bx = -d.dx, by = -d.dy;
+            var b1x = tipX + barbLen * (bx * cosA - by * sinA);
+            var b1y = tipY + barbLen * (bx * sinA + by * cosA);
+            var b2x = tipX + barbLen * (bx * cosA + by * sinA);
+            var b2y = tipY + barbLen * (-bx * sinA + by * cosA);
+
+            // Draw barb lines
+            board.create('line', [[tipX, tipY], [b1x, b1y]], {
+                straightFirst: false, straightLast: false,
+                strokeColor: '#222222', strokeWidth: 1.6,
+                fixed: true, highlight: false,
+                point1: { visible: false }, point2: { visible: false }
+            });
+            board.create('line', [[tipX, tipY], [b2x, b2y]], {
+                straightFirst: false, straightLast: false,
+                strokeColor: '#222222', strokeWidth: 1.6,
+                fixed: true, highlight: false,
+                point1: { visible: false }, point2: { visible: false }
+            });
+        }
+
+        drawArrowhead(ARROW_T1);
+        drawArrowhead(ARROW_T2);
+    </script>
+</body>
+</html>

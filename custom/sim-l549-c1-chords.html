@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secant Lines and Chords on a Curve</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 560px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 5.5, 6.5, -1],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Function ────────────────────────────────────────────────────
+        function f(x) {
+            return 4 - (x - 3) * (x - 3) / 3;
+        }
+
+        // ── Custom axes ─────────────────────────────────────────────────
+        // x-axis
+        board.create('arrow', [[-0.3, 0], [6.3, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        // y-axis
+        board.create('arrow', [[0, -0.7], [0, 5.3]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // Axis labels
+        board.create('text', [6.15, -0.35, 'x'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 5.15, 'y'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+
+        // Tick marks at x = 1..5 (small segments, no numeric labels except a and b)
+        var tickLen = 0.12;
+        for (var i = 1; i <= 5; i++) {
+            board.create('segment', [[i, -tickLen], [i, tickLen]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+        }
+        // y-axis ticks at y = 1..5
+        for (var j = 1; j <= 5; j++) {
+            board.create('segment', [[-tickLen, j], [tickLen, j]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+        }
+
+        // Labels 'a' at x=1 and 'b' at x=5
+        board.create('text', [1, -0.42, 'a'], {
+            useKatex: true, fontSize: 13, anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false, color: '#222222'
+        });
+        board.create('text', [5, -0.42, 'b'], {
+            useKatex: true, fontSize: 13, anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false, color: '#222222'
+        });
+
+        // ── Primary curve (x from 1 to 5) ──────────────────────────────
+        board.create('functiongraph', [f, 1, 5], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Five key points ─────────────────────────────────────────────
+        var xVals = [1, 2, 3, 4, 5];
+        var pts = [];
+        for (var k = 0; k < xVals.length; k++) {
+            var xv = xVals[k];
+            pts.push(board.create('point', [xv, f(xv)], {
+                name: '', size: 3, color: '#222222', fixed: true, highlight: false,
+                showInfobox: false
+            }));
+        }
+
+        // ── Four chords (dashed cyan construction lines) ────────────────
+        // Chord indices: 0-1, 1-2, 2-3, 3-4
+        for (var c = 0; c < 4; c++) {
+            if (c === 1) continue; // second chord handled separately
+            board.create('segment', [pts[c], pts[c + 1]], {
+                strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Highlighted second chord (x=2 to x=3), solid heavier ───────
+        board.create('segment', [pts[1], pts[2]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        // ── Right triangle for the second chord ─────────────────────────
+        var x2 = 2, x3 = 3;
+        var y2 = f(x2), y3 = f(x3);
+        // Corner point of the right triangle: (3, y(2))
+        var cornerPt = board.create('point', [x3, y2], {
+            name: '', visible: false, fixed: true
+        });
+
+        // Horizontal leg: from (2, y(2)) to (3, y(2))
+        board.create('segment', [[x2, y2], [x3, y2]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // Vertical leg: from (3, y(2)) to (3, y(3))
+        board.create('segment', [[x3, y2], [x3, y3]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── Delta labels ────────────────────────────────────────────────
+        // \Delta x below the horizontal leg
+        board.create('text', [2.5, y2 - 0.35, '\\Delta x'], {
+            useKatex: true, fontSize: 13, color: '#0EA5E9',
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // \Delta y to the right of the vertical leg
+        board.create('text', [x3 + 0.18, y2 - 0.16, '\\Delta y'], {
+            useKatex: true, fontSize: 13, color: '#0EA5E9',
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Curve label ─────────────────────────────────────────────────
+        board.create('text', [5.3, f(5) + 0.35, 'y = f(x)'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'left', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>

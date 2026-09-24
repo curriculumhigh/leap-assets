@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parametric Curve</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 5, 6, -1],
+            axis: true,
+            keepAspectRatio: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [5.6, -0.35, 'x'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 4.6, 'y'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+
+        // Curve: y = 0.75x + 1.2*(x/4)*(1 - x/4) on [0, 4]
+        board.create('functiongraph', [
+            function(x) {
+                return 0.75 * x + 1.2 * (x / 4) * (1 - x / 4);
+            },
+            0, 4
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Endpoint (0, 0)
+        board.create('point', [0, 0], {
+            name: '',
+            size: 5,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            showInfobox: false
+        });
+
+        // Label for (0, 0) — offset below-left to avoid curve and axes
+        board.create('text', [0.32, -0.45, '(0, 0)'], {
+            useKatex: true,
+            fontSize: 13,
+            color: '#222222',
+            anchorX: 'left',
+            fixed: true,
+            highlight: false
+        });
+
+        // Endpoint (4, 3)
+        board.create('point', [4, 3], {
+            name: '',
+            size: 5,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            showInfobox: false
+        });
+
+        // Label for (4, 3) — offset to the right to stay clear of curve
+        board.create('text', [4.2, 3.4, '(4,\\,3)'], {
+            useKatex: true,
+            fontSize: 13,
+            color: '#222222',
+            anchorX: 'left',
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>

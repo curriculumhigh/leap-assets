@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parametric Curve — Horizontal &amp; Vertical Tangents</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 560px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 10, 14, -10],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 2
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 2
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [13.5, -0.7, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false, useKatex: false });
+        board.create('text', [0.35, 9.5, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false, useKatex: false });
+
+        // ── Parametric curve: x = t² + 4t, y = 2t³ − 6t ───────────────
+        var tMin = -2.7;
+        var tMax = 2.2;
+
+        function xOfT(t) { return t * t + 4 * t; }
+        function yOfT(t) { return 2 * t * t * t - 6 * t; }
+
+        board.create('curve', [
+            function(t) { return xOfT(t); },
+            function(t) { return yOfT(t); },
+            tMin, tMax
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Key points ─────────────────────────────────────────────────
+        // P at t = -1: x = 1 - 4 = -3, y = -2 + 6 = 4
+        var P = board.create('point', [-3, 4], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [-3.9, 4.6, 'P'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Q at t = 1: x = 1 + 4 = 5, y = 2 - 6 = -4
+        var Q = board.create('point', [5, -4], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [5.5, -3.4, 'Q'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false
+        });
+
+        // R at t = -2: x = 4 - 8 = -4, y = -16 + 12 = -4
+        var R = board.create('point', [-4, -4], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [-5.2, -3.4, 'R'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Horizontal tangent segments through P and Q (cyan, dashed) ──
+        var hLen = 1.2; // half-length
+        board.create('segment', [[-3 - hLen, 4], [-3 + hLen, 4]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [[5 - hLen, -4], [5 + hLen, -4]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Vertical tangent segment through R (cyan, dashed) ───────────
+        var vHalf = 1.5; // half-height
+        board.create('segment', [[-4, -4 - vHalf], [-4, -4 + vHalf]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Direction arrowheads on the curve ───────────────────────────
+        // Small filled triangles tangent to the curve at t ≈ -1.6 and t ≈ 1.6
+        // Derivatives: dx/dt = 2t + 4, dy/dt = 6t² − 6
+
+        function drawArrow(tVal) {
+            var px = xOfT(tVal);
+            var py = yOfT(tVal);
+            var dx = 2 * tVal + 4;
+            var dy = 6 * tVal * tVal - 6;
+            var mag = Math.sqrt(dx * dx + dy * dy);
+            var ux = dx / mag;
+            var uy = dy / mag;
+
+            // Arrow size in user coords
+            var aLen = 0.45;  // length along tangent
+            var aW = 0.22;    // half-width perpendicular
+
+            // Tip of arrow (ahead along curve direction)
+            var tipX = px + aLen * ux;
+            var tipY = py + aLen * uy;
+
+            // Two base corners (perpendicular to tangent, behind the center)
+            var baseX = px - aLen * 0.3 * ux;
+            var baseY = py - aLen * 0.3 * uy;
+            var nx = -uy;
+            var ny = ux;
+
+            var b1x = baseX + aW * nx;
+            var b1y = baseY + aW * ny;
+            var b2x = baseX - aW * nx;
+            var b2y = baseY - aW * ny;
+
+            var p1 = board.create('point', [tipX, tipY], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [b1x, b1y], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [b2x, b2y], { visible: false, fixed: true, name: '' });
+
+            board.create('polygon', [p1, p2, p3], {
+                fillColor: '#222222', fillOpacity: 0.7,
+                borders: { strokeColor: '#222222', strokeWidth: 0.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        drawArrow(-1.6);
+        drawArrow(1.6);
+    </script>
+</body>
+</html>

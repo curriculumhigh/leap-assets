@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Region Between Parabola and Sixth-Power Curve</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 420px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 5.6, 1.5, -0.6],
+            axis: true,
+            keepAspectRatio: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 0.5,
+                        insertTicks: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [1.38, 0.18, 'x'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.08, 5.38, 'y'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+
+        // Colors
+        var COL_UPPER = '#222222';   // primary: parabola (upper boundary)
+        var COL_LOWER = '#2563EB';   // secondary: sixth-power (lower boundary)
+        var COL_SHADE = '#888888';
+
+        // Functions
+        function fUpper(x) { return 5 - 3 * x * x; }
+        function fLower(x) { return Math.pow(x, 6) + 1; }
+
+        // Shaded region between the two curves from x = -1 to x = 1
+        // Build as a filled polygon: upper curve left-to-right, then lower curve right-to-left
+        var N = 200;
+        var shadeX = [];
+        var shadeY = [];
+        var i, t;
+
+        // Upper curve from -1 to 1
+        for (i = 0; i <= N; i++) {
+            t = -1 + (2 * i / N);
+            shadeX.push(t);
+            shadeY.push(fUpper(t));
+        }
+        // Lower curve from 1 to -1
+        for (i = N; i >= 0; i--) {
+            t = -1 + (2 * i / N);
+            shadeX.push(t);
+            shadeY.push(fLower(t));
+        }
+
+        board.create('curve', [shadeX, shadeY], {
+            strokeWidth: 0,
+            fillColor: COL_SHADE,
+            fillOpacity: 0.15,
+            fixed: true,
+            highlight: false
+        });
+
+        // Upper curve: y = 5 - 3x^2 drawn only for -1 <= x <= 1
+        board.create('functiongraph', [fUpper, -1, 1], {
+            strokeColor: COL_UPPER,
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Lower curve: y = x^6 + 1 drawn only for -1 <= x <= 1
+        // Use a parametric curve with many points to capture the flat-then-sharp shape
+        var lowerXpts = [];
+        var lowerYpts = [];
+        var NL = 500;
+        for (i = 0; i <= NL; i++) {
+            t = -1 + (2 * i / NL);
+            lowerXpts.push(t);
+            lowerYpts.push(fLower(t));
+        }
+        board.create('curve', [lowerXpts, lowerYpts], {
+            strokeColor: COL_LOWER,
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Intersection points (-1, 2) and (1, 2)
+        board.create('point', [-1, 2], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [1, 2], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Coordinate labels for intersection points
+        board.create('text', [-1.4, 2.3, '(-1,\\, 2)'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [0.62, 2.3, '(1,\\, 2)'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Curve labels
+        // Upper curve label: near vertex, placed to the right and slightly below the peak
+        board.create('text', [0.35, 5.15, 'y = 5 - 3x^2'], {
+            useKatex: true, fontSize: 12, color: COL_UPPER, fixed: true, highlight: false
+        });
+
+        // Lower curve label: on the right side, below the curve, clear of shading
+        board.create('text', [-0.55, 0.42, 'y = x^6 + 1'], {
+            useKatex: true, fontSize: 12, color: COL_LOWER, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>

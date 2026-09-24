@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parametric Curve — Horizontal and Vertical Tangents</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 7, 6.5, -4.5],
+            axis: true,
+            keepAspectRatio: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels (KaTeX)
+        board.create('text', [6.1, -0.45, 'x'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 6.6, 'y'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+
+        // Parametric functions: x(t) = 2t + 1, y(t) = t^2 - 3, t in [-3, 2]
+        function xOfT(t) { return 2 * t + 1; }
+        function yOfT(t) { return t * t - 3; }
+
+        // Primary parametric curve — smooth with fine sampling
+        board.create('curve', [
+            function(t) { return xOfT(t); },
+            function(t) { return yOfT(t); },
+            -3, 2
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false,
+            numberPointsHigh: 400,
+            numberPointsLow: 200
+        });
+
+        // Key points and labels
+        var keyTs = [-3, -1, 0, 1, 2];
+        var labelTexts = ['t = -3', 't = -1', 't = 0', 't = 1', 't = 2'];
+
+        // Label offsets [dx, dy] chosen per point to avoid overlaps with curve and each other
+        // t=-3: point at (-5, 6) — curve going up-left, label to the right
+        // t=-1: point at (-1, -2) — curve descending, label to the left
+        // t=0:  point at (1, -3) — vertex (bottom), label below
+        // t=1:  point at (3, -2) — curve ascending, label to the right
+        // t=2:  point at (5, 1) — curve going up-right, label to the right
+        var labelOffsets = [
+            [0.5, 0.4],     // t=-3
+            [-0.5, 0.55],   // t=-1
+            [0.15, -0.7],   // t=0 (below vertex)
+            [0.3, -0.6],    // t=1 (below the point, clear of the rising arc)
+            [0.5, 0.45]     // t=2
+        ];
+        var labelAnchorsX = ['left', 'right', 'left', 'left', 'left'];
+
+        for (var i = 0; i < keyTs.length; i++) {
+            var t = keyTs[i];
+            var px = xOfT(t);
+            var py = yOfT(t);
+
+            // Solid dot
+            board.create('point', [px, py], {
+                name: '',
+                size: 5,
+                color: '#222222',
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+
+            // Parameter label (plain text, no coordinates)
+            board.create('text', [
+                px + labelOffsets[i][0],
+                py + labelOffsets[i][1],
+                labelTexts[i]
+            ], {
+                useKatex: true,
+                fontSize: 13,
+                color: '#222222',
+                anchorX: labelAnchorsX[i],
+                anchorY: 'middle',
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // Orientation arrowheads on the curve at t ≈ -2, -0.5, 1.5
+        // Draw small triangular arrows pointing in the direction of increasing t
+        var arrowTs = [-2, -0.5, 1.5];
+        var dt = 0.001;
+
+        for (var a = 0; a < arrowTs.length; a++) {
+            var ta = arrowTs[a];
+            // Position on curve
+            var ax = xOfT(ta);
+            var ay = yOfT(ta);
+
+            // Tangent direction (dx/dt, dy/dt)
+            var dxdt = 2;          // derivative of 2t+1
+            var dydt = 2 * ta;     // derivative of t^2-3
+
+            // Normalize the tangent vector
+            var mag = Math.sqrt(dxdt * dxdt + dydt * dydt);
+            var ux = dxdt / mag;
+            var uy = dydt / mag;
+
+            // Scale for the arrowhead size — need to account for non-uniform aspect ratio
+            // Bounding box: x spans 13, y spans 11.5; board is 600x450 approx
+            // Pixels per unit: x ≈ 600/13 ≈ 46.15, y ≈ 450/11.5 ≈ 39.13
+            var pxPerUnitX = 600 / 13;
+            var pxPerUnitY = 450 / 11.5;
+
+            // Convert tangent to pixel-space for correct perpendicular
+            var uxPx = ux * pxPerUnitX;
+            var uyPx = uy * pxPerUnitY;
+            var magPx = Math.sqrt(uxPx * uxPx + uyPx * uyPx);
+            var nuxPx = uxPx / magPx;
+            var nuyPx = uyPx / magPx;
+
+            // Perpendicular in pixel space
+            var perpPxX = -nuyPx;
+            var perpPxY = nuxPx;
+
+            // Arrow size in pixels
+            var arrowLenPx = 10;
+            var arrowWidPx = 5;
+
+            // Tip of arrow (ahead of ta along curve)
+            var tipX = ax + (nuxPx * arrowLenPx) / pxPerUnitX;
+            var tipY = ay + (nuyPx * arrowLenPx) / pxPerUnitY;
+
+            // Base center (at ta position)
+            var baseX = ax;
+            var baseY = ay;
+
+            // Two base corners
+            var b1x = baseX + (perpPxX * arrowWidPx) / pxPerUnitX;
+            var b1y = baseY + (perpPxY * arrowWidPx) / pxPerUnitY;
+            var b2x = baseX - (perpPxX * arrowWidPx) / pxPerUnitX;
+            var b2y = baseY - (perpPxY * arrowWidPx) / pxPerUnitY;
+
+            // Create filled triangle arrowhead
+            var p1 = board.create('point', [tipX, tipY], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [b1x, b1y], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [b2x, b2y], { visible: false, fixed: true, name: '' });
+
+            board.create('polygon', [p1, p2, p3], {
+                fillColor: '#222222',
+                fillOpacity: 1,
+                borders: { strokeColor: '#222222', strokeWidth: 0.5 },
+                vertices: { visible: false },
+                fixed: true,
+                highlight: false,
+                hasInnerPoints: false
+            });
+        }
+    </script>
+</body>
+</html>
