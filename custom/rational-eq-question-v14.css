@@ -9,8 +9,8 @@
 .req-scaffold-block {
     position: relative;
     border-left: none;
-    padding-left: 24px;
-    margin: 4px 0 22px 8px;
+    padding-left: 16px;
+    margin: 4px 0 22px 6px;
 }
 .req-scaffold-block::before {
     content: "";
@@ -858,20 +858,20 @@
 .rq14-node, .rq14-node * { box-sizing: border-box; }
 .rq14-node { position: absolute; z-index: 3; }
 .rq14-milestone {
-    left: 1.5px; top: 1px;
+    left: 1.5px; top: 3px;
     transform: translateX(-50%) rotate(45deg);
-    width: 15px; height: 15px; border-radius: 2.5px;
+    width: 12px; height: 12px; border-radius: 2px;
     background: #2f6fb3;
     box-shadow: 0 0 0 3px #fff;
 }
 .rq14-milestone.rq14-current {
     background: #fff;
-    border: 2.5px solid #2f6fb3;
+    border: 2px solid #2f6fb3;
     box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgba(47,111,179,.15);
 }
 .rq14-sec { position: relative; }
 .rq14-sec > .rq14-dot {
-    left: -22.5px; top: 9px;
+    left: -14.5px; top: 9px;
     transform: translateX(-50%);
     width: 9px; height: 9px; border-radius: 50%;
     background: #2f6fb3;
