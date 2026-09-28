@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle Above a Horizontal Line</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 420px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 9.5, 6.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var GRID_COL = '#9CA3AF';
+        var GRID_W = 1;
+        var PRIMARY = '#222222';
+        var SECONDARY = '#2563EB';
+        var SHADE_COL = '#2563EB';
+
+        // ── Polar grid ──────────────────────────────────────────────────
+        // Concentric circles r = 2, 4, 6, 8 centred at origin
+        var maxR = 8;
+        var ringRadii = [2, 4, 6, 8];
+        var i, ang, r;
+
+        for (i = 0; i < ringRadii.length; i++) {
+            r = ringRadii[i];
+            board.create('circle', [[0, 0], r], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W, strokeOpacity: 0.5,
+                fillColor: 'none', fixed: true, highlight: false,
+                dash: 0
+            });
+        }
+
+        // Radial lines every 30 degrees (π/6)
+        for (i = 0; i < 12; i++) {
+            ang = i * Math.PI / 6;
+            var ex = maxR * Math.cos(ang);
+            var ey = maxR * Math.sin(ang);
+            board.create('segment', [[0, 0], [ex, ey]], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W, strokeOpacity: 0.5,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Pole dot
+        board.create('point', [0, 0], {
+            name: '', size: 2.5, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Shaded region: inside circle AND above y = 2 ────────────────
+        // The circle is x² + (y-4)² = 16, i.e. centre (0,4), radius 4.
+        // The line y = 2 intersects at x = ±2√3.
+        // The shaded region boundary:
+        //   - Along the circle from (-2√3, 2) counterclockwise over the top to (2√3, 2)
+        //   - Then straight back along y = 2 from (2√3, 2) to (-2√3, 2)
+        // Circle parametrically: x = 4cos(t), y = 4 + 4sin(t)
+        // At intersection y=2: 4+4sin(t)=2 → sin(t)=-1/2 → t = -π/6 or t = π + π/6 = 7π/6
+        // Going CCW from t = 7π/6 (left intersection) to t = -π/6 = 11π/6 (right intersection)
+        // i.e. from 7π/6 up through π/2 to 11π/6 (= -π/6)
+
+        var sqrt3 = Math.sqrt(3);
+        var ix1x = -2 * sqrt3;  // left intersection x
+        var ix2x = 2 * sqrt3;   // right intersection x
+
+        // Build shaded region as a filled curve
+        // Arc from left intersection CCW over top to right intersection, then line back
+        var shadePtsX = [];
+        var shadePtsY = [];
+        // The region wanted is inside the circle and ABOVE y = 2, which is the
+        // MAJOR arc: sweep from the right intersection up over the top of the
+        // circle to the left intersection, then close along the chord.
+        var tStart = 11 * Math.PI / 6;
+        var tEnd = 19 * Math.PI / 6;
+        var steps = 120;
+        var dt = (tEnd - tStart) / steps;
+
+        for (i = 0; i <= steps; i++) {
+            var t = tStart + i * dt;
+            shadePtsX.push(4 * Math.cos(t));
+            shadePtsY.push(4 + 4 * Math.sin(t));
+        }
+        // Close along y = 2 back to the starting (right) intersection
+        shadePtsX.push(2 * Math.sqrt(3));
+        shadePtsY.push(2);
+
+        board.create('curve', [shadePtsX, shadePtsY], {
+            strokeWidth: 0,
+            fillColor: SHADE_COL,
+            fillOpacity: 0.12,
+            fixed: true,
+            highlight: false,
+            isClosed: true
+        });
+
+        // ── Circle r = 8 sin θ ─────────────────────────────────────────
+        // Rectangular: x² + (y-4)² = 16, centre (0,4), radius 4
+        board.create('circle', [[0, 4], 4], {
+            strokeColor: PRIMARY,
+            strokeWidth: 1.8,
+            fillColor: 'none',
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Horizontal line y = 2 ──────────────────────────────────────
+        board.create('segment', [[-6, 2], [6, 2]], {
+            strokeColor: SECONDARY,
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Intersection points ─────────────────────────────────────────
+        var pt1 = board.create('point', [-2 * sqrt3, 2], {
+            name: '', size: 5, color: PRIMARY, fixed: true, highlight: false
+        });
+        var pt2 = board.create('point', [2 * sqrt3, 2], {
+            name: '', size: 5, color: PRIMARY, fixed: true, highlight: false
+        });
+
+        // Intersection labels
+        board.create('text', [-2 * sqrt3 - 0.2, 1.05,
+            '\\left(-2\\sqrt{3},\\, 2\\right)'],
+            { useKatex: true, fontSize: 12, color: PRIMARY, anchorX: 'middle', fixed: true, highlight: false }
+        );
+        board.create('text', [2 * sqrt3 + 0.2, 1.05,
+            '\\left(2\\sqrt{3},\\, 2\\right)'],
+            { useKatex: true, fontSize: 12, color: PRIMARY, anchorX: 'middle', fixed: true, highlight: false }
+        );
+
+        // ── Curve label: r = 8 sin θ ───────────────────────────────────
+        board.create('text', [2.2, 8.6, 'r = 8\\sin\\theta'], {
+            useKatex: true, fontSize: 13, color: PRIMARY, fixed: true, highlight: false
+        });
+
+        // ── Line label: y = 2 ──────────────────────────────────────────
+        board.create('text', [-5.9, 2.55, 'y = 2'], {
+            useKatex: true, fontSize: 13, color: SECONDARY, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
