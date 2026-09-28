@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three Regions Between a Rose and a Circle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container"><div class="board-wrapper"><div id="board"></div></div></div>
+    <script>
+
+var board = JXG.JSXGraph.initBoard('board', {
+    boundingbox: [-8.2, 8.2, 8.2, -8.2], axis: false, grid: false, keepAspectRatio: true,
+    showNavigation: false, showCopyright: false,
+    pan: { enabled: false }, zoom: { enabled: false }
+});
+var GRID = '#9CA3AF', C1 = '#222222', C2 = '#2563EB', REF = '#DC2626',
+    LBL = '#374151', SHADE = '#888888';
+var MAXR = 6, LR = 7.1, i, ang;
+
+// A grid ring at the same radius as a plotted circle would swallow it, so
+// [3] drops those rings and lets the curve stand alone.
+for (i = 1; i <= MAXR; i++)
+    if ([3].indexOf(i) < 0)
+        board.create('circle', [[0, 0], i], { strokeColor: GRID, strokeWidth: 1,
+            fillColor: 'none', fixed: true, highlight: false });
+for (i = 0; i < 24; i++) {
+    ang = i * Math.PI / 12;
+    board.create('segment', [[0, 0], [MAXR * Math.cos(ang), MAXR * Math.sin(ang)]], {
+        strokeColor: GRID, strokeWidth: 1, fixed: true, highlight: false });
+}
+board.create('segment', [[0, 0], [MAXR + 0.3, 0]], { strokeColor: C1,
+    strokeWidth: 2.2, fixed: true, highlight: false });
+for (i = 1; i <= MAXR; i++) {
+    board.create('segment', [[i, -0.13], [i, 0.13]], { strokeColor: C1,
+        strokeWidth: 1.8, fixed: true, highlight: false });
+    if ([1, 2, 3, 4, 5, 6].indexOf(i) >= 0)
+        board.create('text', [i, -0.30, String(i)], { fontSize: 11, color: '#666666',
+            anchorX: 'middle', anchorY: 'top', fixed: true, highlight: false });
+}
+var LABELS = [['\\pi/6',1],['\\pi/3',2],['\\pi/2',3],['2\\pi/3',4],['5\\pi/6',5],
+    ['\\pi',6],['7\\pi/6',7],['4\\pi/3',8],['3\\pi/2',9],['5\\pi/3',10],['11\\pi/6',11]];
+for (i = 0; i < LABELS.length; i++) {
+    ang = LABELS[i][1] * Math.PI / 6;
+    board.create('text', [LR * Math.cos(ang), LR * Math.sin(ang), LABELS[i][0]], {
+        useKatex: true, fontSize: 10, color: LBL, anchorX: 'middle', anchorY: 'middle',
+        fixed: true, highlight: false });
+}
+board.create('text', [LR, 0.28, '0'], { useKatex: true, fontSize: 10, color: LBL,
+    anchorX: 'middle', anchorY: 'bottom', fixed: true, highlight: false });
+board.create('text', [LR, -0.28, '2\\pi'], { useKatex: true, fontSize: 10, color: LBL,
+    anchorX: 'middle', anchorY: 'top', fixed: true, highlight: false });
+board.create('point', [0, 0], { name: '', size: 2.5, fillColor: C1,
+    strokeColor: C1, fixed: true, highlight: false });
+
+function shade(pts) {
+    board.create('polygon', pts.map(function (p) {
+        return board.create('point', p, { visible: false, fixed: true, name: '' });
+    }), { fillColor: SHADE, fillOpacity: 0.15, borders: { visible: false },
+          vertices: { visible: false }, hasInnerPoints: false, fixed: true,
+          highlight: false, layer: 1 });
+}
+function arcPts(f, a, b, n) {
+    var out = [], k, t;
+    for (k = 0; k <= n; k++) { t = a + (b - a) * k / n; out.push([f(t) * Math.cos(t), f(t) * Math.sin(t)]); }
+    return out;
+}
+function ray(t, lab, len, lr, off) {
+    board.create('segment', [[0, 0], [len * Math.cos(t), len * Math.sin(t)]], {
+        strokeColor: REF, strokeWidth: 1.0, dash: 3, fixed: true, highlight: false });
+    if (lab) board.create('text', [lr * Math.cos(t) - Math.sin(t) * off,
+                                   lr * Math.sin(t) + Math.cos(t) * off, lab], {
+        useKatex: true, fontSize: 13, color: REF, anchorX: 'middle', anchorY: 'middle',
+        fixed: true, highlight: false });
+}
+function crossPt(f, t) {
+    board.create('point', [f(t) * Math.cos(t), f(t) * Math.sin(t)], {
+        name: '', size: 5, color: REF, fixed: true, highlight: false, layer: 9 });
+}
+function curve(f, col) {
+    board.create('curve', [function (t) { return f(t) * Math.cos(t); },
+                           function (t) { return f(t) * Math.sin(t); }, 0, 2 * Math.PI], {
+        strokeColor: col, strokeWidth: 1.8, fixed: true, highlight: false, layer: 5 });
+}
+function curveOn(f, col, a, b) {
+    board.create('curve', [function (t) { return f(t) * Math.cos(t); },
+                           function (t) { return f(t) * Math.sin(t); }, a, b], {
+        strokeColor: col, strokeWidth: 1.8, fixed: true, highlight: false, layer: 5 });
+}
+function label(x, y, txt, col) {
+    board.create('text', [x, y, txt], { useKatex: true, fontSize: 13, color: col,
+        anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+}
+
+var rose = function (t) { return 6 * Math.sin(3 * t); };
+var c3 = function (t) { return 3; };
+var k, a, b, sgn;
+for (k = 0; k < 3; k++) {
+    a = Math.PI / 18 + k * Math.PI / 3;
+    b = 5 * Math.PI / 18 + k * Math.PI / 3;
+    sgn = (k === 1) ? -1 : 1;
+    (function (s) {
+        shade(arcPts(rose, a, b, 90).concat(
+              arcPts(function (t) { return s * 3; }, b, a, 90)));
+    })(sgn);
+    crossPt(rose, a); crossPt(rose, b);
+}
+curveOn(rose, C1, 0, Math.PI);
+curveOn(c3, C2, 0, 2 * Math.PI);
+label(-4.6, 4.6, 'r = 6\\sin 3\\theta', C1);
+label(4.9, -4.9, 'r = 3', C2);
+    </script>
+</body>
+</html>
