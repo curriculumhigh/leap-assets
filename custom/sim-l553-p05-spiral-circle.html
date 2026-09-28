@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spiral Inside a Circle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 420px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-10.5, 9.6, 10.5, -9.6],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var GRID_COL = '#9CA3AF';
+        var GRID_W = 1;
+        var COL_SPIRAL = '#222222';
+        var COL_CIRCLE = '#2563EB';
+        var COL_SHADE = '#2563EB';
+
+        // ── Polar grid: concentric circles r = 1..7 ────────────────────
+        var maxR = 7;
+        var i, ang, rr;
+        for (rr = 1; rr <= maxR; rr++) {
+            board.create('circle', [[0, 0], rr], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W, strokeOpacity: 1,
+                fillColor: 'none', fixed: true, highlight: false,
+                dash: 0
+            });
+        }
+
+        // ── Polar grid: radial lines every pi/6 (30°) ──────────────────
+        for (i = 0; i < 12; i++) {
+            ang = i * Math.PI / 6;
+            board.create('segment', [[0, 0], [maxR * Math.cos(ang), maxR * Math.sin(ang)]], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W, strokeOpacity: 1,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Polar axis (0-direction) — darkened ─────────────────────────
+        board.create('segment', [[0, 0], [maxR + 0.3, 0]], {
+            strokeColor: '#222222', strokeWidth: 2.2,
+            fixed: true, highlight: false
+        });
+
+        // Tick marks on polar axis
+        for (rr = 1; rr <= maxR; rr++) {
+            board.create('segment', [[rr, -0.13], [rr, 0.13]], {
+                strokeColor: '#222222', strokeWidth: 1.8,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Radius numbers on polar axis (only even, to keep clean)
+        var axisNums = [2, 4, 6];
+        for (i = 0; i < axisNums.length; i++) {
+            board.create('text', [axisNums[i], -0.45, String(axisNums[i])], {
+                fontSize: 10, color: '#666666', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Angle labels (π/6 family) ───────────────────────────────────
+        var angleLabels = [
+            [Math.PI / 6, '\\pi/6'],
+            [Math.PI / 3, '\\pi/3'],
+            [Math.PI / 2, '\\pi/2'],
+            [2 * Math.PI / 3, '2\\pi/3'],
+            [5 * Math.PI / 6, '5\\pi/3'],  // will fix below
+            [Math.PI, '\\pi'],
+            [7 * Math.PI / 6, '7\\pi/6'],
+            [4 * Math.PI / 3, '4\\pi/3'],
+            [3 * Math.PI / 2, '3\\pi/2'],
+            [5 * Math.PI / 3, '5\\pi/3'],
+            [11 * Math.PI / 6, '11\\pi/6']
+        ];
+        // Correct 5π/6 label
+        angleLabels[4] = [5 * Math.PI / 6, '5\\pi/6'];
+
+        var labelR = maxR + 1.1;
+        for (i = 0; i < angleLabels.length; i++) {
+            ang = angleLabels[i][0];
+            var lx = labelR * Math.cos(ang);
+            var ly = labelR * Math.sin(ang);
+            board.create('text', [lx, ly, angleLabels[i][1]], {
+                useKatex: true, fontSize: 10, color: '#374151',
+                anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // 0 and 2π labels at polar axis end
+        board.create('text', [maxR + 0.6, 0.3, '0'], {
+            fontSize: 10, color: '#374151', anchorX: 'left',
+            fixed: true, highlight: false
+        });
+        board.create('text', [maxR + 0.6, -0.3, '2\\pi'], {
+            useKatex: true, fontSize: 10, color: '#374151', anchorX: 'left',
+            fixed: true, highlight: false
+        });
+
+        // ── Pole dot ────────────────────────────────────────────────────
+        board.create('point', [0, 0], {
+            name: '', size: 2.5, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Shaded region ───────────────────────────────────────────────
+        // Region inside both curves:
+        //   θ from 0 to 2: bounded by spiral r = 3θ
+        //   θ from 2 to π: bounded by circle r = 6
+        // Then closed back along θ = π ray to pole.
+        // Build as a filled polygon/curve of (x,y) points.
+
+        var shadePts = [];
+        var dt = 0.02;
+        var t;
+
+        // Part 1: Along spiral from θ = 0 to θ = 2
+        for (t = 0; t <= 2; t += dt) {
+            var rs = 3 * t;
+            shadePts.push([rs * Math.cos(t), rs * Math.sin(t)]);
+        }
+        // Exact crossing point
+        shadePts.push([6 * Math.cos(2), 6 * Math.sin(2)]);
+
+        // Part 2: Along circle r = 6 from θ = 2 to θ = π
+        for (t = 2 + dt; t <= Math.PI; t += dt) {
+            shadePts.push([6 * Math.cos(t), 6 * Math.sin(t)]);
+        }
+        // Exact endpoint at θ = π
+        shadePts.push([6 * Math.cos(Math.PI), 6 * Math.sin(Math.PI)]);
+
+        // Part 3: Back along θ = π ray to pole (r = 6 down to 0)
+        shadePts.push([0, 0]);
+
+        // Create filled polygon from points
+        var polyPts = [];
+        for (i = 0; i < shadePts.length; i++) {
+            polyPts.push(board.create('point', shadePts[i], { visible: false, fixed: true, name: '' }));
+        }
+
+        board.create('polygon', polyPts, {
+            fillColor: COL_SHADE, fillOpacity: 0.12,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Circle r = 6 ───────────────────────────────────────────────
+        board.create('circle', [[0, 0], 6], {
+            strokeColor: COL_CIRCLE, strokeWidth: 1.8,
+            fillColor: 'none', fixed: true, highlight: false
+        });
+
+        // ── Spiral r = 3θ, θ from 0 to π ───────────────────────────────
+        board.create('curve', [
+            function(t) { return 3 * t * Math.cos(t); },
+            function(t) { return 3 * t * Math.sin(t); },
+            0, Math.PI
+        ], {
+            strokeColor: COL_SPIRAL, strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        // ── Crossing point at θ = 2 ────────────────────────────────────
+        var crossX = 6 * Math.cos(2);
+        var crossY = 6 * Math.sin(2);
+        board.create('point', [crossX, crossY], {
+            name: '', size: 5, color: '#222222',
+            fixed: true, highlight: false
+        });
+
+        // Label for crossing point: θ = 2
+        board.create('text', [crossX + 0.45, crossY + 0.5, '\\theta = 2'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'left', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+
+        // ── Curve labels ────────────────────────────────────────────────
+        // Spiral label near its outer end (θ ≈ π, r ≈ 3π ≈ 9.42, but it ends at θ = π)
+        // Place label near θ ≈ 2.7 along spiral, offset outward
+        var spiralLabelTheta = 2.8;
+        var spiralLabelR = 3 * spiralLabelTheta;
+        board.create('text', [
+            spiralLabelR * Math.cos(spiralLabelTheta) - 1.4,
+            spiralLabelR * Math.sin(spiralLabelTheta) + 0.5,
+            'r = 3\\theta'
+        ], {
+            useKatex: true, fontSize: 13, color: COL_SPIRAL,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Circle label — on a clear stretch, bottom-right quadrant
+        var circleLabelTheta = -Math.PI / 4;
+        board.create('text', [
+            6 * Math.cos(circleLabelTheta) + 0.5,
+            6 * Math.sin(circleLabelTheta) - 0.5,
+            'r = 6'
+        ], {
+            useKatex: true, fontSize: 13, color: COL_CIRCLE,
+            anchorX: 'left', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
