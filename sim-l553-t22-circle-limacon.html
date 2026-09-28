@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle and Limaçon Common Interior</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 420px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-15, 15.5, 16, -15.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var GRID_COL = '#9CA3AF';
+        var GRID_W = 1;
+        var COL_CIRCLE = '#222222';
+        var COL_LIMACON = '#2563EB';
+        var COL_SHADE = '#7C3AED';
+
+        // ── Polar grid: concentric circles ──────────────────────────────
+        var maxR = 14;
+        var i, ang, cx, cy, ex, ey;
+        for (i = 2; i <= maxR; i += 2) {
+            board.create('circle', [[0, 0], i], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W, strokeOpacity: 0.5,
+                fillColor: 'none', fixed: true, highlight: false,
+                dash: 0
+            });
+        }
+
+        // ── Polar grid: radial lines every 30° (π/6) ───────────────────
+        for (i = 0; i < 12; i++) {
+            ang = i * Math.PI / 6;
+            ex = (maxR + 1) * Math.cos(ang);
+            ey = (maxR + 1) * Math.sin(ang);
+            board.create('segment', [[0, 0], [ex, ey]], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W, strokeOpacity: 0.5,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Pole dot ────────────────────────────────────────────────────
+        board.create('point', [0, 0], {
+            name: '', size: 2.5, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Shaded region: common interior ──────────────────────────────
+        // The two curves cross at θ = ±π/3.
+        // For θ in [−π/3, π/3] the circle r=11 is inside the limaçon r=8+6cosθ,
+        //   so the common boundary is the circle (r=11).
+        // For θ in [π/3, 2π − π/3] (i.e. π/3 to 5π/3 going the long way),
+        //   the limaçon is inside the circle, so the common boundary is the limaçon.
+        // We trace: circle from −π/3 to π/3, then limaçon from π/3 to 2π−π/3.
+
+        var shadePts = [];
+        var t, r, nSteps;
+
+        // Part 1: along the circle from θ = −π/3 to θ = π/3
+        nSteps = 80;
+        for (i = 0; i <= nSteps; i++) {
+            t = -Math.PI / 3 + (2 * Math.PI / 3) * (i / nSteps);
+            shadePts.push([11 * Math.cos(t), 11 * Math.sin(t)]);
+        }
+
+        // Part 2: along the limaçon from θ = π/3 to θ = 2π − π/3 (= 5π/3)
+        nSteps = 200;
+        for (i = 0; i <= nSteps; i++) {
+            t = Math.PI / 3 + (4 * Math.PI / 3) * (i / nSteps);
+            r = 8 + 6 * Math.cos(t);
+            shadePts.push([r * Math.cos(t), r * Math.sin(t)]);
+        }
+
+        // Build polygon for shading
+        var shadeVertices = [];
+        for (i = 0; i < shadePts.length; i++) {
+            shadeVertices.push(
+                board.create('point', shadePts[i], { visible: false, fixed: true, name: '' })
+            );
+        }
+        board.create('polygon', shadeVertices, {
+            fillColor: COL_SHADE, fillOpacity: 0.12,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Circle r = 11 ───────────────────────────────────────────────
+        board.create('curve', [
+            function(t) { return 11 * Math.cos(t); },
+            function(t) { return 11 * Math.sin(t); },
+            0, 2 * Math.PI
+        ], {
+            strokeColor: COL_CIRCLE, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Limaçon r = 8 + 6 cos θ ────────────────────────────────────
+        board.create('curve', [
+            function(t) { return (8 + 6 * Math.cos(t)) * Math.cos(t); },
+            function(t) { return (8 + 6 * Math.cos(t)) * Math.sin(t); },
+            0, 2 * Math.PI
+        ], {
+            strokeColor: COL_LIMACON, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Intersection points at θ = ±π/3 ────────────────────────────
+        var thetaTop = Math.PI / 3;
+        var thetaBot = -Math.PI / 3;
+        var ix1 = 11 * Math.cos(thetaTop);
+        var iy1 = 11 * Math.sin(thetaTop);
+        var ix2 = 11 * Math.cos(thetaBot);
+        var iy2 = 11 * Math.sin(thetaBot);
+
+        board.create('point', [ix1, iy1], {
+            name: '', size: 4, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('point', [ix2, iy2], {
+            name: '', size: 4, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Intersection labels — placed clear of both curves
+        board.create('text', [ix1 + 1.4, iy1 + 1.2, '\\theta = \\pi/3'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [ix2 + 1.4, iy2 - 1.8, '\\theta = -\\pi/3'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Curve labels ────────────────────────────────────────────────
+        // Circle label — placed at upper-left region, clear of limaçon
+        board.create('text', [-9.2, 8.6, 'r = 11'], {
+            anchorX: 'right', anchorY: 'middle',
+            useKatex: true, fontSize: 13, color: COL_CIRCLE, fixed: true, highlight: false
+        });
+
+        // Limaçon label — placed at lower-right, on a clear stretch
+        board.create('text', [7.0, -14.2, 'r = 8 + 6\\cos\\theta'], {
+            useKatex: true, fontSize: 13, color: COL_LIMACON,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
