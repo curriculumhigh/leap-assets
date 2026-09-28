@@ -857,24 +857,18 @@
 /* ═══════════════ v14: journey spine ═══════════════ */
 .rq15-node, .rq15-node * { box-sizing: border-box; }
 .rq15-node { position: absolute; z-index: 3; }
-/* v15: step markers are circles, identical size to sub-step dots */
+/* v15: step markers are diamonds (v14 size — slightly larger than the dots) */
 .rq15-step {
-    left: 1.5px; top: 4px;
-    transform: translateX(-50%);
-    width: 10px; height: 10px; border-radius: 50%;
+    left: 1.5px; top: 3px;
+    transform: translateX(-50%) rotate(45deg);
+    width: 12px; height: 12px; border-radius: 2px;
     background: #2f6fb3;
     box-shadow: 0 0 0 3px #fff;
 }
 .rq15-step.rq15-current {
     background: #fff;
-    border: 2.5px solid #2f6fb3;
+    border: 2px solid #2f6fb3;
     box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgba(47,111,179,.15);
-}
-/* v15: the very first marker is a diamond — the origin of the journey */
-.rq15-step.rq15-origin {
-    border-radius: 2px;
-    transform: translateX(-50%) rotate(45deg);
-    width: 11px; height: 11px; top: 3px;
 }
 /* v15: continuous rail — solid bridge across the gap to the next step block */
 .req-scaffold-block.rq15-bridge::after {

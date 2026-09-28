@@ -196,7 +196,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     $currentStepDiv.attr("data-group", sec.group);
                     if (si > 0) $currentStepDiv.addClass("req-section-locked");
                     // v14: journey-spine milestone node for this step
-                    $currentStepDiv.append('<span class="rq15-node rq15-step' + (stepCounter === 1 ? ' rq15-origin' : '') + '"></span>');
+                    $currentStepDiv.append('<span class="rq15-node rq15-step"></span>');
                     rq15ChildIdx = 0;
                     $w.append($currentStepDiv);
                 }
