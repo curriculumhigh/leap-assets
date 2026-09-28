@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Small Loop of a Four-Petal Limaçon</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 420px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7.5, 7.5, 7.5, -7.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var GRID_COL = '#9CA3AF';
+        var GRID_W = 1;
+        var MAX_R = 6;
+        var NUM_RINGS = 6;
+
+        // ── Concentric circles ──────────────────────────────────────────
+        var ri;
+        for (ri = 1; ri <= NUM_RINGS; ri++) {
+            board.create('circle', [[0, 0], ri], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W,
+                fillColor: 'none', fixed: true, highlight: false,
+                dash: 0
+            });
+        }
+
+        // ── Radial lines every π/6 (30°) — 12 directions ───────────────
+        var ai, ext = MAX_R + 0.8;
+        for (ai = 0; ai < 12; ai++) {
+            var ang = ai * Math.PI / 6;
+            board.create('segment', [[0, 0], [ext * Math.cos(ang), ext * Math.sin(ang)]], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Polar axis (0-direction) — darker ───────────────────────────
+        board.create('segment', [[0, 0], [ext + 0.3, 0]], {
+            strokeColor: '#222222', strokeWidth: 2.2,
+            fixed: true, highlight: false
+        });
+
+        // Tick marks on polar axis at each ring
+        for (ri = 1; ri <= NUM_RINGS; ri++) {
+            board.create('segment', [[ri, -0.13], [ri, 0.13]], {
+                strokeColor: '#222222', strokeWidth: 1.8,
+                fixed: true, highlight: false
+            });
+            board.create('text', [ri, -0.45, String(ri)], {
+                fontSize: 10, color: '#666666', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Angle labels (π/6 family) ───────────────────────────────────
+        var angleLabels = [
+            [1, '\\pi/6'], [2, '\\pi/3'], [3, '\\pi/2'],
+            [4, '2\\pi/3'], [5, '5\\pi/6'], [6, '\\pi'],
+            [7, '7\\pi/6'], [8, '4\\pi/3'], [9, '3\\pi/2'],
+            [10, '5\\pi/3'], [11, '11\\pi/6']
+        ];
+        var labelR = MAX_R + 1.1;
+        for (var li = 0; li < angleLabels.length; li++) {
+            var idx = angleLabels[li][0];
+            var lbl = angleLabels[li][1];
+            var la = idx * Math.PI / 6;
+            board.create('text', [labelR * Math.cos(la), labelR * Math.sin(la), lbl], {
+                useKatex: true, fontSize: 10, color: '#374151',
+                anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // 0 and 2π labels at polar axis end
+        board.create('text', [ext + 0.6, 0.3, '0'], {
+            useKatex: true, fontSize: 10, color: '#374151',
+            anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+        board.create('text', [ext + 0.6, -0.3, '2\\pi'], {
+            useKatex: true, fontSize: 10, color: '#374151',
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // ── Pole ────────────────────────────────────────────────────────
+        board.create('point', [0, 0], {
+            name: '', size: 2.5, color: '#222222', fixed: true,
+            highlight: false, showInfobox: false
+        });
+
+        // ── r(θ) = 2 + 4 cos(2θ) ───────────────────────────────────────
+        function rFunc(t) {
+            return 2 + 4 * Math.cos(2 * t);
+        }
+
+        // Full curve: primary color #222222
+        board.create('curve', [
+            function(t) { return rFunc(t) * Math.cos(t); },
+            function(t) { return rFunc(t) * Math.sin(t); },
+            0, 2 * Math.PI
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            fixed: true, highlight: false,
+            numberPointsHigh: 800
+        });
+
+        // ── Identify the small loop below the pole ──────────────────────
+        // r = 2 + 4 cos(2θ) = 0  →  cos(2θ) = -1/2
+        // 2θ = 2π/3, 4π/3, 8π/3, 10π/3  →  θ = π/3, 2π/3, 4π/3, 5π/3
+        // The loop below the pole (negative y region) occurs between
+        // θ = 4π/3 and θ = 5π/3 where r < 0 and the curve dips below.
+        // In this interval r is negative, so the plotted point (r cos θ, r sin θ)
+        // flips to the opposite side. Let's verify:
+        // At θ = 3π/2 (midpoint): r = 2 + 4 cos(3π) = 2 + 4(-1) = -2
+        // Point: (-2) cos(3π/2) = 0,  (-2) sin(3π/2) = 2  → that's ABOVE.
+        // So the "small loop below the pole" is actually the one between
+        // θ = π/3 and θ = 2π/3 where r < 0, points flip downward.
+        // At θ = π/2: r = 2 + 4 cos(π) = 2 - 4 = -2
+        // Point: (-2) cos(π/2) = 0, (-2) sin(π/2) = -2  → below! ✓
+
+        var tLoopStart = Math.PI / 3;
+        var tLoopEnd = 2 * Math.PI / 3;
+
+        // ── Shade the small loop below the pole ─────────────────────────
+        // Build a polygon approximation of the loop for shading
+        var NPTS = 200;
+        var shadePtsX = [];
+        var shadePtsY = [];
+        var dt = (tLoopEnd - tLoopStart) / NPTS;
+        for (var i = 0; i <= NPTS; i++) {
+            var t = tLoopStart + i * dt;
+            var r = rFunc(t);
+            shadePtsX.push(r * Math.cos(t));
+            shadePtsY.push(r * Math.sin(t));
+        }
+
+        // Create the shaded region as a filled curve
+        board.create('curve', [shadePtsX, shadePtsY], {
+            strokeWidth: 0,
+            fillColor: '#222222',
+            fillOpacity: 0.12,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Label S inside the shaded loop ──────────────────────────────
+        // The loop center is roughly at y ≈ -1.0
+        // At θ = π/2: point is (0, -2). Centroid of the loop is around (0, -1).
+        // Plain text, not KaTeX: JSXGraph cannot measure a KaTeX span at placement
+        // time, so anchorX:'middle' drifts and the glyph rides the loop's edge.
+        board.create('text', [0, -1.0, 'S'], {
+            fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold; font-style: italic;'
+        });
+
+    </script>
+</body>
+</html>
