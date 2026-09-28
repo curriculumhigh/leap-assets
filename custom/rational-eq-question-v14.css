@@ -879,38 +879,14 @@
 }
 .rq14-sec > .rq14-dot.rq14-current {
     width: 11px; height: 11px;
-    background: #fff; border: 2.5px solid #d97706;
-    box-shadow: 0 0 0 3px #fff, 0 0 0 7px rgba(217,119,6,.15);
-}
-/* amber focus on the active sub-step's not-yet-answered inputs */
-.rq14-current-sec .mq-editable-field:not(.correct):not(.incorrect) {
-    border-color: #d97706;
-    box-shadow: 0 0 0 3px rgba(217,119,6,.13);
-}
-.rq14-current-sec .req-dropdown-wrap:not(.correct):not(.incorrect) .req-dd-trigger {
-    border-color: #d97706;
-    box-shadow: 0 0 0 3px rgba(217,119,6,.13);
+    background: #fff; border: 2.5px solid #2f6fb3;
+    box-shadow: 0 0 0 3px #fff, 0 0 0 7px rgba(47,111,179,.15);
 }
 /* teacher live / review: spine reads as a table of contents */
 .req-teacher-live .req-scaffold-block.rq14-incomplete::after { display: none; }
 
 
-/* ═══ v14: reveal transition (idea #4) ═══ */
-/* Newly-revealed sub-steps, step blocks, and eq-table rows grow-and-fade in.
-   The animation starts when the element first renders (locked class removed →
-   display flips on), so no JS hooks are needed. Guarded for reduced motion. */
+/* ═══ v14: marker fill transition (no reveal animation, no input styling) ═══ */
 @media (prefers-reduced-motion: no-preference) {
-    .rq14-sec:not(.req-section-locked),
-    .req-scaffold-block:not(.req-section-locked),
-    .req-eq-row:not(.locked) {
-        animation: rq14-reveal 0.24s ease-out;
-    }
-    /* smooth handoff of the amber/current markers and input outlines */
     .rq14-node { transition: background 0.2s, border-color 0.2s, box-shadow 0.2s; }
-    .req-widget .mq-editable-field { transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; }
-    .req-dd-trigger { transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; }
-}
-@keyframes rq14-reveal {
-    from { opacity: 0; transform: translateY(-5px); }
-    to   { opacity: 1; transform: none; }
 }
