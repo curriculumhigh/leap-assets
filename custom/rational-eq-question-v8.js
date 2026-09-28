@@ -152,6 +152,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         var currentGroup = null;
         var $currentStepDiv = null;
         var stepCounter = 0;
+        var rq14ChildIdx = 0;   // v14-spine: sub-step index within the current step
         self.groupFirstIndex = {};
 
         sections.forEach(function (sec, si) {
@@ -180,6 +181,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     // Also tag with group ID for unlock logic
                     $currentStepDiv.attr("data-group", sec.group);
                     if (si > 0) $currentStepDiv.addClass("req-section-locked");
+                    // v14-spine: milestone node for this step
+                    $currentStepDiv.append('<span class="rq14-node rq14-milestone"></span>');
+                    rq14ChildIdx = 0;
                     $w.append($currentStepDiv);
                 }
 
@@ -189,6 +193,10 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
                     // The text section that starts a new step within a group is locked
                     $sec.addClass("req-section-locked");
                 }
+                // v14-spine: tag grouped sections; dot node after the first sub-step
+                $sec.addClass("rq14-sec");
+                if (rq14ChildIdx > 0) $sec.append('<span class="rq14-node rq14-dot"></span>');
+                rq14ChildIdx++;
                 $currentStepDiv.append($sec);
             } else {
                 currentGroup = null;
@@ -216,6 +224,9 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             $("#" + self.uid + "-keypad").removeClass("visible");
             self.focusedMQField = null;
         });
+
+        // v14-spine: journey-spine state tracking (observer-driven, additive)
+        self._rq14Setup($w);
 
         // Branch based on state and role
         if (self.isTeacher) {
@@ -259,6 +270,49 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         } else {
             // Student initial: interactive flow
             self.unlockSection(0);
+        }
+    };
+
+    // ── v14: journey spine — node/current-state refresh ──
+    Question.prototype._rq14Setup = function ($w) {
+        var self = this;
+        self._rq14Root = $w[0];
+        self._rq14Refresh();
+        if (window.MutationObserver) {
+            self._rq14MO = new MutationObserver(function () {
+                clearTimeout(self._rq14T);
+                self._rq14T = setTimeout(function () { self._rq14Refresh(); }, 60);
+            });
+            self._rq14Observe = function () {
+                self._rq14MO.observe(self._rq14Root, { attributes: true, subtree: true, attributeFilter: ["class", "style"] });
+            };
+            self._rq14Observe();
+        }
+    };
+    Question.prototype._rq14Refresh = function () {
+        var self = this;
+        if (!self._rq14Root) return;
+        var $w = $(self._rq14Root);
+        if (self._rq14MO) self._rq14MO.disconnect();
+        try {
+            var widgetDone = $("#" + self.uid + "-done").is(":visible");
+            $w.find(".rq14-current").removeClass("rq14-current");
+            $w.find(".rq14-current-sec").removeClass("rq14-current-sec");
+            $w.find(".rq14-incomplete").removeClass("rq14-incomplete");
+            if (self.isTeacher || self.state === "review" || widgetDone) return;
+            var $blocks = $w.find(".req-scaffold-block").not(".req-section-locked");
+            var $lastBlock = $blocks.last();
+            if (!$lastBlock.length) return;
+            $lastBlock.addClass("rq14-incomplete");
+            $lastBlock.children(".rq14-milestone").addClass("rq14-current");
+            var $vis = $lastBlock.children(".rq14-sec").not(".req-section-locked");
+            var $cur = $vis.last();
+            if ($cur.length) {
+                $cur.addClass("rq14-current-sec");
+                $cur.children(".rq14-dot").addClass("rq14-current");
+            }
+        } finally {
+            if (self._rq14Observe) self._rq14Observe();
         }
     };
 
