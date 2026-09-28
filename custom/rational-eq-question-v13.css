@@ -5,11 +5,26 @@
 .req-widget { font-family: "Noto Serif", serif; font-size: 16px; line-height: 1.7; }
 .req-dd-item .katex .mord.text { font-family: "Noto Serif", serif; }
 
-/* ── Scaffold wrapper (wraps each step — blue left bar) ── */
+/* ── Scaffold wrapper (v14: journey-spine rail replaces the plain blue bar) ── */
 .req-scaffold-block {
-    border-left: 3px solid #1565C0;
+    position: relative;
+    border-left: none;
     padding-left: 16px;
-    margin: 4px 0 16px;
+    margin: 4px 0 22px 6px;
+}
+.req-scaffold-block::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 10px; bottom: 2px;
+    width: 3px; border-radius: 2px;
+    background: #2f6fb3;
+}
+.req-scaffold-block.rq14-incomplete::after {
+    content: "";
+    position: absolute;
+    left: 0; bottom: -22px;
+    width: 3px; height: 22px;
+    background: linear-gradient(#2f6fb3, rgba(47,111,179,0));
 }
 .req-scaffold-block > * + * { margin-top: 14px; }
 .req-scaffold-block p { font-size: 16px; line-height: 1.7; margin: 0 0 10px; }
@@ -830,3 +845,40 @@
 .req-dd-structural .req-dd-menu { min-width: 72px; }
 /* inside KaTeX output, isolate the widget from math font/style inheritance */
 .katex .req-dropdown-wrap { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.4; }
+
+/* ═══════════════ v14: journey spine ═══════════════ */
+.rq14-node, .rq14-node * { box-sizing: border-box; }
+.rq14-node { position: absolute; z-index: 3; }
+.rq14-milestone {
+    left: 1.5px; top: 3px;
+    transform: translateX(-50%) rotate(45deg);
+    width: 12px; height: 12px; border-radius: 2px;
+    background: #2f6fb3;
+    box-shadow: 0 0 0 3px #fff;
+}
+.rq14-milestone.rq14-current {
+    background: #fff;
+    border: 2px solid #2f6fb3;
+    box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgba(47,111,179,.15);
+}
+.rq14-sec { position: relative; }
+.rq14-sec > .rq14-dot {
+    left: -14.5px; top: 9px;
+    transform: translateX(-50%);
+    width: 9px; height: 9px; border-radius: 50%;
+    background: #2f6fb3;
+    box-shadow: 0 0 0 3px #fff;
+}
+.rq14-sec > .rq14-dot.rq14-current {
+    width: 11px; height: 11px;
+    background: #fff; border: 2.5px solid #2f6fb3;
+    box-shadow: 0 0 0 3px #fff, 0 0 0 7px rgba(47,111,179,.15);
+}
+/* teacher live / review: spine reads as a table of contents */
+.req-teacher-live .req-scaffold-block.rq14-incomplete::after { display: none; }
+
+
+/* ═══ v14: marker fill transition (no reveal animation, no input styling) ═══ */
+@media (prefers-reduced-motion: no-preference) {
+    .rq14-node { transition: background 0.2s, border-color 0.2s, box-shadow 0.2s; }
+}
