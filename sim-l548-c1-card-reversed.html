@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parametric Curve Option Card</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        // ================================================================
+        // VARIANT PARAMETERS — edit these for sibling cards
+        // ================================================================
+        var P1 = [-3, -1];          // start endpoint (t_min)
+        var P2 = [1, 7];            // end endpoint (t_max)
+        var DIR_SIGN = -1;           // +1 = arrows from P1→P2, -1 = arrows from P2→P1
+        var DRAW_FULL_LINE = false; // true = extend line beyond endpoints; false = segment only
+
+        // ================================================================
+        // Board setup
+        // ================================================================
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 9, 9, -5],
+            axis: true,
+            keepAspectRatio: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 1,
+                        ticksDistance: 2
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 1,
+                        ticksDistance: 2
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [8.5, -0.55, 'x'], { useKatex: true, fontSize: 11, fixed: true, highlight: false });
+        board.create('text', [0.3, 8.5, 'y'], { useKatex: true, fontSize: 11, fixed: true, highlight: false });
+
+        // ================================================================
+        // Segment or full line
+        // ================================================================
+        if (DRAW_FULL_LINE) {
+            // Extend beyond endpoints as a full line
+            var dx = P2[0] - P1[0];
+            var dy = P2[1] - P1[1];
+            // Parametric extension well beyond bounding box
+            var EXT1 = [P1[0] - 20 * dx, P1[1] - 20 * dy];
+            var EXT2 = [P2[0] + 20 * dx, P2[1] + 20 * dy];
+            board.create('segment', [EXT1, EXT2], {
+                strokeColor: '#222222', strokeWidth: 1.8,
+                fixed: true, highlight: false
+            });
+        } else {
+            board.create('segment', [P1, P2], {
+                strokeColor: '#222222', strokeWidth: 1.8,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ================================================================
+        // Endpoint dots (solid key points, no labels)
+        // ================================================================
+        board.create('point', P1, {
+            name: '', size: 4, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', P2, {
+            name: '', size: 4, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false
+        });
+
+        // ================================================================
+        // Orientation arrowheads along the segment
+        // ================================================================
+        // Direction vector from P1 to P2
+        var segDx = P2[0] - P1[0];
+        var segDy = P2[1] - P1[1];
+        var segLen = Math.sqrt(segDx * segDx + segDy * segDy);
+        // Unit direction (accounting for DIR_SIGN)
+        var ux = DIR_SIGN * segDx / segLen;
+        var uy = DIR_SIGN * segDy / segLen;
+
+        // Arrow parameters (in board coordinates)
+        var ARROW_HALF = 0.35;  // half-length of arrowhead along segment direction
+        var ARROW_WING = 0.22;  // wing spread perpendicular to segment
+
+        // Perpendicular unit vector
+        var px = -uy;
+        var py = ux;
+
+        // Place arrowheads at t = 0, 1, 2  →  parametric positions along segment
+        // t ranges from -1 to 3, so t=0 → fraction 1/4, t=1 → 2/4, t=2 → 3/4
+        var tValues = [0, 1, 2];
+        var tMin = -1, tMax = 3;
+
+        for (var i = 0; i < tValues.length; i++) {
+            var frac = (tValues[i] - tMin) / (tMax - tMin);
+            var cx = P1[0] + frac * segDx;
+            var cy = P1[1] + frac * segDy;
+
+            // Arrowhead tip (forward)
+            var tipX = cx + ARROW_HALF * ux;
+            var tipY = cy + ARROW_HALF * uy;
+            // Two base corners
+            var baseX = cx - ARROW_HALF * ux;
+            var baseY = cy - ARROW_HALF * uy;
+            var wingAx = baseX + ARROW_WING * px;
+            var wingAy = baseY + ARROW_WING * py;
+            var wingBx = baseX - ARROW_WING * px;
+            var wingBy = baseY - ARROW_WING * py;
+
+            board.create('polygon', [
+                [tipX, tipY],
+                [wingAx, wingAy],
+                [wingBx, wingBy]
+            ], {
+                fillColor: '#222222', fillOpacity: 1,
+                borders: { strokeColor: '#222222', strokeWidth: 0.5 },
+                vertices: { visible: false },
+                fixed: true, highlight: false, hasInnerPoints: false
+            });
+        }
+    </script>
+</body>
+</html>
