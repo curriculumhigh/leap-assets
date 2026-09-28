@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Polar Region Bounded by Two Rays</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <!-- KaTeX loaded WITHOUT defer so it is ready before the board script runs -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 5.3, 6.9, -1.3],
+            axis: false, grid: false, keepAspectRatio: true,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false }
+        });
+
+        // Palette (sim_builder design system)
+        var CURVE = '#222222';   // primary mathematical object
+        var REF   = '#DC2626';   // reference lines: the bounding rays
+        var WEDGE = '#2563EB';   // 2nd colour: the one typical wedge
+        var AXIS  = '#444444';
+        var LBL   = '#374151';
+
+        function rad(t) { return 3.2 + 0.9 * Math.sin(2 * t + 0.5); }
+        function px(t)  { return rad(t) * Math.cos(t); }
+        function py(t)  { return rad(t) * Math.sin(t); }
+
+        var A = 0.3, B = 1.3;
+
+        // ── Polar axes: direction markers only, no grid (conceptual diagram) ──
+        board.create('arrow', [[0, 0], [5.1, 0]], {
+            strokeColor: AXIS, strokeWidth: 1.2, lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false });
+        board.create('arrow', [[0, 0], [0, 4.4]], {
+            strokeColor: AXIS, strokeWidth: 1.2, lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false });
+        board.create('text', [5.25, -0.02, '0'], { useKatex: true, fontSize: 13, color: LBL,
+            anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false });
+        board.create('text', [-0.20, 4.55, '\\dfrac{\\pi}{2}'], { useKatex: true, fontSize: 13,
+            color: LBL, anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false });
+
+        // ── The region itself: pole -> alpha ray -> along the curve -> beta ray ──
+        var reg = [[0, 0]];
+        for (var i = 0; i <= 90; i++) {
+            var t = A + (B - A) * i / 90;
+            reg.push([px(t), py(t)]);
+        }
+        reg.push([0, 0]);
+        board.create('polygon', reg.map(function (p) {
+            return board.create('point', p, { visible: false, fixed: true, name: '' });
+        }), { fillColor: CURVE, fillOpacity: 0.12, borders: { visible: false },
+              vertices: { visible: false }, hasInnerPoints: false, fixed: true, highlight: false });
+
+        // ── The two bounding rays: solid inside the region, dashed beyond ──
+        function ray(t, label, lx, ly) {
+            var rr = rad(t), ex = (rr + 1.0) * Math.cos(t), ey = (rr + 1.0) * Math.sin(t);
+            board.create('segment', [[0, 0], [rr * Math.cos(t), rr * Math.sin(t)]], {
+                strokeColor: REF, strokeWidth: 1.0, fixed: true, highlight: false });
+            board.create('segment', [[rr * Math.cos(t), rr * Math.sin(t)], [ex, ey]], {
+                strokeColor: REF, strokeWidth: 1.0, dash: 3, fixed: true, highlight: false });
+            board.create('text', [lx, ly, label], { useKatex: true, fontSize: 15, color: REF,
+                anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+        }
+        ray(A, '\\alpha', (rad(A) + 1.45) * Math.cos(A), (rad(A) + 1.45) * Math.sin(A));
+        ray(B, '\\beta',  (rad(B) + 0.85) * Math.cos(B) - 0.30, (rad(B) + 0.85) * Math.sin(B));
+
+        // ── The curve itself, drawn last so it sits above the shading ──
+        board.create('curve', [px, py, -0.16, 1.66], {
+            strokeColor: CURVE, strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('point', [0, 0], { name: '', size: 2, fillColor: CURVE,
+            strokeColor: CURVE, fixed: true, highlight: false });
+        board.create('text', [5.75, 4.75, 'r = f(\\theta)'], { useKatex: true, fontSize: 14,
+            color: CURVE, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+    </script>
+</body>
+</html>
