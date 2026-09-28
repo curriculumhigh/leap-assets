@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle and Limaçon Overlap</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 420px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-11, 10.6, 11, -10.6],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var GRID_COL = '#9CA3AF';
+        var GRID_W = 1;
+        var R_MAX = 8;
+        var NUM_RINGS = 8;
+
+        // ── Concentric circle grid ──────────────────────────────────────
+        var ri;
+        for (ri = 1; ri <= NUM_RINGS; ri++) {
+            board.create('circle', [[0, 0], ri], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W, strokeOpacity: 0.45,
+                fillColor: 'none', fixed: true, highlight: false,
+                dash: 0
+            });
+        }
+
+        // ── Radial lines every π/6 (30°) ───────────────────────────────
+        var ai;
+        for (ai = 0; ai < 12; ai++) {
+            var ang = ai * Math.PI / 6;
+            var ex = (R_MAX + 0.6) * Math.cos(ang);
+            var ey = (R_MAX + 0.6) * Math.sin(ang);
+            board.create('segment', [[0, 0], [ex, ey]], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W, strokeOpacity: 0.45,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Polar axis (0-direction) darkened ───────────────────────────
+        board.create('segment', [[0, 0], [R_MAX + 0.6, 0]], {
+            strokeColor: '#222222', strokeWidth: 2.2, fixed: true, highlight: false
+        });
+
+        // Tick marks on polar axis
+        for (ri = 1; ri <= NUM_RINGS; ri++) {
+            board.create('segment', [[ri, -0.13], [ri, 0.13]], {
+                strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+            });
+        }
+
+        // Radius numbers below polar axis (only even for clarity at this size)
+        var rLabels = [2, 4, 6, 8];
+        for (var rli = 0; rli < rLabels.length; rli++) {
+            board.create('text', [rLabels[rli], -0.55, String(rLabels[rli])], {
+                fontSize: 9, color: '#666666', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Angle labels (π/6 family) ───────────────────────────────────
+        var angleLabels = [
+            [Math.PI / 6, '\\pi/6'],
+            [Math.PI / 3, '\\pi/3'],
+            [Math.PI / 2, '\\pi/2'],
+            [2 * Math.PI / 3, '2\\pi/3'],
+            [5 * Math.PI / 6, '5\\pi/6'],
+            [Math.PI, '\\pi'],
+            [7 * Math.PI / 6, '7\\pi/6'],
+            [4 * Math.PI / 3, '4\\pi/3'],
+            [3 * Math.PI / 2, '3\\pi/2'],
+            [5 * Math.PI / 3, '5\\pi/3'],
+            [11 * Math.PI / 6, '11\\pi/6']
+        ];
+        var LR = R_MAX + 1.1;
+        for (var ali = 0; ali < angleLabels.length; ali++) {
+            var aAng = angleLabels[ali][0];
+            var aLbl = angleLabels[ali][1];
+            board.create('text', [LR * Math.cos(aAng), LR * Math.sin(aAng), aLbl], {
+                useKatex: true, fontSize: 9, color: '#374151',
+                anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // 0 and 2π labels at polar axis end
+        board.create('text', [R_MAX + 1.1, 0.35, '0'], {
+            useKatex: true, fontSize: 9, color: '#374151',
+            anchorX: 'middle', anchorY: 'bottom', fixed: true, highlight: false
+        });
+        board.create('text', [R_MAX + 1.1, -0.35, '2\\pi'], {
+            useKatex: true, fontSize: 9, color: '#374151',
+            anchorX: 'middle', anchorY: 'top', fixed: true, highlight: false
+        });
+
+        // ── Pole dot ────────────────────────────────────────────────────
+        board.create('point', [0, 0], {
+            name: '', size: 2.5, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Curve colors ────────────────────────────────────────────────
+        var COL_CIRCLE = '#222222';
+        var COL_LIMACON = '#2563EB';
+
+        // ── Shaded overlap region ───────────────────────────────────────
+        // Intersection angles: sin θ = 1/2 → θ = π/6 and θ = 5π/6
+        // Between π/6 and 5π/6 (upper half): limaçon ≥ 7, so circle (r=7) is inner boundary
+        // Between 5π/6 and π/6+2π (lower/wrapped): limaçon ≤ 7, so limaçon is inner boundary
+        // Overlap = inside BOTH curves:
+        //   Upper stretch (π/6 to 5π/6): bounded by circle r=7 (circle is smaller here)
+        //   Lower stretch (5π/6 to 2π+π/6): bounded by limaçon (limaçon is smaller here)
+
+        // Build overlap as a filled curve:
+        // Go along the circle from θ=π/6 to θ=5π/6, then along the limaçon from θ=5π/6
+        // all the way around back to θ=π/6 (i.e., 5π/6 → 2π → π/6, which is the lower stretch)
+
+        var overlapX = [];
+        var overlapY = [];
+        var t, r, steps;
+
+        // Part 1: Circle from π/6 to 5π/6
+        steps = 120;
+        for (var i1 = 0; i1 <= steps; i1++) {
+            t = Math.PI / 6 + i1 * (5 * Math.PI / 6 - Math.PI / 6) / steps;
+            overlapX.push(7 * Math.cos(t));
+            overlapY.push(7 * Math.sin(t));
+        }
+
+        // Part 2: Limaçon from 5π/6 back to π/6 going the long way (through 3π/2, 0, etc.)
+        steps = 240;
+        for (var i2 = 0; i2 <= steps; i2++) {
+            t = 5 * Math.PI / 6 + i2 * (2 * Math.PI - 4 * Math.PI / 6) / steps;
+            r = 6 + 2 * Math.sin(t);
+            overlapX.push(r * Math.cos(t));
+            overlapY.push(r * Math.sin(t));
+        }
+
+        board.create('polygon',
+            overlapX.map(function(xv, idx) {
+                return board.create('point', [xv, overlapY[idx]], { visible: false, fixed: true, name: '' });
+            }),
+            {
+                fillColor: '#888888', fillOpacity: 0.15,
+                borders: { visible: false },
+                vertices: { visible: false },
+                fixed: true, highlight: false
+            }
+        );
+
+        // ── Circle r = 7 ───────────────────────────────────────────────
+        board.create('curve', [
+            function(t) { return 7 * Math.cos(t); },
+            function(t) { return 7 * Math.sin(t); },
+            0, 2 * Math.PI
+        ], {
+            strokeColor: COL_CIRCLE, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Limaçon r = 6 + 2 sin θ ────────────────────────────────────
+        board.create('curve', [
+            function(t) { return (6 + 2 * Math.sin(t)) * Math.cos(t); },
+            function(t) { return (6 + 2 * Math.sin(t)) * Math.sin(t); },
+            0, 2 * Math.PI
+        ], {
+            strokeColor: COL_LIMACON, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Intersection points ─────────────────────────────────────────
+        // θ = π/6: r = 7
+        var ix1x = 7 * Math.cos(Math.PI / 6);
+        var ix1y = 7 * Math.sin(Math.PI / 6);
+        board.create('point', [ix1x, ix1y], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false
+        });
+
+        // θ = 5π/6: r = 7
+        var ix2x = 7 * Math.cos(5 * Math.PI / 6);
+        var ix2y = 7 * Math.sin(5 * Math.PI / 6);
+        board.create('point', [ix2x, ix2y], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Intersection labels
+        board.create('text', [ix1x - 1.9, ix1y + 1.15, '\\theta = \\pi/6'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'left', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+        board.create('text', [ix2x + 0.35, ix2y + 1.15, '\\theta = 5\\pi/6'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'right', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+
+        // ── Curve labels ────────────────────────────────────────────────
+        // Circle label: place on the lower-right of the circle, clear of shading
+        var clAng = -Math.PI / 4;
+        board.create('text', [7 * Math.cos(clAng) + 0.5, 7 * Math.sin(clAng) - 0.5, 'r = 7'], {
+            useKatex: true, fontSize: 13, color: COL_CIRCLE,
+            anchorX: 'left', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // Limaçon label: place at the bottom where limaçon is inside the circle
+        var llAng = -Math.PI / 2;
+        var llR = 6 + 2 * Math.sin(llAng); // = 4
+        board.create('text', [llR * Math.cos(llAng) + 0.5, llR * Math.sin(llAng) - 0.5, 'r = 6 + 2\\sin\\theta'], {
+            useKatex: true, fontSize: 13, color: COL_LIMACON,
+            anchorX: 'left', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
