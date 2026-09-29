@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Line — 4.65 to 4.75 Interval</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [4.565, 1.4, 4.835, -1.0],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var Y = 0.35;
+        var TICK_H = 0.15;
+        var COL_LINE = '#444444';
+        var COL_INT = '#2563EB';
+
+        // Number line (arrow on right end)
+        board.create('arrow', [[4.58, Y], [4.82, Y]], {
+            strokeColor: COL_LINE, strokeWidth: 1.8,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Shaded interval band (4.65 to 4.75)
+        var bandTop = Y + 0.08;
+        var bandBot = Y - 0.08;
+        var bp1 = board.create('point', [4.65, bandTop], { visible: false, fixed: true, name: '' });
+        var bp2 = board.create('point', [4.75, bandTop], { visible: false, fixed: true, name: '' });
+        var bp3 = board.create('point', [4.75, bandBot], { visible: false, fixed: true, name: '' });
+        var bp4 = board.create('point', [4.65, bandBot], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [bp1, bp2, bp3, bp4], {
+            fillColor: COL_INT, fillOpacity: 0.25,
+            borders: { strokeWidth: 0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Tick marks
+        var ticks = [4.6, 4.65, 4.7, 4.75, 4.8];
+        for (var i = 0; i < ticks.length; i++) {
+            board.create('segment', [[ticks[i], Y + TICK_H], [ticks[i], Y - TICK_H]], {
+                strokeColor: COL_LINE, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+        }
+
+        // Tick labels (KaTeX)
+        var tickLabels = ['4.6', '4.65', '4.7', '4.75', '4.8'];
+        for (var j = 0; j < ticks.length; j++) {
+            board.create('text', [ticks[j], Y - TICK_H - 0.18, tickLabels[j]], {
+                anchorX: 'middle', anchorY: 'top',
+                fontSize: 13, color: '#222222',
+                useKatex: true, fixed: true, highlight: false
+            });
+        }
+
+        // Solid dot at 4.65 (included endpoint)
+        board.create('point', [4.65, Y], {
+            name: '', size: 5,
+            fillColor: COL_INT, strokeColor: COL_INT, strokeWidth: 1.5,
+            fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Open dot at 4.75 (excluded endpoint)
+        board.create('point', [4.75, Y], {
+            name: '', size: 5,
+            fillColor: '#ffffff', strokeColor: COL_INT, strokeWidth: 1.5,
+            fixed: true, highlight: false, showInfobox: false
+        });
+    </script>
+</body>
+</html>
