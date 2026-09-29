@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cube Diagram — 1m = 100cm</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 12.5, 14.5, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: true
+        });
+
+        // ── Cube geometry (oblique parallel projection) ──────────────
+        var fx = 1, fy = 1;
+        var s = 7;
+        var ox = 3.2, oy = 3.2;
+
+        // Front face corners
+        var A = [fx, fy];
+        var B = [fx + s, fy];
+        var C = [fx + s, fy + s];
+        var D = [fx, fy + s];
+
+        // Back face corners
+        var E = [fx + ox, fy + oy];
+        var F = [fx + s + ox, fy + oy];
+        var G = [fx + s + ox, fy + s + oy];
+        var H = [fx + ox, fy + s + oy];
+
+        // ── Solid edges (visible) ───────────────────────────────────
+        var solidStyle = { strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false };
+
+        board.create('segment', [A, B], solidStyle);
+        board.create('segment', [B, C], solidStyle);
+        board.create('segment', [C, D], solidStyle);
+        board.create('segment', [D, A], solidStyle);
+
+        board.create('segment', [D, H], solidStyle);
+        board.create('segment', [H, G], solidStyle);
+        board.create('segment', [G, C], solidStyle);
+
+        board.create('segment', [B, F], solidStyle);
+        board.create('segment', [F, G], solidStyle);
+
+        // ── Dashed edges (hidden/back) ──────────────────────────────
+        var dashedStyle = { strokeColor: '#222222', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false };
+
+        board.create('segment', [E, F], dashedStyle);
+        board.create('segment', [E, H], dashedStyle);
+        board.create('segment', [A, E], dashedStyle);
+
+        // ── Dimension labels ────────────────────────────────────────
+
+        board.create('text', [
+            fx + s / 2,
+            fy - 1.4,
+            '1 m = 100 cm'
+        ], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#222222', fixed: true, highlight: false
+        });
+
+        board.create('text', [
+            fx + s + ox / 2 + 1.8,
+            fy + oy / 2 - 0.6,
+            '1 m = 100 cm'
+        ], {
+            anchorX: 'left', anchorY: 'middle',
+            fontSize: 13, color: '#222222', fixed: true, highlight: false
+        });
+
+        board.create('text', [
+            fx + s + ox + 0.6,
+            fy + oy + s / 2,
+            '1 m = 100 cm'
+        ], {
+            anchorX: 'left', anchorY: 'middle',
+            fontSize: 13, color: '#222222', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
