@@ -761,7 +761,7 @@
 
 /* ── Grayed state: steps the student hasn't reached yet ── */
 .req-tl-grayed {
-    opacity: 0.35;
+    opacity: 0.70;
     transition: opacity 0.3s ease, background 0.3s ease;
 }
 
@@ -881,4 +881,20 @@
 /* ═══ v14: marker fill transition (no reveal animation, no input styling) ═══ */
 @media (prefers-reduced-motion: no-preference) {
     .rq14-node { transition: background 0.2s, border-color 0.2s, box-shadow 0.2s; }
+}
+
+/* ═══ Teacher-side active-step card (white card + amber inset) ═══ */
+/* Ported from the v14 trial. Layout-neutral by construction: backgrounds, inset shadows only — no borders/margins/widths, so nothing can
+   shift or overflow. Student side untouched (all rules under .req-teacher-live). */
+.req-widget.req-teacher-live tr.req-tl-active td {
+    background: #fff;
+}
+.req-widget.req-teacher-live tr.req-tl-active td:first-child {
+    position: relative;
+    box-shadow: inset 3px 0 0 #e8a13a;
+}
+.req-widget.req-teacher-live .req-twi-flex.req-tl-active {
+    background: #fff;
+    position: relative;
+    box-shadow: inset 3px 0 0 #e8a13a, 0 1px 5px rgba(30,60,110,.10);
 }
