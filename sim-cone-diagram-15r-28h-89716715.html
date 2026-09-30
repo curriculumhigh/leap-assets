@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cone Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 10.5, 5.5, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var r = 3;
+        var h = 7;
+        var cx = 0;
+        var cy = 0.5;
+        var apexY = cy + h;
+
+        var apex = board.create('point', [cx, apexY], {
+            visible: false, fixed: true, name: ''
+        });
+
+        var baseLeft = board.create('point', [cx - r, cy], {
+            visible: false, fixed: true, name: ''
+        });
+        var baseRight = board.create('point', [cx + r, cy], {
+            visible: false, fixed: true, name: ''
+        });
+
+        var baseCenter = board.create('point', [cx, cy], {
+            size: 1.5, color: '#555555', fixed: true, name: '', highlight: false
+        });
+
+        board.create('segment', [apex, baseLeft], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [apex, baseRight], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var ellipseRy = 0.7;
+        board.create('curve', [
+            function(t) { return cx + r * Math.cos(t); },
+            function(t) { return cy + ellipseRy * Math.sin(t); },
+            -Math.PI, 0
+        ], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        board.create('curve', [
+            function(t) { return cx + r * Math.cos(t); },
+            function(t) { return cy + ellipseRy * Math.sin(t); },
+            0, Math.PI
+        ], {
+            strokeColor: '#555555', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[cx, apexY], [cx, cy]], {
+            strokeColor: '#555555', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[cx, cy], [cx + r, cy]], {
+            strokeColor: '#555555', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+
+        var sq = 0.35;
+        board.create('polygon', [
+            [cx, cy + sq],
+            [cx + sq, cy + sq],
+            [cx + sq, cy],
+            [cx, cy]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        board.create('text', [-2.4, cy + h / 2, '28 cm'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [cx + r / 2, cy - 1.0, '15 cm'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
