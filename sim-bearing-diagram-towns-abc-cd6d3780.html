@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bearing Diagram — Towns A, B, C</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 6.5, 6.5, -5.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Manual axes (plain lines with arrows, no ticks, no grid) ────
+        board.create('arrow', [[-6.2, 0], [6.2, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 },
+            firstArrow: { type: 2, size: 6 }
+        });
+        board.create('arrow', [[0, -5.2], [0, 6.2]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 },
+            firstArrow: { type: 2, size: 6 }
+        });
+
+        // ── Compass labels ──────────────────────────────────────────────
+        board.create('text', [6.1, -0.4, 'E'], { fontSize: 14, fixed: true, highlight: false, cssStyle: 'font-weight:600' });
+        board.create('text', [-6.4, -0.4, 'W'], { fontSize: 14, fixed: true, highlight: false, cssStyle: 'font-weight:600' });
+        board.create('text', [0.25, 6.1, 'N'], { fontSize: 14, fixed: true, highlight: false, cssStyle: 'font-weight:600' });
+        board.create('text', [0.25, -5.1, 'S'], { fontSize: 14, fixed: true, highlight: false, cssStyle: 'font-weight:600' });
+
+        // ── Bearing conversion: bearing degrees (CW from N) → math angle (CCW from E) ──
+        function bearingToMath(b) {
+            return (90 - b) * Math.PI / 180;
+        }
+
+        // ── Scale ───────────────────────────────────────────────────────
+        var scaleFactor = 4.5 / 7;
+
+        // ── Points ──────────────────────────────────────────────────────
+        var A = board.create('point', [0, 0], {
+            name: 'A', size: 2, color: '#222222', fixed: true, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-16, -12], useKatex: true }
+        });
+
+        var angB = bearingToMath(50);
+        var rB = 7 * scaleFactor;
+        var Bx = rB * Math.cos(angB);
+        var By = rB * Math.sin(angB);
+
+        var B = board.create('point', [Bx, By], {
+            name: 'B', size: 2, color: '#222222', fixed: true, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, 4], useKatex: true }
+        });
+
+        var angC = bearingToMath(290);
+        var rC = 8 * scaleFactor;
+        var Cx = rC * Math.cos(angC);
+        var Cy = rC * Math.sin(angC);
+
+        var C = board.create('point', [Cx, Cy], {
+            name: 'C', size: 2, color: '#222222', fixed: true, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, 6], useKatex: true }
+        });
+
+        // ── North dashed line from A ────────────────────────────────────
+        board.create('segment', [[0, 0], [0, 5.5]], {
+            strokeColor: '#444444', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Rays A→B and A→C ────────────────────────────────────────────
+        board.create('segment', [A, B], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [A, C], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Distance labels ─────────────────────────────────────────────
+        var midBx = Bx / 2;
+        var midBy = By / 2;
+        var dirBx = Math.cos(angB);
+        var dirBy = Math.sin(angB);
+        var perpBxR = dirBy;
+        var perpByR = -dirBx;
+        var offDist = 0.6;
+
+        board.create('text', [midBx + perpBxR * offDist, midBy + perpByR * offDist, '7\\text{ km}'], {
+            fontSize: 13, color: '#222222', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var midCx = Cx / 2;
+        var midCy = Cy / 2;
+        var dirCx = Math.cos(angC);
+        var dirCy = Math.sin(angC);
+        var perpCx = -dirCy;
+        var perpCy = dirCx;
+
+        board.create('text', [midCx + perpCx * offDist, midCy + perpCy * offDist, '8\\text{ km}'], {
+            fontSize: 13, color: '#222222', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ── Bearing arc: 050° — LARGER radius, BLUE ────────────────────
+        var COL_050 = '#2563EB';
+        var bearingR1 = 1.8;
+
+        board.create('curve', [
+            function(t) { return bearingR1 * Math.cos(t); },
+            function(t) { return bearingR1 * Math.sin(t); },
+            angB,
+            Math.PI / 2
+        ], {
+            strokeColor: COL_050, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var bearLabelAng1 = (angB + Math.PI / 2) / 2;
+        board.create('text', [
+            bearingR1 * 1.5 * Math.cos(bearLabelAng1),
+            bearingR1 * 1.5 * Math.sin(bearLabelAng1),
+            '050^\\circ'
+        ], {
+            fontSize: 11, color: COL_050, useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ── Bearing arc: 290° — SMALLER radius, GREEN ──────────────────
+        var COL_290 = '#059669';
+        var bearingR2 = 1.2;
+
+        var northAngle = Math.PI / 2;
+        var arcEnd290 = northAngle - 290 * Math.PI / 180;
+
+        board.create('curve', [
+            function(t) { return bearingR2 * Math.cos(t); },
+            function(t) { return bearingR2 * Math.sin(t); },
+            arcEnd290,
+            northAngle
+        ], {
+            strokeColor: COL_290, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var bearLabel290MathAng = bearingToMath(145);
+        board.create('text', [
+            bearingR2 * 1.7 * Math.cos(bearLabel290MathAng),
+            bearingR2 * 1.7 * Math.sin(bearLabel290MathAng),
+            '290^\\circ'
+        ], {
+            fontSize: 11, color: COL_290, useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+    </script>
+</body>
+</html>
