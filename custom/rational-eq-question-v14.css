@@ -761,7 +761,7 @@
 
 /* ── Grayed state: steps the student hasn't reached yet ── */
 .req-tl-grayed {
-    opacity: 0.35;
+    opacity: 0.70;
     transition: opacity 0.3s ease, background 0.3s ease;
 }
 
@@ -889,4 +889,34 @@
 /* ═══ v14: marker fill transition (no reveal animation, no input styling) ═══ */
 @media (prefers-reduced-motion: no-preference) {
     .rq14-node { transition: background 0.2s, border-color 0.2s, box-shadow 0.2s; }
+}
+
+
+/* ═══ v14: teacher-side active-step card (white card + amber inset + paperclip) ═══ */
+/* Layout-neutral by construction: backgrounds, inset shadows and absolutely
+   positioned pseudo-elements only — no borders/margins/widths, so nothing can
+   shift or overflow. Student side untouched (all rules under .req-teacher-live). */
+.req-widget.req-teacher-live tr.req-tl-active td {
+    background: #fff;
+}
+.req-widget.req-teacher-live tr.req-tl-active td:first-child {
+    position: relative;
+    box-shadow: inset 3px 0 0 #e8a13a;
+}
+.req-widget.req-teacher-live tr.req-tl-active td:first-child::before {
+    content: ""; position: absolute; top: -8px; left: 6px;
+    width: 17px; height: 17px;
+    background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%237c8798%22%20stroke-width%3D%222.2%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M21.44%2011.05l-9.19%209.19a6%206%200%200%201-8.49-8.49l9.19-9.19a4%204%200%200%201%205.66%205.66l-9.2%209.19a2%202%200%200%201-2.83-2.83l8.49-8.48%22/%3E%3C/svg%3E") no-repeat center/contain;
+    transform: rotate(24deg); opacity: .9; pointer-events: none;
+}
+.req-widget.req-teacher-live .req-twi-flex.req-tl-active {
+    background: #fff;
+    position: relative;
+    box-shadow: inset 3px 0 0 #e8a13a, 0 1px 5px rgba(30,60,110,.10);
+}
+.req-widget.req-teacher-live .req-twi-flex.req-tl-active::before {
+    content: ""; position: absolute; top: -8px; left: 6px;
+    width: 17px; height: 17px;
+    background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%237c8798%22%20stroke-width%3D%222.2%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M21.44%2011.05l-9.19%209.19a6%206%200%200%201-8.49-8.49l9.19-9.19a4%204%200%200%201%205.66%205.66l-9.2%209.19a2%202%200%200%201-2.83-2.83l8.49-8.48%22/%3E%3C/svg%3E") no-repeat center/contain;
+    transform: rotate(24deg); opacity: .9; pointer-events: none;
 }
