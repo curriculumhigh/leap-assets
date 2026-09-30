@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compass Direction Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-140, 110, 40, -30],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Draw axes manually — plain lines with arrows, no ticks, no labels
+        // X axis
+        board.create('arrow', [[-138, 0], [38, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            firstArrow: { type: 2, size: 6 },
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        // Y axis
+        board.create('arrow', [[0, -28], [0, 108]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            firstArrow: { type: 2, size: 6 },
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Compass direction labels at axis arrow tips
+        board.create('text', [36, -6, '\\textbf{E}'], {
+            fontSize: 14, color: '#444444', useKatex: true,
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [-136, -6, '\\textbf{W}'], {
+            fontSize: 14, color: '#444444', useKatex: true,
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [4, 106, '\\textbf{N}'], {
+            fontSize: 14, color: '#444444', useKatex: true,
+            fixed: true, highlight: false
+        });
+        board.create('text', [4, -27, '\\textbf{S}'], {
+            fontSize: 14, color: '#444444', useKatex: true,
+            fixed: true, highlight: false
+        });
+
+        // Point M at origin
+        var M = board.create('point', [0, 0], {
+            name: 'M', size: 2, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false,
+            label: {
+                fontSize: 13, color: '#222222', useKatex: true,
+                offset: [10, -12]
+            }
+        });
+
+        // Point A at (-100, 75)
+        var A = board.create('point', [-100, 75], {
+            name: 'A', size: 2, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false,
+            label: {
+                fontSize: 13, color: '#222222', useKatex: true,
+                offset: [-16, 8]
+            }
+        });
+
+        // Segment AM
+        board.create('segment', [A, M], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        // Corner helper point at (-100, 0)
+        var corner = board.create('point', [-100, 0], {
+            visible: false, fixed: true, name: ''
+        });
+
+        // Vertical dotted line: A(-100,75) → (-100,0)
+        var COL_VERT = '#059669';
+        board.create('segment', [A, corner], {
+            strokeColor: COL_VERT, strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // Horizontal dotted line: (-100,0) → M(0,0)
+        var COL_HORIZ = '#2563EB';
+        board.create('segment', [corner, M], {
+            strokeColor: COL_HORIZ, strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // Label: 75 km on vertical segment
+        board.create('text', [-120, 37.5, '75\\text{ km}'], {
+            fontSize: 12, color: COL_VERT, useKatex: true,
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Label: 100 km on horizontal segment
+        board.create('text', [-50, -10, '100\\text{ km}'], {
+            fontSize: 12, color: COL_HORIZ, useKatex: true,
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Helper point along the West direction (negative x-axis) for angle definition
+        var W_ref = board.create('point', [-100, 0], {
+            visible: false, fixed: true, name: ''
+        });
+
+        // Angle θ at M: from West direction (W_ref) to A, measured at vertex M
+        board.create('nonReflexAngle', [W_ref, M, A], {
+            radius: 18,
+            fillColor: '#222222', fillOpacity: 0.08,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, highlight: false,
+            name: '', withLabel: false
+        });
+
+        // θ label along the angle bisector
+        var angWest = Math.PI;
+        var angMA = Math.atan2(75, -100);
+        var bisector = (angWest + angMA) / 2;
+        var labelR = 24;
+        var thetaX = labelR * Math.cos(bisector);
+        var thetaY = labelR * Math.sin(bisector);
+
+        board.create('text', [thetaX, thetaY, '\\theta'], {
+            fontSize: 14, color: '#222222', useKatex: true,
+            fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
