@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compass Diagram — P to C</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-80, 110, 430, -280],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Compass axes (arrows on both ends)
+        board.create('arrow', [[-60, 0], [410, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }, firstArrow: { type: 2, size: 6 }
+        });
+        board.create('arrow', [[0, -260], [0, 95]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }, firstArrow: { type: 2, size: 6 }
+        });
+
+        // Compass labels (N, S, E, W)
+        board.create('text', [10, 90, 'N'], { fontSize: 14, color: '#222222', fixed: true, highlight: false, cssStyle: 'font-weight:600' });
+        board.create('text', [10, -255, 'S'], { fontSize: 14, color: '#222222', fixed: true, highlight: false, cssStyle: 'font-weight:600' });
+        board.create('text', [400, -18, 'E'], { fontSize: 14, color: '#222222', fixed: true, highlight: false, cssStyle: 'font-weight:600' });
+        board.create('text', [-70, -18, 'W'], { fontSize: 14, color: '#222222', fixed: true, highlight: false, cssStyle: 'font-weight:600' });
+
+        // Points
+        var P = board.create('point', [0, 0], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [-30, 14, 'P'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            useKatex: true, cssStyle: 'font-weight:600'
+        });
+
+        var C = board.create('point', [350, -200], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [358, -218, 'C'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            useKatex: true, cssStyle: 'font-weight:600'
+        });
+
+        // Foot of perpendicular (350, 0)
+        var foot = board.create('point', [350, 0], {
+            name: '', visible: false, fixed: true
+        });
+
+        // Segment PC (solid, dark, primary)
+        board.create('segment', [P, C], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Dashed construction lines (cyan)
+        board.create('segment', [P, foot], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [foot, C], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // Right-angle marker at (350, 0)
+        var raSize = 18;
+        board.create('polygon', [
+            [350, 0], [350, -raSize], [350 - raSize, -raSize], [350 - raSize, 0]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#222222', strokeWidth: 1.2 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Distance labels (green, KaTeX)
+        board.create('text', [155, 18, '350\\text{ m}'], {
+            fontSize: 13, color: '#059669', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle'
+        });
+        board.create('text', [375, -100, '200\\text{ m}'], {
+            fontSize: 13, color: '#059669', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'left'
+        });
+
+        // Angle theta at P (between positive E-direction and PC)
+        var eDir = board.create('point', [100, 0], { name: '', visible: false, fixed: true });
+
+        board.create('nonReflexAngle', [C, P, eDir], {
+            radius: 45,
+            fillColor: '#2563EB', fillOpacity: 0.08,
+            strokeColor: '#2563EB', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        var thetaAngle = Math.atan2(-200, 350);
+        var bisectorAngle = thetaAngle / 2;
+        var labelR = 65;
+        board.create('text', [
+            labelR * Math.cos(bisectorAngle),
+            labelR * Math.sin(bisectorAngle),
+            '\\theta'
+        ], {
+            fontSize: 14, color: '#2563EB', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+    </script>
+</body>
+</html>
