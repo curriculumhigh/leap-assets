@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle EFG</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 7.5, 15, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertices
+        var F = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var G = board.create('point', [12, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var E = board.create('point', [0, 5], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // Triangle (no fill)
+        board.create('polygon', [E, F, G], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Right-angle marker at F
+        var sqSize = 0.7;
+        var sq1 = board.create('point', [sqSize, 0], { visible: false, fixed: true, name: '' });
+        var sq2 = board.create('point', [sqSize, sqSize], { visible: false, fixed: true, name: '' });
+        var sq3 = board.create('point', [0, sqSize], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [sq1, sq2, sq3, F], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Vertex labels (KaTeX)
+        board.create('text', [-0.6, 5.4, 'E'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [-0.6, -0.6, 'F'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [12.6, -0.6, 'G'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Side-length labels (outside the triangle)
+        // EF = 5 cm — left of the vertical leg
+        board.create('text', [-1.4, 2.5, '5\\text{ cm}'], {
+            useKatex: true, fontSize: 12, color: '#555555',
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // FG = 12 cm — below the horizontal leg
+        board.create('text', [6, -1.2, '12\\text{ cm}'], {
+            useKatex: true, fontSize: 12, color: '#555555',
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
