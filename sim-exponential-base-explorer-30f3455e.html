@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exponential Base Explorer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 200px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 6px;
+        }
+        .slider-row {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .slider-input {
+            flex: 1; -webkit-appearance: none; appearance: none;
+            height: 5px; border-radius: 3px; background: #e5e7eb; outline: none;
+        }
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 15px; height: 15px; border-radius: 50%; cursor: pointer;
+            background: #2563EB;
+        }
+        .slider-val {
+            font-size: 14px; font-weight: 600; color: #2563EB;
+            font-variant-numeric: tabular-nums; width: 26px; text-align: right;
+        }
+        .equation-section { border-top: 1px solid #e5e7eb; padding-top: 12px; }
+        .equation-display { min-height: 28px; margin-bottom: 4px; }
+        .readout-section { border-top: 1px solid #e5e7eb; padding-top: 12px; }
+        .regime-text {
+            font-size: 13px; color: #333; font-weight: 600; margin-bottom: 10px; line-height: 1.4;
+        }
+        .observe-list {
+            list-style: none; padding: 0; margin: 0;
+        }
+        .observe-list li {
+            font-size: 12px; color: #666; line-height: 1.5;
+            padding-left: 14px; position: relative; margin-bottom: 4px;
+        }
+        .observe-list li::before {
+            content: '\2022'; position: absolute; left: 0; color: #aaa;
+        }
+        .warning-msg {
+            line-height: 1.5;
+            background: #FEF2F2; border: 1px solid #FECACA; border-radius: 6px;
+            padding: 12px 14px; display: none;
+        }
+        .warning-title {
+            font-size: 13px; font-weight: 700; color: #DC2626; margin-bottom: 4px;
+        }
+        .warning-body {
+            font-size: 12px; color: #777;
+        }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-section">
+                    <div class="panel-label">Base</div>
+                    <div class="slider-row">
+                        <span style="font-size: 13px; color: #2563EB; font-weight: 600;">b</span>
+                        <input type="range" id="slider-b" class="slider-input" min="0" max="4" step="0.1" value="2">
+                        <span class="slider-val" id="val-b">2.0</span>
+                    </div>
+                </div>
+                <div class="panel-section equation-section">
+                    <div class="panel-label">Equation</div>
+                    <div class="equation-display" id="equation"></div>
+                </div>
+                <div class="panel-section readout-section">
+                    <div class="panel-label">Observe</div>
+                    <div id="valid-readout">
+                        <div class="regime-text" id="regime"></div>
+                        <ul class="observe-list" id="observe-bullets">
+                            <li>Does the graph rise or fall?</li>
+                            <li>What is the y-intercept?</li>
+                        </ul>
+                    </div>
+                    <div class="warning-msg" id="warning">
+                        <div class="warning-title" id="warning-title"></div>
+                        <div class="warning-body" id="warning-body"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 10, 7, -2],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444', label: { fontSize: 11 },
+                        minorTicks: 0, ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444', label: { fontSize: 11 },
+                        minorTicks: 0, ticksDistance: 2
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [6.6, -0.5, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.3, 9.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        var bVal = 2.0;
+
+        // Primary curve y = b^x
+        var curve = board.create('functiongraph', [
+            function(x) { return Math.pow(bVal, x); }
+        ], { strokeColor: '#222222', strokeWidth: 1.4, fixed: true });
+
+        // Key point (0, 1)
+        var keyPt = board.create('point', [0, 1], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false
+        });
+        var keyLabel = board.create('text', [0.4, 1.6, '(0,\\, 1)'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+
+        // Function label on the board — position adapts to b
+        var funcLabel = board.create('text', [
+            function() {
+                if (bVal === 0 || bVal === 1) return -100;
+                if (bVal > 1) {
+                    var xAt7 = Math.log(7) / Math.log(bVal);
+                    return Math.min(xAt7 + 0.5, 6);
+                }
+                return -3.5;
+            },
+            function() {
+                if (bVal === 0 || bVal === 1) return -100;
+                if (bVal > 1) {
+                    var xAt7 = Math.log(7) / Math.log(bVal);
+                    var xLabel = Math.min(xAt7 + 0.5, 6);
+                    var yLabel = Math.pow(bVal, xLabel);
+                    return Math.min(yLabel, 9);
+                }
+                var yAtLabel = Math.pow(bVal, -3.5);
+                return Math.min(yAtLabel + 0.6, 9);
+            },
+            function() {
+                if (bVal === 0 || bVal === 1) return '';
+                return 'y = ' + bVal.toFixed(1) + '^x';
+            }
+        ], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Slider sync
+        var sliderB = document.getElementById('slider-b');
+
+        function updateAll() {
+            bVal = parseFloat(sliderB.value);
+            bVal = Math.round(bVal * 10) / 10;
+
+            document.getElementById('val-b').textContent = bVal.toFixed(1);
+
+            var isInvalid = (bVal === 0 || bVal === 1);
+
+            // Show/hide curve and key point
+            curve.setAttribute({ visible: !isInvalid });
+            keyPt.setAttribute({ visible: !isInvalid });
+            keyLabel.setAttribute({ visible: !isInvalid });
+            funcLabel.setAttribute({ visible: !isInvalid });
+
+            // Equation
+            var eqEl = document.getElementById('equation');
+            if (isInvalid) {
+                eqEl.innerHTML = '';
+            } else {
+                katex.render(
+                    'y = ' + bVal.toFixed(1) + '^x',
+                    eqEl,
+                    { throwOnError: false }
+                );
+            }
+
+            // Readout section
+            var validReadout = document.getElementById('valid-readout');
+            var warningEl = document.getElementById('warning');
+            var regimeEl = document.getElementById('regime');
+
+            if (bVal === 0) {
+                validReadout.style.display = 'none';
+                warningEl.style.display = 'block';
+                document.getElementById('warning-title').textContent = 'b = 0 is not valid';
+                document.getElementById('warning-body').textContent = '0 is not a valid base for an exponential function.';
+            } else if (bVal === 1) {
+                validReadout.style.display = 'none';
+                warningEl.style.display = 'block';
+                document.getElementById('warning-title').textContent = 'b = 1 is not valid';
+                document.getElementById('warning-body').textContent = '1\u02E3 equals 1 for all x \u2014 this is a constant function, not exponential.';
+            } else {
+                warningEl.style.display = 'none';
+                validReadout.style.display = 'block';
+                if (bVal > 1) {
+                    regimeEl.textContent = 'Currently, b is greater than 1.';
+                } else {
+                    regimeEl.textContent = 'Currently, b is between 0 and 1.';
+                }
+            }
+
+            board.update();
+        }
+
+        sliderB.addEventListener('input', updateAll);
+
+        // Initial render
+        updateAll();
+    </script>
+</body>
+</html>
