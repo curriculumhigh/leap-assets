@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Rectangle with Vertical Pole</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var S = 0.5;
+
+        var obliqueAngle = 35 * Math.PI / 180;
+        var obliqueScale = 0.5;
+
+        var Dx = 1.5, Dy = 1.5;
+        var Cx = Dx + 15 * S, Cy = Dy;
+
+        var depthX = 8 * S * obliqueScale * Math.cos(obliqueAngle);
+        var depthY = 8 * S * obliqueScale * Math.sin(obliqueAngle);
+
+        var Ax = Dx + depthX, Ay = Dy + depthY;
+        var Bx = Cx + depthX, By = Cy + depthY;
+
+        var poleHeight = 8 * Math.tan(28 * Math.PI / 180) * S;
+        var Vx = Bx, Vy = By + poleHeight;
+
+        var allX = [Dx, Cx, Ax, Bx, Vx];
+        var allY = [Dy, Cy, Ay, By, Vy];
+        var minX = Math.min.apply(null, allX) - 1.8;
+        var maxX = Math.max.apply(null, allX) + 1.8;
+        var minY = Math.min.apply(null, allY) - 1.5;
+        var maxY = Math.max.apply(null, allY) + 1.5;
+
+        var rangeX = maxX - minX;
+        var rangeY = maxY - minY;
+        var maxRange = Math.max(rangeX, rangeY);
+        var cenX = (minX + maxX) / 2;
+        var cenY = (minY + maxY) / 2;
+        var halfR = maxRange / 2;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [cenX - halfR, cenY + halfR, cenX + halfR, cenY - halfR],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var pD = board.create('point', [Dx, Dy], { visible: false, name: '', fixed: true });
+        var pC = board.create('point', [Cx, Cy], { visible: false, name: '', fixed: true });
+        var pB = board.create('point', [Bx, By], { visible: false, name: '', fixed: true });
+        var pA = board.create('point', [Ax, Ay], { visible: false, name: '', fixed: true });
+        var pV = board.create('point', [Vx, Vy], { visible: false, name: '', fixed: true });
+
+        board.create('polygon', [pD, pC, pB, pA], {
+            fillColor: '#F5DEB3',
+            fillOpacity: 0.35,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        board.create('segment', [pA, pC], {
+            strokeColor: '#555555', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [pB, pD], {
+            strokeColor: '#555555', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('polygon', [pV, pA, pB], {
+            fillColor: '#F5DEB3',
+            fillOpacity: 0.2,
+            borders: { strokeColor: '#555555', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        board.create('polygon', [pV, pB, pC], {
+            fillColor: '#F5DEB3',
+            fillOpacity: 0.15,
+            borders: { strokeColor: '#555555', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        board.create('segment', [pV, pD], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var baX = Bx - Ax, baY = By - Ay;
+        var baLen = Math.sqrt(baX * baX + baY * baY);
+        var baDirX = baX / baLen, baDirY = baY / baLen;
+
+        var vaX = Vx - Ax, vaY = Vy - Ay;
+        var vaLen = Math.sqrt(vaX * vaX + vaY * vaY);
+        var vaDirX = vaX / vaLen, vaDirY = vaY / vaLen;
+
+        var angAB = Math.atan2(baDirY, baDirX);
+        var angAV = Math.atan2(vaDirY, vaDirX);
+
+        var startAng = angAB;
+        var endAng = angAV;
+        var sweep = endAng - startAng;
+        if (sweep < 0) sweep += 2 * Math.PI;
+        if (sweep > Math.PI) {
+            startAng = angAV;
+            endAng = angAB;
+            sweep = endAng - startAng;
+            if (sweep < 0) sweep += 2 * Math.PI;
+        }
+
+        var arcRadius = 0.8;
+
+        board.create('curve', [
+            function(t) { return Ax + arcRadius * Math.cos(t); },
+            function(t) { return Ay + arcRadius * Math.sin(t); },
+            startAng,
+            startAng + sweep
+        ], {
+            strokeColor: '#D97706',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false,
+            layer: 8
+        });
+
+        var wedgePts = [];
+        var nWedge = 20;
+        wedgePts.push(board.create('point', [Ax, Ay], { visible: false, name: '', fixed: true }));
+        for (var i = 0; i <= nWedge; i++) {
+            var t = startAng + (sweep * i / nWedge);
+            wedgePts.push(board.create('point', [
+                Ax + arcRadius * Math.cos(t),
+                Ay + arcRadius * Math.sin(t)
+            ], { visible: false, name: '', fixed: true }));
+        }
+
+        board.create('polygon', wedgePts, {
+            fillColor: '#D97706',
+            fillOpacity: 0.18,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false,
+            layer: 7
+        });
+
+        var midAng = startAng + sweep / 2;
+        var labelDist = 1.35;
+
+        board.create('text', [
+            Ax + labelDist * Math.cos(midAng) + 0.25,
+            Ay + labelDist * Math.sin(midAng)
+        , '28^\\circ'], {
+            useKatex: true, fontSize: 11, color: '#D97706',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            layer: 9
+        });
+
+        var rSize = 0.35;
+        var baToBx = (Ax - Bx) / baLen, baToBY = (Ay - By) / baLen;
+        var bvDirX = 0, bvDirY = 1;
+
+        var rp1 = board.create('point', [Bx + baToBx * rSize, By + baToBY * rSize], { visible: false, name: '', fixed: true });
+        var rp2 = board.create('point', [Bx + baToBx * rSize + bvDirX * rSize, By + baToBY * rSize + bvDirY * rSize], { visible: false, name: '', fixed: true });
+        var rp3 = board.create('point', [Bx + bvDirX * rSize, By + bvDirY * rSize], { visible: false, name: '', fixed: true });
+
+        board.create('segment', [rp1, rp2], { strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false });
+        board.create('segment', [rp2, rp3], { strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false });
+
+        board.create('text', [Ax - 0.6, Ay + 0.35, 'A'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Bx + 0.55, By + 0.35, 'B'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Cx + 0.55, Cy - 0.4, 'C'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Dx - 0.55, Dy - 0.4, 'D'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Vx + 0.35, Vy + 0.5, 'V'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var midADx = (Ax + Dx) / 2, midADy = (Ay + Dy) / 2;
+        var adNx = -(Ay - Dy), adNy = (Ax - Dx);
+        var adNlen = Math.sqrt(adNx * adNx + adNy * adNy);
+        adNx /= adNlen; adNy /= adNlen;
+
+        board.create('text', [midADx + adNx * 0.65, midADy + adNy * 0.65, '8\\text{ m}'], {
+            useKatex: true, fontSize: 11, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var midDCx = (Dx + Cx) / 2, midDCy = (Dy + Cy) / 2;
+        board.create('text', [midDCx, midDCy - 0.6, '15\\text{ m}'], {
+            useKatex: true, fontSize: 11, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
