@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuboid – Base Diagonal d and Space Diagonal D</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 8, 11, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Cuboid dimensions (visual scale: 1 unit = 1 cm) ────────────
+        var L = 7;   // length
+        var W = 5;   // width
+        var H = 4;   // height
+
+        // Oblique projection factors for depth
+        var DX = W * 0.36;
+        var DY = W * 0.28;
+
+        // ── Bottom face vertices ────────────────────────────────────────
+        var aX = 1,       aY = 0.5;
+        var bX = aX + L,  bY = aY;
+        var cX = aX + DX, cY = aY + DY;
+        var dX = bX + DX, dY = bY + DY;
+
+        // ── Top face vertices ───────────────────────────────────────────
+        var eX = aX,       eY = aY + H;
+        var fX = bX,       fY = bY + H;
+        var gX = cX,       gY = cY + H;
+        var hX = dX,       hY = dY + H;
+
+        // ── Create invisible anchor points ──────────────────────────────
+        var ptA = board.create('point', [aX, aY], { name: '', visible: false, fixed: true });
+        var ptB = board.create('point', [bX, bY], { name: '', visible: false, fixed: true });
+        var ptC = board.create('point', [cX, cY], { name: '', visible: false, fixed: true });
+        var ptD = board.create('point', [dX, dY], { name: '', visible: false, fixed: true });
+        var ptE = board.create('point', [eX, eY], { name: '', visible: false, fixed: true });
+        var ptF = board.create('point', [fX, fY], { name: '', visible: false, fixed: true });
+        var ptG = board.create('point', [gX, gY], { name: '', visible: false, fixed: true });
+        var ptH = board.create('point', [hX, hY], { name: '', visible: false, fixed: true });
+
+        // ── Shaded faces (subtle depth cue) ─────────────────────────────
+        board.create('polygon', [ptE, ptF, ptH, ptG], {
+            fillColor: '#2563EB', fillOpacity: 0.07,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        board.create('polygon', [ptB, ptD, ptH, ptF], {
+            fillColor: '#2563EB', fillOpacity: 0.04,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Hidden edges (dashed) ───────────────────────────────────────
+        var hiddenStyle = { strokeColor: '#AAAAAA', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false };
+
+        board.create('segment', [ptC, ptA], hiddenStyle);
+        board.create('segment', [ptC, ptD], hiddenStyle);
+        board.create('segment', [ptC, ptG], hiddenStyle);
+
+        // ── Visible edges (solid) ───────────────────────────────────────
+        var visStyle = { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false };
+
+        board.create('segment', [ptA, ptB], visStyle);
+        board.create('segment', [ptB, ptD], visStyle);
+
+        board.create('segment', [ptE, ptF], visStyle);
+        board.create('segment', [ptF, ptH], visStyle);
+        board.create('segment', [ptH, ptG], visStyle);
+        board.create('segment', [ptG, ptE], visStyle);
+
+        board.create('segment', [ptA, ptE], visStyle);
+        board.create('segment', [ptB, ptF], visStyle);
+        board.create('segment', [ptD, ptH], visStyle);
+
+        // ── Base diagonal d (cyan, dashed) ──────────────────────────────
+        board.create('segment', [ptA, ptD], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.8, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Space diagonal D (red, solid) ───────────────────────────────
+        board.create('segment', [ptA, ptH], {
+            strokeColor: '#DC2626', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at vertex D ──────────────────────────────
+        var raSize = 0.4;
+        var dLen = Math.sqrt((aX - dX) * (aX - dX) + (aY - dY) * (aY - dY));
+        var udx = (aX - dX) / dLen;
+        var udy = (aY - dY) / dLen;
+        var vdx = 0;
+        var vdy = 1;
+
+        var ra1 = board.create('point', [dX + udx * raSize, dY + udy * raSize], { name: '', visible: false, fixed: true });
+        var ra2 = board.create('point', [dX + udx * raSize + vdx * raSize, dY + udy * raSize + vdy * raSize], { name: '', visible: false, fixed: true });
+        var ra3 = board.create('point', [dX + vdx * raSize, dY + vdy * raSize], { name: '', visible: false, fixed: true });
+
+        board.create('segment', [ra1, ra2], { strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false });
+        board.create('segment', [ra2, ra3], { strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false });
+
+        // ── Vertex dots ─────────────────────────────────────────────────
+        var dotStyle = { name: '', size: 2, color: '#222222', fixed: true, highlight: false, showInfobox: false };
+
+        board.create('point', [aX, aY], dotStyle);
+        board.create('point', [bX, bY], dotStyle);
+        board.create('point', [cX, cY], dotStyle);
+        board.create('point', [dX, dY], dotStyle);
+        board.create('point', [eX, eY], dotStyle);
+        board.create('point', [fX, fY], dotStyle);
+        board.create('point', [gX, gY], dotStyle);
+        board.create('point', [hX, hY], dotStyle);
+
+        // ── Dimension labels ────────────────────────────────────────────
+        // Length = 7 cm (bottom front edge)
+        board.create('text', [aX + L / 2, aY - 0.7, '7\\text{ cm}'], {
+            useKatex: true, fontSize: 12, color: '#222222', anchorX: 'middle', fixed: true, highlight: false
+        });
+
+        // Width = 5 cm (right side bottom edge)
+        var wmX = (bX + dX) / 2 + 0.4;
+        var wmY = (bY + dY) / 2 - 0.15;
+        board.create('text', [wmX, wmY, '5\\text{ cm}'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Height = 4 cm (front-left vertical edge)
+        board.create('text', [aX - 1.3, aY + H / 2, '4\\text{ cm}'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Diagonal labels ─────────────────────────────────────────────
+        // d label (base diagonal, cyan)
+        var dMidX = (aX + dX) / 2;
+        var dMidY = (aY + dY) / 2;
+        board.create('text', [dMidX - 0.1, dMidY - 0.55, 'd'], {
+            useKatex: true, fontSize: 14, color: '#0EA5E9', cssStyle: 'font-weight:bold', fixed: true, highlight: false
+        });
+
+        // D label (space diagonal, red)
+        var DMidX = (aX + hX) / 2;
+        var DMidY = (aY + hY) / 2;
+        board.create('text', [DMidX - 0.6, DMidY - 0.6, 'D'], {
+            useKatex: true, fontSize: 14, color: '#DC2626', cssStyle: 'font-weight:bold', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
