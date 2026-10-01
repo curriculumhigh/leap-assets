@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Box — Triangle PGE</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 8.5, 11.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var fw = 6;
+        var fh = 4;
+        var dx = 2.4;
+        var dy = 1.8;
+
+        var ox = 1.5;
+        var oy = 0.5;
+
+        var Ex = ox,         Ey = oy;
+        var Fx = ox + fw,    Fy = oy;
+        var Gx = ox + fw + dx, Gy = oy + dy;
+        var Hx = ox + dx,   Hy = oy + dy;
+
+        var Px = Ex,  Py = Ey + fh;
+        var Qx = Fx,  Qy = Fy + fh;
+        var Rx = Gx,  Ry = Gy + fh;
+        var Sx = Hx,  Sy = Hy + fh;
+
+        var ptE = board.create('point', [Ex, Ey], { visible: false, fixed: true, name: '' });
+        var ptF = board.create('point', [Fx, Fy], { visible: false, fixed: true, name: '' });
+        var ptG = board.create('point', [Gx, Gy], { visible: false, fixed: true, name: '' });
+        var ptH = board.create('point', [Hx, Hy], { visible: false, fixed: true, name: '' });
+        var ptP = board.create('point', [Px, Py], { visible: false, fixed: true, name: '' });
+        var ptQ = board.create('point', [Qx, Qy], { visible: false, fixed: true, name: '' });
+        var ptR = board.create('point', [Rx, Ry], { visible: false, fixed: true, name: '' });
+        var ptS = board.create('point', [Sx, Sy], { visible: false, fixed: true, name: '' });
+
+        var solidEdge = { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false };
+        var dashedEdge = { strokeColor: '#999999', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false };
+
+        board.create('segment', [ptE, ptH], dashedEdge);
+        board.create('segment', [ptH, ptG], dashedEdge);
+        board.create('segment', [ptH, ptS], dashedEdge);
+
+        board.create('polygon', [ptP, ptG, ptE], {
+            fillColor: '#D97706',
+            fillOpacity: 0.18,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        var triEdgeStyle = { strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false };
+
+        board.create('segment', [ptP, ptE], triEdgeStyle);
+        board.create('segment', [ptE, ptG], { strokeColor: '#222222', strokeWidth: 1.8, dash: 2, fixed: true, highlight: false });
+        board.create('segment', [ptP, ptG], triEdgeStyle);
+
+        board.create('segment', [ptE, ptF], solidEdge);
+        board.create('segment', [ptF, ptG], solidEdge);
+
+        board.create('segment', [ptP, ptQ], solidEdge);
+        board.create('segment', [ptQ, ptR], solidEdge);
+        board.create('segment', [ptR, ptS], solidEdge);
+        board.create('segment', [ptS, ptP], solidEdge);
+
+        board.create('segment', [ptF, ptQ], solidEdge);
+        board.create('segment', [ptG, ptR], solidEdge);
+
+        board.create('nonReflexAngle', [ptP, ptG, ptE], {
+            radius: 0.6,
+            fillColor: '#DC2626',
+            fillOpacity: 0.12,
+            strokeColor: '#DC2626',
+            strokeWidth: 1.5,
+            fixed: true,
+            name: '',
+            withLabel: false,
+            highlight: false
+        });
+
+        var dotStyle = { size: 1.5, color: '#222222', fixed: true, highlight: false, showInfobox: false };
+
+        board.create('point', [Ex, Ey], Object.assign({}, dotStyle, { name: 'E', label: { fontSize: 13, color: '#222222', offset: [-14, -12] } }));
+        board.create('point', [Fx, Fy], Object.assign({}, dotStyle, { name: 'F', label: { fontSize: 13, color: '#222222', offset: [4, -14] } }));
+        board.create('point', [Gx, Gy], Object.assign({}, dotStyle, { name: 'G', label: { fontSize: 13, color: '#222222', offset: [10, -2] } }));
+        board.create('point', [Hx, Hy], Object.assign({}, dotStyle, { name: 'H', label: { fontSize: 13, color: '#222222', offset: [-14, -4] } }));
+
+        board.create('point', [Px, Py], Object.assign({}, dotStyle, { name: 'P', label: { fontSize: 13, color: '#222222', offset: [-14, 4] } }));
+        board.create('point', [Qx, Qy], Object.assign({}, dotStyle, { name: 'Q', label: { fontSize: 13, color: '#222222', offset: [4, 14] } }));
+        board.create('point', [Rx, Ry], Object.assign({}, dotStyle, { name: 'R', label: { fontSize: 13, color: '#222222', offset: [8, 6] } }));
+        board.create('point', [Sx, Sy], Object.assign({}, dotStyle, { name: 'S', label: { fontSize: 13, color: '#222222', offset: [-14, 8] } }));
+
+        var raSize = 0.45;
+        var egDx = Gx - Ex, egDy = Gy - Ey;
+        var egLen = Math.sqrt(egDx * egDx + egDy * egDy);
+        var egUx = egDx / egLen, egUy = egDy / egLen;
+
+        var ra1x = Ex + raSize * egUx;
+        var ra1y = Ey + raSize * egUy;
+        var ra2x = ra1x + 0;
+        var ra2y = ra1y + raSize;
+        var ra3x = Ex;
+        var ra3y = Ey + raSize;
+
+        board.create('segment', [[ra1x, ra1y], [ra2x, ra2y]], { strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false });
+        board.create('segment', [[ra2x, ra2y], [ra3x, ra3y]], { strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false });
+
+    </script>
+</body>
+</html>
