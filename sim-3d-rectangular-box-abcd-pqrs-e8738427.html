@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Rectangular Box</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 12.5, 10, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Geometry constants ─────────────────────────────── */
+        var W = 3;       // AB (width along x)
+        var D = 4;       // BC (depth)
+        var H = 8;       // visual height (shorter than actual 12 cm)
+
+        var depthAngle = 35 * Math.PI / 180;
+        var depthScale = 0.5;
+        var dx = D * depthScale * Math.cos(depthAngle);
+        var dy = D * depthScale * Math.sin(depthAngle);
+
+        /* ── Vertex coordinates ─────────────────────────────── */
+        var Ax = 0, Ay = 0;
+        var Bx = W, By = 0;
+        var Cx = Bx + dx, Cy = By + dy;
+        var Dx = Ax + dx, Dy = Ay + dy;
+
+        var Px = Ax, Py = Ay + H;
+        var Qx = Bx, Qy = By + H;
+        var Rx = Cx, Ry = Cy + H;
+        var Sx = Dx, Sy = Dy + H;
+
+        /* ── Helper: invisible anchor point ─────────────────── */
+        function pt(x, y) {
+            return board.create('point', [x, y], { visible: false, fixed: true, name: '' });
+        }
+
+        var pA = pt(Ax, Ay);
+        var pB = pt(Bx, By);
+        var pC = pt(Cx, Cy);
+        var pD = pt(Dx, Dy);
+        var pP = pt(Px, Py);
+        var pQ = pt(Qx, Qy);
+        var pR = pt(Rx, Ry);
+        var pS = pt(Sx, Sy);
+
+        /* ── Face shading (differentiated for depth cue) ──── */
+        board.create('polygon', [pA, pB, pQ, pP], {
+            fillColor: '#BFDBFE', fillOpacity: 0.40,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('polygon', [pP, pQ, pR, pS], {
+            fillColor: '#BFDBFE', fillOpacity: 0.25,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('polygon', [pB, pQ, pR, pC], {
+            fillColor: '#BFDBFE', fillOpacity: 0.55,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        /* ── Hidden edges (dashed) ──────────────────────────── */
+        var hiddenStyle = { strokeColor: '#555555', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false };
+        board.create('segment', [pA, pD], hiddenStyle);
+        board.create('segment', [pD, pC], hiddenStyle);
+        board.create('segment', [pD, pS], hiddenStyle);
+
+        /* ── Visible edges (solid) ──────────────────────────── */
+        var solidStyle = { strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false };
+        board.create('segment', [pA, pB], solidStyle);
+        board.create('segment', [pB, pC], solidStyle);
+        board.create('segment', [pP, pQ], solidStyle);
+        board.create('segment', [pQ, pR], solidStyle);
+        board.create('segment', [pR, pS], solidStyle);
+        board.create('segment', [pS, pP], solidStyle);
+        board.create('segment', [pA, pP], solidStyle);
+        board.create('segment', [pB, pQ], solidStyle);
+        board.create('segment', [pC, pR], solidStyle);
+
+        /* ── Vertex dots ────────────────────────────────────── */
+        var dotStyle = { size: 2, color: '#222222', fixed: true, highlight: false, name: '', withLabel: false };
+        board.create('point', [Ax, Ay], dotStyle);
+        board.create('point', [Bx, By], dotStyle);
+        board.create('point', [Cx, Cy], dotStyle);
+        board.create('point', [Dx, Dy], dotStyle);
+        board.create('point', [Px, Py], dotStyle);
+        board.create('point', [Qx, Qy], dotStyle);
+        board.create('point', [Rx, Ry], dotStyle);
+        board.create('point', [Sx, Sy], dotStyle);
+
+        /* ── Vertex labels ──────────────────────────────────── */
+        var lblStyle = { fontSize: 13, color: '#222222', useKatex: true, fixed: true, highlight: false };
+
+        board.create('text', [Ax - 0.55, Ay - 0.55, 'A'], Object.assign({}, lblStyle, { anchorX: 'middle' }));
+        board.create('text', [Bx + 0.15, By - 0.55, 'B'], Object.assign({}, lblStyle, { anchorX: 'middle' }));
+        board.create('text', [Cx + 0.45, Cy - 0.15, 'C'], Object.assign({}, lblStyle, { anchorX: 'left' }));
+        board.create('text', [Dx + 0.4, Dy + 0.3, 'D'], Object.assign({}, lblStyle, { anchorX: 'left' }));
+        board.create('text', [Px - 0.55, Py + 0.2, 'P'], Object.assign({}, lblStyle, { anchorX: 'middle' }));
+        board.create('text', [Qx + 0.15, Qy + 0.55, 'Q'], Object.assign({}, lblStyle, { anchorX: 'left' }));
+        board.create('text', [Rx + 0.45, Ry + 0.2, 'R'], Object.assign({}, lblStyle, { anchorX: 'left' }));
+        board.create('text', [Sx - 0.2, Sy + 0.5, 'S'], Object.assign({}, lblStyle, { anchorX: 'right' }));
+
+        /* ── Dimension labels (unchanged: 3 cm, 4 cm, 12 cm) ─ */
+        var dimStyle = { fontSize: 12, color: '#3B82F6', useKatex: true, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' };
+
+        board.create('text', [(Ax + Bx) / 2, Ay - 0.9, '12 \\text{ cm}'], dimStyle);
+        board.create('text', [Ax - 1.2, (Ay + Py) / 2, '21 \\text{ cm}'], dimStyle);
+
+        var bcMidX = (Bx + Cx) / 2;
+        var bcMidY = (By + Cy) / 2;
+        board.create('text', [bcMidX + 0.65, bcMidY - 0.5, '16 \\text{ cm}'], dimStyle);
+    </script>
+</body>
+</html>
