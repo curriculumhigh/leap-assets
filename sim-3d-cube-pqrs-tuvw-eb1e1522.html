@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Cube PQRS-TUVW</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 7.5, 9.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Oblique projection coordinates ──────────────────────────────
+        var E = 4;
+        var DX = 1.8;
+        var DY = 1.4;
+
+        // Bottom face vertices
+        var uX = 1,   uY = 0.5;
+        var vX = uX + E, vY = uY;
+        var tX = uX + DX,     tY = uY + DY;
+        var wX = vX + DX,     wY = vY + DY;
+
+        // Top face vertices
+        var qX = uX,       qY = uY + E;
+        var rX = vX,       rY = vY + E;
+        var pX = tX,       pY = tY + E;
+        var sX = wX,       sY = wY + E;
+
+        // ── Create invisible anchor points ──────────────────────────────
+        var ptT = board.create('point', [tX, tY], { name: '', visible: false, fixed: true });
+        var ptU = board.create('point', [uX, uY], { name: '', visible: false, fixed: true });
+        var ptV = board.create('point', [vX, vY], { name: '', visible: false, fixed: true });
+        var ptW = board.create('point', [wX, wY], { name: '', visible: false, fixed: true });
+        var ptP = board.create('point', [pX, pY], { name: '', visible: false, fixed: true });
+        var ptQ = board.create('point', [qX, qY], { name: '', visible: false, fixed: true });
+        var ptR = board.create('point', [rX, rY], { name: '', visible: false, fixed: true });
+        var ptS = board.create('point', [sX, sY], { name: '', visible: false, fixed: true });
+
+        // ── Shaded faces (behind everything) ────────────────────────────
+        board.create('polygon', [ptP, ptS, ptR, ptQ], {
+            fillColor: '#2563EB', fillOpacity: 0.10,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('polygon', [ptP, ptQ, ptU, ptT], {
+            fillColor: '#2563EB', fillOpacity: 0.10,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Hidden edges (dashed) ───────────────────────────────────────
+        var hiddenStyle = { strokeColor: '#AAAAAA', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false };
+
+        board.create('segment', [ptT, ptW], hiddenStyle);
+        board.create('segment', [ptT, ptP], hiddenStyle);
+        board.create('segment', [ptW, ptS], hiddenStyle);
+
+        // ── Visible edges (solid) ───────────────────────────────────────
+        var visStyle = { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false };
+
+        board.create('segment', [ptU, ptV], visStyle);
+        board.create('segment', [ptV, ptW], visStyle);
+        board.create('segment', [ptU, ptT], visStyle);
+
+        board.create('segment', [ptP, ptQ], visStyle);
+        board.create('segment', [ptQ, ptR], visStyle);
+        board.create('segment', [ptR, ptS], visStyle);
+        board.create('segment', [ptP, ptS], visStyle);
+
+        board.create('segment', [ptU, ptQ], visStyle);
+        board.create('segment', [ptV, ptR], visStyle);
+        board.create('segment', [ptW, ptS], visStyle);
+
+        // ── Diagonals TV and PV (dotted, construction color) ────────────
+        var diagStyle = { strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 1, fixed: true, highlight: false };
+
+        board.create('segment', [ptT, ptV], diagStyle);
+        board.create('segment', [ptP, ptV], diagStyle);
+
+        // ── Visible vertex dots ─────────────────────────────────────────
+        var dotStyle = { name: '', size: 2, color: '#222222', fixed: true, highlight: false, showInfobox: false };
+
+        board.create('point', [tX, tY], dotStyle);
+        board.create('point', [uX, uY], dotStyle);
+        board.create('point', [vX, vY], dotStyle);
+        board.create('point', [wX, wY], dotStyle);
+        board.create('point', [pX, pY], dotStyle);
+        board.create('point', [qX, qY], dotStyle);
+        board.create('point', [rX, rY], dotStyle);
+        board.create('point', [sX, sY], dotStyle);
+
+        // ── Vertex labels (KaTeX) ───────────────────────────────────────
+        var lblStyle = { useKatex: true, fontSize: 14, color: '#222222', fixed: true, highlight: false };
+
+        board.create('text', [pX - 0.9, pY + 0.3, 'P'], lblStyle);
+        board.create('text', [qX - 0.7, qY + 0.3, 'Q'], lblStyle);
+        board.create('text', [sX + 0.3, sY + 0.3, 'S'], lblStyle);
+        board.create('text', [rX + 0.3, rY + 0.6, 'R'], lblStyle);
+
+        board.create('text', [tX - 0.5, tY + 0.4, 'T'], lblStyle);
+        board.create('text', [uX - 0.7, uY - 0.5, 'U'], lblStyle);
+        board.create('text', [vX + 0.3, vY - 0.5, 'V'], lblStyle);
+        board.create('text', [wX + 0.3, wY + 0.4, 'W'], lblStyle);
+
+        // ── Edge length labels (4 m) ────────────────────────────────────
+        board.create('text', [uX - 1.4, uY + E / 2, '4\\text{ m}'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+        board.create('text', [uX + E / 2, uY - 0.6, '4\\text{ m}'], {
+            useKatex: true, fontSize: 12, color: '#222222', anchorX: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('text', [rX + 0.6, vY + E / 2, '4\\text{ m}'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
