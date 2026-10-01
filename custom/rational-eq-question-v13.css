@@ -845,6 +845,17 @@
 .req-dd-structural .req-dd-menu { min-width: 72px; }
 /* inside KaTeX output, isolate the widget from math font/style inheritance */
 .katex .req-dropdown-wrap { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.4; }
+/* Radical DN click fix (corrected 2026-10-02). KaTeX draws \sqrt's radical sign
+   + vinculum as an SVG (and spans) layered over the radicand, so clicks meant
+   for a dropdown placed inside a root never reached it.
+   1. the SVG is decorative — let clicks pass through it;
+   2. raise ONLY dropdowns inside a root above the radical's layers (raising every
+      in-math dropdown let later dropdowns cover an open menu — the original bug);
+   3. while a menu is open, its dropdown sits above everything, so no neighbouring
+      box can cover its options. (Browsers without :has() still get 1+2.) */
+.req-widget .katex .sqrt svg { pointer-events: none; }
+.req-widget .katex .sqrt .req-dropdown-wrap { position: relative; z-index: 2; }
+.req-widget .katex .req-dropdown-wrap:has(> .req-dd-menu.open) { z-index: 200; }
 
 /* ═══════════════ v14: journey spine ═══════════════ */
 .rq14-node, .rq14-node * { box-sizing: border-box; }
