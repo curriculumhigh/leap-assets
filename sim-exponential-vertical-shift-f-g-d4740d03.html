@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphs of f(x) and g(x) — Vertical Shift</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 175px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 6px;
+        }
+        .func-def { min-height: 24px; margin-bottom: 8px; }
+        .hint-text { font-size: 12px; color: #777; line-height: 1.5; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-section">
+                    <div class="panel-label">Functions</div>
+                    <div class="func-def" id="func-f"></div>
+                    <div class="func-def" id="func-g"></div>
+                </div>
+                <div class="panel-section" style="border-top: 1px solid #e5e7eb; padding-top: 12px;">
+                    <div class="hint-text">Hover over highlighted points to see coordinates and the vertical shift.</div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip-f"></div>
+    <div class="coord-tooltip" id="tooltip-g"></div>
+
+    <script>
+        // ── Panel KaTeX labels ──────────────────────────────────────────
+        katex.render('f(x) = -2(3)^x', document.getElementById('func-f'), { throwOnError: false });
+        katex.render('\\color{#2563EB}{g(x) = -2(3)^x + 5}', document.getElementById('func-g'), { throwOnError: false });
+
+        // ── Board ───────────────────────────────────────────────────────
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 8, 4.5, -10],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [4.1, -0.6, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 7.5, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_F = '#222222';
+        var COL_G = '#2563EB';
+        var COL_ASYM = '#0EA5E9';
+        var COL_ARROW = '#DC2626';
+
+        // ── Functions ───────────────────────────────────────────────────
+        function fFunc(x) { return -2 * Math.pow(3, x); }
+        function gFunc(x) { return -2 * Math.pow(3, x) + 5; }
+
+        // ── Curves ──────────────────────────────────────────────────────
+        board.create('functiongraph', [fFunc, -3.5, 4.5], {
+            strokeColor: COL_F, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('functiongraph', [gFunc, -3.5, 4.5], {
+            strokeColor: COL_G, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Asymptote for g(x): y = 5 (no label) ───────────────────────
+        board.create('line', [[0, 5], [1, 5]], {
+            strokeColor: COL_ASYM, strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── Function labels on the board ────────────────────────────────
+        board.create('text', [-3.0, -3.5, 'f(x)'], {
+            fontSize: 13, color: COL_F, fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [-3.0, 2.5, 'g(x)'], {
+            fontSize: 13, color: COL_G, fixed: true, highlight: false, useKatex: true
+        });
+
+        // ── Vertical shift arrows (hidden by default) ──────────────────
+        // Pair 0: x=0, f(0)=-2 → g(0)=3
+        var arrow0 = board.create('arrow', [[0, -2], [0, 3]], {
+            strokeColor: COL_ARROW, strokeWidth: 2.0, dash: 2,
+            lastArrow: { type: 2, size: 6 },
+            firstArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false, visible: false
+        });
+        var arrowLabel0 = board.create('text', [-0.6, 0.5, '\\mathbf{+5}'], {
+            fontSize: 13, color: COL_ARROW, fixed: true, highlight: false,
+            useKatex: true, visible: false, anchorX: 'middle'
+        });
+
+        // Pair 1: x=1, f(1)=-6 → g(1)=-1
+        var arrow1 = board.create('arrow', [[1, -6], [1, -1]], {
+            strokeColor: COL_ARROW, strokeWidth: 2.0, dash: 2,
+            lastArrow: { type: 2, size: 6 },
+            firstArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false, visible: false
+        });
+        var arrowLabel1 = board.create('text', [1.6, -3.5, '\\mathbf{+5}'], {
+            fontSize: 13, color: COL_ARROW, fixed: true, highlight: false,
+            useKatex: true, visible: false, anchorX: 'middle'
+        });
+
+        // ── Tooltip setup ───────────────────────────────────────────────
+        var tooltipF = document.getElementById('tooltip-f');
+        var tooltipG = document.getElementById('tooltip-g');
+        var boardContainer = document.getElementById('board');
+
+        function formatVal(v) {
+            if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+            return v.toFixed(2);
+        }
+
+        function positionTooltip(tooltipEl, pt, offsetX, offsetY) {
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [pt.X(), pt.Y()], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltipEl.style.left = (sx + offsetX) + 'px';
+            tooltipEl.style.top = (sy + offsetY) + 'px';
+        }
+
+        function showPairTooltips(fPt, gPt, arrowObj, arrowLabelObj) {
+            // Show f-point tooltip
+            var latexF = '\\color{' + COL_F + '}{\\left(' + formatVal(fPt.X()) + ',\\,' + formatVal(fPt.Y()) + '\\right)}';
+            katex.render(latexF, tooltipF, { throwOnError: false });
+            tooltipF.style.borderColor = COL_F;
+            tooltipF.style.display = 'block';
+            positionTooltip(tooltipF, fPt, 14, -28);
+
+            // Show g-point tooltip
+            var latexG = '\\color{' + COL_G + '}{\\left(' + formatVal(gPt.X()) + ',\\,' + formatVal(gPt.Y()) + '\\right)}';
+            katex.render(latexG, tooltipG, { throwOnError: false });
+            tooltipG.style.borderColor = COL_G;
+            tooltipG.style.display = 'block';
+            positionTooltip(tooltipG, gPt, 14, -28);
+
+            // Show arrow and label
+            arrowObj.setAttribute({ visible: true });
+            arrowLabelObj.setAttribute({ visible: true });
+            board.update();
+        }
+
+        function hideAllOverlays() {
+            tooltipF.style.display = 'none';
+            tooltipG.style.display = 'none';
+            arrow0.setAttribute({ visible: false });
+            arrowLabel0.setAttribute({ visible: false });
+            arrow1.setAttribute({ visible: false });
+            arrowLabel1.setAttribute({ visible: false });
+            board.update();
+        }
+
+        // ── Key points on f(x) ──────────────────────────────────────────
+        var fPt0 = board.create('point', [0, -2], {
+            name: '', size: 5, color: COL_F, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_F, highlightStrokeColor: COL_F
+        });
+        var fPt1 = board.create('point', [1, -6], {
+            name: '', size: 5, color: COL_F, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_F, highlightStrokeColor: COL_F
+        });
+
+        // ── Key points on g(x) ──────────────────────────────────────────
+        var gPt0 = board.create('point', [0, 3], {
+            name: '', size: 5, color: COL_G, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_G, highlightStrokeColor: COL_G
+        });
+        var gPt1 = board.create('point', [1, -1], {
+            name: '', size: 5, color: COL_G, fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: COL_G, highlightStrokeColor: COL_G
+        });
+
+        // ── Hover events — pair 0 (x=0) ────────────────────────────────
+        fPt0.on('over', function() { showPairTooltips(fPt0, gPt0, arrow0, arrowLabel0); });
+        fPt0.on('out', function() { hideAllOverlays(); });
+        gPt0.on('over', function() { showPairTooltips(fPt0, gPt0, arrow0, arrowLabel0); });
+        gPt0.on('out', function() { hideAllOverlays(); });
+
+        // ── Hover events — pair 1 (x=1) ────────────────────────────────
+        fPt1.on('over', function() { showPairTooltips(fPt1, gPt1, arrow1, arrowLabel1); });
+        fPt1.on('out', function() { hideAllOverlays(); });
+        gPt1.on('over', function() { showPairTooltips(fPt1, gPt1, arrow1, arrowLabel1); });
+        gPt1.on('out', function() { hideAllOverlays(); });
+    </script>
+</body>
+</html>
