@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exponential Parameter Exploration — y = a(2)^x</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 210px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 6px;
+        }
+        .slider-row {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .slider-input {
+            flex: 1; -webkit-appearance: none; appearance: none;
+            height: 5px; border-radius: 3px; background: #e5e7eb; outline: none;
+        }
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 15px; height: 15px; border-radius: 50%; cursor: pointer;
+            background: #2563EB;
+        }
+        .slider-val {
+            font-size: 14px; font-variant-numeric: tabular-nums;
+            width: 32px; text-align: right; font-weight: 600; color: #2563EB;
+        }
+        .equation-section { border-top: 1px solid #e5e7eb; padding-top: 12px; }
+        .equation-display { min-height: 28px; margin-bottom: 8px; }
+        .range-display {
+            font-size: 12px; color: #555; line-height: 1.5;
+            min-height: 20px;
+        }
+        .observation-section {
+            border-top: 1px solid #e5e7eb; padding-top: 12px;
+        }
+        .observation-text {
+            font-size: 12px; color: #888; line-height: 1.5; font-style: italic;
+            min-height: 20px;
+        }
+        .warning-msg {
+            font-size: 11px; color: #DC2626; line-height: 1.4;
+            border-top: 1px solid #e5e7eb; padding-top: 10px;
+            display: none;
+        }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); position: relative; }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-section">
+                    <div class="panel-label">Parameter</div>
+                    <div style="margin-bottom: 4px;">
+                        <span style="font-size: 13px; font-weight: 600; color: #2563EB;" id="slider-label-katex"></span>
+                    </div>
+                    <div class="slider-row">
+                        <input type="range" id="slider-a" class="slider-input" min="-5" max="5" step="0.1" value="3">
+                        <span class="slider-val" id="val-a">3.0</span>
+                    </div>
+                </div>
+                <div class="panel-section equation-section">
+                    <div class="panel-label">Current equation</div>
+                    <div class="equation-display" id="equation"></div>
+                </div>
+                <div class="panel-section" style="border-top: 1px solid #e5e7eb; padding-top: 12px;">
+                    <div class="panel-label">Range of <i>a</i></div>
+                    <div class="range-display" id="range-text"></div>
+                </div>
+                <div class="panel-section observation-section">
+                    <div class="panel-label">Look for</div>
+                    <div class="observation-text" id="observation"></div>
+                </div>
+                <div class="warning-msg" id="warning-msg"></div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+                <div class="coord-tooltip" id="tooltip"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 12, 7, -12],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444', label: { fontSize: 11 },
+                        minorTicks: 0, ticksDistance: 2
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444', label: { fontSize: 11 },
+                        minorTicks: 0, ticksDistance: 2
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // Axis labels
+        board.create('text', [6.6, -0.7, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.3, 11.5, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        var COL_PRIMARY = '#222222';
+        var COL_SECONDARY = '#2563EB';
+
+        var aVal = 3;
+
+        // ── Vertical reference lines at x = -1 and x = 2 ───────────────
+        board.create('line', [[-1, 0], [-1, 1]], {
+            strokeColor: '#D1D5DB', strokeWidth: 0.8, dash: 3,
+            fixed: true, highlight: false, straightFirst: true, straightLast: true
+        });
+        board.create('line', [[2, 0], [2, 1]], {
+            strokeColor: '#D1D5DB', strokeWidth: 0.8, dash: 3,
+            fixed: true, highlight: false, straightFirst: true, straightLast: true
+        });
+
+        // ── Curves ──────────────────────────────────────────────────────
+
+        // Primary curve: y = 2^x (dashed, dark)
+        board.create('functiongraph', [
+            function(x) { return Math.pow(2, x); }
+        ], {
+            strokeColor: COL_PRIMARY, strokeWidth: 1.4, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // Primary curve label
+        board.create('text', [3.6, 10.5, 'y = 2^x'], {
+            fontSize: 13, color: COL_PRIMARY, useKatex: true, fixed: true, highlight: false
+        });
+
+        // Secondary curve: y = a(2)^x (solid, blue)
+        board.create('functiongraph', [
+            function(x) { return aVal * Math.pow(2, x); }
+        ], {
+            strokeColor: COL_SECONDARY, strokeWidth: 1.2,
+            fixed: true, highlight: false
+        });
+
+        // Secondary curve label — to the LEFT of the curve
+        board.create('text', [
+            function() {
+                if (Math.abs(aVal) < 0.001) return -3;
+                var targetY = (aVal > 0) ? 8 : -8;
+                var ratio = targetY / aVal;
+                if (ratio <= 0) return -2;
+                var xOnCurve = Math.log2(ratio);
+                var labelX = xOnCurve - 1.8;
+                if (labelX < -4.5) labelX = -4.5;
+                if (labelX > 5) labelX = 5;
+                return labelX;
+            },
+            function() {
+                if (Math.abs(aVal) < 0.001) return 1;
+                return (aVal > 0) ? 8 : -8;
+            },
+            function() { return 'y = a(2)^x'; }
+        ], {
+            fontSize: 13, color: COL_SECONDARY, useKatex: true, fixed: true, highlight: false,
+            anchorX: 'right'
+        });
+
+        // ── Tooltip system ──────────────────────────────────────────────
+
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function formatValKatex(v) {
+            var absV = Math.abs(v);
+            var sign = v < 0 ? '-' : '';
+            if (Math.abs(absV - 0.125) < 0.001) return sign + '\\tfrac{1}{8}';
+            if (Math.abs(absV - 0.25) < 0.001) return sign + '\\tfrac{1}{4}';
+            if (Math.abs(absV - 0.375) < 0.001) return sign + '\\tfrac{3}{8}';
+            if (Math.abs(absV - 0.5) < 0.001) return sign + '\\tfrac{1}{2}';
+            if (Math.abs(absV - 0.625) < 0.001) return sign + '\\tfrac{5}{8}';
+            if (Math.abs(absV - 0.75) < 0.001) return sign + '\\tfrac{3}{4}';
+            if (Math.abs(absV - 0.875) < 0.001) return sign + '\\tfrac{7}{8}';
+            if (Math.abs(absV - 1.5) < 0.001) return sign + '\\tfrac{3}{2}';
+            if (Math.abs(absV - 2.5) < 0.001) return sign + '\\tfrac{5}{2}';
+            if (Math.abs(absV - 3.5) < 0.001) return sign + '\\tfrac{7}{2}';
+            if (Math.abs(absV - 4.5) < 0.001) return sign + '\\tfrac{9}{2}';
+            if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+            return v.toFixed(2);
+        }
+
+        function showTooltip(pt, color) {
+            var xCoord = pt.X();
+            var yCoord = pt.Y();
+            if (isNaN(xCoord) || isNaN(yCoord)) return;
+            var latex = '\\color{' + color + '}{\\left(' + formatValKatex(xCoord)
+                      + ',\\,' + formatValKatex(yCoord) + '\\right)}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xCoord, yCoord], board);
+            var sx = coords.scrCoords[1];
+            var sy = coords.scrCoords[2];
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+        // ── Key points with hover tooltips ──────────────────────────────
+
+        function makeTooltipPt(xFunc, yFunc, color, size) {
+            var pt = board.create('point', [xFunc, yFunc], {
+                name: '', size: size, color: color, fixed: true,
+                showInfobox: false, highlight: true,
+                highlightFillColor: color, highlightStrokeColor: color,
+                highlightSize: size + 1
+            });
+            pt.on('over', function() { showTooltip(pt, color); });
+            pt.on('out', function() { hideTooltip(); });
+            return pt;
+        }
+
+        // Pair 1: x = -1
+        makeTooltipPt(-1, function() { return Math.pow(2, -1); }, COL_PRIMARY, 4);
+        makeTooltipPt(
+            function() { return Math.abs(aVal) < 0.001 ? NaN : -1; },
+            function() { return Math.abs(aVal) < 0.001 ? NaN : aVal * Math.pow(2, -1); },
+            COL_SECONDARY, 4
+        );
+
+        // Y-intercept: x = 0 on a(2)^x
+        makeTooltipPt(
+            function() { return Math.abs(aVal) < 0.001 ? NaN : 0; },
+            function() { return Math.abs(aVal) < 0.001 ? NaN : aVal; },
+            COL_SECONDARY, 5
+        );
+
+        // Pair 2: x = 2
+        makeTooltipPt(2, function() { return Math.pow(2, 2); }, COL_PRIMARY, 4);
+        makeTooltipPt(
+            function() { return Math.abs(aVal) < 0.001 ? NaN : 2; },
+            function() { return Math.abs(aVal) < 0.001 ? NaN : aVal * Math.pow(2, 2); },
+            COL_SECONDARY, 4
+        );
+
+        // ── Slider sync ─────────────────────────────────────────────────
+
+        var sliderA = document.getElementById('slider-a');
+
+        function formatA(v) {
+            if (Math.abs(v - Math.round(v)) < 0.001) return Math.round(v).toString();
+            return v.toFixed(1);
+        }
+
+        function syncFromSlider() {
+            aVal = parseFloat(sliderA.value);
+            board.update();
+            updatePanel();
+        }
+
+        sliderA.addEventListener('input', syncFromSlider);
+
+        // ── Panel updates ───────────────────────────────────────────────
+
+        function updatePanel() {
+            document.getElementById('val-a').textContent = formatA(aVal);
+
+            katex.render('a = ' + formatA(aVal), document.getElementById('slider-label-katex'), { throwOnError: false });
+
+            var av = aVal;
+            var warningEl = document.getElementById('warning-msg');
+
+            var eq;
+            if (Math.abs(av) < 0.001) {
+                eq = '\\color{' + COL_SECONDARY + '}{y = 0}';
+            } else if (Math.abs(av - 1) < 0.001) {
+                eq = '\\color{' + COL_SECONDARY + '}{y = (2)^x}';
+            } else if (Math.abs(av + 1) < 0.001) {
+                eq = '\\color{' + COL_SECONDARY + '}{y = -(2)^x}';
+            } else {
+                eq = '\\color{' + COL_SECONDARY + '}{y = ' + formatA(av) + '(2)^x}';
+            }
+            katex.render(eq, document.getElementById('equation'), { throwOnError: false });
+
+            var rangeEl = document.getElementById('range-text');
+            var rangeLatex;
+            if (Math.abs(av) < 0.001) {
+                rangeLatex = '\\text{Currently } a = 0';
+            } else if (av > 1 + 0.001) {
+                rangeLatex = '\\text{Currently } a > 1';
+            } else if (Math.abs(av - 1) < 0.001) {
+                rangeLatex = '\\text{Currently } a = 1 \\text{ (same as } 2^x\\text{)}';
+            } else if (av > 0.001 && av < 1 - 0.001) {
+                rangeLatex = '\\text{Currently } 0 < a < 1';
+            } else if (av > -1 + 0.001 && av < -0.001) {
+                rangeLatex = '\\text{Currently } {-1} < a < 0';
+            } else if (Math.abs(av + 1) < 0.001) {
+                rangeLatex = '\\text{Currently } a = -1';
+            } else {
+                rangeLatex = '\\text{Currently } a < -1';
+            }
+            katex.render(rangeLatex, rangeEl, { throwOnError: false });
+
+            katex.render(
+                '\\text{What transformation of } 2^x \\text{ is } a(2)^x \\text{?}',
+                document.getElementById('observation'),
+                { throwOnError: false }
+            );
+
+            if (Math.abs(av) < 0.001) {
+                warningEl.style.display = 'block';
+                katex.render(
+                    'a = 0 \\text{ gives } y = 0\\text{, which is not an}\\\\\\text{exponential function.}',
+                    warningEl,
+                    { throwOnError: false }
+                );
+            } else {
+                warningEl.style.display = 'none';
+            }
+        }
+
+        updatePanel();
+    </script>
+</body>
+</html>
