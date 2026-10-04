@@ -408,13 +408,17 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             catch (e) { return null; }
         }
         // Convert a/b to \frac{a}{b}
-        latex = latex.replace(/([a-zA-Z0-9]+|\([^)]+\)|\{[^}]+\})\/([a-zA-Z0-9]+|\([^)]+\)|\{[^}]+\})/g, function (_, n, d) {
+        latex = latex.replace(/([a-zA-Z0-9]+|\([^)]+\)|\{[^}]+\})\/([a-zA-Z0-9]+|\([^)]+\)|\{[^}]+\})/g, function (m, n, d) {
+            // word/word in prose (up/down, positive/negative) stays a slash; dy/dx-style stays a fraction
+            if (/^[a-zA-Z]{2,}$/.test(n) && /^[a-zA-Z]{2,}$/.test(d) && !(/^d[a-z]$/.test(n) && /^d[a-z]$/.test(d))) return m;
             return '\\frac{' + n + '}{' + d + '}';
         });
         // Wrap English prose in \text{} with ~ spacing, skip LaTeX command names.
         // A prose run starts with a 2+ letter word OR a single letter followed by
         // a 2+ letter word, and continues with any word (including single-letter).
-        latex = latex.replace(/(?<!\\)\b((?:[a-zA-Z]{2,}|[a-zA-Z](?=\s+[a-zA-Z]{2,}))(?:\s+(?!\\)[a-zA-Z]+)*)/g, function (m) {
+        // prose runs may include hyphenated words (x-axis, non-zero, U-shape) and word/word,
+        // so their hyphen/slash stay text instead of becoming a minus sign / fraction
+        latex = latex.replace(/(?<!\\)\b((?:(?:[a-zA-Z]+(?:-[a-zA-Z]{3,})+|[a-zA-Z]{2,}\/[a-zA-Z]{2,}|[a-zA-Z]{2,})|[a-zA-Z](?=\s+[a-zA-Z]{2,}))(?:\s+(?!\\)(?:(?:[a-zA-Z]+(?:-[a-zA-Z]{3,})+|[a-zA-Z]{2,}\/[a-zA-Z]{2,}|[a-zA-Z]{2,})|[a-zA-Z]+))*)/g, function (m) {
             return '~\\text{' + m + '}~';
         });
         latex = latex.replace(/^~|~$/g, '').replace(/~~+/g, '~');
