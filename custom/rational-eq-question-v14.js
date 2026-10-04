@@ -422,6 +422,43 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
         catch (e) { return null; }
     };
 
+    // ── SC/MC option labels (2026-10-04) ──
+    // Mixed words + $…$ options used to become ONE KaTeX expression (words in \text{}),
+    // which can't wrap — long options ran off the LEAP card. Now: words stay as plain text
+    // (widget font) and only each $…$ piece is rendered by KaTeX, so options wrap like prose.
+    //   no $ at all            → null  (caller shows plain text; no maths guessing)
+    //   maths only ($…$ only)  → unchanged single-expression rendering (_renderDNOption)
+    //   words + $…$            → text + inline KaTeX pieces
+    // Escape-aware: \$ (currency) stays inside its maths piece. Unbalanced $ → old path.
+    // Dropdown menus keep using _renderDNOption (single line by design).
+    Question.prototype._renderChoiceLabel = function (text) {
+        if (text.indexOf('$') === -1) return null;
+        var parts = [''];
+        for (var ci = 0; ci < text.length; ci++) {
+            var ch = text.charAt(ci);
+            if (ch === '\\' && text.charAt(ci + 1) === '$') { parts[parts.length - 1] += '\\$'; ci++; continue; }
+            if (ch === '$') { parts.push(''); continue; }
+            parts[parts.length - 1] += ch;
+        }
+        if (parts.length % 2 === 0) return this._renderDNOption(text);          // unbalanced $
+        var outside = '';
+        for (var oi = 0; oi < parts.length; oi += 2) outside += parts[oi];
+        if (!/[A-Za-z]{2,}/.test(outside)) return this._renderDNOption(text);   // maths only
+        var esc = function (s) {
+            return s.replace(/\\\$/g, '$').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        };
+        var html = '';
+        for (var pi = 0; pi < parts.length; pi++) {
+            if (pi % 2 === 1) {
+                try { html += katex.renderToString(parts[pi], { throwOnError: false, trust: true }); }
+                catch (e) { html += esc('$' + parts[pi] + '$'); }
+            } else {
+                html += esc(parts[pi]);
+            }
+        }
+        return html;
+    };
+
     // ── Custom dropdown with KaTeX-rendered options ──
     Question.prototype._buildDropdown = function (id, options, onChange, structural) {
         var self = this;
@@ -538,7 +575,7 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             if (/<\w+[\s>]/.test(text)) {
                 $label.html(text);
             } else {
-                var rendered = self._renderDNOption(text);
+                var rendered = self._renderChoiceLabel(text);
                 if (rendered) { $label.html(rendered); } else { $label.text(text); }
             }
             $option.append($label);
