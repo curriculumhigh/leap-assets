@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversion Graph — Metres to Feet</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-320, 8200, 2400, -1200],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var i;
+
+        // Minor gridlines — x every 100
+        for (i = 100; i <= 2200; i += 100) {
+            if (i % 500 === 0) continue;
+            board.create('segment', [[i, 0], [i, 7500]], {
+                strokeColor: '#E5E7EB', strokeWidth: 0.3,
+                fixed: true, highlight: false
+            });
+        }
+        // Minor gridlines — y every 100
+        for (i = 100; i <= 7500; i += 100) {
+            if (i % 1000 === 0) continue;
+            board.create('segment', [[0, i], [2200, i]], {
+                strokeColor: '#E5E7EB', strokeWidth: 0.3,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Major gridlines — x every 500
+        for (i = 500; i <= 2000; i += 500) {
+            board.create('segment', [[i, 0], [i, 7500]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.5,
+                fixed: true, highlight: false
+            });
+        }
+        // Major gridlines — y every 1000
+        for (i = 1000; i <= 7000; i += 1000) {
+            board.create('segment', [[0, i], [2200, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.5,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Axes
+        board.create('arrow', [[0, 0], [2250, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.0,
+            lastArrow: { type: 2, size: 4 },
+            fixed: true, highlight: false
+        });
+        board.create('arrow', [[0, 0], [0, 7800]], {
+            strokeColor: '#444444', strokeWidth: 1.0,
+            lastArrow: { type: 2, size: 4 },
+            fixed: true, highlight: false
+        });
+
+        // Tick marks and labels — X-axis (every 500, skip 0)
+        var xTicks = [500, 1000, 1500, 2000];
+        for (i = 0; i < xTicks.length; i++) {
+            var xv = xTicks[i];
+            board.create('segment', [[xv, -80], [xv, 80]], {
+                strokeColor: '#444444', strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            board.create('text', [xv, -350, String(xv)], {
+                fontSize: 9, color: '#333333', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+        // Origin label
+        board.create('text', [-100, -350, '0'], {
+            fontSize: 9, color: '#333333', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Tick marks and labels — Y-axis (every 2000)
+        var yTicks = [2000, 4000, 6000];
+        for (i = 0; i < yTicks.length; i++) {
+            var yv = yTicks[i];
+            board.create('segment', [[-50, yv], [50, yv]], {
+                strokeColor: '#444444', strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            board.create('text', [-110, yv, String(yv)], {
+                fontSize: 9, color: '#333333', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Axis name labels
+        board.create('text', [1100, -800, '<i>Metres</i>'], {
+            fontSize: 10, color: '#333333', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [-230, 4000, '<i>Feet</i>'], {
+            fontSize: 10, color: '#333333', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            rotate: 90
+        });
+
+        // Conversion line: through (0,0) and (1900, 6200)
+        var slope = 6200 / 1900;
+        board.create('functiongraph', [
+            function(x) { return slope * x; }, 0, 2200
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        // Key points
+        board.create('point', [0, 0], {
+            name: '', size: 3, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [1900, 6200], {
+            name: '', size: 3, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false
+        });
+    </script>
+</body>
+</html>
