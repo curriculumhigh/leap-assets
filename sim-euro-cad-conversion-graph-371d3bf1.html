@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Euro to Canadian Dollar Conversion Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-10, 136, 92, -18],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var i;
+
+        // Minor grid lines (every 1 unit)
+        var minorGridColor = '#C8C8C8';
+        var minorGridWidth = 0.35;
+
+        for (i = 1; i <= 80; i += 1) {
+            board.create('segment', [[i, 0], [i, 120]], {
+                strokeColor: minorGridColor, strokeWidth: minorGridWidth,
+                fixed: true, highlight: false
+            });
+        }
+        for (i = 1; i <= 120; i += 1) {
+            board.create('segment', [[0, i], [80, i]], {
+                strokeColor: minorGridColor, strokeWidth: minorGridWidth,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Mid grid lines (every 5 units)
+        var midGridColor = '#AAAAAA';
+        var midGridWidth = 0.5;
+
+        for (i = 5; i <= 80; i += 5) {
+            if (i % 10 !== 0) {
+                board.create('segment', [[i, 0], [i, 120]], {
+                    strokeColor: midGridColor, strokeWidth: midGridWidth,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+        for (i = 5; i <= 120; i += 5) {
+            if (i % 10 !== 0) {
+                board.create('segment', [[0, i], [80, i]], {
+                    strokeColor: midGridColor, strokeWidth: midGridWidth,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // Major grid lines (every 10 units)
+        var majorGridColor = '#888888';
+        var majorGridWidth = 0.7;
+
+        for (i = 10; i <= 80; i += 10) {
+            board.create('segment', [[i, 0], [i, 120]], {
+                strokeColor: majorGridColor, strokeWidth: majorGridWidth,
+                fixed: true, highlight: false
+            });
+        }
+        for (i = 10; i <= 120; i += 10) {
+            board.create('segment', [[0, i], [80, i]], {
+                strokeColor: majorGridColor, strokeWidth: majorGridWidth,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Axes
+        board.create('arrow', [[0, 0], [87, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        board.create('arrow', [[0, 0], [0, 130]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Tick marks on x-axis
+        for (i = 10; i <= 80; i += 10) {
+            board.create('segment', [[i, -1.5], [i, 0]], {
+                strokeColor: '#444444', strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            board.create('text', [i, -5, String(i)], {
+                fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+                color: '#333333', fixed: true, highlight: false
+            });
+        }
+        for (i = 5; i <= 80; i += 10) {
+            board.create('segment', [[i, -0.9], [i, 0]], {
+                strokeColor: '#444444', strokeWidth: 0.7,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Tick marks on y-axis
+        for (i = 10; i <= 120; i += 10) {
+            board.create('segment', [[-1, i], [0, i]], {
+                strokeColor: '#444444', strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            board.create('text', [-4, i, String(i)], {
+                fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+                color: '#333333', fixed: true, highlight: false
+            });
+        }
+        for (i = 5; i <= 120; i += 10) {
+            board.create('segment', [[-0.6, i], [0, i]], {
+                strokeColor: '#444444', strokeWidth: 0.7,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Origin label
+        board.create('text', [-3, -5, '0'], {
+            fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+            color: '#333333', fixed: true, highlight: false
+        });
+
+        // Axis labels
+        board.create('text', [44, -13, '\\text{Euros (\\euro)}'], {
+            fontSize: 14, anchorX: 'middle', anchorY: 'middle',
+            color: '#333333', useKatex: true, fixed: true, highlight: false
+        });
+
+        var yLabelEl = board.create('text', [-8.5, 65, ''], {
+            fontSize: 14, anchorX: 'middle', anchorY: 'middle',
+            color: '#333333', fixed: true, highlight: false
+        });
+        yLabelEl.rendNode.innerHTML = '<div style="transform: rotate(-90deg); white-space: nowrap; font-size: 14px; color: #333333; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif;">Canadian dollars (C$)</div>';
+
+        // Conversion line: (0,0) to (80,120)
+        board.create('segment', [[0, 0], [80, 120]], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
