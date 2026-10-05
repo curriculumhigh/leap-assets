@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celsius to Fahrenheit Conversion Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-35, 275, 120, -35],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* === Grid: bounded segments within the data region === */
+        var X_MIN = -20, X_MAX = 100;
+        var Y_MIN = 0, Y_MAX = 250;
+        var i;
+
+        /* Minor grid: every 10 units — darkened */
+        for (i = X_MIN; i <= X_MAX; i += 10) {
+            board.create('segment', [[i, Y_MIN], [i, Y_MAX]], {
+                strokeColor: '#C4C9D1', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+        for (i = Y_MIN; i <= Y_MAX; i += 10) {
+            board.create('segment', [[X_MIN, i], [X_MAX, i]], {
+                strokeColor: '#C4C9D1', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+
+        /* Major grid: every 20 °C horizontal, every 50 °F vertical */
+        for (i = X_MIN; i <= X_MAX; i += 20) {
+            board.create('segment', [[i, Y_MIN], [i, Y_MAX]], {
+                strokeColor: '#B0B5BD', strokeWidth: 0.6,
+                fixed: true, highlight: false
+            });
+        }
+        for (i = Y_MIN; i <= Y_MAX; i += 50) {
+            board.create('segment', [[X_MIN, i], [X_MAX, i]], {
+                strokeColor: '#B0B5BD', strokeWidth: 0.6,
+                fixed: true, highlight: false
+            });
+        }
+
+        /* === Axes — drawn manually for precise alignment === */
+
+        /* X-axis: along y = 0 */
+        board.create('segment', [[X_MIN, 0], [X_MAX + 5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        /* Y-axis: along x = X_MIN (left edge of data) */
+        board.create('segment', [[X_MIN, Y_MIN], [X_MIN, Y_MAX + 10]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        /* === Tick marks and labels === */
+
+        /* X-axis ticks: every 20 °C, labeled */
+        var xTicks = [-20, 0, 20, 40, 60, 80, 100];
+        for (i = 0; i < xTicks.length; i++) {
+            var xv = xTicks[i];
+            board.create('segment', [[xv, -2.5], [xv, 2.5]], {
+                strokeColor: '#444444', strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            board.create('text', [xv, -8, String(xv)], {
+                fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false, color: '#444444'
+            });
+        }
+
+        /* Minor x-axis ticks: every 10 °C (no labels) */
+        for (i = X_MIN; i <= X_MAX; i += 10) {
+            if (i % 20 === 0) continue;
+            board.create('segment', [[i, -1.5], [i, 1.5]], {
+                strokeColor: '#444444', strokeWidth: 0.6,
+                fixed: true, highlight: false
+            });
+        }
+
+        /* Y-axis ticks: every 50 °F, labeled */
+        var yTicks = [0, 50, 100, 150, 200, 250];
+        for (i = 0; i < yTicks.length; i++) {
+            var yv = yTicks[i];
+            board.create('segment', [[X_MIN - 1.5, yv], [X_MIN + 1.5, yv]], {
+                strokeColor: '#444444', strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            if (yv === 0) continue;
+            board.create('text', [X_MIN - 5, yv, String(yv)], {
+                fontSize: 11, anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false, color: '#444444'
+            });
+        }
+
+        /* Minor y-axis ticks: every 10 °F (no labels) */
+        for (i = Y_MIN; i <= Y_MAX; i += 10) {
+            if (i % 50 === 0) continue;
+            board.create('segment', [[X_MIN - 0.8, i], [X_MIN + 0.8, i]], {
+                strokeColor: '#444444', strokeWidth: 0.6,
+                fixed: true, highlight: false
+            });
+        }
+
+        /* === Conversion line: °F = 1.8 × °C + 32 === */
+        board.create('functiongraph', [
+            function(x) { return 1.8 * x + 32; },
+            X_MIN, X_MAX
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        /* === Title === */
+        board.create('text', [40, 265, '\\textbf{Conversion graph, Celsius to Fahrenheit}'], {
+            fontSize: 14, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true, color: '#222222'
+        });
+
+        /* === Axis labels (KaTeX) === */
+        board.create('text', [50, -22, '\\text{Temperature in }^\\circ\\text{C}'], {
+            fontSize: 13, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true, color: '#444444'
+        });
+        board.create('text', [-32, 125, '\\text{Temperature in }^\\circ\\text{F}'], {
+            fontSize: 13, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true, color: '#444444',
+            rotate: 90
+        });
+    </script>
+</body>
+</html>
