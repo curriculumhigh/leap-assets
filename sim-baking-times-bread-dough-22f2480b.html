@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baking Times for Bread Dough</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.9, 272, 7.0, -30],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var i, v;
+
+        /* ── Minor grid: every 0.1 kg × every 1 min ────────────────── */
+        for (i = 0; i <= 60; i++) {
+            v = i * 0.1;
+            if (v > 6.001) break;
+            board.create('segment', [[v, 0], [v, 250]], {
+                strokeColor: '#C8CCD0', strokeWidth: 0.25, fixed: true, highlight: false
+            });
+        }
+        for (i = 0; i <= 250; i++) {
+            board.create('segment', [[0, i], [6, i]], {
+                strokeColor: '#C8CCD0', strokeWidth: 0.25, fixed: true, highlight: false
+            });
+        }
+
+        /* ── Medium grid: every 0.5 kg × every 10 min ──────────────── */
+        for (i = 0; i <= 12; i++) {
+            v = i * 0.5;
+            if (v > 6.001) break;
+            board.create('segment', [[v, 0], [v, 250]], {
+                strokeColor: '#B0B5BA', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+        for (i = 0; i <= 25; i++) {
+            v = i * 10;
+            if (v > 250.1) break;
+            board.create('segment', [[0, v], [6, v]], {
+                strokeColor: '#B0B5BA', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        /* ── Major grid: every 1 kg × every 50 min ─────────────────── */
+        for (i = 0; i <= 6; i++) {
+            board.create('segment', [[i, 0], [i, 250]], {
+                strokeColor: '#9CA3AF', strokeWidth: 0.6, fixed: true, highlight: false
+            });
+        }
+        for (i = 0; i <= 5; i++) {
+            v = i * 50;
+            board.create('segment', [[0, v], [6, v]], {
+                strokeColor: '#9CA3AF', strokeWidth: 0.6, fixed: true, highlight: false
+            });
+        }
+
+        /* ── Axes ───────────────────────────────────────────────────── */
+        board.create('arrow', [[0, 0], [6.55, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        board.create('arrow', [[0, 0], [0, 260]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        /* ── Tick marks and labels — x-axis ─────────────────────────── */
+        for (i = 0; i <= 6; i++) {
+            board.create('segment', [[i, -4], [i, 0]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [i, -10, String(i)], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 11, color: '#333', fixed: true, highlight: false
+            });
+        }
+
+        /* ── Tick marks and labels — y-axis ─────────────────────────── */
+        for (i = 0; i <= 5; i++) {
+            v = i * 50;
+            board.create('segment', [[-0.12, v], [0, v]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [-0.25, v, String(v)], {
+                anchorX: 'right', anchorY: 'middle',
+                fontSize: 11, color: '#333', fixed: true, highlight: false
+            });
+        }
+
+        /* ── Axis name labels ───────────────────────────────────────── */
+        board.create('text', [3, -22, '\\text{Mass (kg)}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#333', useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [-0.72, 130, '\\text{Time (minutes)}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#333', useKatex: true, fixed: true, highlight: false,
+            rotate: 90, display: 'html'
+        });
+
+        /* ── Title ──────────────────────────────────────────────────── */
+        board.create('text', [3, 262, '\\textbf{Baking times for bread dough}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        /* ── Straight line from (0, 20) to (6, 230) ────────────────── */
+        board.create('segment', [[0, 20], [6, 230]], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        /* Small endpoint dots */
+        board.create('point', [0, 20], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [6, 230], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+    </script>
+</body>
+</html>
