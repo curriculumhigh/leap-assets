@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miles to Kilometres Conversion Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 550px;
+            margin: 0;
+            padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            height: calc(100% - 20px);
+        }
+        #board {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 92, 57, -14],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        var i;
+
+        // Sub-minor grid lines (finest, drawn first)
+        // Vertical sub-minor: every 1 mile (skip multiples of 5)
+        for (i = 1; i <= 50; i++) {
+            if (i % 5 !== 0) {
+                board.create('segment', [[i, 0], [i, 80]], {
+                    strokeColor: '#E5E7EB',
+                    strokeWidth: 0.5,
+                    fixed: true,
+                    highlight: false
+                });
+            }
+        }
+        // Horizontal sub-minor: every 2 km (skip multiples of 10)
+        for (i = 2; i <= 80; i += 2) {
+            if (i % 10 !== 0) {
+                board.create('segment', [[0, i], [50, i]], {
+                    strokeColor: '#E5E7EB',
+                    strokeWidth: 0.5,
+                    fixed: true,
+                    highlight: false
+                });
+            }
+        }
+
+        // Minor grid lines (middle tier)
+        // Vertical minor: every 5 miles (skip multiples of 10)
+        for (i = 5; i <= 50; i += 10) {
+            board.create('segment', [[i, 0], [i, 80]], {
+                strokeColor: '#C9CDD4',
+                strokeWidth: 0.8,
+                fixed: true,
+                highlight: false
+            });
+        }
+        // Horizontal minor: every 10 km (skip multiples of 20)
+        for (i = 10; i <= 80; i += 20) {
+            board.create('segment', [[0, i], [50, i]], {
+                strokeColor: '#C9CDD4',
+                strokeWidth: 0.8,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // Major grid lines (darkest, drawn on top)
+        // Vertical major: every 10 miles
+        for (i = 0; i <= 50; i += 10) {
+            board.create('segment', [[i, 0], [i, 80]], {
+                strokeColor: '#9CA3AF',
+                strokeWidth: 0.8,
+                fixed: true,
+                highlight: false
+            });
+        }
+        // Horizontal major: every 20 km
+        for (i = 0; i <= 80; i += 20) {
+            board.create('segment', [[0, i], [50, i]], {
+                strokeColor: '#9CA3AF',
+                strokeWidth: 0.8,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // Axes
+        board.create('arrow', [[0, 0], [54, 0]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true,
+            highlight: false
+        });
+        board.create('arrow', [[0, 0], [0, 88]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true,
+            highlight: false
+        });
+
+        // Tick marks and labels — X-axis (every 10)
+        var xTicks = [0, 10, 20, 30, 40, 50];
+        for (var t = 0; t < xTicks.length; t++) {
+            var xv = xTicks[t];
+            board.create('segment', [[xv, -1.2], [xv, 0]], {
+                strokeColor: '#444444',
+                strokeWidth: 1.0,
+                fixed: true,
+                highlight: false
+            });
+            board.create('text', [xv, -4, String(xv)], {
+                fontSize: 11,
+                color: '#444444',
+                anchorX: 'middle',
+                anchorY: 'middle',
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // Tick marks and labels — Y-axis (every 20)
+        var yTicks = [20, 40, 60, 80];
+        for (var u = 0; u < yTicks.length; u++) {
+            var yv = yTicks[u];
+            board.create('segment', [[-1, yv], [0, yv]], {
+                strokeColor: '#444444',
+                strokeWidth: 1.0,
+                fixed: true,
+                highlight: false
+            });
+            board.create('text', [-3.5, yv, String(yv)], {
+                fontSize: 11,
+                color: '#444444',
+                anchorX: 'middle',
+                anchorY: 'middle',
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // Axis name labels
+        board.create('text', [25, -10, '<i>Miles</i>'], {
+            fontSize: 14,
+            color: '#333333',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+        board.create('text', [-5.5, 45, '<i>Kilometres</i>'], {
+            fontSize: 14,
+            color: '#333333',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false,
+            rotate: 90,
+            display: 'html'
+        });
+
+        // Conversion line: through (0,0) and (50,80)
+        board.create('functiongraph', [
+            function(x) { return 1.6 * x; },
+            0, 50
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Key points
+        board.create('point', [0, 0], {
+            name: '',
+            size: 2,
+            color: '#222222',
+            fixed: true,
+            highlight: false
+        });
+        board.create('point', [50, 80], {
+            name: '',
+            size: 3,
+            color: '#222222',
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
