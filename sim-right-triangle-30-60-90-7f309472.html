@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle 30-60-90</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 8.5, 8.5, -1.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle vertices
+        var vLeg = 3.5;
+        var hLeg = vLeg * Math.sqrt(3);
+
+        var Ax = 1.0, Ay = 1.0;
+        var Bx = Ax, By = Ay + vLeg;
+        var Cx = Ax + hLeg, Cy = Ay;
+
+        var A = board.create('point', [Ax, Ay], { name: '', fixed: true, size: 2, color: '#222222', highlight: false });
+        var B = board.create('point', [Bx, By], { name: '', fixed: true, size: 2, color: '#222222', highlight: false });
+        var C = board.create('point', [Cx, Cy], { name: '', fixed: true, size: 2, color: '#222222', highlight: false });
+
+        // Triangle edges
+        board.create('polygon', [A, B, C], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Right angle marker at A (bottom-left)
+        var sqSize = 0.45;
+        var sq1 = board.create('point', [Ax + sqSize, Ay], { visible: false, fixed: true, name: '' });
+        var sq2 = board.create('point', [Ax + sqSize, Ay + sqSize], { visible: false, fixed: true, name: '' });
+        var sq3 = board.create('point', [Ax, Ay + sqSize], { visible: false, fixed: true, name: '' });
+        board.create('segment', [sq1, sq2], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [sq2, sq3], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // 60° label at B (top-left vertex)
+        board.create('text', [Bx + 0.30, By - 0.75, '60^\\circ'], {
+            useKatex: true, fontSize: 13, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Side labels
+        // Hypotenuse label (18)
+        var hypMidX = (Bx + Cx) / 2;
+        var hypMidY = (By + Cy) / 2;
+        var hypDx = Cx - Bx;
+        var hypDy = Cy - By;
+        var hypLen = Math.sqrt(hypDx * hypDx + hypDy * hypDy);
+        var hypNx = -hypDy / hypLen;
+        var hypNy = hypDx / hypLen;
+        var toAx = Ax - hypMidX;
+        var toAy = Ay - hypMidY;
+        if (hypNx * toAx + hypNy * toAy > 0) { hypNx = -hypNx; hypNy = -hypNy; }
+
+        board.create('text', [hypMidX + hypNx * 0.55, hypMidY + hypNy * 0.55, '18'], {
+            useKatex: true, fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Vertical leg label (y)
+        board.create('text', [Ax - 0.55, (Ay + By) / 2, 'y'], {
+            useKatex: true, fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-style: italic;'
+        });
+
+        // Horizontal leg label (x)
+        board.create('text', [(Ax + Cx) / 2, Ay - 0.55, 'x'], {
+            useKatex: true, fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-style: italic;'
+        });
+    </script>
+</body>
+</html>
