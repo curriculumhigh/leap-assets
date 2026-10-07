@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>45-45-90 Triangle Fractal — Stages 0–3</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 11.5, 27, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var FILL_COLORS = ['#222222', '#2563EB', '#059669', '#D97706'];
+        var FILL_OPACITY = 0.12;
+        var STROKE_COLOR = '#555555';
+        var STROKE_WIDTH = 1.5;
+
+        function drawTriangle(verts, gen) {
+            var p1 = board.create('point', verts[0], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', verts[1], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', verts[2], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [p1, p2, p3], {
+                fillColor: FILL_COLORS[gen] || FILL_COLORS[3],
+                fillOpacity: FILL_OPACITY,
+                borders: { strokeColor: STROKE_COLOR, strokeWidth: STROKE_WIDTH },
+                vertices: { visible: false },
+                hasInnerPoints: false,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        function buildPythagoreanTree(baseA, baseB, baseC, maxStage) {
+            var allTriangles = [];
+            allTriangles.push({ verts: [baseA, baseB, baseC], gen: 0 });
+
+            var segments = [[baseB, baseC]];
+
+            for (var stage = 1; stage <= maxStage; stage++) {
+                var newSegments = [];
+                for (var i = 0; i < segments.length; i++) {
+                    var A = segments[i][0];
+                    var B = segments[i][1];
+                    var mx = (A[0] + B[0]) / 2;
+                    var my = (A[1] + B[1]) / 2;
+                    var dx = B[0] - A[0];
+                    var dy = B[1] - A[1];
+                    var px = -dy / 2;
+                    var py = dx / 2;
+                    var C = [mx + px, my + py];
+
+                    allTriangles.push({ verts: [A, B, C], gen: stage });
+
+                    newSegments.push([A, C]);
+                    newSegments.push([C, B]);
+                }
+                segments = newSegments;
+            }
+            return allTriangles;
+        }
+
+        var stageOffsets = [0, 5.5, 12, 19];
+
+        for (var s = 0; s <= 3; s++) {
+            var ox = stageOffsets[s];
+            var baseA = [ox, 0];
+            var baseB = [ox + 2, 0];
+            var baseC = [ox, 2];
+
+            var tris = buildPythagoreanTree(baseA, baseB, baseC, s);
+            for (var t = 0; t < tris.length; t++) {
+                drawTriangle(tris[t].verts, tris[t].gen);
+            }
+
+            var minX = Infinity, maxX = -Infinity;
+            for (var t = 0; t < tris.length; t++) {
+                for (var v = 0; v < 3; v++) {
+                    var vx = tris[t].verts[v][0];
+                    if (vx < minX) minX = vx;
+                    if (vx > maxX) maxX = vx;
+                }
+            }
+            var centerX = (minX + maxX) / 2;
+
+            board.create('text', [centerX, -1.2, 'Stage ' + s], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 13, color: '#333', fixed: true, highlight: false
+            });
+        }
+
+    </script>
+</body>
+</html>
