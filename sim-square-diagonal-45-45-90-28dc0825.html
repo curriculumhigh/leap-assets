@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Square with Diagonal — 45-45-90 Triangle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 6.5, 8.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var S = 5;
+
+        var A = board.create('point', [1, 0.5], { name: '', fixed: true, size: 0, visible: false });
+        var B = board.create('point', [1 + S, 0.5], { name: '', fixed: true, size: 0, visible: false });
+        var C = board.create('point', [1 + S, 0.5 + S], { name: '', fixed: true, size: 0, visible: false });
+        var D = board.create('point', [1, 0.5 + S], { name: '', fixed: true, size: 0, visible: false });
+
+        board.create('segment', [A, B], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [B, C], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [C, D], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [D, A], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+
+        board.create('segment', [A, C], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+
+        var raSize = 0.45;
+        var ra1 = board.create('point', [B.X(), B.Y() + raSize], { visible: false, fixed: true, name: '' });
+        var ra2 = board.create('point', [B.X() - raSize, B.Y() + raSize], { visible: false, fixed: true, name: '' });
+        var ra3 = board.create('point', [B.X() - raSize, B.Y()], { visible: false, fixed: true, name: '' });
+        board.create('segment', [ra1, ra2], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [ra2, ra3], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        board.create('nonReflexAngle', [B, A, C], {
+            radius: 0.7,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fillColor: '#DC2626', fillOpacity: 0.06,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        var angA_bisect = Math.PI / 8;
+        board.create('text', [
+            A.X() + 1.15 * Math.cos(angA_bisect),
+            A.Y() + 1.15 * Math.sin(angA_bisect),
+            '45\u00B0'
+        ], {
+            fontSize: 12, color: '#DC2626', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('nonReflexAngle', [A, C, D], {
+            radius: 0.7,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fillColor: '#DC2626', fillOpacity: 0.06,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        var angC_bisect = Math.PI + Math.PI / 8;
+        board.create('text', [
+            C.X() + 1.15 * Math.cos(angC_bisect),
+            C.Y() + 1.15 * Math.sin(angC_bisect),
+            '45\u00B0'
+        ], {
+            fontSize: 12, color: '#DC2626', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var midX = (A.X() + C.X()) / 2;
+        var midY = (A.Y() + C.Y()) / 2;
+        var offsetDist = 0.55;
+        var perpAngle = 3 * Math.PI / 4;
+        board.create('text', [
+            midX + offsetDist * Math.cos(perpAngle),
+            midY + offsetDist * Math.sin(perpAngle),
+            '10 ft'
+        ], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+
+        var tickLen = 0.25;
+        var abMidX = (A.X() + B.X()) / 2;
+        var abMidY = A.Y();
+        board.create('segment', [[abMidX, abMidY - tickLen], [abMidX, abMidY + tickLen]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var bcMidX = B.X();
+        var bcMidY = (B.Y() + C.Y()) / 2;
+        board.create('segment', [[bcMidX - tickLen, bcMidY], [bcMidX + tickLen, bcMidY]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var cdMidX = (C.X() + D.X()) / 2;
+        var cdMidY = C.Y();
+        board.create('segment', [[cdMidX, cdMidY - tickLen], [cdMidX, cdMidY + tickLen]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var daMidX = D.X();
+        var daMidY = (D.Y() + A.Y()) / 2;
+        board.create('segment', [[daMidX - tickLen, daMidY], [daMidX + tickLen, daMidY]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
