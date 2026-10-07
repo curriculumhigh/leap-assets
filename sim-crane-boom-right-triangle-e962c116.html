@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crane Boom Arm — Right Triangle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 9.5, 11.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle vertices
+        // A = bottom-left (base angle theta)
+        // B = bottom-right (right angle)
+        // C = top-right (top of boom)
+        var A = board.create('point', [1, 1], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var B = board.create('point', [9, 1], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var C = board.create('point', [9, 7.5], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // Ground line (extends beyond triangle base)
+        board.create('segment', [[0, 1], [10.2, 1]], {
+            strokeColor: '#999999', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // Horizontal base (ground span)
+        board.create('segment', [A, B], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Vertical side (h)
+        board.create('segment', [B, C], {
+            strokeColor: '#2563EB', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Hypotenuse (boom arm)
+        board.create('segment', [A, C], {
+            strokeColor: '#222222', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // Right angle marker at B
+        var raSize = 0.55;
+        board.create('segment', [[9 - raSize, 1], [9 - raSize, 1 + raSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[9 - raSize, 1 + raSize], [9, 1 + raSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Base angle arc at A (theta)
+        board.create('nonReflexAngle', [B, A, C], {
+            radius: 1.2,
+            fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // Theta label along the bisector of the angle at A
+        var angA = Math.atan2(C.Y() - A.Y(), C.X() - A.X()) / 2;
+        board.create('text', [
+            A.X() + 1.8 * Math.cos(angA),
+            A.Y() + 1.8 * Math.sin(angA),
+            '\\theta'
+        ], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Hypotenuse label: 150 ft
+        var midHypX = (A.X() + C.X()) / 2;
+        var midHypY = (A.Y() + C.Y()) / 2;
+        var hypDx = C.X() - A.X();
+        var hypDy = C.Y() - A.Y();
+        var hypLen = Math.sqrt(hypDx * hypDx + hypDy * hypDy);
+        var nx = -hypDy / hypLen;
+        var ny = hypDx / hypLen;
+        board.create('text', [
+            midHypX + nx * 0.7,
+            midHypY + ny * 0.7,
+            '150 \\text{ ft}'
+        ], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Vertical side label: h
+        var midVX = B.X();
+        var midVY = (B.Y() + C.Y()) / 2;
+        board.create('text', [midVX + 0.6, midVY, 'h'], {
+            useKatex: true, fontSize: 14, color: '#2563EB',
+            anchorX: 'left', anchorY: 'middle',
+            cssStyle: 'font-weight: bold',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
