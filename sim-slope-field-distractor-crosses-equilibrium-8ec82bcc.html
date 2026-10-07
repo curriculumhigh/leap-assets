@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slope Field — Distractor Crosses Equilibrium</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 6.5, 6.5, -6.5],
+            axis: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Grid lines at every integer ─────────────────────────────────
+        var GRID_COL = '#D1D5DB';
+        var GRID_W = 0.4;
+        var i;
+
+        for (i = -5; i <= 5; i++) {
+            board.create('segment', [[i, -5], [i, 5]], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W,
+                fixed: true, highlight: false, layer: 0
+            });
+            board.create('segment', [[-5, i], [5, i]], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W,
+                fixed: true, highlight: false, layer: 0
+            });
+        }
+
+        // ── Axes ────────────────────────────────────────────────────────
+        var AXIS_COL = '#444444';
+
+        board.create('arrow', [[-6.2, 0], [6.2, 0]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false, layer: 1
+        });
+        board.create('arrow', [[0, -6.2], [0, 6.2]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false, layer: 1
+        });
+
+        // ── Tick marks and labels ───────────────────────────────────────
+        var TICK_LEN = 0.15;
+
+        for (i = -5; i <= 5; i++) {
+            if (i === 0) continue;
+
+            board.create('segment', [[i, -TICK_LEN], [i, TICK_LEN]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.2,
+                fixed: true, highlight: false, layer: 1
+            });
+            board.create('text', [i, -0.55, String(i)], {
+                fontSize: 9, color: AXIS_COL, anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+
+            board.create('segment', [[-TICK_LEN, i], [TICK_LEN, i]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.2,
+                fixed: true, highlight: false, layer: 1
+            });
+            board.create('text', [-0.5, i, String(i)], {
+                fontSize: 9, color: AXIS_COL, anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        board.create('text', [-0.45, -0.5, '0'], {
+            fontSize: 9, color: AXIS_COL, anchorX: 'right', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [6.0, -0.45, '<i>x</i>'], { fontSize: 11, fixed: true, highlight: false });
+        board.create('text', [0.3, 6.1, '<i>y</i>'], { fontSize: 11, fixed: true, highlight: false });
+
+        // ── Slope field: dy/dx = x²(y − 1) / 4 ─────────────────────────
+        var SEG_HALF = 0.28;
+        var COL_FIELD = '#2563EB';
+
+        function dydx(x, y) {
+            return x * x * (y - 1) / 4;
+        }
+
+        for (var xi = -5; xi <= 5; xi++) {
+            for (var yi = -5; yi <= 5; yi++) {
+                var slope = dydx(xi, yi);
+                var angle = Math.atan(slope);
+                var dx = SEG_HALF * Math.cos(angle);
+                var dy = SEG_HALF * Math.sin(angle);
+
+                board.create('segment', [
+                    [xi - dx, yi - dy],
+                    [xi + dx, yi + dy]
+                ], {
+                    strokeColor: COL_FIELD,
+                    strokeWidth: 1.75,
+                    fixed: true,
+                    highlight: false,
+                    layer: 5
+                });
+            }
+        }
+
+        // ── Distractor curve: through (1,-3), crosses y = 1 ────────────
+        //
+        // TRUE ODE: dy/dx = x²(y-1)/4
+        //   Below y=1, for x≠0: slope < 0 → solutions go DOWN
+        //   True solutions starting below y=1 NEVER reach y=1
+        //
+        // DISTRACTOR:
+        //   Leftward (x < 1): true ODE backward — looks field-consistent
+        //   Rightward (x >= 1): synthetic cubic that rises and crosses y=1
+        //
+        // Cubic: y = a(x-1)³ + b(x-1)² + c(x-1) + d
+        //   (1, -3): d = -3
+        //   slope -1 at x=1: c = -1
+        //   (3.5, 1): crosses y=1  → 15.625a + 6.25b = 6.5
+        //   (5, 3.5): continues   → 64a + 16b = 10.5
+        //   Solving: a = -0.2558, b = 1.6795
+
+        var COL_CURVE = '#DC2626';
+        var h = 0.05;
+        var x0 = 1, y0 = -3;
+
+        var cubicD = -3;
+        var cubicC = -1;
+        var cubicA = -0.2558;
+        var cubicB = 1.6795;
+
+        function syntheticY(x) {
+            var u = x - 1;
+            return cubicA * u * u * u + cubicB * u * u + cubicC * u + cubicD;
+        }
+
+        // RK4 for true ODE (backward integration)
+        function rk4(slopeFn, x, y, step) {
+            var k1 = slopeFn(x, y);
+            var k2 = slopeFn(x + step / 2, y + step * k1 / 2);
+            var k3 = slopeFn(x + step / 2, y + step * k2 / 2);
+            var k4 = slopeFn(x + step, y + step * k3);
+            return y + (step / 6) * (k1 + 2 * k2 + 2 * k3 + k4);
+        }
+
+        // ── Backward from (1,-3): true ODE ─────────────────────────────
+        var bwdPts = [];
+        var cx = x0, cy = y0;
+        while (cx > -5.5) {
+            cy = rk4(dydx, cx, cy, -h);
+            cx -= h;
+            if (cy > 6.5 || cy < -6.5) break;
+            bwdPts.push([cx, cy]);
+        }
+        bwdPts.reverse();
+
+        // ── Forward from (1,-3): synthetic cubic ────────────────────────
+        var fwdPts = [];
+        var fx = x0;
+        while (fx <= 5.5) {
+            var fy = syntheticY(fx);
+            if (fy > 6.5 || fy < -6.5) break;
+            fwdPts.push([fx, fy]);
+            fx += h;
+        }
+
+        // ── Combine ─────────────────────────────────────────────────────
+        var allPts = bwdPts.concat(fwdPts);
+
+        var curveX = [];
+        var curveY = [];
+        for (var p = 0; p < allPts.length; p++) {
+            curveX.push(allPts[p][0]);
+            curveY.push(allPts[p][1]);
+        }
+
+        board.create('curve', [curveX, curveY], {
+            strokeColor: COL_CURVE,
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false,
+            layer: 7
+        });
+
+        // ── Point at (1, -3) ────────────────────────────────────────────
+        board.create('point', [1, -3], {
+            name: '', size: 4, color: COL_CURVE,
+            fixed: true, highlight: false,
+            showInfobox: false, layer: 8
+        });
+
+        board.create('text', [1.5, -3.6, '(1, -3)'], {
+            fontSize: 10, color: COL_CURVE, useKatex: true,
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
