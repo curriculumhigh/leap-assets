@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kite Diagram — Four Right Triangles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var cx = 0;
+        var cy = 0;
+        var topY = cy + 9;
+        var botY = cy - 16;
+        var leftX = cx - 12;
+        var rightX = cx + 12;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-18, 14, 18, -21],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var T = board.create('point', [cx, topY], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var B = board.create('point', [cx, botY], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var L = board.create('point', [leftX, cy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var R = board.create('point', [rightX, cy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var C = board.create('point', [cx, cy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        board.create('segment', [T, L], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [T, R], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [B, L], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [B, R], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [T, B], {
+            strokeColor: '#555555', strokeWidth: 1, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [L, R], {
+            strokeColor: '#555555', strokeWidth: 1, dash: 2, fixed: true, highlight: false
+        });
+
+        var raSize = 1.2;
+        var raColor = '#DC2626';
+        var raWidth = 1.5;
+
+        board.create('segment', [[cx + raSize, cy], [cx + raSize, cy + raSize]], {
+            strokeColor: raColor, strokeWidth: raWidth, fixed: true, highlight: false
+        });
+        board.create('segment', [[cx + raSize, cy + raSize], [cx, cy + raSize]], {
+            strokeColor: raColor, strokeWidth: raWidth, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[cx - raSize, cy], [cx - raSize, cy + raSize]], {
+            strokeColor: raColor, strokeWidth: raWidth, fixed: true, highlight: false
+        });
+        board.create('segment', [[cx - raSize, cy + raSize], [cx, cy + raSize]], {
+            strokeColor: raColor, strokeWidth: raWidth, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[cx + raSize, cy], [cx + raSize, cy - raSize]], {
+            strokeColor: raColor, strokeWidth: raWidth, fixed: true, highlight: false
+        });
+        board.create('segment', [[cx + raSize, cy - raSize], [cx, cy - raSize]], {
+            strokeColor: raColor, strokeWidth: raWidth, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[cx - raSize, cy], [cx - raSize, cy - raSize]], {
+            strokeColor: raColor, strokeWidth: raWidth, fixed: true, highlight: false
+        });
+        board.create('segment', [[cx - raSize, cy - raSize], [cx, cy - raSize]], {
+            strokeColor: raColor, strokeWidth: raWidth, fixed: true, highlight: false
+        });
+
+        board.create('text', [cx + 1.8, cy + 4.5, '9\\text{ in.}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'left'
+        });
+
+        board.create('text', [cx + 1.8, cy - 8, '16\\text{ in.}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'left'
+        });
+
+        board.create('text', [-6, cy + 1.6, '12\\text{ in.}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        board.create('text', [6, cy + 1.6, '12\\text{ in.}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+    </script>
+</body>
+</html>
