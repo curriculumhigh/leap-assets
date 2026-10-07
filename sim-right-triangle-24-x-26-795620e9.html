@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle — Legs 24, x, Hypotenuse 26</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 15.5, 14, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle vertices
+        var A = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var B = board.create('point', [10, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var C = board.create('point', [0, 12], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // Triangle polygon
+        board.create('polygon', [A, B, C], {
+            fillColor: '#e5e7eb',
+            fillOpacity: 0.15,
+            borders: {
+                strokeColor: '#555555',
+                strokeWidth: 2.0,
+                fixed: true,
+                highlight: false
+            },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // Right-angle box at A (bottom-left)
+        var boxSize = 1.0;
+        var raPt1 = board.create('point', [boxSize, 0], { visible: false, fixed: true, name: '' });
+        var raPt2 = board.create('point', [boxSize, boxSize], { visible: false, fixed: true, name: '' });
+        var raPt3 = board.create('point', [0, boxSize], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [raPt1, raPt2], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [raPt2, raPt3], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Label: "24" on the left leg (vertical), offset to the left
+        board.create('text', [-1.6, 6, '24'], {
+            fontSize: 15, color: '#222222', useKatex: true,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Label: "x" on the base (horizontal), offset below
+        board.create('text', [5, -1.5, 'x'], {
+            fontSize: 15, color: '#222222', useKatex: true,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Label: "26" on the hypotenuse (slant), offset upper-right
+        board.create('text', [6.2, 7.2, '26'], {
+            fontSize: 15, color: '#222222', useKatex: true,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
