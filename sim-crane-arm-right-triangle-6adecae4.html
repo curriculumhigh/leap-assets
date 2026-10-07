@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crane Arm Right Triangle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 12.5, 14, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Triangle vertices ───────────────────────────────────────────
+        var pivotX = 1, pivotY = 1;
+        var armLen = 10;
+        var angle = 60 * Math.PI / 180;
+        var tipX = pivotX + armLen * Math.cos(angle);
+        var tipY = pivotY + armLen * Math.sin(angle);
+        var baseX = tipX;
+        var baseY = pivotY;
+
+        // ── Points (all invisible) ──────────────────────────────────────
+        var pPivot = board.create('point', [pivotX, pivotY], {
+            name: '', visible: false, fixed: true
+        });
+        var pTip = board.create('point', [tipX, tipY], {
+            name: '', visible: false, fixed: true
+        });
+        var pBase = board.create('point', [baseX, baseY], {
+            name: '', visible: false, fixed: true
+        });
+
+        // ── Ground line ─────────────────────────────────────────────────
+        board.create('segment', [[pivotX - 1.2, pivotY], [baseX + 1.5, pivotY]], {
+            strokeColor: '#888888', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var hatchCount = 12;
+        var hatchStart = pivotX - 1.2;
+        var hatchEnd = baseX + 1.5;
+        var hatchSpacing = (hatchEnd - hatchStart) / hatchCount;
+        for (var i = 0; i <= hatchCount; i++) {
+            var hx = hatchStart + i * hatchSpacing;
+            board.create('segment', [[hx, pivotY], [hx - 0.35, pivotY - 0.45]], {
+                strokeColor: '#aaaaaa', strokeWidth: 0.8, fixed: true, highlight: false
+            });
+        }
+
+        // ── Horizontal base of triangle ─────────────────────────────────
+        board.create('segment', [pPivot, pBase], {
+            strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Crane arm (hypotenuse) ──────────────────────────────────────
+        board.create('segment', [pPivot, pTip], {
+            strokeColor: '#222222', strokeWidth: 2.2, fixed: true, highlight: false
+        });
+
+        // ── Vertical rise (dashed red) ──────────────────────────────────
+        board.create('segment', [pTip, pBase], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Pivot dot ───────────────────────────────────────────────────
+        board.create('point', [pivotX, pivotY], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Tip dot ─────────────────────────────────────────────────────
+        board.create('point', [tipX, tipY], {
+            name: '', size: 2.5, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Right angle marker ──────────────────────────────────────────
+        var sqSize = 0.55;
+        board.create('segment', [[baseX - sqSize, baseY], [baseX - sqSize, baseY + sqSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[baseX - sqSize, baseY + sqSize], [baseX, baseY + sqSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── 60° angle arc at pivot ─────────────────────────────────────
+        board.create('arc', [pPivot,
+            board.create('point', [pivotX + 1.8, pivotY], { visible: false, fixed: true, name: '' }),
+            board.create('point', [pivotX + 1.8 * Math.cos(angle), pivotY + 1.8 * Math.sin(angle)], { visible: false, fixed: true, name: '' })
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false,
+            firstArrow: false, lastArrow: false
+        });
+
+        // 60° label
+        board.create('text', [pivotX + 2.1, pivotY + 0.9, '60^\\circ'], {
+            useKatex: true, fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'left'
+        });
+
+        // ── "18 ft" label along the crane arm ──────────────────────────
+        var midArmX = pivotX + (armLen / 2) * Math.cos(angle);
+        var midArmY = pivotY + (armLen / 2) * Math.sin(angle);
+        var perpX = -Math.sin(angle) * 0.7;
+        var perpY = Math.cos(angle) * 0.7;
+
+        board.create('text', [midArmX + perpX, midArmY + perpY, '18 \\text{ ft}'], {
+            useKatex: true, fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ── "h" label on the vertical rise ──────────────────────────────
+        var midVertY = (tipY + baseY) / 2;
+        board.create('text', [baseX + 0.6, midVertY, 'h'], {
+            useKatex: true, fontSize: 15, color: '#DC2626', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle',
+            cssStyle: 'font-weight: bold;'
+        });
+
+    </script>
+</body>
+</html>
