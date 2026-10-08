@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 9.5, 10, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle vertices
+        var A = board.create('point', [0, 0], { name: '', fixed: true, size: 2, color: '#222222', highlight: false, visible: true });
+        var B = board.create('point', [0, 7], { name: '', fixed: true, size: 2, color: '#222222', highlight: false, visible: true });
+        var C = board.create('point', [8, 0], { name: '', fixed: true, size: 2, color: '#222222', highlight: false, visible: true });
+
+        // Triangle edges
+        board.create('segment', [A, B], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [A, C], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [B, C], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+
+        // Right-angle marker at A (bottom-left)
+        var sqSize = 0.6;
+        var sq1 = board.create('point', [sqSize, 0], { visible: false, fixed: true, name: '' });
+        var sq2 = board.create('point', [sqSize, sqSize], { visible: false, fixed: true, name: '' });
+        var sq3 = board.create('point', [0, sqSize], { visible: false, fixed: true, name: '' });
+        board.create('segment', [sq1, sq2], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [sq2, sq3], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // Angle arc at B (top-left)
+        board.create('nonReflexAngle', [A, B, C], {
+            radius: 1.0,
+            fillColor: '#222222',
+            fillOpacity: 0.06,
+            strokeColor: '#222222',
+            strokeWidth: 1.2,
+            fixed: true,
+            name: '',
+            withLabel: false
+        });
+
+        // 51° label
+        board.create('text', [0.65, 5.75, '51\u00b0'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+
+        // Label: b on the vertical leg (left side)
+        board.create('text', [-0.8, 3.5, 'b'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            useKatex: true, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Label: a on the horizontal leg (bottom)
+        board.create('text', [4, -0.8, 'a'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            useKatex: true, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Label: 26 on the hypotenuse
+        board.create('text', [4.8, 4.2, '26'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            useKatex: true, anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
