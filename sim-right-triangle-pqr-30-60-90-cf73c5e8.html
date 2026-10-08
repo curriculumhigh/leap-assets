@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle PQR</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 7.5, 11.5, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertex coordinates ──────────────────────────────────────────
+        var Qx = 1, Qy = 0.5;
+        var Rx = Qx + 5 * Math.sqrt(3), Ry = Qy;
+        var Px = Qx, Py = Qy + 5;
+
+        // ── Vertices (small fixed points) ───────────────────────────────
+        var Q = board.create('point', [Qx, Qy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var R = board.create('point', [Rx, Ry], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var P = board.create('point', [Px, Py], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // ── Triangle edges ──────────────────────────────────────────────
+        board.create('polygon', [P, Q, R], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Right angle marker at Q ─────────────────────────────────────
+        var sqSize = 0.45;
+        board.create('polygon', [
+            [Qx, Qy],
+            [Qx + sqSize, Qy],
+            [Qx + sqSize, Qy + sqSize],
+            [Qx, Qy + sqSize]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Angle arc at P (30°) ────────────────────────────────────────
+        board.create('nonReflexAngle', [Q, P, R], {
+            radius: 0.8,
+            fillColor: '#DC2626', fillOpacity: 0.06,
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        var angP_bisector = Math.atan2(
+            ((Qy - Py) + (Ry - Py)),
+            ((Qx - Px) + (Rx - Px))
+        );
+        board.create('text', [
+            Px + 1.4 * Math.cos(angP_bisector),
+            Py + 1.4 * Math.sin(angP_bisector),
+            '30^\\circ'
+        ], {
+            useKatex: true, fontSize: 12, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Angle arc at R (60°) ────────────────────────────────────────
+        board.create('nonReflexAngle', [P, R, Q], {
+            radius: 0.8,
+            fillColor: '#DC2626', fillOpacity: 0.06,
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        var angR_bisector = Math.atan2(
+            ((Py - Ry) + (Qy - Ry)),
+            ((Px - Rx) + (Qx - Rx))
+        );
+        board.create('text', [
+            Rx + 1.4 * Math.cos(angR_bisector),
+            Ry + 1.4 * Math.sin(angR_bisector),
+            '60^\\circ'
+        ], {
+            useKatex: true, fontSize: 12, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Vertex labels ───────────────────────────────────────────────
+        board.create('text', [Px - 0.6, Py + 0.4, '\\textbf{P}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+        board.create('text', [Qx - 0.6, Qy - 0.4, '\\textbf{Q}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+        board.create('text', [Rx + 0.6, Ry - 0.4, '\\textbf{R}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Side length labels ──────────────────────────────────────────
+        board.create('text', [Px - 1.0, (Py + Qy) / 2, '5'], {
+            useKatex: true, fontSize: 14, color: '#3B82F6',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('text', [(Qx + Rx) / 2, Qy - 0.7, '5\\sqrt{3}'], {
+            useKatex: true, fontSize: 14, color: '#3B82F6',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        var midPRx = (Px + Rx) / 2;
+        var midPRy = (Py + Ry) / 2;
+        var dx = Rx - Px, dy = Ry - Py;
+        var len = Math.sqrt(dx * dx + dy * dy);
+        var nx = -dy / len, ny = dx / len;
+        var offsetDist = 0.7;
+        board.create('text', [
+            midPRx + nx * offsetDist,
+            midPRy + ny * offsetDist,
+            '10'
+        ], {
+            useKatex: true, fontSize: 14, color: '#3B82F6',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
