@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle DEF</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 4.5, 10.5, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertex coordinates: E at bottom-left, F at bottom-right, D at top-left
+        var Ex = 0, Ey = 0;
+        var Fx = 7, Fy = 0;
+        var Dx = 0, Dy = 2;
+
+        // Points (small, fixed)
+        var ptE = board.create('point', [Ex, Ey], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+        var ptF = board.create('point', [Fx, Fy], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+        var ptD = board.create('point', [Dx, Dy], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Triangle edges
+        board.create('polygon', [ptD, ptE, ptF], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Right-angle marker at E
+        var sqSize = 0.45;
+        var sq1 = board.create('point', [Ex + sqSize, Ey], { visible: false, fixed: true, name: '' });
+        var sq2 = board.create('point', [Ex + sqSize, Ey + sqSize], { visible: false, fixed: true, name: '' });
+        var sq3 = board.create('point', [Ex, Ey + sqSize], { visible: false, fixed: true, name: '' });
+        board.create('segment', [sq1, sq2], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [sq2, sq3], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // Vertex labels (bold, 14pt)
+        board.create('text', [Dx - 0.6, Dy + 0.5, '\\textbf{D}'], {
+            fontSize: 14, color: '#222222', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+        board.create('text', [Ex - 0.6, Ey - 0.5, '\\textbf{E}'], {
+            fontSize: 14, color: '#222222', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+        board.create('text', [Fx + 0.6, Fy - 0.5, '\\textbf{F}'], {
+            fontSize: 14, color: '#222222', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Side labels (KaTeX)
+        // DE = 2 (vertical leg, left side)
+        board.create('text', [-1.1, (Dy + Ey) / 2, '2'], {
+            fontSize: 14, color: '#222222', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // EF = 7 (horizontal leg, bottom)
+        board.create('text', [(Ex + Fx) / 2, -0.7, '7'], {
+            fontSize: 14, color: '#222222', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // DF = sqrt(53) (hypotenuse, offset up-right from midpoint)
+        var hypMidX = (Dx + Fx) / 2;
+        var hypMidY = (Dy + Fy) / 2;
+        board.create('text', [hypMidX + 0.5, hypMidY + 0.6, '\\sqrt{53}'], {
+            fontSize: 14, color: '#222222', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
