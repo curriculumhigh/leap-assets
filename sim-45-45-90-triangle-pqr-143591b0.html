@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>45-45-90 Right Triangle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 8, 9, -2.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertex coordinates ──────────────────────────────────────
+        var s = 1.1;
+        var leg = 5 * s;
+
+        var Qx = 4, Qy = 6.2;
+        var halfBase = leg * Math.cos(Math.PI / 4);
+        var height = leg * Math.sin(Math.PI / 4);
+
+        var Px = Qx - halfBase;
+        var Py = Qy - height;
+        var Rx = Qx + halfBase;
+        var Ry = Qy - height;
+
+        // ── Vertices (small fixed points) ───────────────────────────
+        var P = board.create('point', [Px, Py], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var R = board.create('point', [Rx, Ry], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var Q = board.create('point', [Qx, Qy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // ── Triangle (no fill) ──────────────────────────────────────
+        var triangle = board.create('polygon', [P, R, Q], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true
+        });
+
+        // ── Right angle marker at Q ─────────────────────────────────
+        var markSize = 0.38;
+        var dQP_x = Px - Qx, dQP_y = Py - Qy;
+        var lenQP = Math.sqrt(dQP_x * dQP_x + dQP_y * dQP_y);
+        dQP_x /= lenQP; dQP_y /= lenQP;
+        var dQR_x = Rx - Qx, dQR_y = Ry - Qy;
+        var lenQR = Math.sqrt(dQR_x * dQR_x + dQR_y * dQR_y);
+        dQR_x /= lenQR; dQR_y /= lenQR;
+
+        var sq1 = [Qx + markSize * dQP_x, Qy + markSize * dQP_y];
+        var sq2 = [Qx + markSize * dQP_x + markSize * dQR_x, Qy + markSize * dQP_y + markSize * dQR_y];
+        var sq3 = [Qx + markSize * dQR_x, Qy + markSize * dQR_y];
+
+        board.create('segment', [sq1, sq2], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [sq2, sq3], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // ── Angle arcs at P (45°) and R (45°) ───────────────────────
+        board.create('nonReflexAngle', [R, P, Q], {
+            radius: 0.6,
+            fillColor: '#3B82F6', fillOpacity: 0.06,
+            strokeColor: '#3B82F6', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [Q, R, P], {
+            radius: 0.6,
+            fillColor: '#3B82F6', fillOpacity: 0.06,
+            strokeColor: '#3B82F6', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // ── Angle labels ────────────────────────────────────────────
+        var dPQ_x = (Qx - Px), dPQ_y = (Qy - Py);
+        var lenPQ = Math.sqrt(dPQ_x * dPQ_x + dPQ_y * dPQ_y);
+        dPQ_x /= lenPQ; dPQ_y /= lenPQ;
+        var dPR_x = (Rx - Px), dPR_y = (Ry - Py);
+        var lenPR = Math.sqrt(dPR_x * dPR_x + dPR_y * dPR_y);
+        dPR_x /= lenPR; dPR_y /= lenPR;
+        var bisPx = dPQ_x + dPR_x, bisPy = dPQ_y + dPR_y;
+        var bisPlen = Math.sqrt(bisPx * bisPx + bisPy * bisPy);
+        bisPx /= bisPlen; bisPy /= bisPlen;
+
+        board.create('text', [Px + bisPx * 1.1, Py + bisPy * 1.1, '45\u00B0'], {
+            fontSize: 12, color: '#3B82F6', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var dRQ_x = (Qx - Rx), dRQ_y = (Qy - Ry);
+        var lenRQ = Math.sqrt(dRQ_x * dRQ_x + dRQ_y * dRQ_y);
+        dRQ_x /= lenRQ; dRQ_y /= lenRQ;
+        var dRP_x = (Px - Rx), dRP_y = (Py - Ry);
+        var lenRP = Math.sqrt(dRP_x * dRP_x + dRP_y * dRP_y);
+        dRP_x /= lenRP; dRP_y /= lenRP;
+        var bisRx = dRQ_x + dRP_x, bisRy = dRQ_y + dRP_y;
+        var bisRlen = Math.sqrt(bisRx * bisRx + bisRy * bisRy);
+        bisRx /= bisRlen; bisRy /= bisRlen;
+
+        board.create('text', [Rx + bisRx * 1.1, Ry + bisRy * 1.1, '45\u00B0'], {
+            fontSize: 12, color: '#3B82F6', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Vertex labels (outside the triangle) ────────────────────
+        board.create('text', [Px - 0.5, Py - 0.45, 'P'], {
+            fontSize: 15, color: '#222222', cssStyle: 'font-weight:bold; font-style:italic',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+        board.create('text', [Rx + 0.5, Ry - 0.45, 'R'], {
+            fontSize: 15, color: '#222222', cssStyle: 'font-weight:bold; font-style:italic',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+        board.create('text', [Qx, Qy + 0.5, 'Q'], {
+            fontSize: 15, color: '#222222', cssStyle: 'font-weight:bold; font-style:italic',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Side length labels (offset outward from each side) ──────
+        var midPQ_x = (Px + Qx) / 2, midPQ_y = (Py + Qy) / 2;
+        var nPQ_x = -(Qy - Py) / lenPQ, nPQ_y = (Qx - Px) / lenPQ;
+        var cx = (Px + Rx + Qx) / 3, cy = (Py + Ry + Qy) / 3;
+        var testPQ = (midPQ_x + nPQ_x - cx) * (midPQ_x + nPQ_x - cx) + (midPQ_y + nPQ_y - cy) * (midPQ_y + nPQ_y - cy);
+        var testPQ2 = (midPQ_x - nPQ_x - cx) * (midPQ_x - nPQ_x - cx) + (midPQ_y - nPQ_y - cy) * (midPQ_y - nPQ_y - cy);
+        if (testPQ < testPQ2) { nPQ_x = -nPQ_x; nPQ_y = -nPQ_y; }
+
+        board.create('text', [midPQ_x + nPQ_x * 0.55, midPQ_y + nPQ_y * 0.55, '5'], {
+            fontSize: 14, color: '#3B82F6', cssStyle: 'font-weight:bold',
+            anchorX: 'middle', anchorY: 'middle', useKatex: true, fixed: true, highlight: false
+        });
+
+        var midQR_x = (Qx + Rx) / 2, midQR_y = (Qy + Ry) / 2;
+        var nQR_x = -(Ry - Qy) / lenRQ, nQR_y = (Rx - Qx) / lenRQ;
+        var testQR = (midQR_x + nQR_x - cx) * (midQR_x + nQR_x - cx) + (midQR_y + nQR_y - cy) * (midQR_y + nQR_y - cy);
+        var testQR2 = (midQR_x - nQR_x - cx) * (midQR_x - nQR_x - cx) + (midQR_y - nQR_y - cy) * (midQR_y - nQR_y - cy);
+        if (testQR < testQR2) { nQR_x = -nQR_x; nQR_y = -nQR_y; }
+
+        board.create('text', [midQR_x + nQR_x * 0.55, midQR_y + nQR_y * 0.55, '5'], {
+            fontSize: 14, color: '#3B82F6', cssStyle: 'font-weight:bold',
+            anchorX: 'middle', anchorY: 'middle', useKatex: true, fixed: true, highlight: false
+        });
+
+        var midPR_x = (Px + Rx) / 2, midPR_y = (Py + Ry) / 2;
+
+        board.create('text', [midPR_x, midPR_y - 0.55, '5\\sqrt{2}'], {
+            fontSize: 14, color: '#3B82F6', cssStyle: 'font-weight:bold',
+            anchorX: 'middle', anchorY: 'middle', useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
