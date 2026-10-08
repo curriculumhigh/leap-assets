@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helicopter and Radio Tower Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 15.5, 23, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        // ── Layout coordinates ──────────────────────────────────────
+        var groundY = 0;
+        var heliX = 2;
+        var heliY = 7;
+        var towerBaseX = 18;
+        var towerTopY = 12;
+        var towerBottomY = 0;
+
+        // ── Ground line ─────────────────────────────────────────────
+        board.create('segment', [[-2, groundY], [22, groundY]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        var i;
+        for (i = -1; i <= 21; i += 1.2) {
+            board.create('segment', [[i, groundY], [i - 0.5, groundY - 0.6]], {
+                strokeColor: '#999999', strokeWidth: 0.7, fixed: true, highlight: false
+            });
+        }
+
+        // ── Radio tower ─────────────────────────────────────────────
+        board.create('segment', [[towerBaseX, towerBottomY], [towerBaseX, towerTopY]], {
+            strokeColor: '#222222', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        var braceSpacing = 1.5;
+        var braceW = 0.5;
+        var by;
+        for (by = 0.5; by < towerTopY - 0.5; by += braceSpacing) {
+            board.create('segment', [[towerBaseX - braceW, by], [towerBaseX + braceW, by + braceSpacing * 0.8]], {
+                strokeColor: '#222222', strokeWidth: 0.8, fixed: true, highlight: false
+            });
+            board.create('segment', [[towerBaseX + braceW, by], [towerBaseX - braceW, by + braceSpacing * 0.8]], {
+                strokeColor: '#222222', strokeWidth: 0.8, fixed: true, highlight: false
+            });
+        }
+        board.create('polygon', [
+            [towerBaseX, towerBottomY],
+            [towerBaseX - 0.8, towerBottomY],
+            [towerBaseX + 0.8, towerBottomY]
+        ], {
+            fillColor: '#222222', fillOpacity: 0.15,
+            borders: { strokeColor: '#222222', strokeWidth: 1.2 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[towerBaseX, towerTopY], [towerBaseX, towerTopY + 0.6]], {
+            strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('point', [towerBaseX, towerTopY + 0.6], {
+            name: '', size: 1.5, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [towerBaseX + 1.2, towerTopY - 1.5, 'Radio<br>tower'], {
+            fontSize: 12, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'left'
+        });
+
+        // ── Helicopter ──────────────────────────────────────────────
+        var hBodyCx = heliX;
+        var hBodyCy = heliY;
+        board.create('polygon', [
+            [hBodyCx - 1.2, hBodyCy - 0.25],
+            [hBodyCx + 0.8, hBodyCy - 0.25],
+            [hBodyCx + 1.0, hBodyCy],
+            [hBodyCx + 0.8, hBodyCy + 0.25],
+            [hBodyCx - 1.2, hBodyCy + 0.25],
+            [hBodyCx - 1.4, hBodyCy]
+        ], {
+            fillColor: '#444444', fillOpacity: 0.8,
+            borders: { strokeColor: '#333333', strokeWidth: 1.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[hBodyCx - 1.2, hBodyCy + 0.1], [hBodyCx - 2.2, hBodyCy + 0.6]], {
+            strokeColor: '#444444', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[hBodyCx - 2.2, hBodyCy + 0.2], [hBodyCx - 2.2, hBodyCy + 1.1]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[hBodyCx, hBodyCy + 0.25], [hBodyCx, hBodyCy + 0.7]], {
+            strokeColor: '#444444', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[hBodyCx - 1.8, hBodyCy + 0.7], [hBodyCx + 1.8, hBodyCy + 0.7]], {
+            strokeColor: '#333333', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[hBodyCx - 0.8, hBodyCy - 0.25], [hBodyCx - 0.8, hBodyCy - 0.55]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[hBodyCx + 0.5, hBodyCy - 0.25], [hBodyCx + 0.5, hBodyCy - 0.55]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[hBodyCx - 1.2, hBodyCy - 0.55], [hBodyCx + 0.9, hBodyCy - 0.55]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('text', [hBodyCx - 0.5, hBodyCy + 1.6, 'Helicopter'], {
+            fontSize: 12, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle'
+        });
+
+        // ── Key geometry points ─────────────────────────────────────
+        var Ax = hBodyCx + 1.0;
+        var Ay = heliY;
+        var Bx = towerBaseX;
+        var By = heliY;
+        var Cx = towerBaseX;
+        var Cy = towerTopY;
+
+        // ── Horizontal dashed line (helicopter altitude to tower) ───
+        board.create('segment', [[Ax, Ay], [Bx, By]], {
+            strokeColor: '#888888', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('text', [(Ax + Bx) / 2, Ay - 0.7, '30{,}000 \\text{ ft}'], {
+            fontSize: 13, color: '#222222', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle'
+        });
+
+        // ── Vertical segment h (from helicopter level to tower top) ─
+        board.create('segment', [[Bx, By], [Cx, Cy]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('text', [Bx + 0.9, (By + Cy) / 2, 'h \\text{ ft}'], {
+            fontSize: 13, color: '#DC2626', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'left'
+        });
+
+        // ── Line of sight (helicopter to tower top) ─────────────────
+        board.create('segment', [[Ax, Ay], [Cx, Cy]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        // ── Altitude vertical (ground to helicopter) on left ────────
+        board.create('segment', [[heliX, groundY], [heliX, heliY - 0.6]], {
+            strokeColor: '#888888', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('text', [heliX - 0.4, (groundY + heliY) / 2, '12{,}000 \\text{ ft}'], {
+            fontSize: 12, color: '#222222', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'right'
+        });
+
+        board.create('segment', [[heliX - 0.3, groundY + 0.15], [heliX + 0.3, groundY + 0.15]], {
+            strokeColor: '#888888', strokeWidth: 0.8, fixed: true, highlight: false
+        });
+        board.create('segment', [[heliX - 0.3, heliY - 0.7], [heliX + 0.3, heliY - 0.7]], {
+            strokeColor: '#888888', strokeWidth: 0.8, fixed: true, highlight: false
+        });
+
+        // ── Angle of elevation (2°) at helicopter ───────────────────
+        var angleRadius = 3.5;
+        var angleStart = 0;
+        var sightAngle = Math.atan2(Cy - Ay, Cx - Ax);
+
+        board.create('curve', [
+            function(t) { return Ax + angleRadius * Math.cos(t); },
+            function(t) { return Ay + angleRadius * Math.sin(t); },
+            angleStart,
+            sightAngle
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        var angleMid = (angleStart + sightAngle) / 2;
+        board.create('text', [Ax + angleRadius + 1.2, Ay + 0.6, '2^\\circ'], {
+            fontSize: 13, color: '#222222', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle'
+        });
+
+        // ── Right angle marker at B ─────────────────────────────────
+        var raSize = 0.45;
+        board.create('segment', [[Bx - raSize, By], [Bx - raSize, By + raSize]], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[Bx - raSize, By + raSize], [Bx, By + raSize]], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        // ── "Not drawn to scale" label ──────────────────────────────
+        board.create('text', [21.5, -2.5, '\\textit{Not drawn to scale}'], {
+            fontSize: 11, color: '#999999', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'right'
+        });
+
+    </script>
+</body>
+</html>
