@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angle of Elevation — Swimmer to Lifeguard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 12, 19, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle vertices
+        var swimmer = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 3, color: '#222222', highlight: false
+        });
+        var base = board.create('point', [14, 0], {
+            name: '', fixed: true, size: 3, color: '#222222', highlight: false
+        });
+        var lifeguard = board.create('point', [14, 8], {
+            name: '', fixed: true, size: 3, color: '#222222', highlight: false
+        });
+
+        // Triangle sides
+        board.create('segment', [swimmer, base], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [base, lifeguard], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [swimmer, lifeguard], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false, dash: 2
+        });
+
+        // Right-angle marker at base of tower
+        var raSize = 0.9;
+        board.create('segment', [[14 - raSize, 0], [14 - raSize, raSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[14 - raSize, raSize], [14, raSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Angle of elevation arc at swimmer
+        board.create('nonReflexAngle', [base, swimmer, lifeguard], {
+            radius: 2.2,
+            fillColor: '#DC2626', fillOpacity: 0.06,
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // Theta label along the angle bisector
+        var thetaDist = 3.0;
+        var angleRad = Math.atan2(8, 14) / 2;
+        board.create('text', [
+            thetaDist * Math.cos(angleRad),
+            thetaDist * Math.sin(angleRad),
+            '\\theta'
+        ], {
+            useKatex: true, fontSize: 16, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Dimension label: "14 ft" on horizontal leg
+        board.create('text', [7, -1.2, '14 \\text{ ft}'], {
+            useKatex: true, fontSize: 14, color: '#3B82F6',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Dimension label: "8 ft" on vertical leg
+        board.create('text', [15.6, 4, '8 \\text{ ft}'], {
+            useKatex: true, fontSize: 14, color: '#3B82F6',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Water / ground line
+        board.create('segment', [[-2, 0], [16.5, 0]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 3,
+            fixed: true, highlight: false, layer: 0
+        });
+
+        // Small wave marks
+        var waveY = -0.4;
+        board.create('text', [-1.5, waveY, '~'], {
+            fontSize: 11, color: '#0EA5E9', anchorX: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [-0.5, waveY, '~'], {
+            fontSize: 11, color: '#0EA5E9', anchorX: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Contextual label: "Swimmer"
+        board.create('text', [0, -1.8, '\\textbf{Swimmer}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Contextual label: "Lifeguard"
+        board.create('text', [14, 9.2, '\\textbf{Lifeguard}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Small tower platform mark at top
+        board.create('segment', [[13.3, 8], [14.7, 8]], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // Tower base mark
+        board.create('segment', [[13.5, 0], [14.5, 0]], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false, layer: 5
+        });
+    </script>
+</body>
+</html>
