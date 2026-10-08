@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle — Lighthouse Angle of Elevation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 0; height: 100%; overflow: hidden; border-radius: 8px; }
+        #board { width: 100%; height: 100%; }
+        .jxgbox { border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 12.5, 14, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── SKY background ──────────────────────────────────────────────
+        board.create('polygon', [[-2, 12.5], [14, 12.5], [14, -2.5], [-2, -2.5]], {
+            fillColor: '#dbeafe', fillOpacity: 1,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false, layer: 0
+        });
+
+        // ── SUN ─────────────────────────────────────────────────────────
+        board.create('circle', [[1.5, 11], 0.8], {
+            fillColor: '#fbbf24', fillOpacity: 0.9,
+            strokeColor: '#f59e0b', strokeWidth: 1,
+            fixed: true, highlight: false, layer: 1
+        });
+        var sunRayAngles = [0, 45, 90, 135, 180, 225, 270, 315];
+        for (var sr = 0; sr < sunRayAngles.length; sr++) {
+            var sra = sunRayAngles[sr] * Math.PI / 180;
+            board.create('segment', [
+                [1.5 + 1.0 * Math.cos(sra), 11 + 1.0 * Math.sin(sra)],
+                [1.5 + 1.4 * Math.cos(sra), 11 + 1.4 * Math.sin(sra)]
+            ], {
+                strokeColor: '#f59e0b', strokeWidth: 1.5, strokeOpacity: 0.6,
+                fixed: true, highlight: false, layer: 1
+            });
+        }
+
+        // ── Clouds ────────────────────────────────────────────────────────
+        function drawCloud(cx, cy) {
+            var offsets = [[-0.6, 0], [0, 0.25], [0.6, 0], [0, -0.1]];
+            for (var c = 0; c < offsets.length; c++) {
+                board.create('circle', [[cx + offsets[c][0], cy + offsets[c][1]], 0.45], {
+                    fillColor: '#ffffff', fillOpacity: 0.85,
+                    strokeColor: '#ffffff', strokeWidth: 0,
+                    fixed: true, highlight: false, layer: 1
+                });
+            }
+        }
+        drawCloud(5, 11.2);
+        drawCloud(11, 10.5);
+
+        // ── GROUND ──────────────────────────────────────────────────────
+        board.create('polygon', [[-2, 0], [14, 0], [14, -2.5], [-2, -2.5]], {
+            fillColor: '#86efac', fillOpacity: 1,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false, layer: 2
+        });
+        board.create('segment', [[-2, 0], [14, 0]], {
+            strokeColor: '#22c55e', strokeWidth: 2,
+            fixed: true, highlight: false, layer: 3
+        });
+
+        // ── Grass tufts ─────────────────────────────────────────────────
+        var grassPositions = [0.5, 1.8, 3.2, 4.5, 5.8, 7.2];
+        for (var g = 0; g < grassPositions.length; g++) {
+            var gx = grassPositions[g];
+            board.create('segment', [[gx, 0], [gx - 0.15, 0.35]], {
+                strokeColor: '#16a34a', strokeWidth: 1.2, fixed: true, highlight: false, layer: 3
+            });
+            board.create('segment', [[gx, 0], [gx + 0.15, 0.3]], {
+                strokeColor: '#16a34a', strokeWidth: 1.2, fixed: true, highlight: false, layer: 3
+            });
+            board.create('segment', [[gx, 0], [gx, 0.38]], {
+                strokeColor: '#16a34a', strokeWidth: 1.2, fixed: true, highlight: false, layer: 3
+            });
+        }
+
+        // ── CLIFF ───────────────────────────────────────────────────────
+        var cliffLeft = 9;
+        var cliffTop = 6.5;
+        board.create('polygon', [
+            [cliffLeft, 0], [cliffLeft, cliffTop],
+            [14, cliffTop], [14, 0]
+        ], {
+            fillColor: '#a8a29e', fillOpacity: 1,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false, layer: 2
+        });
+        board.create('segment', [[cliffLeft, 0], [cliffLeft, cliffTop]], {
+            strokeColor: '#78716c', strokeWidth: 2, fixed: true, highlight: false, layer: 3
+        });
+        board.create('segment', [[cliffLeft, cliffTop], [14, cliffTop]], {
+            strokeColor: '#78716c', strokeWidth: 2, fixed: true, highlight: false, layer: 3
+        });
+        board.create('segment', [[cliffLeft + 0.3, 1.5], [cliffLeft + 0.3, 3.5]], {
+            strokeColor: '#78716c', strokeWidth: 0.8, strokeOpacity: 0.4, fixed: true, highlight: false, layer: 3
+        });
+        board.create('segment', [[cliffLeft + 1.5, 0.5], [cliffLeft + 1.5, 5]], {
+            strokeColor: '#78716c', strokeWidth: 0.8, strokeOpacity: 0.4, fixed: true, highlight: false, layer: 3
+        });
+        board.create('segment', [[cliffLeft + 3, 1], [cliffLeft + 3, 4.5]], {
+            strokeColor: '#78716c', strokeWidth: 0.8, strokeOpacity: 0.4, fixed: true, highlight: false, layer: 3
+        });
+        board.create('polygon', [
+            [cliffLeft - 0.1, cliffTop], [14, cliffTop],
+            [14, cliffTop + 0.3], [cliffLeft - 0.1, cliffTop + 0.3]
+        ], {
+            fillColor: '#86efac', fillOpacity: 1,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false, layer: 3
+        });
+
+        // ── LIGHTHOUSE ──────────────────────────────────────────────────
+        var lhCx = 11;
+        var lhBase = cliffTop + 0.3;
+        var lhWidth = 0.9;
+        var lhBodyTop = lhBase + 3.2;
+
+        board.create('polygon', [
+            [lhCx - lhWidth * 0.6, lhBase],
+            [lhCx + lhWidth * 0.6, lhBase],
+            [lhCx + lhWidth * 0.4, lhBodyTop],
+            [lhCx - lhWidth * 0.4, lhBodyTop]
+        ], {
+            fillColor: '#fafaf9', fillOpacity: 1,
+            borders: { strokeColor: '#d6d3d1', strokeWidth: 1 },
+            vertices: { visible: false },
+            fixed: true, highlight: false, layer: 4
+        });
+
+        var stripeYs = [lhBase + 0.7, lhBase + 1.6, lhBase + 2.5];
+        for (var si = 0; si < stripeYs.length; si++) {
+            var sy = stripeYs[si];
+            var frac = (sy - lhBase) / (lhBodyTop - lhBase);
+            var hw = lhWidth * (0.6 - 0.2 * frac);
+            board.create('polygon', [
+                [lhCx - hw, sy], [lhCx + hw, sy],
+                [lhCx + hw * 0.95, sy + 0.3], [lhCx - hw * 0.95, sy + 0.3]
+            ], {
+                fillColor: '#ef4444', fillOpacity: 0.85,
+                borders: { visible: false },
+                vertices: { visible: false },
+                fixed: true, highlight: false, layer: 5
+            });
+        }
+
+        var galW = lhWidth * 0.55;
+        board.create('polygon', [
+            [lhCx - galW, lhBodyTop],
+            [lhCx + galW, lhBodyTop],
+            [lhCx + galW, lhBodyTop + 0.25],
+            [lhCx - galW, lhBodyTop + 0.25]
+        ], {
+            fillColor: '#57534e', fillOpacity: 1,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false, layer: 5
+        });
+
+        var lanBase = lhBodyTop + 0.25;
+        var lanW = lhWidth * 0.35;
+        board.create('polygon', [
+            [lhCx - lanW, lanBase],
+            [lhCx + lanW, lanBase],
+            [lhCx + lanW, lanBase + 0.5],
+            [lhCx - lanW, lanBase + 0.5]
+        ], {
+            fillColor: '#fef08a', fillOpacity: 0.9,
+            borders: { strokeColor: '#57534e', strokeWidth: 1 },
+            vertices: { visible: false },
+            fixed: true, highlight: false, layer: 5
+        });
+
+        var roofBase = lanBase + 0.5;
+        board.create('polygon', [
+            [lhCx - lanW - 0.05, roofBase],
+            [lhCx + lanW + 0.05, roofBase],
+            [lhCx, roofBase + 0.55]
+        ], {
+            fillColor: '#dc2626', fillOpacity: 1,
+            borders: { strokeColor: '#b91c1c', strokeWidth: 1 },
+            vertices: { visible: false },
+            fixed: true, highlight: false, layer: 5
+        });
+
+        var lhTop = roofBase + 0.55;
+
+        board.create('segment', [[lhCx + lanW, lanBase + 0.25], [lhCx + 2.5, lanBase + 1.2]], {
+            strokeColor: '#fde047', strokeWidth: 2, strokeOpacity: 0.4,
+            fixed: true, highlight: false, layer: 4
+        });
+        board.create('segment', [[lhCx + lanW, lanBase + 0.25], [lhCx + 2.5, lanBase - 0.3]], {
+            strokeColor: '#fde047', strokeWidth: 2, strokeOpacity: 0.4,
+            fixed: true, highlight: false, layer: 4
+        });
+
+        // ── HIKER ────────────────────────────────────────────────────────
+        var hx = 1.5;
+        var hy = 0;
+        board.create('segment', [[hx, hy + 0.3], [hx, hy + 1.1]], {
+            strokeColor: '#44403c', strokeWidth: 2, fixed: true, highlight: false, layer: 4
+        });
+        board.create('circle', [[hx, hy + 1.3], 0.2], {
+            fillColor: '#fbbf24', fillOpacity: 1,
+            strokeColor: '#44403c', strokeWidth: 1.5,
+            fixed: true, highlight: false, layer: 4
+        });
+        board.create('segment', [[hx, hy + 0.3], [hx - 0.25, hy]], {
+            strokeColor: '#44403c', strokeWidth: 2, fixed: true, highlight: false, layer: 4
+        });
+        board.create('segment', [[hx, hy + 0.3], [hx + 0.25, hy]], {
+            strokeColor: '#44403c', strokeWidth: 2, fixed: true, highlight: false, layer: 4
+        });
+        board.create('segment', [[hx, hy + 0.85], [hx + 0.5, hy + 1.2]], {
+            strokeColor: '#44403c', strokeWidth: 2, fixed: true, highlight: false, layer: 4
+        });
+        board.create('segment', [[hx, hy + 0.85], [hx - 0.35, hy + 0.6]], {
+            strokeColor: '#44403c', strokeWidth: 2, fixed: true, highlight: false, layer: 4
+        });
+
+        // ── TRIANGLE OVERLAY ─────────────────────────────────────────────
+        var triA = [hx + 0.5, 0];
+        var triB = [cliffLeft, 0];
+        var triC = [cliffLeft, lhTop];
+
+        board.create('segment', [triA, triB], {
+            strokeColor: '#222222', strokeWidth: 1.8, dash: 2,
+            fixed: true, highlight: false, layer: 6
+        });
+        board.create('segment', [triB, triC], {
+            strokeColor: '#222222', strokeWidth: 1.8, dash: 2,
+            fixed: true, highlight: false, layer: 6
+        });
+        board.create('segment', [triA, triC], {
+            strokeColor: '#222222', strokeWidth: 2.0,
+            fixed: true, highlight: false, layer: 6
+        });
+
+        // ── Right angle marker at B ─────────────────────────────────────
+        var sqS = 0.5;
+        board.create('polygon', [
+            [triB[0], triB[1]],
+            [triB[0] - sqS, triB[1]],
+            [triB[0] - sqS, triB[1] + sqS],
+            [triB[0], triB[1] + sqS]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false, layer: 7
+        });
+
+        // ── 70° angle arc at A ──────────────────────────────────────────
+        var ptA = board.create('point', triA, { visible: false, fixed: true, name: '' });
+        var ptB = board.create('point', triB, { visible: false, fixed: true, name: '' });
+        var ptC = board.create('point', triC, { visible: false, fixed: true, name: '' });
+
+        board.create('nonReflexAngle', [ptB, ptA, ptC], {
+            radius: 1.3,
+            fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, layer: 7
+        });
+
+        var angAB = Math.atan2(triC[1] - triA[1], triC[0] - triA[0]);
+        var bisAngle = angAB / 2;
+        board.create('text', [
+            triA[0] + 1.9 * Math.cos(bisAngle),
+            triA[1] + 1.9 * Math.sin(bisAngle),
+            '70^\\circ'
+        ], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, layer: 7
+        });
+
+        // ── Labels ──────────────────────────────────────────────────────
+        var midX = (triA[0] + triB[0]) / 2;
+        board.create('text', [midX, -1.0, '200 \\text{ ft}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, layer: 7
+        });
+
+        var midY = (triB[1] + triC[1]) / 2;
+        board.create('text', [triB[0] + 0.7, midY, 'h'], {
+            useKatex: true, fontSize: 16, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, layer: 7,
+            cssStyle: 'font-style:italic;'
+        });
+
+        board.create('segment', [[triB[0] + 0.35, triB[1] + 0.3], [triB[0] + 0.35, midY - 0.5]], {
+            strokeColor: '#555555', strokeWidth: 1, fixed: true, highlight: false, layer: 7
+        });
+        board.create('segment', [[triB[0] + 0.35, midY + 0.5], [triB[0] + 0.35, triC[1] - 0.3]], {
+            strokeColor: '#555555', strokeWidth: 1, fixed: true, highlight: false, layer: 7
+        });
+    </script>
+</body>
+</html>
