@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle PQR</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 9, 11.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Vertex coordinates ─────────────────────────────────── */
+        var Qx = 1, Qy = 1;    // bottom-left (right angle)
+        var Rx = 9, Ry = 1;    // bottom-right
+        var Px = 1, Py = 7;    // top-left
+
+        /* ── Points (small, fixed) ──────────────────────────────── */
+        var P = board.create('point', [Px, Py], {
+            name: 'P', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, 6], cssStyle: 'font-weight:bold' }
+        });
+        var Q = board.create('point', [Qx, Qy], {
+            name: 'Q', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, -12], cssStyle: 'font-weight:bold' }
+        });
+        var R = board.create('point', [Rx, Ry], {
+            name: 'R', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, -12], cssStyle: 'font-weight:bold' }
+        });
+
+        /* ── Triangle (no fill) ─────────────────────────────────── */
+        board.create('polygon', [P, Q, R], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        /* ── Right-angle marker at Q ────────────────────────────── */
+        var sq = 0.6; // marker size
+        var sqP1 = board.create('point', [Qx, Qy + sq], { visible: false, fixed: true, name: '' });
+        var sqP2 = board.create('point', [Qx + sq, Qy + sq], { visible: false, fixed: true, name: '' });
+        var sqP3 = board.create('point', [Qx + sq, Qy], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [Q, sqP1, sqP2, sqP3], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        /* ── Side length labels ─────────────────────────────────── */
+        // PQ = 6 (left side, vertical) — offset left of midpoint
+        board.create('text', [(Px + Qx) / 2 - 1.1, (Py + Qy) / 2, '6'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+
+        // QR = 8 (bottom side, horizontal) — offset below midpoint
+        board.create('text', [(Qx + Rx) / 2, (Qy + Ry) / 2 - 0.8, '8'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+
+        // PR = 10 (hypotenuse, diagonal) — offset above-right of midpoint
+        board.create('text', [(Px + Rx) / 2 + 0.6, (Py + Ry) / 2 + 0.5, '10'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+    </script>
+</body>
+</html>
