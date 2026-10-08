@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lamp Post and Shade Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.8, 8.8, 11.5, -2.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var angleRad = 65 * Math.PI / 180;
+        var baseX = 1.5;
+        var baseY = 0;
+        var postHeight = 6;
+        var topX = baseX;
+        var topY = baseY + postHeight;
+        var shadeLen = 6 / Math.tan(angleRad);
+
+        var A = [baseX, baseY];
+        var B = [topX, topY];
+        var C = [baseX + shadeLen, topY];
+
+        var rayExtend = 1.5;
+        var rayEndX = C[0] + rayExtend * Math.cos(angleRad);
+        var rayEndY = C[1] + rayExtend * Math.sin(angleRad);
+
+        // ── Building wall ───────────────────────────────────────────────
+        var wallX = C[0];
+        var wallBottom = -0.8;
+        var wallTop = 8.0;
+        var wallWidth = 1.2;
+
+        var wp1 = board.create('point', [wallX, wallBottom], { visible: false, name: '' });
+        var wp2 = board.create('point', [wallX + wallWidth, wallBottom], { visible: false, name: '' });
+        var wp3 = board.create('point', [wallX + wallWidth, wallTop], { visible: false, name: '' });
+        var wp4 = board.create('point', [wallX, wallTop], { visible: false, name: '' });
+        board.create('polygon', [wp1, wp2, wp3, wp4], {
+            fillColor: '#E5E7EB', fillOpacity: 0.6,
+            borders: { strokeColor: '#9CA3AF', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [wallX + wallWidth / 2, 7.5, 'Wall'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 12, color: '#6B7280', fixed: true, highlight: false
+        });
+
+        // ── Ground line ─────────────────────────────────────────────────
+        board.create('segment', [[-1.2, 0], [wallX + wallWidth + 0.5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var hatchStart = -0.8;
+        var hatchEnd = wallX + wallWidth + 0.3;
+        var hatchSpacing = 0.5;
+        for (var hx = hatchStart; hx <= hatchEnd; hx += hatchSpacing) {
+            board.create('segment', [[hx, 0], [hx - 0.3, -0.4]], {
+                strokeColor: '#999999', strokeWidth: 0.8, fixed: true, highlight: false
+            });
+        }
+
+        // ── Lamp post (vertical segment) ────────────────────────────────
+        board.create('segment', [A, B], {
+            strokeColor: '#555555', strokeWidth: 3.0, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[baseX - 0.15, topY], [baseX + 0.15, topY]], {
+            strokeColor: '#555555', strokeWidth: 3.0, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[baseX - 0.25, 0], [baseX + 0.25, 0]], {
+            strokeColor: '#555555', strokeWidth: 3.0, fixed: true, highlight: false
+        });
+
+        // ── Shade (horizontal segment) ──────────────────────────────────
+        board.create('segment', [B, C], {
+            strokeColor: '#555555', strokeWidth: 2.5, fixed: true, highlight: false
+        });
+
+        // ── Sun's ray (hypotenuse) ──────────────────────────────────────
+        board.create('segment', [A, C], {
+            strokeColor: '#D97706', strokeWidth: 2.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        board.create('segment', [C, [rayEndX, rayEndY]], {
+            strokeColor: '#D97706', strokeWidth: 1.2, dash: 2,
+            fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        // Sun icon
+        var sunCX = rayEndX + 0.6;
+        var sunCY = rayEndY + 0.6;
+        board.create('circle', [[sunCX, sunCY], 0.35], {
+            strokeColor: '#D97706', strokeWidth: 1.5,
+            fillColor: '#FDE68A', fillOpacity: 0.7,
+            fixed: true, highlight: false
+        });
+        var sunRayOuter = 0.55;
+        var sunRayLen = 0.25;
+        for (var sr = 0; sr < 8; sr++) {
+            var sAngle = sr * Math.PI / 4;
+            board.create('segment', [
+                [sunCX + sunRayOuter * Math.cos(sAngle), sunCY + sunRayOuter * Math.sin(sAngle)],
+                [sunCX + (sunRayOuter + sunRayLen) * Math.cos(sAngle), sunCY + (sunRayOuter + sunRayLen) * Math.sin(sAngle)]
+            ], {
+                strokeColor: '#D97706', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+        }
+
+        // ── Vertex points ───────────────────────────────────────────────
+        board.create('point', A, {
+            name: '', size: 2.5, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('point', B, {
+            name: '', size: 2.5, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('point', C, {
+            name: '', size: 2.5, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Right angle marker at B ─────────────────────────────────────
+        var raSize = 0.35;
+        board.create('segment', [[B[0] + raSize, B[1]], [B[0] + raSize, B[1] - raSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[B[0] + raSize, B[1] - raSize], [B[0], B[1] - raSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── 65° angle arc at A ──────────────────────────────────────────
+        var groundRight = [baseX + 2, baseY];
+        board.create('nonReflexAngle', [groundRight, A, C], {
+            radius: 0.9,
+            fillColor: '#2563EB', fillOpacity: 0.1,
+            strokeColor: '#2563EB', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('text', [baseX + 1.25, 0.65, '65\u00B0'], {
+            fontSize: 13, color: '#2563EB', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle',
+            cssStyle: 'font-weight: 600;'
+        });
+
+        // ── Labels ──────────────────────────────────────────────────────
+        board.create('text', [baseX - 0.7, topY / 2, '6 ft'], {
+            fontSize: 13, color: '#555555', fixed: true, highlight: false,
+            anchorX: 'right', anchorY: 'middle',
+            cssStyle: 'font-weight: 600;'
+        });
+
+        board.create('text', [(B[0] + C[0]) / 2, topY + 0.55, 'Shade'], {
+            fontSize: 12, color: '#555555', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-style: italic;'
+        });
+
+        var midRayX = (A[0] + C[0]) / 2 - 0.3;
+        var midRayY = (A[1] + C[1]) / 2 - 0.1;
+        board.create('text', [midRayX - 0.2, midRayY - 0.55, "Sun's ray"], {
+            fontSize: 11, color: '#D97706', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'top',
+            cssStyle: 'font-style: italic;'
+        });
+
+        board.create('text', [baseX - 1.5, topY / 2, 'Lamp'], {
+            fontSize: 11, color: '#555555', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-style: italic;'
+        });
+        board.create('text', [baseX - 1.5, topY / 2 - 0.55, 'post'], {
+            fontSize: 11, color: '#555555', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-style: italic;'
+        });
+
+        board.create('text', [baseX + shadeLen / 2, -0.65, 'Ground'], {
+            fontSize: 10, color: '#888888', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-style: italic;'
+        });
+    </script>
+</body>
+</html>
