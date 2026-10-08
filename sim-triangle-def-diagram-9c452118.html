@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle DEF</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var DEG = Math.PI / 180;
+
+        var Dx = 0, Dy = 0;
+        var Fx = 18.7, Fy = 0;
+        var Ex = 15 * Math.cos(25 * DEG);
+        var Ey = 15 * Math.sin(25 * DEG);
+
+        var pad = 3.5;
+        var bbLeft = Math.min(Dx, Ex, Fx) - pad;
+        var bbRight = Math.max(Dx, Ex, Fx) + pad;
+        var bbTop = Math.max(Dy, Ey, Fy) + pad;
+        var bbBot = Math.min(Dy, Ey, Fy) - pad;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [bbLeft, bbTop, bbRight, bbBot],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var D = board.create('point', [Dx, Dy], {
+            name: 'D', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, -14], cssStyle: 'font-weight:bold' }
+        });
+        var E = board.create('point', [Ex, Ey], {
+            name: 'E', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-4, 14], cssStyle: 'font-weight:bold' }
+        });
+        var F = board.create('point', [Fx, Fy], {
+            name: 'F', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [10, -14], cssStyle: 'font-weight:bold' }
+        });
+
+        board.create('polygon', [D, E, F], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        var COL_ANGLE = '#DC2626';
+        var ARC_RADIUS = 1.6;
+
+        board.create('nonReflexAngle', [F, D, E], {
+            radius: ARC_RADIUS,
+            fillColor: COL_ANGLE, fillOpacity: 0.06,
+            strokeColor: COL_ANGLE, strokeWidth: 1.2,
+            fixed: true, highlight: false,
+            name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [D, E, F], {
+            radius: ARC_RADIUS,
+            fillColor: COL_ANGLE, fillOpacity: 0.06,
+            strokeColor: COL_ANGLE, strokeWidth: 1.2,
+            fixed: true, highlight: false,
+            name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [E, F, D], {
+            radius: ARC_RADIUS,
+            fillColor: COL_ANGLE, fillOpacity: 0.06,
+            strokeColor: COL_ANGLE, strokeWidth: 1.2,
+            fixed: true, highlight: false,
+            name: '', withLabel: false
+        });
+
+        function bisectorPos(vertex, p1, p2, dist) {
+            var a1 = Math.atan2(p1[1] - vertex[1], p1[0] - vertex[0]);
+            var a2 = Math.atan2(p2[1] - vertex[1], p2[0] - vertex[0]);
+            var diff = a2 - a1;
+            if (diff > Math.PI) diff -= 2 * Math.PI;
+            if (diff < -Math.PI) diff += 2 * Math.PI;
+            var mid = a1 + diff / 2;
+            return [vertex[0] + dist * Math.cos(mid), vertex[1] + dist * Math.sin(mid)];
+        }
+
+        var labelDistD = 2.8;
+        var labelDistE = 2.2;
+        var labelDistF = 2.5;
+
+        var posD = bisectorPos([Dx, Dy], [Fx, Fy], [Ex, Ey], labelDistD);
+        var posE = bisectorPos([Ex, Ey], [Dx, Dy], [Fx, Fy], labelDistE);
+        var posF = bisectorPos([Fx, Fy], [Ex, Ey], [Dx, Dy], labelDistF);
+
+        board.create('text', [posD[0], posD[1], '25\u00B0'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 12, color: COL_ANGLE, fixed: true, highlight: false
+        });
+        board.create('text', [posE[0], posE[1], '115\u00B0'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 12, color: COL_ANGLE, fixed: true, highlight: false
+        });
+        board.create('text', [posF[0], posF[1], '40\u00B0'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 12, color: COL_ANGLE, fixed: true, highlight: false
+        });
+
+        var COL_SIDE = '#3B82F6';
+
+        var midDE = [(Dx + Ex) / 2, (Dy + Ey) / 2];
+        var deDx = Ex - Dx, deDy = Ey - Dy;
+        var deLen = Math.sqrt(deDx * deDx + deDy * deDy);
+        var deNx = -deDy / deLen, deNy = deDx / deLen;
+        var sideOffset = 1.2;
+
+        board.create('text', [midDE[0] + deNx * sideOffset, midDE[1] + deNy * sideOffset, '15'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: COL_SIDE, fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        var midEF = [(Ex + Fx) / 2, (Ey + Fy) / 2];
+        var efDx = Fx - Ex, efDy = Fy - Ey;
+        var efLen = Math.sqrt(efDx * efDx + efDy * efDy);
+        var efNx = -efDy / efLen, efNy = efDx / efLen;
+
+        board.create('text', [midEF[0] + efNx * sideOffset, midEF[1] + efNy * sideOffset, '9.2'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: COL_SIDE, fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        var midDF = [(Dx + Fx) / 2, (Dy + Fy) / 2];
+
+        board.create('text', [midDF[0], midDF[1] - 1.2, '18.7'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: COL_SIDE, fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+    </script>
+</body>
+</html>
