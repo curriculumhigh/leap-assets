@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle DEF</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 11, 12, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle units: D=(0,0), E=(13,0), F=(25/13, 60/13)
+        // Scale by 0.7 to fit nicely
+        var sc = 0.7;
+        var Dx2 = 0, Dy2 = 0;
+        var Ex2 = 13 * sc, Ey2 = 0;
+        var Fx2 = (25/13) * sc, Fy2 = (60/13) * sc;
+
+        var D = board.create('point', [Dx2, Dy2], {
+            name: 'D', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, -12], cssStyle: 'font-weight:bold' }
+        });
+
+        var E = board.create('point', [Ex2, Ey2], {
+            name: 'E', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -12], cssStyle: 'font-weight:bold' }
+        });
+
+        var F = board.create('point', [Fx2, Fy2], {
+            name: 'F', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, 12], cssStyle: 'font-weight:bold' }
+        });
+
+        // Triangle (no fill)
+        board.create('polygon', [D, E, F], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true
+        });
+
+        // Right angle mark at F
+        var fdx = Dx2 - Fx2, fdy = Dy2 - Fy2;
+        var fdLen = Math.sqrt(fdx * fdx + fdy * fdy);
+        var fdux = fdx / fdLen, fduy = fdy / fdLen;
+
+        var fex = Ex2 - Fx2, fey = Ey2 - Fy2;
+        var feLen = Math.sqrt(fex * fex + fey * fey);
+        var feux = fex / feLen, feuy = fey / feLen;
+
+        var rSize = 0.4;
+        var rp1 = [Fx2 + fdux * rSize, Fy2 + fduy * rSize];
+        var rp2 = [Fx2 + fdux * rSize + feux * rSize, Fy2 + fduy * rSize + feuy * rSize];
+        var rp3 = [Fx2 + feux * rSize, Fy2 + feuy * rSize];
+
+        board.create('segment', [rp1, rp2], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [rp2, rp3], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Side labels
+        // DF (left side) = 5
+        var dfMidX = (Dx2 + Fx2) / 2;
+        var dfMidY = (Dy2 + Fy2) / 2;
+        var dfNx = -fduy, dfNy = fdux;
+        board.create('text', [dfMidX + dfNx * 0.5, dfMidY + dfNy * 0.5, '5'], {
+            fontSize: 15, color: '#3B82F6', useKatex: true,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+
+        // EF (right side) = 12
+        var efMidX = (Ex2 + Fx2) / 2;
+        var efMidY = (Ey2 + Fy2) / 2;
+        var efDx = Fx2 - Ex2, efDy = Fy2 - Ey2;
+        var efL = Math.sqrt(efDx * efDx + efDy * efDy);
+        var efNx = efDy / efL, efNy = -efDx / efL;
+        board.create('text', [efMidX + efNx * 0.55, efMidY + efNy * 0.55, '12'], {
+            fontSize: 15, color: '#3B82F6', useKatex: true,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+
+        // DE (bottom/hypotenuse) = 13
+        var deMidX = (Dx2 + Ex2) / 2;
+        var deMidY = (Dy2 + Ey2) / 2;
+        board.create('text', [deMidX, deMidY - 0.6, '13'], {
+            fontSize: 15, color: '#3B82F6', useKatex: true,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+    </script>
+</body>
+</html>
