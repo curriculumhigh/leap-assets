@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle DEF</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 12, 20, -5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var Dx = 1, Dy = 9;
+        var Fx = Dx + 15, Fy = Dy;
+        var Ex = Fx, Ey = Fy - 8;
+
+        var D = board.create('point', [Dx, Dy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var F = board.create('point', [Fx, Fy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var E = board.create('point', [Ex, Ey], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        board.create('polygon', [D, F, E], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        var sqSize = 0.7;
+        var raP1 = board.create('point', [Fx - sqSize, Fy], { visible: false, fixed: true, name: '' });
+        var raP2 = board.create('point', [Fx - sqSize, Fy - sqSize], { visible: false, fixed: true, name: '' });
+        var raP3 = board.create('point', [Fx, Fy - sqSize], { visible: false, fixed: true, name: '' });
+        board.create('segment', [raP1, raP2], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [raP2, raP3], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        board.create('text', [Dx - 1.2, Dy + 0.1, 'D'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-weight:600'
+        });
+        board.create('text', [Fx + 1.2, Fy + 0.1, 'F'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-weight:600'
+        });
+        board.create('text', [Ex + 1.2, Ey - 0.5, 'E'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-weight:600'
+        });
+
+        var MCOL = '#3B82F6';
+
+        board.create('text', [(Dx + Fx) / 2, Dy + 1.0, '15'], {
+            fontSize: 14, color: MCOL, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+
+        board.create('text', [Fx + 1.2, (Fy + Ey) / 2, '8'], {
+            fontSize: 14, color: MCOL, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+
+        var midHx = (Dx + Ex) / 2;
+        var midHy = (Dy + Ey) / 2;
+        board.create('text', [midHx - 1.3, midHy - 0.2, '17'], {
+            fontSize: 14, color: MCOL, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+    </script>
+</body>
+</html>
