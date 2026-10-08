@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle PQR</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 11, 12, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle vertices
+        // Q at bottom-left (right angle), P at bottom-right, R at top-left
+        var qx = 1, qy = 1;
+        var px = 9, py = 1;
+        var rx = 1, ry = 9.5;
+
+        var Q = board.create('point', [qx, qy], {
+            name: 'Q', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-8, -18], cssStyle: 'font-weight:600' }
+        });
+
+        var P = board.create('point', [px, py], {
+            name: 'P', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, -18], cssStyle: 'font-weight:600' }
+        });
+
+        var R = board.create('point', [rx, ry], {
+            name: 'R', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, 4], cssStyle: 'font-weight:600' }
+        });
+
+        // Triangle edges (no fill)
+        var triangle = board.create('polygon', [P, Q, R], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true
+        });
+
+        // Make the auto-created vertex points invisible
+        triangle.vertices.forEach(function(v) {
+            v.setAttribute({ visible: false });
+        });
+
+        // Right angle marker at Q
+        var raSize = 0.7;
+        var ra1 = board.create('point', [qx + raSize, qy], { visible: false, fixed: true, name: '' });
+        var ra2 = board.create('point', [qx + raSize, qy + raSize], { visible: false, fixed: true, name: '' });
+        var ra3 = board.create('point', [qx, qy + raSize], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [ra1, ra2], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [ra2, ra3], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Angle arc at P for 53°
+        board.create('nonReflexAngle', [R, P, Q], {
+            radius: 1.2,
+            fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // 53° label along the angle bisector at P
+        var angToQ = Math.atan2(qy - py, qx - px);
+        var angToR = Math.atan2(ry - py, rx - px);
+        var bisector = (angToQ + angToR) / 2;
+        if (bisector < angToR) bisector += Math.PI;
+        var labelDist = 2.0;
+
+        board.create('text', [
+            px + labelDist * Math.cos(bisector),
+            py + labelDist * Math.sin(bisector),
+            '53^\\circ'
+        ], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Side label: hypotenuse PR = 20 (midpoint, offset outward from triangle)
+        var prMidX = (px + rx) / 2;
+        var prMidY = (py + ry) / 2;
+        var prDx = rx - px;
+        var prDy = ry - py;
+        var prLen = Math.sqrt(prDx * prDx + prDy * prDy);
+        var normX = prDy / prLen;
+        var normY = -prDx / prLen;
+        var offset20 = 0.8;
+
+        board.create('text', [
+            prMidX + offset20 * normX,
+            prMidY + offset20 * normY,
+            '20'
+        ], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        // Side label: QR = x (vertical leg, offset to the left)
+        var qrMidX = (qx + rx) / 2;
+        var qrMidY = (qy + ry) / 2;
+
+        board.create('text', [
+            qrMidX - 0.9,
+            qrMidY,
+            'x'
+        ], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-style:italic; font-weight:600'
+        });
+
+    </script>
+</body>
+</html>
