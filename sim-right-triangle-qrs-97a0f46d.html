@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle QRS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 8.5, 10, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertex positions ────────────────────────────────────────
+        var qx = 0, qy = 0;
+        var rx = 7, ry = 0;
+        var sx = 7, sy = 5;
+
+        // ── Vertices (fixed, small) ─────────────────────────────────
+        var Q = board.create('point', [qx, qy], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+        var R = board.create('point', [rx, ry], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+        var S = board.create('point', [sx, sy], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+
+        // ── Triangle (no fill) ──────────────────────────────────────
+        board.create('polygon', [Q, R, S], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at R ─────────────────────────────────
+        var markSize = 0.55;
+        var raMark1 = board.create('point', [rx - markSize, ry], { visible: false, fixed: true, name: '' });
+        var raMark2 = board.create('point', [rx - markSize, ry + markSize], { visible: false, fixed: true, name: '' });
+        var raMark3 = board.create('point', [rx, ry + markSize], { visible: false, fixed: true, name: '' });
+        board.create('segment', [raMark1, raMark2], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [raMark2, raMark3], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Angle arc at Q (35°) ────────────────────────────────────
+        board.create('nonReflexAngle', [R, Q, S], {
+            radius: 1.0,
+            fillColor: '#222222', fillOpacity: 0.05,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false,
+            highlight: false
+        });
+
+        var angQ = Math.atan2(sy - qy, sx - qx) / 2;
+        var labelDist = 1.5;
+        board.create('text', [
+            qx + labelDist * Math.cos(angQ),
+            qy + labelDist * Math.sin(angQ),
+            '35^\\circ'
+        ], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Vertex labels ───────────────────────────────────────────
+        board.create('text', [qx - 0.6, qy - 0.5, 'Q'], {
+            fontSize: 15, color: '#222222', fontWeight: 'bold',
+            fixed: true, highlight: false
+        });
+        board.create('text', [rx + 0.3, ry - 0.5, 'R'], {
+            fontSize: 15, color: '#222222', fontWeight: 'bold',
+            fixed: true, highlight: false
+        });
+        board.create('text', [sx + 0.3, sy + 0.3, 'S'], {
+            fontSize: 15, color: '#222222', fontWeight: 'bold',
+            fixed: true, highlight: false
+        });
+
+        // ── Side labels ─────────────────────────────────────────────
+        board.create('text', [(qx + rx) / 2, qy - 0.7, 'p'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-style: italic;',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [rx + 0.6, (ry + sy) / 2, '11'], {
+            fontSize: 14, color: '#222222',
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var midHypX = (qx + sx) / 2;
+        var midHypY = (qy + sy) / 2;
+        var hypLen = Math.sqrt((sx - qx) * (sx - qx) + (sy - qy) * (sy - qy));
+        var nx = -(sy - qy) / hypLen;
+        var ny = (sx - qx) / hypLen;
+        board.create('text', [midHypX + nx * 0.6, midHypY + ny * 0.6, 'q'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-style: italic;',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
