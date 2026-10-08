@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle GHJ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 11, 19, -3],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertex coordinates
+        var Hx = 0, Hy = 0;
+        var Jx = 15, Jy = 0;
+        var Gx = 0, Gy = 8;
+
+        // Create vertices (small fixed points)
+        var H = board.create('point', [Hx, Hy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var J = board.create('point', [Jx, Jy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var G = board.create('point', [Gx, Gy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // Triangle edges (no fill)
+        board.create('polygon', [H, J, G], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Right angle marker at H
+        var raSize = 0.9;
+        board.create('segment', [[Hx + raSize, Hy], [Hx + raSize, Hy + raSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[Hx + raSize, Hy + raSize], [Hx, Hy + raSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Vertex labels (bold, offset outside triangle)
+        board.create('text', [Gx - 1.0, Gy + 0.5, '\\textbf{G}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+        board.create('text', [Hx - 1.0, Hy - 0.5, '\\textbf{H}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+        board.create('text', [Jx + 1.0, Jy - 0.5, '\\textbf{J}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Side labels (outside the triangle)
+        // GH = 8 (vertical left leg)
+        board.create('text', [-1.5, Gy / 2, '8'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // HJ = 15 (horizontal bottom leg)
+        board.create('text', [Jx / 2, -1.2, '15'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // GJ = 17 (hypotenuse)
+        var midGJx = (Gx + Jx) / 2;
+        var midGJy = (Gy + Jy) / 2;
+        var hypLen = 17;
+        var nx = 8 / hypLen;
+        var ny = 15 / hypLen;
+        var labelOffset = 1.2;
+        board.create('text', [midGJx + nx * labelOffset, midGJy + ny * labelOffset, '17'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
