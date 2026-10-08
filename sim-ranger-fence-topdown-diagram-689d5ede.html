@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranger and Fence — Top-Down View</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: #f4f7f0; border-radius: 8px; padding: 10px;
+            height: calc(100% - 20px);
+        }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-13, 13, 13, -9],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Constants ───────────────────────────────────────────────────
+        var PERP_DIST = 18;
+        var ANGLE_40 = 40 * Math.PI / 180;
+        var ANGLE_15 = 15 * Math.PI / 180;
+        var ANGLE_55 = (40 + 15) * Math.PI / 180;
+
+        // Scale: 18 ft maps to ~8 board units so everything fits nicely
+        var SCALE = 8 / 18;
+        var perpLen = PERP_DIST * SCALE; // 8 units
+
+        // ── Key points ──────────────────────────────────────────────────
+        // Ranger at bottom center
+        var rangerX = 0, rangerY = -5;
+        // Fence midpoint (perpendicular foot) directly above ranger
+        var fenceMidX = 0, fenceMidY = rangerY + perpLen; // = 3
+
+        // Fence ends: half-width = perpLen * tan(40°)
+        var halfFence = perpLen * Math.tan(ANGLE_40);
+        var fenceLeftX = fenceMidX - halfFence;
+        var fenceRightX = fenceMidX + halfFence;
+        var fenceY = fenceMidY;
+
+        // 15° outer lines extend beyond fence ends
+        // These lines go from ranger at 55° from perpendicular
+        var outerLen = perpLen / Math.cos(ANGLE_55) + 2.5; // extend past fence
+        var outerLeftX = rangerX - outerLen * Math.sin(ANGLE_55);
+        var outerLeftY = rangerY + outerLen * Math.cos(ANGLE_55);
+        var outerRightX = rangerX + outerLen * Math.sin(ANGLE_55);
+        var outerRightY = rangerY + outerLen * Math.cos(ANGLE_55);
+
+        // ── Create points (all invisible, used for construction) ────────
+        function pt(x, y) {
+            return board.create('point', [x, y], { visible: false, fixed: true, name: '' });
+        }
+
+        var pRanger = pt(rangerX, rangerY);
+        var pFenceMid = pt(fenceMidX, fenceMidY);
+        var pFenceLeft = pt(fenceLeftX, fenceY);
+        var pFenceRight = pt(fenceRightX, fenceY);
+        var pOuterLeft = pt(outerLeftX, outerLeftY);
+        var pOuterRight = pt(outerRightX, outerRightY);
+
+        // Point above ranger for angle reference (straight up)
+        var pUp = pt(rangerX, rangerY + 12);
+
+        // ── Fence (solid brown bar) ─────────────────────────────────────
+        // Wider fence background for "real" feel
+        board.create('segment', [pFenceLeft, pFenceRight], {
+            strokeColor: '#6B4226', strokeWidth: 8, fixed: true, highlight: false,
+            lineCap: 'round'
+        });
+        // Lighter top edge
+        board.create('segment', [[fenceLeftX, fenceY + 0.15], [fenceRightX, fenceY + 0.15]], {
+            strokeColor: '#A0764A', strokeWidth: 3, fixed: true, highlight: false,
+            lineCap: 'round'
+        });
+
+        // Fence posts (small filled rectangles as circles)
+        board.create('point', [fenceLeftX, fenceY], {
+            name: '', fixed: true, size: 4, face: 's', color: '#4A2E14',
+            strokeColor: '#3B2210', strokeWidth: 1, highlight: false
+        });
+        board.create('point', [fenceRightX, fenceY], {
+            name: '', fixed: true, size: 4, face: 's', color: '#4A2E14',
+            strokeColor: '#3B2210', strokeWidth: 1, highlight: false
+        });
+        // Middle post
+        board.create('point', [fenceMidX, fenceY], {
+            name: '', fixed: true, size: 3, face: 's', color: '#4A2E14',
+            strokeColor: '#3B2210', strokeWidth: 1, highlight: false
+        });
+
+        // Fence label
+        board.create('text', [0, fenceY + 1.1, '\\textbf{Fence}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14,
+            color: '#5C3317', useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Perpendicular dashed line (ranger → fence midpoint) ─────────
+        board.create('segment', [pRanger, pFenceMid], {
+            strokeColor: '#444444', strokeWidth: 1.8, dash: 3,
+            fixed: true, highlight: false
+        });
+
+        // 18 ft label along perpendicular
+        board.create('text', [0.9, (rangerY + fenceMidY) / 2, '18\\text{ ft}'], {
+            anchorX: 'left', anchorY: 'middle', fontSize: 13,
+            color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Right angle marker at fence–perpendicular junction ──────────
+        var sqSize = 0.55;
+        board.create('polygon', [
+            [fenceMidX, fenceMidY],
+            [fenceMidX + sqSize, fenceMidY],
+            [fenceMidX + sqSize, fenceMidY - sqSize],
+            [fenceMidX, fenceMidY - sqSize]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── 40° dashed lines (ranger → fence ends) ─────────────────────
+        board.create('segment', [pRanger, pFenceLeft], {
+            strokeColor: '#2563EB', strokeWidth: 1.5, dash: 3,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [pRanger, pFenceRight], {
+            strokeColor: '#2563EB', strokeWidth: 1.5, dash: 3,
+            fixed: true, highlight: false
+        });
+
+        // ── 15° outer dashed lines (beyond fence ends) ──────────────────
+        board.create('segment', [pRanger, pOuterLeft], {
+            strokeColor: '#D97706', strokeWidth: 1.5, dash: 3,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [pRanger, pOuterRight], {
+            strokeColor: '#D97706', strokeWidth: 1.5, dash: 3,
+            fixed: true, highlight: false
+        });
+
+        // ── 40° angle arcs (between perpendicular and fence-end lines) ──
+        // Left 40° arc
+        board.create('nonReflexAngle', [pFenceLeft, pRanger, pFenceMid], {
+            radius: 2.2, name: '', withLabel: false,
+            fillColor: '#2563EB', fillOpacity: 0.08,
+            strokeColor: '#2563EB', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+        // Left 40° label
+        board.create('text', [-1.6, rangerY + 2.6, '40^\\circ'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12,
+            color: '#2563EB', useKatex: true, fixed: true, highlight: false
+        });
+
+        // Right 40° arc
+        board.create('nonReflexAngle', [pFenceMid, pRanger, pFenceRight], {
+            radius: 2.2, name: '', withLabel: false,
+            fillColor: '#2563EB', fillOpacity: 0.08,
+            strokeColor: '#2563EB', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+        // Right 40° label
+        board.create('text', [1.6, rangerY + 2.6, '40^\\circ'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12,
+            color: '#2563EB', useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── 15° angle arcs (between fence-end lines and outer lines) ────
+        // Left 15° arc
+        board.create('nonReflexAngle', [pOuterLeft, pRanger, pFenceLeft], {
+            radius: 3.0, name: '', withLabel: false,
+            fillColor: '#D97706', fillOpacity: 0.08,
+            strokeColor: '#D97706', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+        // Left 15° label
+        board.create('text', [-3.3, rangerY + 2.9, '15^\\circ'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 11,
+            color: '#D97706', useKatex: true, fixed: true, highlight: false
+        });
+
+        // Right 15° arc
+        board.create('nonReflexAngle', [pFenceRight, pRanger, pOuterRight], {
+            radius: 3.0, name: '', withLabel: false,
+            fillColor: '#D97706', fillOpacity: 0.08,
+            strokeColor: '#D97706', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+        // Right 15° label
+        board.create('text', [3.3, rangerY + 2.9, '15^\\circ'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 11,
+            color: '#D97706', useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Ranger marker ───────────────────────────────────────────────
+        // Outer glow
+        board.create('point', [rangerX, rangerY], {
+            name: '', fixed: true, size: 7, face: 'o',
+            fillColor: '#059669', fillOpacity: 0.2,
+            strokeColor: '#059669', strokeWidth: 0, highlight: false
+        });
+        // Main dot
+        board.create('point', [rangerX, rangerY], {
+            name: '', fixed: true, size: 5, face: 'o',
+            fillColor: '#059669', fillOpacity: 1,
+            strokeColor: '#046c4e', strokeWidth: 1.5, highlight: false
+        });
+        // Inner highlight
+        board.create('point', [rangerX, rangerY - 0.05], {
+            name: '', fixed: true, size: 2, face: 'o',
+            fillColor: '#34d399', fillOpacity: 0.7,
+            strokeWidth: 0, highlight: false
+        });
+
+        // Ranger label
+        board.create('text', [rangerX, rangerY - 1.3, '\\textbf{Ranger}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14,
+            color: '#046c4e', useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Small tree/bush decorations for "real life" feel ────────────
+        function drawTree(cx, cy, r, col) {
+            board.create('point', [cx, cy], {
+                name: '', fixed: true, size: r, face: 'o',
+                fillColor: col, fillOpacity: 0.5,
+                strokeColor: col, strokeWidth: 0.5, highlight: false, layer: 0
+            });
+        }
+
+        // Scatter some trees around the scene (avoiding construction lines)
+        drawTree(-9, 5, 5, '#7cb342');
+        drawTree(-10, 7, 4, '#66bb6a');
+        drawTree(-8, 9, 6, '#81c784');
+        drawTree(9, 6, 5, '#7cb342');
+        drawTree(10, 8, 4, '#66bb6a');
+        drawTree(8, 10, 5, '#81c784');
+        drawTree(-10, -3, 4, '#81c784');
+        drawTree(10, -2, 4, '#66bb6a');
+        drawTree(-7, -6, 3, '#a5d6a7');
+        drawTree(7, -5, 3, '#a5d6a7');
+        drawTree(-5, 10, 4, '#7cb342');
+        drawTree(5, 11, 5, '#66bb6a');
+        drawTree(0, 10, 4, '#81c784');
+        drawTree(-3, -7, 3, '#a5d6a7');
+        drawTree(4, -7, 3, '#a5d6a7');
+
+        // Small grass tufts
+        drawTree(-6, 0, 2, '#c5e1a5');
+        drawTree(6, 1, 2, '#c5e1a5');
+        drawTree(-4, 7, 2, '#c5e1a5');
+        drawTree(3, 8, 2, '#c5e1a5');
+        drawTree(-2, -3, 2, '#c5e1a5');
+        drawTree(2, -2, 2, '#c5e1a5');
+
+    </script>
+</body>
+</html>
