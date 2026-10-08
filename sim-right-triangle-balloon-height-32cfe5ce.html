@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle — Balloon Height</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var HAND_H = 4;
+        var ANG_DEG = 53;
+        var ANG_RAD = ANG_DEG * Math.PI / 180;
+        var HYP = 25;
+        var VERT = HYP * Math.sin(ANG_RAD);
+        var HORIZ = HYP * Math.cos(ANG_RAD);
+
+        var Ax = 2;
+        var Ay = HAND_H;
+        var Bx = Ax + HORIZ;
+        var By = Ay;
+        var Cx = Bx;
+        var Cy = Ay + VERT;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, Cy + 4, Bx + 7, -3],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_TRI   = '#222222';
+        var COL_HYP   = '#2563EB';
+        var COL_H     = '#DC2626';
+        var COL_4FT   = '#059669';
+        var COL_TOTAL = '#D97706';
+        var COL_GRAY  = '#555555';
+
+        board.create('segment', [[-2, 0], [Bx + 5, 0]], {
+            strokeColor: COL_GRAY, strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('text', [Bx + 3, -1.2, 'ground'], {
+            fontSize: 11, color: '#888888', fixed: true, highlight: false
+        });
+
+        board.create('segment', [[Ax, 0], [Ax, Ay]], {
+            strokeColor: COL_GRAY, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[Ax - 0.4, 0], [Ax + 0.4, 0]], {
+            strokeColor: COL_GRAY, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        var pA = board.create('point', [Ax, Ay], {
+            name: '', size: 2, color: COL_TRI, fixed: true, highlight: false
+        });
+        var pB = board.create('point', [Bx, By], {
+            name: '', size: 0, color: COL_TRI, fixed: true, highlight: false, visible: false
+        });
+        var pC = board.create('point', [Cx, Cy], {
+            name: '', size: 2, color: COL_TRI, fixed: true, highlight: false
+        });
+
+        board.create('segment', [pA, pC], {
+            strokeColor: COL_TRI, strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [pB, pC], {
+            strokeColor: COL_TRI, strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [pA, pB], {
+            strokeColor: COL_TRI, strokeWidth: 1.2, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        var RA = 1.2;
+        var raPts = [
+            board.create('point', [Bx - RA, By], { visible: false, fixed: true, name: '' }),
+            board.create('point', [Bx - RA, By + RA], { visible: false, fixed: true, name: '' }),
+            board.create('point', [Bx, By + RA], { visible: false, fixed: true, name: '' })
+        ];
+        board.create('polygon', [raPts[0], raPts[1], raPts[2],
+            board.create('point', [Bx, By], { visible: false, fixed: true, name: '' })], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_TRI, strokeWidth: 1.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        var angRefB = board.create('point', [Ax + 5, Ay], {
+            visible: false, fixed: true, name: ''
+        });
+        board.create('nonReflexAngle', [angRefB, pA, pC], {
+            radius: 2.5,
+            fillColor: COL_TRI, fillOpacity: 0.06,
+            strokeColor: COL_TRI, strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+        board.create('text', [Ax + 3.2, Ay + 1.6, '53°'], {
+            fontSize: 14, color: COL_TRI, fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        var hypMidX = (Ax + Cx) / 2;
+        var hypMidY = (Ay + Cy) / 2;
+        var dx = Cx - Ax;
+        var dy = Cy - Ay;
+        var len = Math.sqrt(dx * dx + dy * dy);
+        var offX = -dy / len * 1.8;
+        var offY = dx / len * 1.8;
+        board.create('text', [hypMidX + offX, hypMidY + offY, '25 \\text{ ft}'], {
+            fontSize: 14, color: COL_HYP, useKatex: true,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [Bx + 1.2, (By + Cy) / 2, 'h'], {
+            fontSize: 16, color: COL_H, useKatex: true,
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var brk4X = Ax - 1.8;
+        board.create('segment', [[brk4X, 0], [brk4X, HAND_H]], {
+            strokeColor: COL_4FT, strokeWidth: 1.2,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[brk4X - 0.3, 0], [brk4X + 0.3, 0]], {
+            strokeColor: COL_4FT, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[brk4X - 0.3, HAND_H], [brk4X + 0.3, HAND_H]], {
+            strokeColor: COL_4FT, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [brk4X - 0.4, HAND_H / 2, '4 \\text{ ft}'], {
+            fontSize: 13, color: COL_4FT, useKatex: true,
+            anchorX: 'right', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('segment', [[Ax, Ay], [Bx + 1, Ay]], {
+            strokeColor: COL_4FT, strokeWidth: 0.8, dash: 3,
+            fixed: true, highlight: false
+        });
+
+        var brkTX = Bx + 4;
+        board.create('segment', [[brkTX, 0], [brkTX, Cy]], {
+            strokeColor: COL_TOTAL, strokeWidth: 1.2,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[brkTX - 0.3, 0], [brkTX + 0.3, 0]], {
+            strokeColor: COL_TOTAL, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[brkTX - 0.3, Cy], [brkTX + 0.3, Cy]], {
+            strokeColor: COL_TOTAL, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [brkTX + 0.5, Cy / 2, 'h + 4'], {
+            fontSize: 14, color: COL_TOTAL, useKatex: true,
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('segment', [[Bx, 0], [Bx, By]], {
+            strokeColor: COL_GRAY, strokeWidth: 0.8, dash: 3,
+            fixed: true, highlight: false
+        });
+
+        board.create('point', [Cx, Cy], {
+            name: '', size: 4, color: COL_H,
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
