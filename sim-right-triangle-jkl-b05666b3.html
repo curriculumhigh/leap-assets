@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle JKL</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 9, 12, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var JK_len = 7;
+        var angleJ_deg = 34;
+        var angleJ_rad = angleJ_deg * Math.PI / 180;
+        var KL_len = JK_len * Math.tan(angleJ_rad);
+
+        var Kx = 9, Ky = 1;
+        var Jx = Kx, Jy = Ky + JK_len;
+        var Lx = Kx - KL_len, Ly = Ky;
+
+        var K = board.create('point', [Kx, Ky], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var J = board.create('point', [Jx, Jy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var L = board.create('point', [Lx, Ly], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        board.create('polygon', [J, K, L], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        var sqSize = 0.5;
+        var raP1 = board.create('point', [Kx - sqSize, Ky], { visible: false, fixed: true, name: '' });
+        var raP2 = board.create('point', [Kx - sqSize, Ky + sqSize], { visible: false, fixed: true, name: '' });
+        var raP3 = board.create('point', [Kx, Ky + sqSize], { visible: false, fixed: true, name: '' });
+        board.create('segment', [raP1, raP2], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [raP2, raP3], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        board.create('nonReflexAngle', [K, J, L], {
+            radius: 0.85,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        var angToK = Math.atan2(Ky - Jy, Kx - Jx);
+        var angToL = Math.atan2(Ly - Jy, Lx - Jx);
+        var diff = angToL - angToK;
+        if (diff > Math.PI) diff -= 2 * Math.PI;
+        if (diff < -Math.PI) diff += 2 * Math.PI;
+        var bisA = angToK + diff / 2;
+        var labelDist = 1.6;
+
+        board.create('text', [
+            Jx + labelDist * Math.cos(bisA),
+            Jy + labelDist * Math.sin(bisA),
+            '34\\degree'
+        ], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [Jx + 0.45, Jy + 0.35, '\\textbf{J}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'left', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Kx + 0.45, Ky - 0.25, '\\textbf{K}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'left', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Lx - 0.45, Ly - 0.25, '\\textbf{L}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'right', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [Jx + 0.55, (Jy + Ky) / 2, '9'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
