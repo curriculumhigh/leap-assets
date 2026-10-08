@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle — Cliff and Hiker</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 12, 13, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Coordinates ─────────────────────────────────────────────────
+        var Ax = 0, Ay = 0;      // Hiker (bottom-left)
+        var Bx = 7.5, By = 0;    // Base of cliff (bottom-right)
+        var Cx = 7.5, Cy = 10;   // Top of cliff (top-right)
+
+        // ── Ground fill (earthy tan) ────────────────────────────────────
+        var gndL = board.create('point', [-3, 0], { visible: false, name: '' });
+        var gndR = board.create('point', [13, 0], { visible: false, name: '' });
+        var gndBR = board.create('point', [13, -3.5], { visible: false, name: '' });
+        var gndBL = board.create('point', [-3, -3.5], { visible: false, name: '' });
+        board.create('polygon', [gndL, gndR, gndBR, gndBL], {
+            fillColor: '#E8D5B7', fillOpacity: 0.5,
+            borders: { strokeWidth: 0, visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Ground surface line
+        board.create('segment', [[-3, 0], [13, 0]], {
+            strokeColor: '#8B7355', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // Some ground texture lines
+        var groundMarks = [[-2, -0.3], [1, -0.5], [3.5, -0.3], [5, -0.6], [9, -0.4], [11, -0.5]];
+        for (var g = 0; g < groundMarks.length; g++) {
+            board.create('segment', [[groundMarks[g][0] - 0.4, groundMarks[g][1]], [groundMarks[g][0] + 0.4, groundMarks[g][1]]], {
+                strokeColor: '#B8A080', strokeWidth: 1, fixed: true, highlight: false
+            });
+        }
+
+        // Small grass tufts
+        var grassSpots = [-1.5, 0.5, 2, 4, 5.5, 9.5, 11.5];
+        for (var gt = 0; gt < grassSpots.length; gt++) {
+            var gx = grassSpots[gt];
+            board.create('segment', [[gx - 0.15, 0], [gx, 0.3]], { strokeColor: '#6B8E5A', strokeWidth: 1.2, fixed: true, highlight: false });
+            board.create('segment', [[gx + 0.15, 0], [gx, 0.35]], { strokeColor: '#6B8E5A', strokeWidth: 1.2, fixed: true, highlight: false });
+            board.create('segment', [[gx, 0], [gx + 0.08, 0.25]], { strokeColor: '#7BA06A', strokeWidth: 1, fixed: true, highlight: false });
+        }
+
+        // ── Cliff face (rocky gray fill) ────────────────────────────────
+        var clPt1 = board.create('point', [Bx, 0], { visible: false, name: '' });
+        var clPt2 = board.create('point', [13, 0], { visible: false, name: '' });
+        var clPt3 = board.create('point', [13, Cy + 1], { visible: false, name: '' });
+        var clPt4 = board.create('point', [Bx + 2.5, Cy + 1], { visible: false, name: '' });
+        var clPt5 = board.create('point', [Bx + 0.3, Cy], { visible: false, name: '' });
+        var clPt6 = board.create('point', [Bx, Cy], { visible: false, name: '' });
+
+        board.create('polygon', [clPt1, clPt2, clPt3, clPt4, clPt5, clPt6], {
+            fillColor: '#B0A898', fillOpacity: 0.45,
+            borders: { strokeWidth: 0, visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Cliff face edge (vertical rocky edge)
+        var cliffEdgePoints = [
+            [Bx, 0], [Bx + 0.15, 1.5], [Bx - 0.1, 3],
+            [Bx + 0.2, 4.5], [Bx - 0.05, 6], [Bx + 0.15, 7.5],
+            [Bx + 0.3, 9], [Bx + 0.3, Cy]
+        ];
+        for (var ce = 0; ce < cliffEdgePoints.length - 1; ce++) {
+            board.create('segment', [cliffEdgePoints[ce], cliffEdgePoints[ce + 1]], {
+                strokeColor: '#7A6E62', strokeWidth: 2.2, fixed: true, highlight: false
+            });
+        }
+
+        // Cliff top edge
+        board.create('segment', [[Bx + 0.3, Cy], [Bx + 2.5, Cy + 1]], {
+            strokeColor: '#7A6E62', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[Bx + 2.5, Cy + 1], [13, Cy + 1]], {
+            strokeColor: '#7A6E62', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Rock texture lines on cliff face
+        var rockLines = [
+            [[Bx + 0.5, 1], [Bx + 1.8, 1.2]],
+            [[Bx + 0.3, 2.8], [Bx + 1.5, 3.0]],
+            [[Bx + 0.6, 4.2], [Bx + 2.0, 4.0]],
+            [[Bx + 0.2, 5.5], [Bx + 1.3, 5.7]],
+            [[Bx + 0.5, 7.0], [Bx + 1.8, 6.8]],
+            [[Bx + 0.4, 8.5], [Bx + 1.6, 8.7]],
+            [[Bx + 1.0, 2.0], [Bx + 2.2, 2.2]],
+            [[Bx + 0.8, 5.0], [Bx + 2.3, 5.2]],
+            [[Bx + 0.7, 7.8], [Bx + 2.0, 8.0]]
+        ];
+        for (var rl = 0; rl < rockLines.length; rl++) {
+            board.create('segment', [rockLines[rl][0], rockLines[rl][1]], {
+                strokeColor: '#9E9080', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+
+        // ── Triangle vertices ───────────────────────────────────────────
+        var A = board.create('point', [Ax, Ay], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var B = board.create('point', [Bx, By], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var C = board.create('point', [Cx, Cy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // ── Triangle edges ──────────────────────────────────────────────
+        // Ground side AB (horizontal)
+        board.create('segment', [A, B], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // Cliff side BC (vertical)
+        board.create('segment', [B, C], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // Line of sight AC (hypotenuse) — dashed blue
+        board.create('segment', [A, C], {
+            strokeColor: '#2563EB', strokeWidth: 2.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Right angle marker at B ─────────────────────────────────────
+        var sqSize = 0.55;
+        board.create('segment', [[Bx - sqSize, By], [Bx - sqSize, By + sqSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[Bx - sqSize, By + sqSize], [Bx, By + sqSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Angle arc at A (53°) ────────────────────────────────────────
+        board.create('nonReflexAngle', [B, A, C], {
+            radius: 1.2,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // Angle label
+        board.create('text', [1.6, 0.7, '53^\\circ'], {
+            useKatex: true, fontSize: 14, color: '#DC2626',
+            fixed: true, highlight: false, anchorX: 'left'
+        });
+
+        // ── Labels ──────────────────────────────────────────────────────
+        // Vertex labels
+        board.create('text', [-0.6, -0.7, '\\textbf{A}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [Bx, -0.8, '\\textbf{B}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [Cx + 0.5, Cy + 0.5, '\\textbf{C}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Hypotenuse label — "40 m" along the line of sight
+        var hypMidX = (Ax + Cx) / 2 - 1.0;
+        var hypMidY = (Ay + Cy) / 2 + 0.6;
+        board.create('text', [hypMidX, hypMidY, '40 \\text{ m}'], {
+            useKatex: true, fontSize: 14, color: '#2563EB',
+            fixed: true, highlight: false, anchorX: 'middle',
+            cssStyle: 'font-weight: bold;'
+        });
+
+        // Height label — "h" on the vertical side
+        board.create('text', [Bx - 0.7, Cy / 2, 'h'], {
+            useKatex: true, fontSize: 16, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle',
+            cssStyle: 'font-weight: bold; font-style: italic;'
+        });
+
+        // ── Hiker figure (simple stick figure near A) ───────────────────
+        var hx = Ax - 0.1, hy = Ay;
+        // Body
+        board.create('segment', [[hx, hy + 0.3], [hx, hy + 1.1]], {
+            strokeColor: '#444444', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        // Head
+        board.create('point', [hx, hy + 1.3], {
+            name: '', fixed: true, size: 2.5, color: '#444444', highlight: false,
+            strokeColor: '#444444', fillColor: '#444444'
+        });
+        // Legs
+        board.create('segment', [[hx, hy + 0.3], [hx - 0.25, hy]], {
+            strokeColor: '#444444', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[hx, hy + 0.3], [hx + 0.25, hy]], {
+            strokeColor: '#444444', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        // Arms
+        board.create('segment', [[hx, hy + 0.85], [hx - 0.3, hy + 0.6]], {
+            strokeColor: '#444444', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[hx, hy + 0.85], [hx + 0.3, hy + 0.6]], {
+            strokeColor: '#444444', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Descriptor labels ───────────────────────────────────────────
+        // "Hiker" label near A
+        board.create('text', [-0.6, -1.5, '\\text{Hiker}'], {
+            useKatex: true, fontSize: 11, color: '#666666',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // "Cliff" label on the cliff face
+        board.create('text', [Bx + 1.4, Cy / 2, '\\text{Cliff}'], {
+            useKatex: true, fontSize: 11, color: '#666666',
+            fixed: true, highlight: false, anchorX: 'middle',
+            cssStyle: 'letter-spacing: 2px;'
+        });
+
+        // "Line of sight" small label
+        board.create('text', [hypMidX - 0.5, hypMidY + 0.9, '\\small\\text{line of sight}'], {
+            useKatex: true, fontSize: 10, color: '#2563EB',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+    </script>
+</body>
+</html>
