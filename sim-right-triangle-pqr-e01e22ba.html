@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle PQR</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 8.5, 16, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertex coordinates: Q bottom-left, R bottom-right, P top-left
+        var Q = board.create('point', [1, 1], {
+            name: 'Q', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, -16], cssStyle: 'font-weight:600' }
+        });
+        var R = board.create('point', [13, 1], {
+            name: 'R', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, -16], cssStyle: 'font-weight:600' }
+        });
+        var P = board.create('point', [1, 6], {
+            name: 'P', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, 6], cssStyle: 'font-weight:600' }
+        });
+
+        // Triangle sides
+        board.create('polygon', [P, Q, R], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        // Right-angle marker at Q
+        var sqSize = 0.7;
+        var sq1 = board.create('point', [1 + sqSize, 1], { visible: false, fixed: true, name: '' });
+        var sq2 = board.create('point', [1 + sqSize, 1 + sqSize], { visible: false, fixed: true, name: '' });
+        var sq3 = board.create('point', [1, 1 + sqSize], { visible: false, fixed: true, name: '' });
+        board.create('segment', [sq1, sq2], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [sq2, sq3], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // Side labels (measurement color #3B82F6)
+        var MCOL = '#3B82F6';
+
+        // PQ = 5 (left side, vertical)
+        board.create('text', [-0.3, 3.5, '5'], {
+            fontSize: 15, color: MCOL, anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // QR = 12 (bottom side, horizontal)
+        board.create('text', [7, -0.2, '12'], {
+            fontSize: 15, color: MCOL, anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // PR = 13 (hypotenuse, diagonal) — place along the midpoint, offset outward
+        var hx = (1 + 13) / 2 + 0.7;
+        var hy = (6 + 1) / 2 + 0.5;
+        board.create('text', [hx, hy, '13'], {
+            fontSize: 15, color: MCOL, anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
