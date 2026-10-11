@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motion of the particle: graph of s(t) and path along the x-axis</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        /* Same outer geometry as the item's first s(t) graph sim (600px iframe, 6px + 10px padding → 568px board). */
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); display: flex; flex-direction: column; gap: 6px; }
+        .card { background: white; border-radius: 8px; padding: 10px; box-sizing: border-box; min-height: 0; }
+        .graph-wrap { flex: 1.691; }   /* at 500px: graph board 254px (scale of the first sim), schematic board 158px */
+        .track-wrap { flex: 1; padding-top: 2px; padding-bottom: 2px; }
+        .strip { flex: 0 0 40px; display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 14px; color: #222222; }
+        #graph, #track { width: 100%; height: 100%; }
+        .strip button { font-size: 13px; padding: 5px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; color: #222222; cursor: pointer; }
+        .strip button:hover { background: #eef2f7; }
+        .strip .lbl { font-family: 'KaTeX_Math', 'Times New Roman', serif; font-style: italic; font-size: 16px; }
+        .strip input[type=range] { flex: 1; min-width: 0; accent-color: #2563EB; }
+        .strip .readout { width: 80px; text-align: right; font-variant-numeric: tabular-nums; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card graph-wrap"><div id="graph"></div></div>
+    <div class="card track-wrap"><div id="track"></div></div>
+    <div class="card strip">
+        <button id="play-btn" type="button">&#9654; Play</button>
+        <button id="reset-btn" type="button">&#8634; Reset</button>
+        <span class="lbl">t</span>
+        <input id="t-slider" type="range" min="0" max="4" step="0.01" value="0">
+        <span class="readout"><span class="lbl">t</span> = <span id="rt">0.00</span> s</span>
+    </div>
+</div>
+<script>
+    function S(t) { return t * t * t - 6 * t * t + 9 * t; }   // position (m)
+    var T_MAX = 4, t = 0, playing = false, RATE = 0.5, last = null;
+    var UP = '#059669', DOWN = '#DC2626', PARTICLE = '#2563EB', NEUTRAL = '#6B7280';
+    function legColor(tt) { return (tt < 1 || tt >= 3) ? UP : DOWN; }
+
+    // ── Graph of s(t): same x-range, grid and px-per-unit as the first sim; vertically truncated ──
+    var PX_PER_UNIT_Y = 418 / 11;          // first sim: 418px board for s from -2.5 to 8.5
+    // Use the first sim's vertical scale when there is room; when the iframe is shorter (e.g. the studio
+    // editor card shows sims at a fixed 350px), fit the whole curve instead of cutting it off.
+    var Y_MIN = -1.45, Y_NEED = 5.25;
+    var gEl = document.getElementById('graph');
+    var Y_MAX = Math.max(Y_NEED, Y_MIN + gEl.clientHeight / PX_PER_UNIT_Y);
+    var graph = JXG.JSXGraph.initBoard('graph', {
+        boundingbox: [-1.2, Y_MAX, 7, Y_MIN], axis: false,
+        showNavigation: false, showCopyright: false, pan: { enabled: false }, zoom: { enabled: false }
+    });
+    var i;
+    for (i = -1; i <= 7; i++) graph.create('line', [[i, 0], [i, 1]], { strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false, straightFirst: true, straightLast: true });
+    for (i = Math.ceil(Y_MIN); i <= Math.floor(Y_MAX); i++) graph.create('line', [[0, i], [1, i]], { strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false, straightFirst: true, straightLast: true });
+    graph.create('arrow', [[-0.2, 0], [6.7, 0]], { strokeColor: '#444444', strokeWidth: 1.2, lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false });
+    graph.create('arrow', [[0, -0.55], [0, Y_MAX - 0.2]], { strokeColor: '#444444', strokeWidth: 1.2, lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false });
+    for (i = 1; i <= 6; i++) {
+        graph.create('segment', [[i, -0.12], [i, 0.12]], { strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false });
+        graph.create('text', [i, -0.45, String(i)], { fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+    }
+    for (i = 1; i <= Math.floor(Y_MAX - 0.2); i++) {
+        if (i === 0) continue;
+        graph.create('segment', [[-0.1, i], [0.1, i]], { strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false });
+        graph.create('text', [-0.4, i, String(i)], { fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false });
+    }
+    graph.create('text', [-0.35, -0.4, '0'], { fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false });
+    graph.create('text', [6.55, -0.7, 't'], { fontSize: 14, useKatex: true, color: '#444444', fixed: true, highlight: false });
+
+    // s(t) in three colour-coded pieces on 0..4, continuing (neutral) after t = 4
+    graph.create('functiongraph', [S, 0, 1], { strokeColor: UP, strokeWidth: 2.2, fixed: true, highlight: false });
+    graph.create('functiongraph', [S, 1, 3], { strokeColor: DOWN, strokeWidth: 2.2, fixed: true, highlight: false });
+    graph.create('functiongraph', [S, 3, 4], { strokeColor: UP, strokeWidth: 2.2, fixed: true, highlight: false });
+    graph.create('functiongraph', [S, 4, 6], { strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false });
+    graph.create('text', [0.6, 4.3, 's'], { fontSize: 13, color: '#222222', useKatex: true, fixed: true, highlight: false });
+
+    // interval annotations under the t-axis
+    function intervalNote(a, b, color, label) {
+        graph.create('segment', [[a + 0.06, -0.85], [b - 0.06, -0.85]], { strokeColor: color, strokeWidth: 2, fixed: true, highlight: false });
+        graph.create('text', [(a + b) / 2, -1.15, label], { fontSize: 11, color: color, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+    }
+    intervalNote(0, 1, UP, 'increasing');
+    intervalNote(1, 3, DOWN, 'decreasing');
+    intervalNote(3, 4, UP, 'increasing');
+
+    // key points at t = 1, 3, 4
+    [1, 3, 4].forEach(function (k) {
+        graph.create('point', [k, S(k)], { name: '', size: 4, strokeColor: '#ffffff', strokeWidth: 1.5, fillColor: '#222222', fixed: true, highlight: false, showInfobox: false });
+    });
+
+    // tracer
+    graph.create('segment', [[function () { return t; }, 0], [function () { return t; }, function () { return S(t); }]], { strokeColor: '#9CA3AF', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+    graph.create('point', [function () { return t; }, function () { return S(t); }], { name: '', size: 5, strokeColor: '#ffffff', strokeWidth: 2, fillColor: PARTICLE, fixed: true, highlight: false, showInfobox: false });
+
+    // ── The x-axis with the particle and its back-and-forth path ──
+    var track = JXG.JSXGraph.initBoard('track', {
+        boundingbox: [-0.75, 1.55, 5.15, -0.85], axis: false,
+        showNavigation: false, showCopyright: false, pan: { enabled: false }, zoom: { enabled: false }
+    });
+    track.create('axis', [[0, 0], [1, 0]], { strokeColor: '#444444', strokeWidth: 1.2, lastArrow: { type: 2, size: 6 }, withLabel: false, fixed: true, highlight: false,
+        ticks: { strokeColor: '#444444', ticksDistance: 1, minorTicks: 1, majorHeight: 8, minorHeight: 4, drawZero: true, insertTicks: false, label: { fontSize: 11, offset: [-3, -17] } } });
+    track.create('text', [4.98, 0.2, 'x'], { useKatex: true, fontSize: 15, fixed: true, highlight: false });
+
+    var LANE = [0.36, 0.76, 1.16], RX = 0.11, RY = 0.2;
+    function laneIdx(tt) { return tt < 1 ? 0 : (tt < 3 ? 1 : 2); }
+    function legPts(a, b, ln) {                  // straight lane piece for t in [a, b]
+        var xs = [], ys = [], N = 60;
+        for (var k = 0; k <= N; k++) { xs.push(S(a + (b - a) * k / N)); ys.push(LANE[ln]); }
+        return [xs, ys];
+    }
+    function uturnPts(xc, yc, side) {
+        var xs = [], ys = [];
+        for (var k = 0; k <= 16; k++) { var a = -Math.PI / 2 + Math.PI * k / 16; xs.push(xc + side * RX * Math.cos(a)); ys.push(yc + RY * Math.sin(a)); }
+        return [xs, ys];
+    }
+    // each leg its own colour-coded curve, drawn up to the current time
+    var LEGS = [[0, 1, 0], [1, 3, 1], [3, 4, 2]];
+    LEGS.forEach(function (L) {
+        var c = track.create('curve', [[0], [0]], { strokeColor: legColor(L[0]), strokeWidth: 2.4, fixed: true, highlight: false });
+        c.updateDataArray = function () {
+            if (t <= L[0]) { this.dataX = []; this.dataY = []; return; }
+            var p = legPts(L[0], Math.min(t, L[1]), L[2]); this.dataX = p[0]; this.dataY = p[1];
+        };
+    });
+    var U1 = uturnPts(S(1), (LANE[0] + LANE[1]) / 2, 1), U3 = uturnPts(S(3), (LANE[1] + LANE[2]) / 2, -1);
+    track.create('curve', U1, { strokeColor: NEUTRAL, strokeWidth: 2, fixed: true, highlight: false, visible: function () { return t >= 1; } });
+    track.create('curve', U3, { strokeColor: NEUTRAL, strokeWidth: 2, fixed: true, highlight: false, visible: function () { return t >= 3; } });
+
+    // direction arrowheads, revealed once the particle has passed them
+    function reachTime(x, a, b) {
+        var lo = a, hi = b, up = S(b) > S(a);
+        for (var k = 0; k < 50; k++) { var mid = (lo + hi) / 2; if ((S(mid) < x) === up) lo = mid; else hi = mid; }
+        return (lo + hi) / 2;
+    }
+    [[1.2, 0, 1, 0, 1], [2.9, 0, 1, 0, 1], [2.9, 1, -1, 1, 3], [1.2, 1, -1, 1, 3], [1.2, 2, 1, 3, 4], [2.9, 2, 1, 3, 4]].forEach(function (h) {
+        var x = h[0], ln = h[1], dir = h[2], tReach = reachTime(x + dir * 0.09, h[3], h[4]);
+        track.create('arrow', [[x - dir * 0.09, LANE[ln]], [x + dir * 0.09, LANE[ln]]], {
+            strokeColor: legColor(h[3]), strokeWidth: 2.4, lastArrow: { type: 2, size: 5 }, fixed: true, highlight: false,
+            visible: function () { return t >= tReach; } });
+    });
+
+    // after t = 4 the motion continues: arrow beyond the t = 4 dot
+    track.create('arrow', [[S(4) + 0.08, LANE[2]], [S(4) + 0.6, LANE[2]]], {
+        strokeColor: UP, strokeWidth: 2.4, dash: 2, lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false,
+        visible: function () { return t >= T_MAX; } });
+
+    // start, turning-point and end markers (labelled with t only)
+    function marker(x, y, tAt, label, dx, anchor, size, color) {
+        track.create('point', [x, y], { name: '', size: size, strokeColor: color, fillColor: color, fixed: true, highlight: false, showInfobox: false,
+            visible: function () { return t >= tAt; } });
+        track.create('text', [x + dx, y, label], { useKatex: true, fontSize: 13, color: '#444444', anchorX: anchor, anchorY: 'middle', fixed: true, highlight: false,
+            visible: function () { return t >= tAt; } });
+    }
+    marker(S(0), LANE[0], 0, 't = 0', -0.12, 'right', 3, UP);
+    marker(S(1) + RX, (LANE[0] + LANE[1]) / 2, 1, 't = 1', 0.1, 'left', 3, NEUTRAL);
+    marker(S(3) - RX, (LANE[1] + LANE[2]) / 2, 3, 't = 3', -0.1, 'right', 3, NEUTRAL);
+    marker(S(4), LANE[2], T_MAX, 't = 4', 0, 'middle', 4, '#222222');
+    // put the t = 4 label above its dot (overrides the side placement)
+    track.objectsList[track.objectsList.length - 1].setPosition(JXG.COORDS_BY_USER, [S(4), LANE[2] + 0.22]);
+
+    // initial / final position (shown once the particle has reached t = 4)
+    track.create('point', [S(0), 0], { name: '', size: 6, strokeColor: PARTICLE, strokeWidth: 2.5, fillColor: '#ffffff', fixed: true, highlight: false, showInfobox: false,
+        visible: function () { return t >= T_MAX; } });
+    track.create('text', [S(0), -0.52, 'initial position'], { fontSize: 13, color: PARTICLE, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false,
+        visible: function () { return t >= T_MAX; } });
+    track.create('text', [S(4), -0.52, 'final position'], { fontSize: 13, color: PARTICLE, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false,
+        visible: function () { return t >= T_MAX; } });
+
+    // the particle on the x-axis, linked to the head of the path
+    track.create('segment', [[function () { return S(t); }, 0], [function () { return S(t); }, function () { return LANE[laneIdx(t)]; }]], {
+        strokeColor: '#9CA3AF', strokeWidth: 1, dash: 2, fixed: true, highlight: false });
+    track.create('point', [function () { return S(t); }, 0], {
+        name: '', size: 7, strokeColor: '#ffffff', strokeWidth: 2.5, fillColor: PARTICLE, fixed: true, highlight: false, showInfobox: false });
+
+    // ── controls ──
+    var slider = document.getElementById('t-slider'), playBtn = document.getElementById('play-btn'), elT = document.getElementById('rt');
+    function render() { elT.textContent = t.toFixed(2); slider.value = t; graph.update(); track.update(); }
+    function setPlaying(p) { playing = p; playBtn.innerHTML = p ? '&#10074;&#10074; Pause' : '&#9654; Play'; if (p) { last = null; window.requestAnimationFrame(step); } }
+    function step(ts) {
+        if (!playing) return;
+        if (last !== null) { t = Math.min(T_MAX, t + RATE * (ts - last) / 1000); render(); if (t >= T_MAX) { setPlaying(false); return; } }
+        last = ts; window.requestAnimationFrame(step);
+    }
+    playBtn.addEventListener('click', function () { if (!playing && t >= T_MAX) t = 0; setPlaying(!playing); });
+    document.getElementById('reset-btn').addEventListener('click', function () { setPlaying(false); t = 0; render(); });
+    slider.addEventListener('input', function () { setPlaying(false); t = parseFloat(slider.value); render(); });
+    render();
+</script>
+</body>
+</html>
