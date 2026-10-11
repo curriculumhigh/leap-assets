@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Path of the particle during the first four seconds</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px 10px; height: calc(100% - 12px); }
+        #track { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+<div class="container"><div class="board-wrapper"><div id="track"></div></div></div>
+<script>
+    // Static final frame (t = 4) of the step-2 motion sim, plus initial / final position labels.
+    function S(t) { return t * t * t - 6 * t * t + 9 * t; }
+    var UP = '#059669', DOWN = '#DC2626', PARTICLE = '#2563EB', NEUTRAL = '#6B7280';
+    var track = JXG.JSXGraph.initBoard('track', {
+        boundingbox: [-0.75, 1.55, 5.15, -0.85], axis: false,
+        showNavigation: false, showCopyright: false, pan: { enabled: false }, zoom: { enabled: false }
+    });
+    track.create('axis', [[0, 0], [1, 0]], { strokeColor: '#444444', strokeWidth: 1.2, lastArrow: { type: 2, size: 6 }, withLabel: false, fixed: true, highlight: false,
+        ticks: { strokeColor: '#444444', ticksDistance: 1, minorTicks: 1, majorHeight: 8, minorHeight: 4, drawZero: true, insertTicks: false, label: { fontSize: 11, offset: [-3, -17] } } });
+    track.create('text', [4.98, 0.2, 'x'], { useKatex: true, fontSize: 15, fixed: true, highlight: false });
+
+    var LANE = [0.36, 0.76, 1.16], RX = 0.11, RY = 0.2;
+    function leg(a, b, ln, color) {
+        var xs = [], ys = [], N = 60;
+        for (var k = 0; k <= N; k++) { xs.push(S(a + (b - a) * k / N)); ys.push(LANE[ln]); }
+        track.create('curve', [xs, ys], { strokeColor: color, strokeWidth: 2.4, fixed: true, highlight: false });
+    }
+    function uturn(xc, yc, side) {
+        var xs = [], ys = [];
+        for (var k = 0; k <= 16; k++) { var a = -Math.PI / 2 + Math.PI * k / 16; xs.push(xc + side * RX * Math.cos(a)); ys.push(yc + RY * Math.sin(a)); }
+        track.create('curve', [xs, ys], { strokeColor: NEUTRAL, strokeWidth: 2, fixed: true, highlight: false });
+    }
+    leg(0, 1, 0, UP); leg(1, 3, 1, DOWN); leg(3, 4, 2, UP);
+    uturn(S(1), (LANE[0] + LANE[1]) / 2, 1);
+    uturn(S(3), (LANE[1] + LANE[2]) / 2, -1);
+    [[1.2, 0, 1, UP], [2.9, 0, 1, UP], [2.9, 1, -1, DOWN], [1.2, 1, -1, DOWN], [1.2, 2, 1, UP], [2.9, 2, 1, UP]].forEach(function (h) {
+        track.create('arrow', [[h[0] - h[2] * 0.09, LANE[h[1]]], [h[0] + h[2] * 0.09, LANE[h[1]]]], {
+            strokeColor: h[3], strokeWidth: 2.4, lastArrow: { type: 2, size: 5 }, fixed: true, highlight: false });
+    });
+    track.create('arrow', [[S(4) + 0.08, LANE[2]], [S(4) + 0.6, LANE[2]]], {
+        strokeColor: UP, strokeWidth: 2.4, dash: 2, lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false });
+
+    function marker(x, y, label, lx, ly, anchor, size, color) {
+        track.create('point', [x, y], { name: '', size: size, strokeColor: color, fillColor: color, fixed: true, highlight: false, showInfobox: false });
+        track.create('text', [lx, ly, label], { useKatex: true, fontSize: 13, color: '#444444', anchorX: anchor, anchorY: 'middle', fixed: true, highlight: false });
+    }
+    marker(S(0), LANE[0], 't = 0', S(0) - 0.12, LANE[0], 'right', 3, UP);
+    marker(S(1) + RX, (LANE[0] + LANE[1]) / 2, 't = 1', S(1) + RX + 0.1, (LANE[0] + LANE[1]) / 2, 'left', 3, NEUTRAL);
+    marker(S(3) - RX, (LANE[1] + LANE[2]) / 2, 't = 3', S(3) - RX - 0.1, (LANE[1] + LANE[2]) / 2, 'right', 3, NEUTRAL);
+    marker(S(4), LANE[2], 't = 4', S(4), LANE[2] + 0.22, 'middle', 4, '#222222');
+
+    // initial and final positions on the x-axis
+    track.create('segment', [[S(4), 0], [S(4), LANE[2]]], { strokeColor: '#9CA3AF', strokeWidth: 1, dash: 2, fixed: true, highlight: false });
+    track.create('point', [S(0), 0], { name: '', size: 6, strokeColor: PARTICLE, strokeWidth: 2.5, fillColor: '#ffffff', fixed: true, highlight: false, showInfobox: false });
+    track.create('point', [S(4), 0], { name: '', size: 7, strokeColor: '#ffffff', strokeWidth: 2.5, fillColor: PARTICLE, fixed: true, highlight: false, showInfobox: false });
+    track.create('text', [S(0), -0.52, 'initial position'], { fontSize: 13, color: PARTICLE, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+    track.create('text', [S(4), -0.52, 'final position'], { fontSize: 13, color: PARTICLE, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+</script>
+</body>
+</html>
