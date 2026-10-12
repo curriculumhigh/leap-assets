@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle ABC — SSS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        // Side lengths
+        var a = 11; // opposite A (base BC)
+        var b = 15; // opposite B (side AC)
+        var c = 13; // opposite C (side AB)
+
+        // Place B at origin, C along x-axis at distance a
+        // B = (0, 0), C = (a, 0) = (11, 0)
+        // Find A using distances: AB = c = 13, AC = b = 15
+        // A.x: from B: x^2 + y^2 = c^2 = 169
+        //       from C: (x - a)^2 + y^2 = b^2 = 225
+        // Subtract: (x - a)^2 - x^2 = 225 - 169 = 56
+        //           -2ax + a^2 = 56
+        //           x = (a^2 - 56) / (2a)
+        var Ax = (a * a - 56) / (2 * a); // (121 - 56) / 22 = 65/22 ≈ 2.9545
+        var Ay = Math.sqrt(c * c - Ax * Ax);  // sqrt(169 - 8.73) ≈ sqrt(160.27) ≈ 12.66
+
+        // Bounding box with margin for labels
+        var margin = 2.2;
+        var xMin = Math.min(0, Ax) - margin;
+        var xMax = Math.max(a, Ax) + margin;
+        var yMin = -margin;
+        var yMax = Ay + margin;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [xMin, yMax, xMax, yMin],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertices
+        var ptB = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+        var ptC = board.create('point', [a, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+        var ptA = board.create('point', [Ax, Ay], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+
+        // Triangle (no fill)
+        board.create('polygon', [ptB, ptC, ptA], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Vertex labels ───────────────────────────────────────────────
+        // A — above the top vertex
+        board.create('text', [Ax, Ay + 0.9, 'A'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+
+        // B — below-left of bottom-left vertex
+        board.create('text', [-0.5, -0.5, 'B'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'right', anchorY: 'top',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+
+        // C — below-right of bottom-right vertex
+        board.create('text', [a + 0.5, -0.5, 'C'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'left', anchorY: 'top',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+
+        // ── Side labels (outside the triangle) ──────────────────────────
+
+        // Side a = 11 (BC, the base — label below midpoint)
+        var midBC_x = a / 2;
+        var midBC_y = 0;
+        board.create('text', [midBC_x, midBC_y - 1.0, 'a = 11'], {
+            useKatex: true, fontSize: 13, color: '#555555',
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // Side c = 13 (AB, left side — label to the left of midpoint)
+        var midAB_x = Ax / 2;
+        var midAB_y = Ay / 2;
+        // Normal direction pointing outward (left of AB)
+        var abDx = Ax - 0;
+        var abDy = Ay - 0;
+        var abLen = Math.sqrt(abDx * abDx + abDy * abDy);
+        var abNx = -abDy / abLen; // outward normal (left side)
+        var abNy = abDx / abLen;
+        board.create('text', [midAB_x + abNx * 1.1, midAB_y + abNy * 1.1, 'c = 13'], {
+            useKatex: true, fontSize: 13, color: '#555555',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Side b = 15 (AC, right side — label to the right of midpoint)
+        var midAC_x = (Ax + a) / 2;
+        var midAC_y = Ay / 2;
+        // Normal direction pointing outward (right of AC)
+        var acDx = a - Ax;
+        var acDy = 0 - Ay;
+        var acLen = Math.sqrt(acDx * acDx + acDy * acDy);
+        var acNx = -acDy / acLen; // outward normal (right side)
+        var acNy = acDx / acLen;
+        board.create('text', [midAC_x + acNx * 1.1, midAC_y + acNy * 1.1, 'b = 15'], {
+            useKatex: true, fontSize: 13, color: '#555555',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
