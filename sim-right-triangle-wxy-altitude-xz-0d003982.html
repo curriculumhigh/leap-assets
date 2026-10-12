@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle WXY with Altitude XZ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 7.5, 9.5, -1.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Triangle vertices ───────────────────────────────────────────
+        var Xpt = board.create('point', [1, 1], {
+            name: 'X', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, -12] }
+        });
+        var Wpt = board.create('point', [1, 6], {
+            name: 'W', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, 6] }
+        });
+        var Ypt = board.create('point', [8, 1], {
+            name: 'Y', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, -12] }
+        });
+
+        // ── Triangle edges ──────────────────────────────────────────────
+        board.create('segment', [Wpt, Xpt], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [Xpt, Ypt], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [Wpt, Ypt], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Polygon (no fill, for structure) ────────────────────────────
+        board.create('polygon', [Wpt, Xpt, Ypt], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── Compute Z: foot of altitude from X to hypotenuse WY ────────
+        var Wx = 1, Wy = 6, Yx = 8, Yy = 1, Xx = 1, Xy = 1;
+        var dx = Yx - Wx, dy = Yy - Wy;
+        var t = ((Xx - Wx) * dx + (Xy - Wy) * dy) / (dx * dx + dy * dy);
+        var Zx = Wx + t * dx;
+        var Zy = Wy + t * dy;
+
+        var Zpt = board.create('point', [Zx, Zy], {
+            name: 'Z', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [4, 10] }
+        });
+
+        // ── Altitude XZ ────────────────────────────────────────────────
+        board.create('segment', [Xpt, Zpt], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker helper ───────────────────────────────────
+        function drawRightAngleMarker(vertex, p1, p2, size) {
+            var vx = vertex.X(), vy = vertex.Y();
+            var d1x = p1.X() - vx, d1y = p1.Y() - vy;
+            var len1 = Math.sqrt(d1x * d1x + d1y * d1y);
+            d1x /= len1; d1y /= len1;
+
+            var d2x = p2.X() - vx, d2y = p2.Y() - vy;
+            var len2 = Math.sqrt(d2x * d2x + d2y * d2y);
+            d2x /= len2; d2y /= len2;
+
+            var a = [vx + size * d1x, vy + size * d1y];
+            var b = [vx + size * d1x + size * d2x, vy + size * d1y + size * d2y];
+            var c = [vx + size * d2x, vy + size * d2y];
+
+            var pA = board.create('point', a, { visible: false, fixed: true, name: '' });
+            var pB = board.create('point', b, { visible: false, fixed: true, name: '' });
+            var pC = board.create('point', c, { visible: false, fixed: true, name: '' });
+
+            board.create('segment', [pA, pB], {
+                strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            board.create('segment', [pB, pC], {
+                strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+            });
+        }
+
+        // Right angle at X (between WX and XY)
+        drawRightAngleMarker(Xpt, Wpt, Ypt, 0.45);
+
+        // Right angle at Z (between XZ and ZW)
+        drawRightAngleMarker(Zpt, Xpt, Wpt, 0.45);
+
+    </script>
+</body>
+</html>
