@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kayaker Off Course Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var scale = 10 / 320;
+        var dockX = 0, dockY = 0;
+        var islandX = 10, islandY = 0;
+        var paddleDist = 180 * scale;
+        var driftAngle = 12 * Math.PI / 180;
+        var kayakX = dockX + paddleDist * Math.cos(driftAngle);
+        var kayakY = dockY + paddleDist * Math.sin(driftAngle);
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.8, 3.2, 12, -1.8],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        board.create('segment', [[dockX, dockY], [islandX, islandY]], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[dockX, dockY], [kayakX, kayakY]], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[kayakX, kayakY], [islandX, islandY]], {
+            strokeColor: '#555555', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('point', [dockX, dockY], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('point', [kayakX, kayakY], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('point', [islandX, islandY], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+
+        var pIsland = board.create('point', [islandX, islandY], { visible: false, name: '' });
+        var pDock = board.create('point', [dockX, dockY], { visible: false, name: '' });
+        var pKayak = board.create('point', [kayakX, kayakY], { visible: false, name: '' });
+
+        board.create('nonReflexAngle', [pIsland, pDock, pKayak], {
+            radius: 1.4,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false,
+            highlight: false
+        });
+
+        var bisectorAngle = driftAngle / 2;
+        var angleLabelR = 1.85;
+        board.create('text', [
+            dockX + angleLabelR * Math.cos(bisectorAngle),
+            dockY + angleLabelR * Math.sin(bisectorAngle),
+            '12^\\circ'
+        ], {
+            useKatex: true, fontSize: 13, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var midPaddleX = (dockX + kayakX) / 2;
+        var midPaddleY = (dockY + kayakY) / 2;
+        var perpAngle1 = driftAngle + Math.PI / 2;
+        var offset1 = 0.45;
+        board.create('text', [
+            midPaddleX + offset1 * Math.cos(perpAngle1),
+            midPaddleY + offset1 * Math.sin(perpAngle1),
+            '180\\text{ m}'
+        ], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [
+            (dockX + islandX) / 2,
+            dockY - 0.55,
+            '320\\text{ m}'
+        ], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var midUnknownX = (kayakX + islandX) / 2;
+        var midUnknownY = (kayakY + islandY) / 2;
+        var unknownAngle = Math.atan2(islandY - kayakY, islandX - kayakX);
+        var perpAngle2 = unknownAngle + Math.PI / 2;
+        var offset2 = 0.45;
+        board.create('text', [
+            midUnknownX + offset2 * Math.cos(perpAngle2),
+            midUnknownY + offset2 * Math.sin(perpAngle2),
+            '?'
+        ], {
+            useKatex: true, fontSize: 15, color: '#555555',
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [dockX - 0.15, dockY - 0.55, '\\textbf{Dock}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [islandX + 0.15, islandY - 0.55, '\\textbf{Island}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [kayakX, kayakY + 0.5, '\\textbf{Kayaker}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
