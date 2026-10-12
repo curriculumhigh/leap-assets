@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle ABC — Area Problem</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var S = 0.45;
+        var angB = 52 * Math.PI / 180;
+
+        var Bx = 1.5, By = 1.5;
+        var Cx = Bx + 11 * S, Cy = By;
+        var Ax = Bx + 19 * S * Math.cos(angB);
+        var Ay = By + 19 * S * Math.sin(angB);
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 10.5, 9.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var ptB = board.create('point', [Bx, By], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+        var ptC = board.create('point', [Cx, Cy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+        var ptA = board.create('point', [Ax, Ay], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+
+        board.create('polygon', [ptB, ptC, ptA], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('text', [Bx - 0.55, By - 0.55, 'B'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:bold; font-style:italic;'
+        });
+        board.create('text', [Cx + 0.45, Cy - 0.55, 'C'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:bold; font-style:italic;'
+        });
+        board.create('text', [Ax + 0.35, Ay + 0.45, 'A'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:bold; font-style:italic;'
+        });
+
+        var midABx = (Ax + Bx) / 2;
+        var midABy = (Ay + By) / 2;
+        var dxAB = Ax - Bx;
+        var dyAB = Ay - By;
+        var lenAB = Math.sqrt(dxAB * dxAB + dyAB * dyAB);
+        var nxAB = -dyAB / lenAB;
+        var nyAB = dxAB / lenAB;
+        board.create('text', [midABx + nxAB * 0.55, midABy + nyAB * 0.55, '19'], {
+            fontSize: 14, color: '#555555', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:600;'
+        });
+
+        var midBCx = (Bx + Cx) / 2;
+        var midBCy = (By + Cy) / 2;
+        board.create('text', [midBCx, midBCy - 0.55, '11'], {
+            fontSize: 14, color: '#555555', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:600;'
+        });
+
+        board.create('nonReflexAngle', [ptC, ptB, ptA], {
+            radius: 1.0,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, highlight: false,
+            name: '', withLabel: false
+        });
+
+        var bisectorAng = angB / 2;
+        var labelR = 1.55;
+        var angLabelX = Bx + labelR * Math.cos(bisectorAng);
+        var angLabelY = By + labelR * Math.sin(bisectorAng);
+        board.create('text', [angLabelX, angLabelY, '52^{\\circ}'], {
+            fontSize: 13, color: '#DC2626', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            useKatex: true
+        });
+    </script>
+</body>
+</html>
