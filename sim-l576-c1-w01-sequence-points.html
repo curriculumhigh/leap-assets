@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sequence Plot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.6, 4.2, 13.5, -0.35],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        majorHeight: 8,
+                        minorHeight: 0,
+                        drawZero: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        majorHeight: 8,
+                        minorHeight: 0,
+                        drawZero: false
+                    }
+                }
+            }
+        });
+
+        // Axis labels — KaTeX, positioned to clear tick labels
+        board.create('text', [13.1, -0.18, 'n'], {
+            useKatex: true, fontSize: 14, fixed: true, highlight: false
+        });
+        board.create('text', [0.35, 3.95, 'a_n'], {
+            useKatex: true, fontSize: 14, fixed: true, highlight: false
+        });
+
+        // Horizontal dashed line at y = 3 (asymptote — no label)
+        board.create('line', [[0, 3], [1, 3]], {
+            strokeColor: '#0EA5E9',
+            strokeWidth: 1.0,
+            dash: 2,
+            fixed: true,
+            highlight: false,
+            straightFirst: true,
+            straightLast: true
+        });
+
+        // Sequence points: a_n = (3n + 2) / (n + 4) for n = 1, 2, ..., 12
+        var n, an;
+        for (n = 1; n <= 12; n++) {
+            an = (3 * n + 2) / (n + 4);
+            board.create('point', [n, an], {
+                name: '',
+                size: 5,
+                color: '#222222',
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
