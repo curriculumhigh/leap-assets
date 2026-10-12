@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardboard Square Sighting — Flagpole</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 14, 15, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Constants ───────────────────────────────────────────────────
+        var GROUND_Y = 0;
+        var PERSON_X = 2;
+        var POLE_X = 10;
+        var EYE_HEIGHT = 4.5;
+        var POLE_HEIGHT = 10.5;
+        var HORIZ_DIST = POLE_X - PERSON_X;
+
+        var COL_DARK = '#222222';
+        var COL_GRAY = '#555555';
+        var COL_CONSTRUCT = '#0EA5E9';
+        var COL_REF = '#DC2626';
+        var COL_DIM = '#444444';
+
+        // ── Ground line ─────────────────────────────────────────────────
+        board.create('segment', [[-2, GROUND_Y], [14, GROUND_Y]], {
+            strokeColor: COL_GRAY, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Flagpole ────────────────────────────────────────────────────
+        board.create('segment', [[POLE_X, GROUND_Y], [POLE_X, POLE_HEIGHT]], {
+            strokeColor: COL_DARK, strokeWidth: 2.5, fixed: true, highlight: false
+        });
+        // Small flag at top
+        board.create('polygon', [
+            [POLE_X, POLE_HEIGHT],
+            [POLE_X + 1.4, POLE_HEIGHT - 0.5],
+            [POLE_X, POLE_HEIGHT - 1.0]
+        ], {
+            fillColor: COL_REF, fillOpacity: 0.5,
+            borders: { strokeColor: COL_REF, strokeWidth: 1.2 },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+        // Flagpole base tick
+        board.create('segment', [[POLE_X - 0.3, GROUND_Y], [POLE_X + 0.3, GROUND_Y]], {
+            strokeColor: COL_DARK, strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // ── Person (stick figure) ───────────────────────────────────────
+        var headR = 0.4;
+        var bodyTop = EYE_HEIGHT - 0.1;
+        var bodyBot = 1.2;
+        var shoulderY = bodyTop - 0.6;
+
+        // Head
+        board.create('circle', [[PERSON_X, bodyTop + headR], headR], {
+            strokeColor: COL_DARK, strokeWidth: 1.8, fillColor: 'none',
+            fixed: true, highlight: false
+        });
+        // Body
+        board.create('segment', [[PERSON_X, bodyTop], [PERSON_X, bodyBot]], {
+            strokeColor: COL_DARK, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        // Left leg
+        board.create('segment', [[PERSON_X, bodyBot], [PERSON_X - 0.7, GROUND_Y]], {
+            strokeColor: COL_DARK, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        // Right leg
+        board.create('segment', [[PERSON_X, bodyBot], [PERSON_X + 0.7, GROUND_Y]], {
+            strokeColor: COL_DARK, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        // Left arm (down)
+        board.create('segment', [[PERSON_X, shoulderY], [PERSON_X - 0.8, shoulderY - 1.2]], {
+            strokeColor: COL_DARK, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        // Right arm (holding square up near eye)
+        var squareCenterX = PERSON_X + 1.2;
+        var squareCenterY = EYE_HEIGHT;
+        board.create('segment', [[PERSON_X, shoulderY], [squareCenterX - 0.1, squareCenterY - 0.3]], {
+            strokeColor: COL_DARK, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Eye point
+        var eyeX = PERSON_X + 0.45;
+        var eyeY = EYE_HEIGHT;
+        board.create('point', [eyeX, eyeY], {
+            name: '', size: 2, color: COL_DARK, fixed: true, highlight: false
+        });
+
+        // ── Cardboard square ────────────────────────────────────────────
+        var sqSize = 0.7;
+        var sqX = eyeX + 0.5;
+        var sqY = eyeY;
+
+        // Square corners
+        var sqPts = [
+            [sqX, sqY + sqSize / 2],
+            [sqX + sqSize, sqY + sqSize / 2],
+            [sqX + sqSize, sqY - sqSize / 2],
+            [sqX, sqY - sqSize / 2]
+        ];
+
+        board.create('polygon', [sqPts[0], sqPts[1], sqPts[2], sqPts[3]], {
+            fillColor: '#FEF3C7', fillOpacity: 0.6,
+            borders: { strokeColor: COL_DARK, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        // Right angle marker inside the square (at top-right corner)
+        var raSize = 0.2;
+        board.create('polygon', [
+            [sqPts[1][0] - raSize, sqPts[1][1]],
+            [sqPts[1][0] - raSize, sqPts[1][1] - raSize],
+            [sqPts[1][0], sqPts[1][1] - raSize]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_REF, strokeWidth: 1.2 },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        // ── Sight lines (dashed cyan) ───────────────────────────────────
+        board.create('segment', [[eyeX, eyeY], [POLE_X, POLE_HEIGHT]], {
+            strokeColor: COL_CONSTRUCT, strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        board.create('segment', [[eyeX, eyeY], [POLE_X, GROUND_Y]], {
+            strokeColor: COL_CONSTRUCT, strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── Horizontal dashed line from eye to flagpole (at eye height) ─
+        board.create('segment', [[eyeX, eyeY], [POLE_X, eyeY]], {
+            strokeColor: COL_DIM, strokeWidth: 0.8, dash: 3,
+            fixed: true, highlight: false
+        });
+
+        // ── Dimension: Eye height (4.5 ft) ─────────────────────────────
+        var dimX = PERSON_X - 1.8;
+        board.create('segment', [[dimX, GROUND_Y], [dimX, EYE_HEIGHT]], {
+            strokeColor: COL_DIM, strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 }, lastArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[dimX - 0.2, GROUND_Y], [dimX + 0.2, GROUND_Y]], {
+            strokeColor: COL_DIM, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[dimX - 0.2, EYE_HEIGHT], [dimX + 0.2, EYE_HEIGHT]], {
+            strokeColor: COL_DIM, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [dimX - 0.2, EYE_HEIGHT / 2, '4.5 \\text{ ft}'], {
+            useKatex: true, fontSize: 13, color: COL_DIM, anchorX: 'right', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Dimension: Horizontal distance (6 ft) ──────────────────────
+        var dimY = -1.3;
+        board.create('segment', [[PERSON_X, dimY], [POLE_X, dimY]], {
+            strokeColor: COL_DIM, strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 }, lastArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[PERSON_X, dimY - 0.2], [PERSON_X, dimY + 0.2]], {
+            strokeColor: COL_DIM, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[POLE_X, dimY - 0.2], [POLE_X, dimY + 0.2]], {
+            strokeColor: COL_DIM, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [(PERSON_X + POLE_X) / 2, dimY - 0.6, '6 \\text{ ft}'], {
+            useKatex: true, fontSize: 13, color: COL_DIM, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Right angle marker at flagpole base ─────────────────────────
+        var raFP = 0.5;
+        board.create('polygon', [
+            [POLE_X - raFP, GROUND_Y],
+            [POLE_X - raFP, GROUND_Y + raFP],
+            [POLE_X, GROUND_Y + raFP]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_REF, strokeWidth: 1.2 },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        // ── Key points (small, structural) ──────────────────────────────
+        board.create('point', [POLE_X, POLE_HEIGHT], {
+            name: '', size: 2, color: COL_DARK, fixed: true, highlight: false
+        });
+        board.create('point', [POLE_X, GROUND_Y], {
+            name: '', size: 2, color: COL_DARK, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
