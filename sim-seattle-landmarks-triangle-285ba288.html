@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seattle Landmarks Triangle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 8.5, 12.5, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Triangle vertices ───────────────────────────────────────────
+        var S = board.create('point', [1.5, 7], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        var W = board.create('point', [10, 5.5], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        var M = board.create('point', [2.5, 1], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // ── Triangle sides ──────────────────────────────────────────────
+        board.create('segment', [S, W], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        board.create('segment', [W, M], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        board.create('segment', [S, M], {
+            strokeColor: '#DC2626', strokeWidth: 2.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Angle arc at S (135°) ───────────────────────────────────────
+        board.create('nonReflexAngle', [W, S, M], {
+            radius: 1.0,
+            fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // ── Angle label — compute bisector pointing INTO the triangle ───
+        var angSW = Math.atan2(W.Y() - S.Y(), W.X() - S.X());
+        var angSM = Math.atan2(M.Y() - S.Y(), M.X() - S.X());
+
+        var sweep = angSM - angSW;
+        while (sweep < 0) sweep += 2 * Math.PI;
+        while (sweep > 2 * Math.PI) sweep -= 2 * Math.PI;
+
+        var bisectorAngle;
+        if (sweep <= Math.PI) {
+            bisectorAngle = angSW + sweep / 2;
+        } else {
+            bisectorAngle = angSW - (2 * Math.PI - sweep) / 2;
+        }
+
+        var labelDist = 1.8;
+        var angLabelX = S.X() + labelDist * Math.cos(bisectorAngle);
+        var angLabelY = S.Y() + labelDist * Math.sin(bisectorAngle);
+
+        board.create('text', [angLabelX, angLabelY, '135^\\circ'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Side labels ─────────────────────────────────────────────────
+        var swMidX = (S.X() + W.X()) / 2;
+        var swMidY = (S.Y() + W.Y()) / 2;
+        var swDx = W.X() - S.X();
+        var swDy = W.Y() - S.Y();
+        var swLen = Math.sqrt(swDx * swDx + swDy * swDy);
+        var swNx = -swDy / swLen;
+        var swNy = swDx / swLen;
+        var toM_x = M.X() - swMidX;
+        var toM_y = M.Y() - swMidY;
+        var dotSW = swNx * toM_x + swNy * toM_y;
+        if (dotSW > 0) { swNx = -swNx; swNy = -swNy; }
+
+        board.create('text', [swMidX + swNx * 0.55, swMidY + swNy * 0.55, '0.5\\text{ mi}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var wmMidX = (W.X() + M.X()) / 2;
+        var wmMidY = (W.Y() + M.Y()) / 2;
+        var wmDx = M.X() - W.X();
+        var wmDy = M.Y() - W.Y();
+        var wmLen = Math.sqrt(wmDx * wmDx + wmDy * wmDy);
+        var wmNx = -wmDy / wmLen;
+        var wmNy = wmDx / wmLen;
+        var toS_x = S.X() - wmMidX;
+        var toS_y = S.Y() - wmMidY;
+        var dotWM = wmNx * toS_x + wmNy * toS_y;
+        if (dotWM > 0) { wmNx = -wmNx; wmNy = -wmNy; }
+
+        board.create('text', [wmMidX + wmNx * 0.6, wmMidY + wmNy * 0.6, '4.8\\text{ mi}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var smMidX = (S.X() + M.X()) / 2;
+        var smMidY = (S.Y() + M.Y()) / 2;
+        var smDx = M.X() - S.X();
+        var smDy = M.Y() - S.Y();
+        var smLen = Math.sqrt(smDx * smDx + smDy * smDy);
+        var smNx = -smDy / smLen;
+        var smNy = smDx / smLen;
+        var toW_x = W.X() - smMidX;
+        var toW_y = W.Y() - smMidY;
+        var dotSM = smNx * toW_x + smNy * toW_y;
+        if (dotSM > 0) { smNx = -smNx; smNy = -smNy; }
+
+        board.create('text', [smMidX + smNx * 0.6, smMidY + smNy * 0.6, 'd'], {
+            useKatex: true, fontSize: 14, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+
+        // ── Vertex labels (landmark names) ──────────────────────────────
+        board.create('text', [S.X() - 0.2, S.Y() + 0.6, '\\textbf{Space Needle}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [W.X() + 0.2, W.Y() + 0.5, '\\textbf{Seattle Great Wheel}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [M.X(), M.Y() - 0.5, '\\textbf{Museum of Pop Culture}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // ── "Not drawn to scale" note ───────────────────────────────────
+        board.create('text', [10.5, -2.8, '\\small{\\text{Not drawn to scale}}'], {
+            useKatex: true, fontSize: 10, color: '#999999',
+            anchorX: 'right', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
