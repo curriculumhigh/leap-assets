@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kite EFGH</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-17, 14, 17, -21],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertices
+        var E = board.create('point', [0, 9], {
+            name: 'E', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-5, 12], fontWeight: 'bold' }
+        });
+        var F = board.create('point', [12, 0], {
+            name: 'F', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [10, -2], fontWeight: 'bold' }
+        });
+        var G = board.create('point', [0, -16], {
+            name: 'G', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-5, -18], fontWeight: 'bold' }
+        });
+        var H = board.create('point', [-12, 0], {
+            name: 'H', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-22, -2], fontWeight: 'bold' }
+        });
+        var M = board.create('point', [0, 0], {
+            name: 'M', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [6, -14], fontWeight: 'bold' }
+        });
+
+        // Kite outline (no fill)
+        board.create('polygon', [E, F, G, H], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Diagonals — dashed construction lines
+        board.create('segment', [E, G], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [F, H], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // Right angle marker at M
+        var raSize = 1.2;
+        board.create('polygon', [
+            [raSize, 0], [raSize, raSize], [0, raSize], [0, 0]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Measurement labels (blue, KaTeX)
+        // EF = 15 cm
+        var efMidX = (0 + 12) / 2;
+        var efMidY = (9 + 0) / 2;
+        board.create('text', [efMidX + 1.2, efMidY + 1.0, '15\\text{ cm}'], {
+            useKatex: true, fontSize: 13, color: '#3B82F6',
+            fixed: true, highlight: false, anchorX: 'left'
+        });
+
+        // GF = 20 cm
+        var gfMidX = (0 + 12) / 2;
+        var gfMidY = (-16 + 0) / 2;
+        board.create('text', [gfMidX + 1.2, gfMidY - 0.5, '20\\text{ cm}'], {
+            useKatex: true, fontSize: 13, color: '#3B82F6',
+            fixed: true, highlight: false, anchorX: 'left'
+        });
+
+        // EG = 25 cm
+        var egMidY = (9 + (-16)) / 2;
+        board.create('text', [-3.5, egMidY, '25\\text{ cm}'], {
+            useKatex: true, fontSize: 13, color: '#3B82F6',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+    </script>
+</body>
+</html>
