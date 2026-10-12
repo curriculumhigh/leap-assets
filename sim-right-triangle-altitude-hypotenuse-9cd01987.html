@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle with Altitude to Hypotenuse</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var h = Math.sqrt(15);
+        var Ax = 0, Ay = 0;
+        var Bx = 8, By = 0;
+        var Dx = 3, Dy = 0;
+        var Cx = 3, Cy = h;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, h + 1.8, 9.5, -1.8],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var A = board.create('point', [Ax, Ay], { name: '', visible: false, fixed: true });
+        var B = board.create('point', [Bx, By], { name: '', visible: false, fixed: true });
+        var C = board.create('point', [Cx, Cy], { name: '', visible: false, fixed: true });
+        var D = board.create('point', [Dx, Dy], { name: '', visible: false, fixed: true });
+
+        board.create('segment', [A, B], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [B, C], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [C, A], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+
+        board.create('segment', [C, D], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        board.create('nonReflexAngle', [A, C, B], {
+            radius: 0.38,
+            fillColor: 'none', fillOpacity: 0,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false,
+            orthoType: 'square', orthoSensitivity: 2
+        });
+
+        var rSq = 0.35;
+        var sqD1 = board.create('point', [Dx - rSq, Dy], { visible: false, fixed: true, name: '' });
+        var sqD2 = board.create('point', [Dx - rSq, Dy + rSq], { visible: false, fixed: true, name: '' });
+        var sqD3 = board.create('point', [Dx, Dy + rSq], { visible: false, fixed: true, name: '' });
+        board.create('segment', [sqD1, sqD2], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [sqD2, sqD3], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        board.create('text', [Ax - 0.5, Ay - 0.5, 'A'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [Bx + 0.3, By - 0.5, 'B'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [Cx + 0.3, Cy + 0.3, 'C'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [Dx + 0.25, Dy - 0.55, 'D'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false
+        });
+
+        board.create('text', [(Ax + Dx) / 2, -0.6, '(n+1)'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'top',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('text', [(Dx + Bx) / 2, -0.6, '5'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'top',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        var acMidX = (Ax + Cx) / 2;
+        var acMidY = (Ay + Cy) / 2;
+        board.create('text', [acMidX - 0.65, acMidY, '6'], {
+            fontSize: 15, color: '#222222', anchorX: 'right', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        var cdMidX = (Cx + Dx) / 2;
+        var cdMidY = (Cy + Dy) / 2;
+        board.create('text', [cdMidX + 0.45, cdMidY, 'm'], {
+            fontSize: 15, color: '#222222', anchorX: 'left', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('point', [Ax, Ay], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        board.create('point', [Bx, By], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        board.create('point', [Cx, Cy], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        board.create('point', [Dx, Dy], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+    </script>
+</body>
+</html>
