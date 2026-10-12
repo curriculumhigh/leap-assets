@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle EFG — Altitude to Hypotenuse</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 7.5, 10.5, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertex coordinates ──────────────────────────────────────────
+        var Ex = 0, Ey = 0;
+        var Gx = 9, Gy = 0;
+        var Fx = 3, Fy = 6;
+        var Hx = Fx, Hy = 0;
+
+        // ── Points ──────────────────────────────────────────────────────
+        var ptE = board.create('point', [Ex, Ey], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+        var ptG = board.create('point', [Gx, Gy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+        var ptF = board.create('point', [Fx, Fy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+        var ptH = board.create('point', [Hx, Hy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+
+        // ── Triangle edges ──────────────────────────────────────────────
+        board.create('segment', [ptE, ptF], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [ptF, ptG], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [ptE, ptG], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Altitude FH ────────────────────────────────────────────────
+        board.create('segment', [ptF, ptH], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Right angle marker at F ─────────────────────────────────────
+        var sqSize = 0.45;
+
+        var feLen = Math.sqrt((Ex - Fx) * (Ex - Fx) + (Ey - Fy) * (Ey - Fy));
+        var feDx = (Ex - Fx) / feLen, feDy = (Ey - Fy) / feLen;
+        var fgLen = Math.sqrt((Gx - Fx) * (Gx - Fx) + (Gy - Fy) * (Gy - Fy));
+        var fgDx = (Gx - Fx) / fgLen, fgDy = (Gy - Fy) / fgLen;
+
+        var raF1 = board.create('point', [Fx + sqSize * feDx, Fy + sqSize * feDy], { visible: false, fixed: true, name: '' });
+        var raF2 = board.create('point', [Fx + sqSize * feDx + sqSize * fgDx, Fy + sqSize * feDy + sqSize * fgDy], { visible: false, fixed: true, name: '' });
+        var raF3 = board.create('point', [Fx + sqSize * fgDx, Fy + sqSize * fgDy], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [raF1, raF2], { strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false });
+        board.create('segment', [raF2, raF3], { strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false });
+
+        // ── Right angle marker at H ─────────────────────────────────────
+        var hfDx = 0, hfDy = 1;
+        var hgDx = 1, hgDy = 0;
+
+        var raH1 = board.create('point', [Hx + sqSize * hfDx, Hy + sqSize * hfDy], { visible: false, fixed: true, name: '' });
+        var raH2 = board.create('point', [Hx + sqSize * hfDx + sqSize * hgDx, Hy + sqSize * hfDy + sqSize * hgDy], { visible: false, fixed: true, name: '' });
+        var raH3 = board.create('point', [Hx + sqSize * hgDx, Hy + sqSize * hgDy], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [raH1, raH2], { strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false });
+        board.create('segment', [raH2, raH3], { strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false });
+
+        // ── Vertex labels ───────────────────────────────────────────────
+        board.create('text', [Ex - 0.5, Ey - 0.5, 'E'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+        board.create('text', [Gx + 0.3, Gy - 0.5, 'G'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+        board.create('text', [Fx - 0.15, Fy + 0.5, 'F'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600', anchorX: 'middle'
+        });
+        board.create('text', [Hx, Hy - 0.6, 'H'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600', anchorX: 'middle'
+        });
+
+        // ── Segment labels (KaTeX italic variable names) ────────────────
+        var pMx = (Ex + Hx) / 2, pMy = (Ey + Hy) / 2 - 0.55;
+        board.create('text', [pMx, pMy, 'p'], {
+            fontSize: 14, color: '#222222', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var qMx = (Hx + Gx) / 2, qMy = (Hy + Gy) / 2 - 0.55;
+        board.create('text', [qMx, qMy, 'q'], {
+            fontSize: 14, color: '#222222', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var mMx = (Ex + Fx) / 2 - 0.55, mMy = (Ey + Fy) / 2 + 0.2;
+        board.create('text', [mMx, mMy, 'm'], {
+            fontSize: 14, color: '#222222', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var nMx = (Fx + Gx) / 2 + 0.55, nMy = (Fy + Gy) / 2 + 0.2;
+        board.create('text', [nMx, nMy, 'n'], {
+            fontSize: 14, color: '#222222', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var hMx = Hx + 0.45, hMy = (Fy + Hy) / 2;
+        board.create('text', [hMx, hMy, 'h'], {
+            fontSize: 14, color: '#0EA5E9', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
