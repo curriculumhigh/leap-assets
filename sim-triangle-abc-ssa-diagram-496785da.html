@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle ABC — SSA Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 7.5, 11.5, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var Bx = 1, By = 0.5;
+        var scale = 0.27;
+        var aLen = 31.36 * scale;
+        var cLen = 25 * scale;
+        var angleBrad = 35 * Math.PI / 180;
+
+        var Cx = Bx + aLen;
+        var Cy = By;
+
+        var Ax = Bx + cLen * Math.cos(angleBrad);
+        var Ay = By + cLen * Math.sin(angleBrad);
+
+        var ptB = board.create('point', [Bx, By], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false
+        });
+        var ptC = board.create('point', [Cx, Cy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false
+        });
+        var ptA = board.create('point', [Ax, Ay], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false
+        });
+
+        board.create('segment', [ptB, ptC], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [ptB, ptA], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [ptA, ptC], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        board.create('nonReflexAngle', [ptC, ptB, ptA], {
+            radius: 0.9,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false,
+            highlight: false
+        });
+
+        var bisectorAngle = angleBrad / 2;
+        var angleLabelR = 1.25;
+        var angleLabelX = Bx + angleLabelR * Math.cos(bisectorAngle);
+        var angleLabelY = By + angleLabelR * Math.sin(bisectorAngle);
+        board.create('text', [angleLabelX, angleLabelY, '35^\\circ'], {
+            useKatex: true, fontSize: 13, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [Ax - 0.1, Ay + 0.5, '\\textbf{A}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Bx - 0.5, By - 0.3, '\\textbf{B}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Cx + 0.5, Cy - 0.3, '\\textbf{C}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var COL_MEAS = '#3B82F6';
+
+        var midACx = (Ax + Cx) / 2;
+        var midACy = (Ay + Cy) / 2;
+        var dxAC = Cx - Ax;
+        var dyAC = Cy - Ay;
+        var lenAC = Math.sqrt(dxAC * dxAC + dyAC * dyAC);
+        var normACx = -dyAC / lenAC;
+        var normACy = dxAC / lenAC;
+        var offB = 0.55;
+        board.create('text', [midACx + normACx * offB, midACy + normACy * offB, 'b = 18'], {
+            useKatex: true, fontSize: 13, color: COL_MEAS,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var midABx = (Ax + Bx) / 2;
+        var midABy = (Ay + By) / 2;
+        var dxAB = Bx - Ax;
+        var dyAB = By - Ay;
+        var lenAB = Math.sqrt(dxAB * dxAB + dyAB * dyAB);
+        var normABx = -dyAB / lenAB;
+        var normABy = dxAB / lenAB;
+        var offC = -0.55;
+        board.create('text', [midABx + normABx * offC, midABy + normABy * offC, 'c = 25'], {
+            useKatex: true, fontSize: 13, color: COL_MEAS,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
