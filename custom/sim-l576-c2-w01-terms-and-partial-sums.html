@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partial Sums and Terms</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 2.65, 16.5, -0.35],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        majorHeight: 8,
+                        minorHeight: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        majorHeight: 8,
+                        minorHeight: 0,
+                        ticksDistance: 0.5
+                    }
+                }
+            }
+        });
+
+        // Axis label: n near right arrow tip, clear of tick labels
+        board.create('text', [16.0, -0.18, 'n'], {
+            fontSize: 14, fixed: true, highlight: false, useKatex: true
+        });
+
+        // Colors
+        var COL_SN = '#222222';
+        var COL_AN = '#2563EB';
+
+        // Data
+        var N_MAX = 15;
+
+        function S(n) {
+            return 7 * n / (3 * n + 4);
+        }
+
+        function a(n) {
+            if (n === 1) return 1;
+            return 28 / ((3 * n + 1) * (3 * n + 4));
+        }
+
+        // Plot a_n points (blue) — draw first so they sit behind S_n
+        var i;
+        for (i = 2; i <= N_MAX; i++) {
+            board.create('point', [i, a(i)], {
+                name: '', size: 5, color: COL_AN,
+                fixed: true, highlight: false, showInfobox: false
+            });
+        }
+
+        // At n = 1: blue ring behind the black point (both equal 1)
+        board.create('point', [1, 1], {
+            name: '', size: 7,
+            fillColor: '#ffffff', strokeColor: COL_AN, strokeWidth: 2,
+            fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Plot S_n points (black) — draw on top
+        for (i = 1; i <= N_MAX; i++) {
+            board.create('point', [i, S(i)], {
+                name: '', size: 5, color: COL_SN,
+                fixed: true, highlight: false, showInfobox: false
+            });
+        }
+
+        // Legend — placed in the clear band between the two series
+        // Legend background box (subtle)
+        board.create('polygon', [
+            board.create('point', [10.6, 1.65], { visible: false, fixed: true, name: '' }),
+            board.create('point', [15.4, 1.65], { visible: false, fixed: true, name: '' }),
+            board.create('point', [15.4, 1.15], { visible: false, fixed: true, name: '' }),
+            board.create('point', [10.6, 1.15], { visible: false, fixed: true, name: '' })
+        ], {
+            fillColor: '#ffffff', fillOpacity: 0.92,
+            borders: { strokeColor: '#d1d5db', strokeWidth: 0.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Legend dot for S_n
+        board.create('point', [11.1, 1.48], {
+            name: '', size: 4, color: COL_SN,
+            fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [11.5, 1.48, 'S_n'], {
+            fontSize: 13, color: COL_SN, useKatex: true,
+            fixed: true, highlight: false, anchorY: 'middle'
+        });
+
+        // Legend dot for a_n
+        board.create('point', [13.1, 1.48], {
+            name: '', size: 4, color: COL_AN,
+            fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [13.5, 1.48, 'a_n'], {
+            fontSize: 13, color: COL_AN, useKatex: true,
+            fixed: true, highlight: false, anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
