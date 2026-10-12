@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle with Altitude to Hypotenuse</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 10, 18, -3],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle vertices
+        // Hypotenuse along the bottom: A (left) to B (right), length 15
+        // Altitude foot D divides hypotenuse: AD = 9, DB = 6
+        // CD = sqrt(AD * DB) = sqrt(54)
+
+        var ax = 1, ay = 1;
+        var bx = 16, by = 1;
+        var dx = 10, dy = 1;
+        var cd = Math.sqrt(9 * 6);
+        var cx = 10, cy = 1 + cd;
+
+        // Points (all hidden)
+        var A = board.create('point', [ax, ay], { name: '', visible: false, fixed: true });
+        var B = board.create('point', [bx, by], { name: '', visible: false, fixed: true });
+        var C = board.create('point', [cx, cy], { name: '', visible: false, fixed: true });
+        var D = board.create('point', [dx, dy], { name: '', visible: false, fixed: true });
+
+        // Triangle sides
+        board.create('segment', [A, B], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [A, C], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [B, C], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // Altitude CD
+        board.create('segment', [C, D], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Right-angle marker at C
+        var RM = 0.55;
+
+        var caLen = Math.sqrt((ax - cx) * (ax - cx) + (ay - cy) * (ay - cy));
+        var caUx = (ax - cx) / caLen;
+        var caUy = (ay - cy) / caLen;
+
+        var cbLen = Math.sqrt((bx - cx) * (bx - cx) + (by - cy) * (by - cy));
+        var cbUx = (bx - cx) / cbLen;
+        var cbUy = (by - cy) / cbLen;
+
+        var raC1 = board.create('point', [cx + RM * caUx, cy + RM * caUy], { visible: false, fixed: true, name: '' });
+        var raC2 = board.create('point', [cx + RM * (caUx + cbUx), cy + RM * (caUy + cbUy)], { visible: false, fixed: true, name: '' });
+        var raC3 = board.create('point', [cx + RM * cbUx, cy + RM * cbUy], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [raC1, raC2], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [raC2, raC3], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Right-angle marker at D
+        var RM2 = 0.55;
+        var dcUx = 0, dcUy = 1;
+        var dbUx = 1, dbUy = 0;
+
+        var raD1 = board.create('point', [dx + RM2 * dcUx, dy + RM2 * dcUy], { visible: false, fixed: true, name: '' });
+        var raD2 = board.create('point', [dx + RM2 * (dcUx + dbUx), dy + RM2 * (dcUy + dbUy)], { visible: false, fixed: true, name: '' });
+        var raD3 = board.create('point', [dx + RM2 * dbUx, dy + RM2 * dbUy], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [raD1, raD2], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [raD2, raD3], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Small dots at vertices
+        board.create('point', [ax, ay], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        board.create('point', [bx, by], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        board.create('point', [cx, cy], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        board.create('point', [dx, dy], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+
+        // Length labels
+        board.create('text', [(ax + dx) / 2, ay - 0.9, '9'], {
+            fontSize: 15, color: '#3B82F6', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+
+        board.create('text', [(dx + bx) / 2, by - 0.9, '6'], {
+            fontSize: 15, color: '#3B82F6', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+
+        // "y" label on leg AC
+        var acMidX = (ax + cx) / 2;
+        var acMidY = (ay + cy) / 2;
+        var acPerpX = -caUy;
+        var acPerpY = caUx;
+        board.create('text', [acMidX + 0.8 * acPerpX, acMidY + 0.8 * acPerpY, 'y'], {
+            fontSize: 16, color: '#3B82F6', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+
+    </script>
+</body>
+</html>
