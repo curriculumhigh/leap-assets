@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alternating Harmonic Series Partial Sums</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.4, 1.15, 13.5, -0.12],
+            axis: true,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        majorHeight: 8,
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false,
+                        drawLabels: false,
+                        drawZero: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        majorHeight: 8,
+                        minorTicks: 0,
+                        ticksDistance: 0.2,
+                        insertTicks: false,
+                        label: { fontSize: 11, offset: [-22, 0] },
+                        drawZero: false
+                    }
+                }
+            }
+        });
+
+        // Manual x-axis tick labels for 1 through 12 only
+        var i;
+        for (i = 1; i <= 12; i++) {
+            board.create('text', [i, -0.035, String(i)], {
+                fontSize: 11,
+                anchorX: 'middle',
+                anchorY: 'top',
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // Axis labels
+        board.create('text', [13.0, -0.06, 'n'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+        board.create('text', [0.25, 1.10, 'S_n'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+
+        // Partial sums data
+        var S = [
+            null,   // index 0 unused
+            1.0,          // S_1
+            0.5,          // S_2
+            5/6,          // S_3
+            7/12,         // S_4
+            47/60,        // S_5
+            37/60,        // S_6
+            319/420,      // S_7
+            533/840,      // S_8
+            1879/2520,    // S_9
+            1627/2520,    // S_10
+            16687/22680,  // S_11
+            14797/22680   // S_12
+        ];
+
+        var COL_ODD = '#2563EB';
+        var COL_EVEN = '#059669';
+
+        // Draw connecting segments (thin gray zig-zag)
+        var n;
+        for (n = 1; n <= 11; n++) {
+            board.create('segment', [[n, S[n]], [n + 1, S[n + 1]]], {
+                strokeColor: '#888888',
+                strokeWidth: 1.0,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // Draw points
+        for (n = 1; n <= 12; n++) {
+            var isOdd = (n % 2 === 1);
+            board.create('point', [n, S[n]], {
+                name: '',
+                size: 5,
+                color: isOdd ? COL_ODD : COL_EVEN,
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+        }
+
+        // Legend in top-right area
+        // Odd-n legend dot + label
+        board.create('point', [10.2, 1.05], {
+            name: '',
+            size: 4,
+            color: COL_ODD,
+            fixed: true,
+            highlight: false,
+            showInfobox: false
+        });
+        board.create('text', [10.7, 1.05, 'S_1, S_3, S_5, \\ldots'], {
+            fontSize: 12,
+            color: COL_ODD,
+            fixed: true,
+            highlight: false,
+            useKatex: true,
+            anchorY: 'middle'
+        });
+
+        // Even-n legend dot + label
+        board.create('point', [10.2, 0.96], {
+            name: '',
+            size: 4,
+            color: COL_EVEN,
+            fixed: true,
+            highlight: false,
+            showInfobox: false
+        });
+        board.create('text', [10.7, 0.96, 'S_2, S_4, S_6, \\ldots'], {
+            fontSize: 12,
+            color: COL_EVEN,
+            fixed: true,
+            highlight: false,
+            useKatex: true,
+            anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
