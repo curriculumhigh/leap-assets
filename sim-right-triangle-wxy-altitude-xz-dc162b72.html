@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle WXY with Altitude XZ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 9, 16, -3],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var S = 2;
+        var Wx = 0, Wy = 0;
+        var Yx = 25 / S, Yy = 0;
+        var Xx = 9 / S, Xy = 12 / S;
+        var Zx = 9 / S, Zy = 0;
+
+        var W = board.create('point', [Wx, Wy], {
+            name: 'W', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, -10] }
+        });
+        var Y = board.create('point', [Yx, Yy], {
+            name: 'Y', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, -10] }
+        });
+        var X = board.create('point', [Xx, Xy], {
+            name: 'X', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-4, 12] }
+        });
+        var Z = board.create('point', [Zx, Zy], {
+            name: 'Z', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-2, -16] }
+        });
+
+        board.create('segment', [W, X], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [X, Y], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [W, Y], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        board.create('segment', [X, Z], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+        });
+
+        function drawRightAngleMarker(vertex, p1, p2, size, color) {
+            var v1x = p1.X() - vertex.X();
+            var v1y = p1.Y() - vertex.Y();
+            var v2x = p2.X() - vertex.X();
+            var v2y = p2.Y() - vertex.Y();
+            var len1 = Math.sqrt(v1x * v1x + v1y * v1y);
+            var len2 = Math.sqrt(v2x * v2x + v2y * v2y);
+            var u1x = v1x / len1 * size;
+            var u1y = v1y / len1 * size;
+            var u2x = v2x / len2 * size;
+            var u2y = v2y / len2 * size;
+
+            var a = [vertex.X() + u1x, vertex.Y() + u1y];
+            var b = [vertex.X() + u1x + u2x, vertex.Y() + u1y + u2y];
+            var c = [vertex.X() + u2x, vertex.Y() + u2y];
+
+            board.create('segment', [a, b], {
+                strokeColor: color, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            board.create('segment', [b, c], {
+                strokeColor: color, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+        }
+
+        drawRightAngleMarker(X, W, Y, 0.6, '#DC2626');
+        drawRightAngleMarker(Z, X, Y, 0.6, '#DC2626');
+
+        var mWXx = (Wx + Xx) / 2;
+        var mWXy = (Wy + Xy) / 2;
+        var dxWX = Xx - Wx, dyWX = Xy - Wy;
+        var lenWX = Math.sqrt(dxWX * dxWX + dyWX * dyWX);
+        var nxWX = -dyWX / lenWX, nyWX = dxWX / lenWX;
+        board.create('text', [mWXx - 0.9 * nxWX, mWXy - 0.9 * nyWX, '15'], {
+            fontSize: 14, color: '#222222', useKatex: true,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        var mXYx = (Xx + Yx) / 2;
+        var mXYy = (Xy + Yy) / 2;
+        var dxXY = Yx - Xx, dyXY = Yy - Xy;
+        var lenXY = Math.sqrt(dxXY * dxXY + dyXY * dyXY);
+        var nxXY = -dyXY / lenXY, nyXY = dxXY / lenXY;
+        board.create('text', [mXYx + 0.9 * nxXY, mXYy + 0.9 * nyXY, '20'], {
+            fontSize: 14, color: '#222222', useKatex: true,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        var mWZx = (Wx + Zx) / 2;
+        var mWZy = (Wy + Zy) / 2;
+        board.create('text', [mWZx, mWZy - 0.8, 'x'], {
+            fontSize: 14, color: '#222222', useKatex: true,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false,
+            cssStyle: 'font-style: italic;'
+        });
+
+        var mZYx = (Zx + Yx) / 2;
+        var mZYy = (Zy + Yy) / 2;
+        board.create('text', [mZYx, mZYy - 0.8, '16'], {
+            fontSize: 14, color: '#222222', useKatex: true,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
