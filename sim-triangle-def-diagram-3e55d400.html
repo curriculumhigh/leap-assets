@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle DEF</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var angD_deg = 108, angE_deg = 31, angF_deg = 41;
+        var angD = angD_deg * Math.PI / 180;
+        var angE = angE_deg * Math.PI / 180;
+        var angF = angF_deg * Math.PI / 180;
+
+        var EF_real = 37;
+        var DF_real = EF_real * Math.sin(angE) / Math.sin(angD);
+        var DE_real = EF_real * Math.sin(angF) / Math.sin(angD);
+
+        var scale = 6 / EF_real;
+        var EF = EF_real * scale;
+        var DF = DF_real * scale;
+        var DE = DE_real * scale;
+
+        var Ex = -EF / 2;
+        var Ey = -1.5;
+        var Fx = EF / 2;
+        var Fy = -1.5;
+
+        var dirED = angE_deg * Math.PI / 180;
+        var Dx = Ex + DE * Math.cos(dirED);
+        var Dy = Ey + DE * Math.sin(dirED);
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 5, 5.5, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var ptE = board.create('point', [Ex, Ey], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+        var ptF = board.create('point', [Fx, Fy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+        var ptD = board.create('point', [Dx, Dy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+
+        board.create('segment', [ptD, ptE], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [ptE, ptF], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [ptF, ptD], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        board.create('nonReflexAngle', [ptE, ptD, ptF], {
+            radius: 0.55,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        board.create('nonReflexAngle', [ptF, ptE, ptD], {
+            radius: 0.7,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        board.create('text', [Dx - 0.15, Dy + 0.55, 'D'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [Ex - 0.5, Ey - 0.3, 'E'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [Fx + 0.5, Fy - 0.3, 'F'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        var bisD = (Math.atan2(Ey - Dy, Ex - Dx) + Math.atan2(Fy - Dy, Fx - Dx)) / 2;
+        var testDx = Dx + Math.cos(bisD);
+        var testDy = Dy + Math.sin(bisD);
+        var cx = (Dx + Ex + Fx) / 3;
+        var cy = (Dy + Ey + Fy) / 3;
+        var distToCentroid = Math.sqrt(Math.pow(testDx - cx, 2) + Math.pow(testDy - cy, 2));
+        var distFromVertex = Math.sqrt(Math.pow(Dx - cx, 2) + Math.pow(Dy - cy, 2));
+        if (distToCentroid > distFromVertex) {
+            bisD += Math.PI;
+        }
+        var lblDist_D = 1.1;
+        board.create('text', [Dx + lblDist_D * Math.cos(bisD), Dy + lblDist_D * Math.sin(bisD), '108^\\circ'], {
+            useKatex: true, fontSize: 12, color: '#DC2626',
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var bisE = (Math.atan2(Dy - Ey, Dx - Ex) + Math.atan2(Fy - Ey, Fx - Ex)) / 2;
+        var testEx = Ex + Math.cos(bisE);
+        var testEy = Ey + Math.sin(bisE);
+        var distToCentroidE = Math.sqrt(Math.pow(testEx - cx, 2) + Math.pow(testEy - cy, 2));
+        var distFromVertexE = Math.sqrt(Math.pow(Ex - cx, 2) + Math.pow(Ey - cy, 2));
+        if (distToCentroidE > distFromVertexE) {
+            bisE += Math.PI;
+        }
+        var lblDist_E = 1.3;
+        board.create('text', [Ex + lblDist_E * Math.cos(bisE), Ey + lblDist_E * Math.sin(bisE), '31^\\circ'], {
+            useKatex: true, fontSize: 12, color: '#DC2626',
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var midEFx = (Ex + Fx) / 2;
+        var midEFy = (Ey + Fy) / 2;
+        board.create('text', [midEFx, midEFy - 0.55, '37'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle'
+        });
+    </script>
+</body>
+</html>
