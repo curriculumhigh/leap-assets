@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle PQR</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var Px = 2, Py = 7;
+        var angPQ = -75 * Math.PI / 180;
+        var Qx = Px + 9 * Math.cos(angPQ);
+        var Qy = Py + 9 * Math.sin(angPQ);
+        var angPR = angPQ + 40 * Math.PI / 180;
+        var dx = Px - Qx;
+        var dy = Py - Qy;
+        var cpR = Math.cos(angPR);
+        var spR = Math.sin(angPR);
+        var B_coeff = 2 * (dx * cpR + dy * spR);
+        var C_coeff = dx * dx + dy * dy - 144;
+        var disc = B_coeff * B_coeff - 4 * C_coeff;
+        var t_val = (-B_coeff + Math.sqrt(disc)) / 2;
+        var Rx = Px + t_val * cpR;
+        var Ry = Py + t_val * spR;
+
+        var allX = [Px, Qx, Rx];
+        var allY = [Py, Qy, Ry];
+        var minX = Math.min.apply(null, allX);
+        var maxX = Math.max.apply(null, allX);
+        var minY = Math.min.apply(null, allY);
+        var maxY = Math.max.apply(null, allY);
+        var pad = 2.0;
+        var bb = [minX - pad, maxY + pad, maxX + pad, minY - pad];
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: bb,
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var P = board.create('point', [Px, Py], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+        var Q = board.create('point', [Qx, Qy], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+        var R = board.create('point', [Rx, Ry], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+
+        board.create('segment', [P, Q], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [Q, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [P, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        board.create('nonReflexAngle', [Q, P, R], {
+            radius: 1.2,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        var bisAng = (angPQ + angPR) / 2;
+        board.create('text', [
+            Px + 1.8 * Math.cos(bisAng),
+            Py + 1.8 * Math.sin(bisAng),
+            '40^\\circ'
+        ], {
+            useKatex: true, fontSize: 13, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [Px - 0.7, Py + 0.6, '\\textbf{P}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Qx, Qy - 0.7, '\\textbf{Q}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Rx + 0.7, Ry + 0.6, '\\textbf{R}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var sideOff = 0.65;
+
+        var midPQx = (Px + Qx) / 2;
+        var midPQy = (Py + Qy) / 2;
+        var pqDx = Qx - Px, pqDy = Qy - Py;
+        var pqLen = Math.sqrt(pqDx * pqDx + pqDy * pqDy);
+        var pqNx = -pqDy / pqLen;
+        var pqNy = pqDx / pqLen;
+
+        board.create('text', [
+            midPQx + pqNx * sideOff,
+            midPQy + pqNy * sideOff,
+            '9'
+        ], {
+            useKatex: true, fontSize: 14, color: '#3B82F6',
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+
+        var midQRx = (Qx + Rx) / 2;
+        var midQRy = (Qy + Ry) / 2;
+        var qrDx = Rx - Qx, qrDy = Ry - Qy;
+        var qrLen = Math.sqrt(qrDx * qrDx + qrDy * qrDy);
+        var qrNx = qrDy / qrLen;
+        var qrNy = -qrDx / qrLen;
+
+        board.create('text', [
+            midQRx + qrNx * sideOff,
+            midQRy + qrNy * sideOff,
+            '12'
+        ], {
+            useKatex: true, fontSize: 14, color: '#3B82F6',
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
