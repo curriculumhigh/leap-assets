@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submarine Side-View Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 7.5, 18, -7.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var subX = 1, subY = 2;
+        var reefX = 15, reefY = -4;
+        var wreckX = 7, wreckY = 5.5;
+
+        board.create('polygon', [
+            [subX - 0.8, subY + 0.25],
+            [subX + 0.8, subY + 0.25],
+            [subX + 1.1, subY],
+            [subX + 0.8, subY - 0.25],
+            [subX - 0.8, subY - 0.25],
+            [subX - 1.0, subY]
+        ], {
+            fillColor: '#555555', fillOpacity: 0.7,
+            borders: { strokeColor: '#444444', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, hasInnerPoints: false, highlight: false
+        });
+
+        board.create('text', [subX, subY + 0.9, '\\textbf{Submarine}'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[subX + 1.1, subY], [reefX + 0.5, subY]], {
+            strokeColor: '#444444', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('polygon', [
+            [reefX - 0.7, reefY],
+            [reefX - 0.2, reefY + 0.9],
+            [reefX + 0.3, reefY + 0.3],
+            [reefX + 0.6, reefY + 1.0],
+            [reefX + 1.0, reefY]
+        ], {
+            fillColor: '#D97706', fillOpacity: 0.5,
+            borders: { strokeColor: '#D97706', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, hasInnerPoints: false, highlight: false
+        });
+
+        board.create('text', [reefX + 0.15, reefY - 0.7, '\\textbf{Coral Reef}'], {
+            fontSize: 12, color: '#D97706', anchorX: 'middle', useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[subX + 1.1, subY], [reefX, reefY]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        var horizRefReef = board.create('point', [reefX, subY], {
+            name: '', size: 0, fixed: true, visible: false
+        });
+        var subPt = board.create('point', [subX + 1.1, subY], {
+            name: '', size: 0, fixed: true, visible: false
+        });
+        var reefPt = board.create('point', [reefX, reefY], {
+            name: '', size: 0, fixed: true, visible: false
+        });
+
+        board.create('nonReflexAngle', [reefPt, subPt, horizRefReef], {
+            radius: 1.8,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        board.create('text', [subX + 3.6, subY - 0.7, '28°'], {
+            fontSize: 13, color: '#DC2626', anchorX: 'middle', fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold;'
+        });
+
+        var distReefY = -5.8;
+        board.create('segment', [[subX, distReefY], [reefX, distReefY]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }, firstArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[subX, distReefY - 0.3], [subX, distReefY + 0.3]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[reefX, distReefY - 0.3], [reefX, distReefY + 0.3]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [(subX + reefX) / 2, distReefY - 0.7, '3500\\text{ m}'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[subX, subY - 0.25], [subX, distReefY + 0.3]], {
+            strokeColor: '#aaaaaa', strokeWidth: 0.6, dash: 3, fixed: true, highlight: false
+        });
+        board.create('segment', [[reefX, reefY], [reefX, distReefY + 0.3]], {
+            strokeColor: '#aaaaaa', strokeWidth: 0.6, dash: 3, fixed: true, highlight: false
+        });
+
+        board.create('polygon', [
+            [wreckX - 0.6, wreckY - 0.1],
+            [wreckX - 0.3, wreckY + 0.5],
+            [wreckX + 0.0, wreckY + 0.2],
+            [wreckX + 0.3, wreckY + 0.6],
+            [wreckX + 0.6, wreckY - 0.1]
+        ], {
+            fillColor: '#7C3AED', fillOpacity: 0.5,
+            borders: { strokeColor: '#7C3AED', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, hasInnerPoints: false, highlight: false
+        });
+
+        board.create('text', [wreckX, wreckY + 1.1, '\\textbf{Shipwreck}'], {
+            fontSize: 12, color: '#7C3AED', anchorX: 'middle', useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[subX + 1.1, subY], [wreckX, wreckY]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        var wreckPt = board.create('point', [wreckX, wreckY], {
+            name: '', size: 0, fixed: true, visible: false
+        });
+
+        board.create('nonReflexAngle', [horizRefReef, subPt, wreckPt], {
+            radius: 1.4,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        board.create('text', [subX + 3.0, subY + 0.65, '22°'], {
+            fontSize: 13, color: '#DC2626', anchorX: 'middle', fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold;'
+        });
+
+        var distWreckY = 6.5;
+        board.create('segment', [[subX, distWreckY], [wreckX, distWreckY]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }, firstArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[subX, distWreckY - 0.3], [subX, distWreckY + 0.3]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[wreckX, distWreckY - 0.3], [wreckX, distWreckY + 0.3]], {
+            strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [(subX + wreckX) / 2, distWreckY + 0.6, '1200\\text{ m}'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[wreckX, wreckY + 0.6], [wreckX, distWreckY - 0.3]], {
+            strokeColor: '#aaaaaa', strokeWidth: 0.6, dash: 3, fixed: true, highlight: false
+        });
+        board.create('segment', [[subX, subY + 0.25], [subX, distWreckY - 0.3]], {
+            strokeColor: '#aaaaaa', strokeWidth: 0.6, dash: 3, fixed: true, highlight: false
+        });
+
+        board.create('text', [15.5, -6.8, '\\textit{Not drawn to scale}'], {
+            fontSize: 11, color: '#999999', anchorX: 'right', useKatex: true, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
