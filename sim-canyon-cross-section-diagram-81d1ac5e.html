@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canyon Cross-Section</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 13, 15, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var floorLen = 10;
+        var angle48 = 48 * Math.PI / 180;
+        var wallHeight = floorLen * Math.tan(angle48);
+
+        var B = board.create('point', [1, 1], {
+            name: '', fixed: true, visible: false
+        });
+        var C = board.create('point', [1 + floorLen, 1], {
+            name: '', fixed: true, visible: false
+        });
+        var A = board.create('point', [1, 1 + wallHeight], {
+            name: '', fixed: true, visible: false
+        });
+
+        var floorExtLeft = board.create('point', [-0.5, 1], { name: '', fixed: true, visible: false });
+        var floorExtRight = board.create('point', [1 + floorLen + 2, 1], { name: '', fixed: true, visible: false });
+
+        board.create('segment', [floorExtLeft, floorExtRight], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var wallExtTop = board.create('point', [1, 1 + wallHeight + 1.5], { name: '', fixed: true, visible: false });
+        var wallExtBot = board.create('point', [1, -0.5], { name: '', fixed: true, visible: false });
+
+        board.create('segment', [wallExtBot, wallExtTop], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var hatchCount = 12;
+        var hatchLen = 0.5;
+        for (var i = 0; i <= hatchCount; i++) {
+            var yy = -0.5 + i * (wallHeight + 2) / hatchCount;
+            if (yy > wallHeight + 2.2) break;
+            board.create('segment', [
+                [1, yy],
+                [1 - hatchLen, yy - hatchLen]
+            ], {
+                strokeColor: '#888888', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+        var floorHatchCount = 16;
+        for (var j = 0; j <= floorHatchCount; j++) {
+            var xx = -0.5 + j * (floorLen + 2.5) / floorHatchCount;
+            board.create('segment', [
+                [xx, 1],
+                [xx - hatchLen, 1 - hatchLen]
+            ], {
+                strokeColor: '#888888', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+
+        var dx = A.X() - C.X();
+        var dy = A.Y() - C.Y();
+        var rayLen = Math.sqrt(dx * dx + dy * dy);
+        var ux = dx / rayLen;
+        var uy = dy / rayLen;
+
+        board.create('segment', [C, A], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        var rayOffsets = [1.5, 3.0, 4.5];
+        for (var r = 0; r < rayOffsets.length; r++) {
+            var off = rayOffsets[r];
+            var perpX = -uy;
+            var perpY = ux;
+            var rStartX = C.X() + perpX * off + 1.2;
+            var rStartY = C.Y() + perpY * off;
+            var rEndX = rStartX + ux * 3.5;
+            var rEndY = rStartY + uy * 3.5;
+            board.create('segment', [
+                [rStartX, rStartY],
+                [rEndX, rEndY]
+            ], {
+                strokeColor: '#F59E0B', strokeWidth: 1.0, strokeOpacity: 0.5,
+                fixed: true, highlight: false,
+                firstArrow: false,
+                lastArrow: { type: 2, size: 4 }
+            });
+        }
+
+        board.create('segment', [
+            [C.X() - ux * 0.5, C.Y() - uy * 0.5],
+            [A.X() + ux * 0.5, A.Y() + uy * 0.5]
+        ], {
+            strokeColor: '#F59E0B', strokeWidth: 1.0, strokeOpacity: 0.5,
+            fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }
+        });
+
+        board.create('segment', [B, A], {
+            strokeColor: '#222222', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        board.create('segment', [B, C], {
+            strokeColor: '#222222', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var sqSize = 0.6;
+        board.create('polygon', [
+            [B.X(), B.Y()],
+            [B.X() + sqSize, B.Y()],
+            [B.X() + sqSize, B.Y() + sqSize],
+            [B.X(), B.Y() + sqSize]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        board.create('nonReflexAngle', [B, C, A], {
+            radius: 1.4,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        var angCB = Math.atan2(B.Y() - C.Y(), B.X() - C.X());
+        var angCA = Math.atan2(A.Y() - C.Y(), A.X() - C.X());
+        var midAng = (angCB + angCA) / 2;
+        var labelR = 2.0;
+
+        board.create('text', [
+            C.X() + labelR * Math.cos(midAng),
+            C.Y() + labelR * Math.sin(midAng),
+            '48^\\circ'
+        ], {
+            useKatex: true, fontSize: 14, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var floorMidX = (B.X() + C.X()) / 2;
+        board.create('text', [floorMidX, B.Y() - 1.2, '380 \\text{ m}'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('segment', [
+            [B.X(), B.Y() - 0.7],
+            [C.X(), C.Y() - 0.7]
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 4 },
+            lastArrow: { type: 2, size: 4 }
+        });
+
+        var wallMidY = (B.Y() + A.Y()) / 2;
+        board.create('text', [-0.8, wallMidY, 'd'], {
+            useKatex: true, fontSize: 16, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-style: italic;'
+        });
+
+        board.create('segment', [
+            [-0.2, B.Y()],
+            [-0.2, A.Y()]
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 4 },
+            lastArrow: { type: 2, size: 4 }
+        });
+
+        board.create('text', [C.X() + 0.8, C.Y() + 3.5, '\\text{Sun}'], {
+            useKatex: true, fontSize: 12, color: '#F59E0B',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
