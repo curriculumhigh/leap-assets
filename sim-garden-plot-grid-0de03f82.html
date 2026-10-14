@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garden Plot Grid</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 5.9, 6.8, -0.7],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_PEPPERS_FILL = 'rgba(220, 38, 38, 0.22)';
+        var COL_PEPPERS_TEXT = '#B91C1C';
+        var COL_CARROTS_FILL = 'rgba(217, 119, 6, 0.22)';
+        var COL_CARROTS_TEXT = '#B45309';
+        var COL_LETTUCE_FILL = 'rgba(5, 150, 105, 0.22)';
+        var COL_LETTUCE_TEXT = '#047857';
+        var COL_BEANS_FILL   = 'rgba(124, 58, 237, 0.22)';
+        var COL_BEANS_TEXT   = '#6D28D9';
+        var COL_SQUASH_FILL  = 'rgba(37, 99, 235, 0.22)';
+        var COL_SQUASH_TEXT  = '#1D4ED8';
+
+        var GRID_COL = '#888888';
+        var GRID_W = 0.6;
+
+        function drawRegion(x1, y1, x2, y2, fillColor) {
+            var p1 = board.create('point', [x1, y1], { visible: false, name: '' });
+            var p2 = board.create('point', [x2, y1], { visible: false, name: '' });
+            var p3 = board.create('point', [x2, y2], { visible: false, name: '' });
+            var p4 = board.create('point', [x1, y2], { visible: false, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: fillColor,
+                fillOpacity: 1,
+                borders: { visible: false },
+                vertices: { visible: false },
+                hasInnerPoints: false,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        drawRegion(0, 2, 2, 5, COL_PEPPERS_FILL);
+        drawRegion(2, 3, 4, 5, COL_CARROTS_FILL);
+        drawRegion(4, 0, 6, 5, COL_LETTUCE_FILL);
+        drawRegion(0, 0, 2, 2, COL_BEANS_FILL);
+        drawRegion(2, 0, 4, 3, COL_SQUASH_FILL);
+
+        var i;
+        for (i = 0; i <= 6; i++) {
+            board.create('segment', [[i, 0], [i, 5]], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W, fixed: true, highlight: false
+            });
+        }
+        for (i = 0; i <= 5; i++) {
+            board.create('segment', [[0, i], [6, i]], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W, fixed: true, highlight: false
+            });
+        }
+
+        board.create('text', [1, 3.5, 'Peppers'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 15, color: COL_PEPPERS_TEXT,
+            cssStyle: 'font-weight:600',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [3, 4, 'Carrots'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 15, color: COL_CARROTS_TEXT,
+            cssStyle: 'font-weight:600',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [5, 2.5, 'Lettuce'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 15, color: COL_LETTUCE_TEXT,
+            cssStyle: 'font-weight:600',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [1, 1, 'Beans'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 15, color: COL_BEANS_TEXT,
+            cssStyle: 'font-weight:600',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [3, 1.5, 'Squash'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 15, color: COL_SQUASH_TEXT,
+            cssStyle: 'font-weight:600',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
