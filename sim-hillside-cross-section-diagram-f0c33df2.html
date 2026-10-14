@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hillside Cross-Section</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-10, 6, 72, -22],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Region vertices
+        var tA = board.create('point', [0, 0], { visible: false, fixed: true, name: '' });
+        var tB = board.create('point', [12, 0], { visible: false, fixed: true, name: '' });
+        var tC = board.create('point', [12, -5], { visible: false, fixed: true, name: '' });
+        var tD = board.create('point', [0, -5], { visible: false, fixed: true, name: '' });
+
+        var trA = board.create('point', [12, 0], { visible: false, fixed: true, name: '' });
+        var trB = board.create('point', [36, 0], { visible: false, fixed: true, name: '' });
+        var trC = board.create('point', [36, -15], { visible: false, fixed: true, name: '' });
+        var trD = board.create('point', [12, -5], { visible: false, fixed: true, name: '' });
+
+        var bA = board.create('point', [36, 0], { visible: false, fixed: true, name: '' });
+        var bB = board.create('point', [60, 0], { visible: false, fixed: true, name: '' });
+        var bC = board.create('point', [60, -15], { visible: false, fixed: true, name: '' });
+        var bD = board.create('point', [36, -15], { visible: false, fixed: true, name: '' });
+
+        // Polygons
+        board.create('polygon', [tA, tB, tC, tD], {
+            fillColor: '#D2B48C', fillOpacity: 0.35,
+            borders: { strokeColor: '#555555', strokeWidth: 2.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('polygon', [trA, trB, trC, trD], {
+            fillColor: '#E8D5B7', fillOpacity: 0.35,
+            borders: { strokeColor: '#555555', strokeWidth: 2.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('polygon', [bA, bB, bC, bD], {
+            fillColor: '#B0B0B0', fillOpacity: 0.35,
+            borders: { strokeColor: '#555555', strokeWidth: 2.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Region labels
+        board.create('text', [6, -2.5, 'Topsoil'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#333333', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        board.create('text', [24, -5.5, 'Transition'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#333333', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        board.create('text', [48, -7.5, 'Bedrock'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#333333', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        // Dimension arrow helper
+        var DIM_COL = '#444444';
+        var DIM_W = 1.2;
+        var ARR = { type: 2, size: 4 };
+
+        function dimArrow(x1, y1, x2, y2) {
+            board.create('segment', [[x1, y1], [x2, y2]], {
+                strokeColor: DIM_COL, strokeWidth: DIM_W, fixed: true, highlight: false,
+                firstArrow: ARR, lastArrow: ARR
+            });
+        }
+
+        function dimLabel(x, y, text) {
+            board.create('text', [x, y, text], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 11, color: DIM_COL, fixed: true, highlight: false,
+                cssStyle: 'font-weight:600'
+            });
+        }
+
+        // Horizontal dimension arrows (below bottom edge)
+        var hY = -17.5;
+
+        // Vertical tick marks at horizontal dimension endpoints
+        function dimTickV(x, y1, y2) {
+            board.create('segment', [[x, y1], [x, y2]], {
+                strokeColor: DIM_COL, strokeWidth: 0.8, fixed: true, highlight: false
+            });
+        }
+
+        dimTickV(0, -15.5, -18.5);
+        dimTickV(12, -15.5, -18.5);
+        dimArrow(0, hY, 12, hY);
+        dimLabel(6, hY - 1.5, '12 m');
+
+        dimTickV(36, -15.5, -18.5);
+        dimArrow(12, hY, 36, hY);
+        dimLabel(24, hY - 1.5, '24 m');
+
+        dimTickV(60, -15.5, -18.5);
+        dimArrow(36, hY, 60, hY);
+        dimLabel(48, hY - 1.5, '24 m');
+
+        // Vertical dimension arrows
+        // Left wall: 5 m depth
+        var vX_left = -5;
+        board.create('segment', [[-6, 0], [-4, 0]], {
+            strokeColor: DIM_COL, strokeWidth: 0.8, fixed: true, highlight: false
+        });
+        board.create('segment', [[-6, -5], [-4, -5]], {
+            strokeColor: DIM_COL, strokeWidth: 0.8, fixed: true, highlight: false
+        });
+        dimArrow(vX_left, 0, vX_left, -5);
+        dimLabel(vX_left - 2.5, -2.5, '5 m');
+
+        // Right wall: 15 m depth
+        var vX_right = 65;
+        board.create('segment', [[64, 0], [66, 0]], {
+            strokeColor: DIM_COL, strokeWidth: 0.8, fixed: true, highlight: false
+        });
+        board.create('segment', [[64, -15], [66, -15]], {
+            strokeColor: DIM_COL, strokeWidth: 0.8, fixed: true, highlight: false
+        });
+        dimArrow(vX_right, 0, vX_right, -15);
+        dimLabel(vX_right + 3, -7.5, '15 m');
+    </script>
+</body>
+</html>
