@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archery Target Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-62, 62, 72, -62],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var O = board.create('point', [0, 0], { visible: false, name: '', fixed: true });
+
+        var COL_BLUE = '#2563EB';
+        var COL_ORANGE = '#D97706';
+        var STROKE = '#333333';
+
+        // Rings drawn largest-first so smaller circles layer on top
+        var radii  = [50, 40, 30, 20, 10];
+        var colors = [COL_BLUE, COL_ORANGE, COL_BLUE, COL_ORANGE, COL_BLUE];
+
+        for (var i = 0; i < radii.length; i++) {
+            board.create('circle', [O, radii[i]], {
+                strokeColor: STROKE,
+                strokeWidth: 1,
+                fillColor: colors[i],
+                fillOpacity: 0.85,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // Center dot
+        board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+
+        // ── Dimension line to the right ──────────────────────────────
+        var DX = 58;
+        var CAP = 3;
+
+        // Vertical line with arrows
+        board.create('arrow', [[DX, -50], [DX, 50]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 },
+            firstArrow: { type: 2, size: 5 }
+        });
+
+        // Serif caps (short horizontal segments at top and bottom)
+        board.create('segment', [[DX - CAP, 50], [DX + CAP, 50]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[DX - CAP, -50], [DX + CAP, -50]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Label "100 cm" — rotated vertically alongside the dimension line
+        board.create('text', [DX + 6, 0, '100 \\text{ cm}'], {
+            useKatex: true,
+            fontSize: 13,
+            color: '#333333',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            rotate: 90,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
