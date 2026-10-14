@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangle EFGH with Triangle EMN</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 14.5, 24, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices of rectangle EFGH ──────────────────────────────────
+        var E = board.create('point', [0, 12], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+        var F = board.create('point', [20, 12], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+        var G = board.create('point', [20, 0], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+        var H = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+
+        // ── Midpoints M and N ───────────────────────────────────────────
+        var M = board.create('point', [20, 6], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+        var N = board.create('point', [10, 0], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+
+        // ── Rectangle EFGH (no fill) ────────────────────────────────────
+        board.create('polygon', [E, F, G, H], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Triangle EMN (gold fill) ────────────────────────────────────
+        board.create('polygon', [E, M, N], {
+            fillColor: '#F59E0B', fillOpacity: 0.35,
+            borders: { strokeColor: '#222222', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Vertex labels ───────────────────────────────────────────────
+        board.create('text', [-1.2, 12.6, 'E'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600; font-style:italic'
+        });
+        board.create('text', [20.6, 12.6, 'F'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600; font-style:italic'
+        });
+        board.create('text', [20.6, -0.6, 'G'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600; font-style:italic'
+        });
+        board.create('text', [-1.2, -0.6, 'H'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600; font-style:italic'
+        });
+
+        // ── Midpoint labels ─────────────────────────────────────────────
+        board.create('text', [21, 5.7, 'M'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600; font-style:italic'
+        });
+        board.create('text', [9.5, -1.4, 'N'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600; font-style:italic'
+        });
+
+        // ── Dimension labels ────────────────────────────────────────────
+        board.create('text', [10, 13.4, '20 cm'], {
+            fontSize: 13, color: '#555555', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [-2.8, 6, '12 cm'], {
+            fontSize: 13, color: '#555555', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
