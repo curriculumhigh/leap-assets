@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pool Cross-Section</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-10, 4, 74, -20],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        function pt(x, y) {
+            return board.create('point', [x, y], { visible: false, fixed: true, name: '' });
+        }
+
+        /* Shallow region */
+        board.create('polygon', [pt(0,0), pt(10,0), pt(10,-4), pt(0,-4)], {
+            fillColor: '#2563EB', fillOpacity: 0.10,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        /* Incline region */
+        board.create('polygon', [pt(10,0), pt(30,0), pt(30,-16), pt(10,-4)], {
+            fillColor: '#2563EB', fillOpacity: 0.18,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        /* Deep region */
+        board.create('polygon', [pt(30,0), pt(60,0), pt(60,-16), pt(30,-16)], {
+            fillColor: '#2563EB', fillOpacity: 0.25,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        /* Region labels */
+        board.create('text', [5, -2, 'Shallow'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14,
+            color: '#333', cssStyle: 'font-weight:600',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [20, -6, 'Incline'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14,
+            color: '#333', cssStyle: 'font-weight:600',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [45, -8, 'Deep'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14,
+            color: '#333', cssStyle: 'font-weight:600',
+            fixed: true, highlight: false
+        });
+
+        /* Dimension arrow helper */
+        function dimArrow(x1, y1, x2, y2) {
+            board.create('segment', [[x1, y1], [x2, y2]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false,
+                firstArrow: { type: 2, size: 5 },
+                lastArrow: { type: 2, size: 5 }
+            });
+        }
+
+        /* Bottom dimensions (horizontal) */
+        var dimY = -18;
+
+        dimArrow(0, dimY, 10, dimY);
+        board.create('text', [5, dimY - 1.2, '10 \\text{ ft}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13,
+            color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        dimArrow(10, dimY, 30, dimY);
+        board.create('text', [20, dimY - 1.2, '20 \\text{ ft}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13,
+            color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        dimArrow(30, dimY, 60, dimY);
+        board.create('text', [45, dimY - 1.2, '30 \\text{ ft}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13,
+            color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        /* Left wall dimension (4 ft) */
+        var leftDimX = -6;
+
+        dimArrow(leftDimX, 0, leftDimX, -4);
+        board.create('text', [leftDimX - 2, -2, '4 \\text{ ft}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13,
+            color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        /* Right wall dimension (16 ft) */
+        var rightDimX = 66;
+
+        dimArrow(rightDimX, 0, rightDimX, -16);
+        board.create('text', [rightDimX + 2.5, -8, '16 \\text{ ft}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13,
+            color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
