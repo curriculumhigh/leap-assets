@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shuttle Wait Time Area Model — Complement</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 12.5, 10.5, -3.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_SHADE = '#2563EB';
+        var COL_REF = '#DC2626';
+        var COL_OUTLINE = '#555555';
+        var COL_AXIS = '#444444';
+        var COL_COMPLEMENT = '#555555';
+
+        // ── L-shaped shaded region (x ≤ 4 OR y ≤ 4) ────────────────────
+        // Draw as a single polygon tracing the L-shape boundary:
+        // (0,0) → (8,0) → (8,4) → (4,4) → (4,10) → (0,10) → (0,0)
+        var lP1 = board.create('point', [0, 0],  { visible: false, fixed: true, name: '' });
+        var lP2 = board.create('point', [8, 0],  { visible: false, fixed: true, name: '' });
+        var lP3 = board.create('point', [8, 4],  { visible: false, fixed: true, name: '' });
+        var lP4 = board.create('point', [4, 4],  { visible: false, fixed: true, name: '' });
+        var lP5 = board.create('point', [4, 10], { visible: false, fixed: true, name: '' });
+        var lP6 = board.create('point', [0, 10], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [lP1, lP2, lP3, lP4, lP5, lP6], {
+            fillColor: COL_SHADE, fillOpacity: 0.15,
+            borders: { strokeWidth: 0, strokeColor: 'transparent' },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Rectangle outline (sample space) ────────────────────────────
+        var rP1 = board.create('point', [0, 0],  { visible: false, fixed: true, name: '' });
+        var rP2 = board.create('point', [8, 0],  { visible: false, fixed: true, name: '' });
+        var rP3 = board.create('point', [8, 10], { visible: false, fixed: true, name: '' });
+        var rP4 = board.create('point', [0, 10], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [rP1, rP2, rP3, rP4], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_OUTLINE, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Dashed boundary lines (reference lines — red) ───────────────
+        // Vertical line at x = 4
+        board.create('segment', [[4, 0], [4, 10]], {
+            strokeColor: COL_REF, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        // Horizontal line at y = 4
+        board.create('segment', [[0, 4], [8, 4]], {
+            strokeColor: COL_REF, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Custom axes ─────────────────────────────────────────────────
+        // x-axis
+        board.create('arrow', [[-0.3, 0], [9.5, 0]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        // y-axis
+        board.create('arrow', [[0, -0.3], [0, 11.8]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // ── Tick marks and labels ───────────────────────────────────────
+        var tickLen = 0.2;
+        var i;
+
+        // x-axis ticks
+        for (i = 2; i <= 8; i += 2) {
+            board.create('segment', [[i, -tickLen], [i, tickLen]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [i, -0.7, String(i)], {
+                fontSize: 11, color: '#333', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // y-axis ticks
+        for (i = 2; i <= 10; i += 2) {
+            board.create('segment', [[-tickLen, i], [tickLen, i]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [-0.6, i, String(i)], {
+                fontSize: 11, color: '#333', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Origin label
+        board.create('text', [-0.5, -0.6, '0'], {
+            fontSize: 11, color: '#333', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Axis title labels ───────────────────────────────────────────
+        board.create('text', [4, -2.2, '\\text{Wait for Shuttle X (0–8 min)}'], {
+            fontSize: 13, color: '#333', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // y-axis label (rotated via CSS transform)
+        board.create('text', [-1.8, 5, '<div style="transform:rotate(-90deg); white-space:nowrap; font-size:13px; color:#333;">Wait for Shuttle Y (0–10 min)</div>'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useMathJax: false
+        });
+
+        // ── Region labels ───────────────────────────────────────────────
+        // L-shaped region label — placed in the lower-left area of the L
+        board.create('text', [1.8, 2, 'x \\leq 4 \\text{ or } y \\leq 4'], {
+            fontSize: 13, color: COL_SHADE, anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold;'
+        });
+
+        // Complement rectangle label — centered in (4,4)→(8,10)
+        board.create('text', [6, 7.6, '\\text{neither}'], {
+            fontSize: 13, color: COL_COMPLEMENT, anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold;'
+        });
+        board.create('text', [6, 6.6, '\\text{within 4 min}'], {
+            fontSize: 13, color: COL_COMPLEMENT, anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold;'
+        });
+
+        // ── Boundary value labels on the dashed lines ───────────────────
+        // "x = 4" label near top of vertical dashed line
+        board.create('text', [4.5, 10.6, 'x = 4'], {
+            fontSize: 11, color: COL_REF, anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+        // "y = 4" label near right end of horizontal dashed line
+        board.create('text', [8.8, 4, 'y = 4'], {
+            fontSize: 11, color: COL_REF, anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
