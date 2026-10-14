@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eight Geometric Shapes</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; }
+        .container { max-width: 630px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var spacing = 3.6;
+        var cx = [];
+        for (var i = 0; i < 8; i++) { cx.push(2.0 + i * spacing); }
+        var cy = 0;
+        var R = 1.35;
+
+        var bbLeft = cx[0] - R - 1.0;
+        var bbRight = cx[7] + R + 1.0;
+        var bbTop = 3.5;
+        var bbBot = -3.5;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [bbLeft, bbTop, bbRight, bbBot],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var colors = [
+            ['#999999', '#222222'],
+            ['#93C5FD', '#2563EB'],
+            ['#6EE7B7', '#059669'],
+            ['#FCD34D', '#D97706'],
+            ['#C4B5FD', '#7C3AED'],
+            ['#FCA5A5', '#DC2626'],
+            ['#67E8F9', '#0891B2'],
+            ['#F9A8D4', '#DB2777']
+        ];
+
+        var FILL_OP = 0.25;
+        var SW = 2.0;
+
+        function makePoly(coords, ci) {
+            var pts = [];
+            for (var j = 0; j < coords.length; j++) {
+                pts.push(board.create('point', coords[j], {
+                    visible: false, fixed: true, name: ''
+                }));
+            }
+            board.create('polygon', pts, {
+                fillColor: colors[ci][0],
+                fillOpacity: FILL_OP,
+                borders: { strokeColor: colors[ci][1], strokeWidth: SW },
+                vertices: { visible: false },
+                hasInnerPoints: false,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        function regularPoly(cxv, cyv, r, n, rotOffset) {
+            var pts = [];
+            for (var j = 0; j < n; j++) {
+                var ang = rotOffset + (2 * Math.PI * j) / n;
+                pts.push([cxv + r * Math.cos(ang), cyv + r * Math.sin(ang)]);
+            }
+            return pts;
+        }
+
+        // 1. Equilateral triangle
+        makePoly(regularPoly(cx[0], cy, R, 3, Math.PI / 2), 0);
+
+        // 2. Right triangle
+        var rtS = R * 1.2;
+        makePoly([
+            [cx[1] - rtS * 0.7, cy - rtS * 0.7],
+            [cx[1] + rtS * 0.7, cy - rtS * 0.7],
+            [cx[1] - rtS * 0.7, cy + rtS * 0.8]
+        ], 1);
+
+        // 3. Isosceles triangle
+        var isoH = R * 1.3;
+        var isoW = R * 0.75;
+        makePoly([
+            [cx[2], cy + isoH],
+            [cx[2] - isoW, cy - isoH * 0.6],
+            [cx[2] + isoW, cy - isoH * 0.6]
+        ], 2);
+
+        // 4. Square
+        var sqS = R * 0.95;
+        makePoly([
+            [cx[3] - sqS, cy - sqS],
+            [cx[3] + sqS, cy - sqS],
+            [cx[3] + sqS, cy + sqS],
+            [cx[3] - sqS, cy + sqS]
+        ], 3);
+
+        // 5. Trapezoid
+        var trH = R * 0.85;
+        var trBotW = R * 1.15;
+        var trTopW = R * 0.55;
+        makePoly([
+            [cx[4] - trBotW, cy - trH],
+            [cx[4] + trBotW, cy - trH],
+            [cx[4] + trTopW, cy + trH],
+            [cx[4] - trTopW, cy + trH]
+        ], 4);
+
+        // 6. Circle
+        var circCenter = board.create('point', [cx[5], cy], {
+            visible: false, fixed: true, name: ''
+        });
+        board.create('circle', [circCenter, R], {
+            strokeColor: colors[5][1],
+            strokeWidth: SW,
+            fillColor: colors[5][0],
+            fillOpacity: FILL_OP,
+            fixed: true,
+            highlight: false
+        });
+
+        // 7. Regular pentagon
+        makePoly(regularPoly(cx[6], cy, R, 5, Math.PI / 2), 6);
+
+        // 8. Regular hexagon
+        makePoly(regularPoly(cx[7], cy, R, 6, 0), 7);
+
+    </script>
+</body>
+</html>
