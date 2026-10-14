@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ferry Wait Time Area Model</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.8, 18.5, 12, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        // ── L-shaped blue region: x ≤ 3 OR y ≤ 3 ───────────────────────
+        var lP1 = board.create('point', [0, 0],  { visible: false, name: '' });
+        var lP2 = board.create('point', [9, 0],  { visible: false, name: '' });
+        var lP3 = board.create('point', [9, 3],  { visible: false, name: '' });
+        var lP4 = board.create('point', [3, 3],  { visible: false, name: '' });
+        var lP5 = board.create('point', [3, 15], { visible: false, name: '' });
+        var lP6 = board.create('point', [0, 15], { visible: false, name: '' });
+        board.create('polygon', [lP1, lP2, lP3, lP4, lP5, lP6], {
+            fillColor: '#2563EB', fillOpacity: 0.15,
+            borders: { strokeWidth: 0, visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Dashed red boundary lines ───────────────────────────────────
+        board.create('segment', [[3, 0], [3, 15]], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [[0, 3], [9, 3]], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Boundary labels ─────────────────────────────────────────────
+        board.create('text', [3, 16.5, 'x = 3'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 12, color: '#DC2626',
+            useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [10.2, 3, 'y = 3'], {
+            anchorX: 'left', anchorY: 'middle',
+            fontSize: 12, color: '#DC2626',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Rectangle outline (0,0) to (9,15) ──────────────────────────
+        var rP1 = board.create('point', [0, 0],  { visible: false, name: '' });
+        var rP2 = board.create('point', [9, 0],  { visible: false, name: '' });
+        var rP3 = board.create('point', [9, 15], { visible: false, name: '' });
+        var rP4 = board.create('point', [0, 15], { visible: false, name: '' });
+        board.create('polygon', [rP1, rP2, rP3, rP4], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Custom axes with arrows ─────────────────────────────────────
+        board.create('arrow', [[0, 0], [10, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        board.create('arrow', [[0, 0], [0, 16.5]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // ── X-axis ticks and labels ─────────────────────────────────────
+        var xLabelVals = [3, 6, 9];
+        for (var i = 1; i <= 9; i++) {
+            board.create('segment', [[i, -0.3], [i, 0.3]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+        for (var xi = 0; xi < xLabelVals.length; xi++) {
+            board.create('text', [xLabelVals[xi], -1.0, String(xLabelVals[xi])], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 11, color: '#333', fixed: true, highlight: false
+            });
+        }
+
+        // ── Y-axis ticks and labels ─────────────────────────────────────
+        var yTickVals = [3, 6, 9, 12, 15];
+        for (var j = 0; j < yTickVals.length; j++) {
+            var yv = yTickVals[j];
+            board.create('segment', [[-0.25, yv], [0.25, yv]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [-0.7, yv, String(yv)], {
+                anchorX: 'right', anchorY: 'middle',
+                fontSize: 11, color: '#333', fixed: true, highlight: false
+            });
+        }
+
+        // ── Origin label ────────────────────────────────────────────────
+        board.create('text', [-0.5, -1.0, '0'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 11, color: '#333', fixed: true, highlight: false
+        });
+
+        // ── Axis name labels ────────────────────────────────────────────
+        board.create('text', [4.5, -2.8, 'Wait for Ferry A (0\u20139 min)'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 12, color: '#333', fixed: true, highlight: false
+        });
+        board.create('text', [-2.2, 7.5, 'Wait for Ferry B (0\u201315 min)'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 12, color: '#333', fixed: true, highlight: false,
+            display: 'html',
+            cssStyle: 'transform: rotate(-90deg); transform-origin: center center; white-space: nowrap;'
+        });
+
+        // ── Region labels ───────────────────────────────────────────────
+
+        // L-shaped region label — in the horizontal strip, shifted right
+        board.create('text', [5.5, 1.5, 'x \\leq 3 \\text{ or } y \\leq 3'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 12, color: '#2563EB',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // Complement rectangle label — centered in (3,3)→(9,15)
+        board.create('text', [6, 9.5, '\\text{neither within}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 12, color: '#555555',
+            useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [6, 8, '\\text{3 min}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 12, color: '#555555',
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
