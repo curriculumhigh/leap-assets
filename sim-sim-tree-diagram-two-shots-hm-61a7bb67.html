@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tree Diagram — Two Shots</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 10.5, 15.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Layout coordinates
+        var cx = 7.5;
+
+        var yTop = 9.5;
+        var yShot1 = 7;
+        var yShot2 = 4.5;
+        var ySample = 2.2;
+
+        var shot1Spread = 4;
+        var xH1 = cx - shot1Spread;
+        var xM1 = cx + shot1Spread;
+
+        var shot2Spread = 1.8;
+        var xHH = xH1 - shot2Spread;
+        var xHM = xH1 + shot2Spread;
+        var xMH = xM1 - shot2Spread;
+        var xMM = xM1 + shot2Spread;
+
+        // Row labels
+        var lblX = -4.5;
+        board.create('text', [lblX, yShot1, 'Shot 1'], {
+            fontSize: 10, color: '#666666', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+        board.create('text', [lblX, yShot2, 'Shot 2'], {
+            fontSize: 10, color: '#666666', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+        board.create('text', [lblX, ySample, 'Sample'], {
+            fontSize: 10, color: '#666666', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+        board.create('text', [lblX, ySample - 0.8, 'Space'], {
+            fontSize: 10, color: '#666666', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+
+        // Outcomes title
+        board.create('text', [cx, yTop + 0.6, 'Outcomes'], {
+            fontSize: 12, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:600'
+        });
+
+        // Nodes
+        var nodeAttr = { name: '', size: 2, color: '#222222', fixed: true, highlight: false };
+
+        var root = board.create('point', [cx, yTop], nodeAttr);
+        var nH1 = board.create('point', [xH1, yShot1], nodeAttr);
+        var nM1 = board.create('point', [xM1, yShot1], nodeAttr);
+        var nHH = board.create('point', [xHH, yShot2], nodeAttr);
+        var nHM = board.create('point', [xHM, yShot2], nodeAttr);
+        var nMH = board.create('point', [xMH, yShot2], nodeAttr);
+        var nMM = board.create('point', [xMM, yShot2], nodeAttr);
+
+        // Branches
+        var branchAttr = { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false };
+
+        board.create('segment', [root, nH1], branchAttr);
+        board.create('segment', [root, nM1], branchAttr);
+        board.create('segment', [nH1, nHH], branchAttr);
+        board.create('segment', [nH1, nHM], branchAttr);
+        board.create('segment', [nM1, nMH], branchAttr);
+        board.create('segment', [nM1, nMM], branchAttr);
+
+        // Vertical connectors to sample space
+        var vertAttr = { strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false };
+        board.create('segment', [[xHH, yShot2], [xHH, ySample + 0.7]], vertAttr);
+        board.create('segment', [[xHM, yShot2], [xHM, ySample + 0.7]], vertAttr);
+        board.create('segment', [[xMH, yShot2], [xMH, ySample + 0.7]], vertAttr);
+        board.create('segment', [[xMM, yShot2], [xMM, ySample + 0.7]], vertAttr);
+
+        // Branch labels
+        var branchLblAttr = { fontSize: 11, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' };
+
+        board.create('text', [(cx + xH1) / 2 - 0.5, (yTop + yShot1) / 2 + 0.3, 'H'], branchLblAttr);
+        board.create('text', [(cx + xM1) / 2 + 0.5, (yTop + yShot1) / 2 + 0.3, 'M'], branchLblAttr);
+        board.create('text', [(xH1 + xHH) / 2 - 0.5, (yShot1 + yShot2) / 2 + 0.2, 'H'], branchLblAttr);
+        board.create('text', [(xH1 + xHM) / 2 + 0.5, (yShot1 + yShot2) / 2 + 0.2, 'M'], branchLblAttr);
+        board.create('text', [(xM1 + xMH) / 2 - 0.5, (yShot1 + yShot2) / 2 + 0.2, 'H'], branchLblAttr);
+        board.create('text', [(xM1 + xMM) / 2 + 0.5, (yShot1 + yShot2) / 2 + 0.2, 'M'], branchLblAttr);
+
+        // Sample space outcome labels — no commas
+        var outcomeAttr = { fontSize: 11, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-weight:600' };
+
+        board.create('text', [xHH, ySample, 'HH'], outcomeAttr);
+        board.create('text', [xHM, ySample, 'HM'], outcomeAttr);
+        board.create('text', [xMH, ySample, 'MH'], outcomeAttr);
+        board.create('text', [xMM, ySample, 'MM'], outcomeAttr);
+    </script>
+</body>
+</html>
