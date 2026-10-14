@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velocity graph of a drone</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        // Static velocity graph v(t) of a drone, 0 <= t <= 9 (rule not shown):
+        //   0..2  v = 16 t^2                (curves up to the peak (2, 64))
+        //   2..6  v = 64 - 32(t - 2)        (straight line, crosses 0 at t = 4, reaches -64 at t = 6)
+        //   6..9  v = -8 - 56 e^(-2(t-6))   (rises sharply, levels off towards -8)
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.75, 90, 9.6, -86],
+            axis: false, showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false }
+        });
+        var i, AX = '#444444', GRID = '#D1D5DB', V_COL = '#222222';   // primary curve: dark, per the sim guidelines
+
+        // Grid every 1 in t and every 1 in v
+        for (i = 0.5; i <= 9; i += 0.5) board.create('segment', [[i, -84], [i, 86]], { strokeColor: GRID, strokeWidth: 0.4, fixed: true, highlight: false });
+        for (i = -80; i <= 80; i += 8) { if (i === 0) continue; board.create('segment', [[0, i], [9.25, i]], { strokeColor: GRID, strokeWidth: 0.4, fixed: true, highlight: false }); }
+
+        // Axes
+        board.create('arrow', [[-0.15, 0], [9.45, 0]], { strokeColor: AX, strokeWidth: 1.2, lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false });
+        board.create('arrow', [[0, -84], [0, 88]], { strokeColor: AX, strokeWidth: 1.2, lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false });
+
+        // t ticks every 1, numbers every 2
+        for (i = 1; i <= 9; i++) {
+            board.create('segment', [[i, -1.6], [i, 1.6]], { strokeColor: AX, strokeWidth: 1.0, fixed: true, highlight: false });
+            var lft = (i === 4);   // the curve crosses the axis just right of t = 4
+            board.create('text', [lft ? i - 0.12 : i + 0.12, -5, String(i)], { fontSize: 11, color: AX, anchorX: lft ? 'right' : 'left', anchorY: 'middle', fixed: true, highlight: false });
+        }
+        // v ticks + numbers every 16
+        for (i = -80; i <= 80; i += 16) {
+            if (i === 0) continue;
+            board.create('segment', [[-0.07, i], [0.07, i]], { strokeColor: AX, strokeWidth: 1.0, fixed: true, highlight: false });
+            board.create('text', [-0.15, i, String(i)], { fontSize: 11, color: AX, anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false });
+        }
+        board.create('text', [-0.15, -5, '0'], { fontSize: 11, color: AX, anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false });
+
+        // Axis names
+        board.create('text', [9.4, 6, 't'], { useKatex: true, fontSize: 14, color: AX, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+        board.create('text', [0.12, 86, 'v'], { useKatex: true, fontSize: 14, color: AX, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false });
+
+        // Curve pieces
+        board.create('functiongraph', [function (t) { return 16 * t * t; }, 0, 2], { strokeColor: V_COL, strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('functiongraph', [function (t) { return 64 - 32 * (t - 2); }, 2, 6], { strokeColor: V_COL, strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('functiongraph', [function (t) { return -8 - 56 * Math.exp(-2 * (t - 6)); }, 6, 9], { strokeColor: V_COL, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Curve label near the peak
+        board.create('text', [2.25, 70, 'v(t)'], { useKatex: true, fontSize: 13, color: V_COL, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false });
+    </script>
+</body>
+</html>
