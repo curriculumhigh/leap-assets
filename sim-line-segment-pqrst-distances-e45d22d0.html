@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Line Segment PQRST</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 3, 22, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL = '#2563EB';
+
+        // Point positions on x-axis
+        var pts = [
+            { name: 'P', x: 0 },
+            { name: 'Q', x: 3 },
+            { name: 'R', x: 11 },
+            { name: 'S', x: 16 },
+            { name: 'T', x: 20 }
+        ];
+
+        // Blue segment from P to T
+        board.create('segment', [[pts[0].x, 0], [pts[pts.length - 1].x, 0]], {
+            strokeColor: COL, strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // Blue dots and letter labels
+        for (var i = 0; i < pts.length; i++) {
+            board.create('point', [pts[i].x, 0], {
+                name: '', size: 4, color: COL, fixed: true, highlight: false,
+                showInfobox: false
+            });
+
+            board.create('text', [pts[i].x, 1.1, pts[i].name], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 15, color: COL, fixed: true, highlight: false,
+                useKatex: true
+            });
+        }
+
+        // Gap distance labels between consecutive points
+        var gaps = [3, 8, 5, 4];
+        for (var j = 0; j < gaps.length; j++) {
+            var midX = (pts[j].x + pts[j + 1].x) / 2;
+            board.create('text', [midX, -1.2, String(gaps[j])], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 14, color: '#222222', fixed: true, highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
