@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piecewise Velocity & Particle Motion</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); display: flex; flex-direction: column; gap: 6px; }
+        .card { background: white; border-radius: 8px; padding: 10px; flex-shrink: 0; }
+        .graph-card { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+        #vboard { width: 100%; flex: 1; min-height: 0; }
+        .track-card { height: 72px; padding: 6px 10px; }
+        #tboard { width: 100%; height: 100%; }
+        .controls-strip {
+            display: flex; align-items: center; gap: 10px;
+            background: white; border-radius: 8px; padding: 8px 14px;
+            flex-shrink: 0;
+        }
+        .ctrl-btn {
+            font-size: 14px; padding: 4px 14px; border: 1px solid #d0d0d0;
+            border-radius: 5px; background: #f5f5f5; color: #444; cursor: pointer;
+            font-weight: 600; min-width: 70px; text-align: center;
+        }
+        .ctrl-btn:hover { background: #e8e8e8; }
+        .slider-wrap { flex: 1; display: flex; align-items: center; gap: 8px; }
+        .slider-wrap label { font-size: 13px; font-weight: 600; color: #555; white-space: nowrap; }
+        .slider-wrap input[type=range] {
+            flex: 1; -webkit-appearance: none; appearance: none;
+            height: 5px; border-radius: 3px; background: #e5e7eb; outline: none;
+        }
+        .slider-wrap input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 16px; height: 16px; border-radius: 50%; background: #2563EB; cursor: pointer;
+        }
+        .readout { font-size: 13px; color: #444; font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 180px; text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card graph-card">
+            <div id="vboard"></div>
+        </div>
+        <div class="card track-card">
+            <div id="tboard"></div>
+        </div>
+        <div class="controls-strip">
+            <button class="ctrl-btn" id="play-btn">▶ Play</button>
+            <button class="ctrl-btn" id="reset-btn">↺ Reset</button>
+            <div class="slider-wrap">
+                <label for="t-slider">t</label>
+                <input type="range" id="t-slider" min="0" max="8" step="0.02" value="0">
+            </div>
+            <div class="readout" id="readout">t = 0.00 s,&nbsp; s = −3.00 m</div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        /* ── velocity piecewise-linear segments ── */
+        var segs = [
+            {t0:0, t1:2, v0:4, v1:4},
+            {t0:2, t1:4, v0:4, v1:0},
+            {t0:4, t1:5, v0:0, v1:-2},
+            {t0:5, t1:7, v0:-2, v1:-2},
+            {t0:7, t1:8, v0:-2, v1:0}
+        ];
+
+        function vAt(t) {
+            if (t <= 0) return 4;
+            for (var i = 0; i < segs.length; i++) {
+                var s = segs[i];
+                if (t >= s.t0 && t <= s.t1) {
+                    var frac = (t - s.t0) / (s.t1 - s.t0);
+                    return s.v0 + frac * (s.v1 - s.v0);
+                }
+            }
+            return 0;
+        }
+
+        /* signed area from 0 to t (trapezoid integration along segments) */
+        function signedArea(t) {
+            var area = 0;
+            for (var i = 0; i < segs.length; i++) {
+                var s = segs[i];
+                if (t <= s.t0) break;
+                var tEnd = Math.min(t, s.t1);
+                /* find zero crossing in this segment if signs differ */
+                var v0 = s.v0, v1s = s.v0 + (tEnd - s.t0) / (s.t1 - s.t0) * (s.v1 - s.v0);
+                var dt = tEnd - s.t0;
+                area += 0.5 * (v0 + v1s) * dt;
+            }
+            return area;
+        }
+
+        function sAt(t) {
+            return -3 + signedArea(t);
+        }
+
+        /* ── Velocity board ── */
+        var vboard = JXG.JSXGraph.initBoard('vboard', {
+            boundingbox: [-0.7, 5.4, 8.9, -3.4],
+            axis: false, grid: false,
+            showNavigation: false, showCopyright: false,
+            pan: {enabled: false}, zoom: {enabled: false}
+        });
+
+        /* grid */
+        var gx, gy;
+        for (gx = 0; gx <= 8; gx++) {
+            vboard.create('line', [[gx, -3], [gx, 5]], {strokeColor:'#D1D5DB', strokeWidth:0.4, fixed:true, highlight:false, straightFirst:false, straightLast:false, point1:{visible:false}, point2:{visible:false}});
+        }
+        for (gy = -3; gy <= 5; gy++) {
+            vboard.create('line', [[0, gy], [8, gy]], {strokeColor:'#D1D5DB', strokeWidth:0.4, fixed:true, highlight:false, straightFirst:false, straightLast:false, point1:{visible:false}, point2:{visible:false}});
+        }
+
+        /* axes */
+        var xax = vboard.create('arrow', [[-0.4, 0], [8.6, 0]], {strokeColor:'#444444', strokeWidth:1.2, fixed:true, highlight:false, lastArrow:{type:2, size:6}});
+        var yax = vboard.create('arrow', [[0, -3.1], [0, 5.2]], {strokeColor:'#444444', strokeWidth:1.2, fixed:true, highlight:false, lastArrow:{type:2, size:6}});
+
+        /* x ticks + labels */
+        for (gx = 1; gx <= 8; gx++) {
+            vboard.create('segment', [[gx, -0.12], [gx, 0.12]], {strokeColor:'#444444', strokeWidth:1.0, fixed:true, highlight:false});
+            vboard.create('text', [gx, -0.45, String(gx)], {fontSize:11, anchorX:'middle', color:'#444444', fixed:true, highlight:false});
+        }
+        /* y ticks + labels (every 1 tick, label even) */
+        for (gy = -3; gy <= 5; gy++) {
+            if (gy === 0) continue;
+            vboard.create('segment', [[-0.12, gy], [0.12, gy]], {strokeColor:'#444444', strokeWidth:1.0, fixed:true, highlight:false});
+            if (gy % 2 === 0) {
+                vboard.create('text', [-0.4, gy, String(gy)], {fontSize:11, anchorX:'right', anchorY:'middle', color:'#444444', fixed:true, highlight:false});
+            }
+        }
+
+        /* axis labels */
+        vboard.create('text', [8.45, -0.45, 't (s)'], {fontSize:13, color:'#444444', fixed:true, highlight:false, cssStyle:'font-style:italic'});
+        vboard.create('text', [0.25, 5.05, 'v (m/s)'], {fontSize:13, color:'#444444', fixed:true, highlight:false, cssStyle:'font-style:italic'});
+
+        /* ── shaded regions (dynamic, up to current t) ── */
+        /* We build the shading as two polygon-like curves:
+           one for positive area, one for negative, clipped to current t */
+
+        var curT = 0;
+
+        /* helper: get polyline vertices from 0..t along the velocity curve,
+           split at zero crossings, return arrays for pos and neg fills */
+        function buildFillPaths(t) {
+            var posPath = []; // arrays of {t, v} segments (each a polygon)
+            var negPath = [];
+            var posRun = [];
+            var negRun = [];
+
+            function pushPos(tt, vv) { posRun.push([tt, vv]); }
+            function pushNeg(tt, vv) { negRun.push([tt, vv]); }
+            function flushPos() { if (posRun.length > 1) { posPath.push(posRun); } posRun = []; }
+            function flushNeg() { if (negRun.length > 1) { negPath.push(negRun); } negRun = []; }
+
+            for (var i = 0; i < segs.length; i++) {
+                var s = segs[i];
+                if (t <= s.t0) break;
+                var tEnd = Math.min(t, s.t1);
+                var va = s.v0;
+                var vb = s.v0 + (tEnd - s.t0) / (s.t1 - s.t0) * (s.v1 - s.v0);
+
+                /* check for zero crossing */
+                var tZero = -1;
+                if (va * vb < 0) {
+                    /* linear interpolation to find zero */
+                    var slope = (s.v1 - s.v0) / (s.t1 - s.t0);
+                    tZero = s.t0 + (-s.v0 / slope);
+                    if (tZero < s.t0 || tZero > tEnd) tZero = -1;
+                }
+
+                if (tZero > 0) {
+                    /* first half */
+                    if (va >= 0) { pushPos(s.t0, va); pushPos(tZero, 0); flushPos(); }
+                    else { pushNeg(s.t0, va); pushNeg(tZero, 0); flushNeg(); }
+                    /* second half */
+                    if (vb >= 0) { pushPos(tZero, 0); pushPos(tEnd, vb); }
+                    else { pushNeg(tZero, 0); pushNeg(tEnd, vb); }
+                } else {
+                    if (va >= 0 && vb >= 0) { pushPos(s.t0, va); pushPos(tEnd, vb); }
+                    else if (va <= 0 && vb <= 0) { pushNeg(s.t0, va); pushNeg(tEnd, vb); }
+                    else { pushPos(s.t0, va); pushPos(tEnd, vb); }
+                }
+            }
+            flushPos();
+            flushNeg();
+            return {pos: posPath, neg: negPath};
+        }
+
+        /* We'll draw fills using JXG curves updated on each frame */
+        /* Strategy: pre-create a set of polygon-like curve objects and update their data */
+        var MAX_FILLS = 6;
+        var posFills = [];
+        var negFills = [];
+        for (var fi = 0; fi < MAX_FILLS; fi++) {
+            posFills.push(vboard.create('curve', [[], []], {
+                strokeColor: 'rgba(34,197,94,0.6)', strokeWidth: 1,
+                fillColor: 'rgba(34,197,94,0.35)', fillOpacity: 1,
+                fixed: true, highlight: false, visible: false
+            }));
+            negFills.push(vboard.create('curve', [[], []], {
+                strokeColor: 'rgba(239,68,68,0.5)', strokeWidth: 1,
+                fillColor: 'rgba(239,68,68,0.30)', fillOpacity: 1,
+                fixed: true, highlight: false, visible: false
+            }));
+        }
+
+        function updateFills(t) {
+            var paths = buildFillPaths(t);
+            var i;
+            for (i = 0; i < MAX_FILLS; i++) {
+                if (i < paths.pos.length) {
+                    var pp = paths.pos[i];
+                    var xd = [], yd = [];
+                    /* close polygon: trace along curve then back along t-axis */
+                    for (var j = 0; j < pp.length; j++) { xd.push(pp[j][0]); yd.push(pp[j][1]); }
+                    xd.push(pp[pp.length-1][0]); yd.push(0);
+                    xd.push(pp[0][0]); yd.push(0);
+                    xd.push(pp[0][0]); yd.push(pp[0][1]);
+                    posFills[i].dataX = xd;
+                    posFills[i].dataY = yd;
+                    posFills[i].setAttribute({visible: true});
+                } else {
+                    posFills[i].setAttribute({visible: false});
+                    posFills[i].dataX = [];
+                    posFills[i].dataY = [];
+                }
+                if (i < paths.neg.length) {
+                    var np = paths.neg[i];
+                    var xn = [], yn = [];
+                    for (var k = 0; k < np.length; k++) { xn.push(np[k][0]); yn.push(np[k][1]); }
+                    xn.push(np[np.length-1][0]); yn.push(0);
+                    xn.push(np[0][0]); yn.push(0);
+                    xn.push(np[0][0]); yn.push(np[0][1]);
+                    negFills[i].dataX = xn;
+                    negFills[i].dataY = yn;
+                    negFills[i].setAttribute({visible: true});
+                } else {
+                    negFills[i].setAttribute({visible: false});
+                    negFills[i].dataX = [];
+                    negFills[i].dataY = [];
+                }
+            }
+        }
+
+        /* velocity polyline */
+        var vpts = [[0,4],[2,4],[4,0],[5,-2],[7,-2],[8,0]];
+        var vxs = [], vys = [];
+        for (var vi = 0; vi < vpts.length; vi++) { vxs.push(vpts[vi][0]); vys.push(vpts[vi][1]); }
+        vboard.create('curve', [vxs, vys], {strokeColor:'#2563EB', strokeWidth:1.8, fixed:true, highlight:false});
+
+        /* vertical marker line */
+        var markerLine = vboard.create('segment', [[0, -3], [0, 5]], {
+            strokeColor: '#1E293B', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false, visible: false
+        });
+
+        /* ── Track board (number line) ── */
+        var tboard = JXG.JSXGraph.initBoard('tboard', {
+            boundingbox: [-4.8, 2.8, 10.8, -1.2],
+            axis: false, grid: false,
+            showNavigation: false, showCopyright: false,
+            pan: {enabled: false}, zoom: {enabled: false}
+        });
+
+        /* number line axis */
+        tboard.create('arrow', [[-4.5, 0], [10.5, 0]], {strokeColor:'#444444', strokeWidth:1.2, fixed:true, highlight:false, lastArrow:{type:2, size:6}, firstArrow:{type:2, size:6}});
+
+        /* ticks */
+        for (var nt = -4; nt <= 10; nt++) {
+            var th = (nt % 2 === 0) ? 0.25 : 0.15;
+            tboard.create('segment', [[nt, -th], [nt, th]], {strokeColor:'#444444', strokeWidth:1.0, fixed:true, highlight:false});
+            if (nt % 2 === 0) {
+                tboard.create('text', [nt, -0.55, String(nt)], {fontSize:11, anchorX:'middle', color:'#444444', fixed:true, highlight:false});
+            }
+        }
+        tboard.create('text', [10.3, -0.55, 's (m)'], {fontSize:11, color:'#444444', fixed:true, highlight:false, cssStyle:'font-style:italic'});
+
+        /* start marker — hollow circle */
+        tboard.create('point', [-3, 0], {
+            name: '', size: 5, fixed: true, highlight: false,
+            fillColor: '#ffffff', strokeColor: '#888888', strokeWidth: 1.5
+        });
+        tboard.create('text', [-3, 0.55, 'start'], {fontSize:10, anchorX:'middle', color:'#888888', fixed:true, highlight:false});
+
+        /* trail: green (rightward) and red (leftward) arrows, drawn as curves */
+        var TRAIL_Y_FWD = 0.7;
+        var TRAIL_Y_REV = 1.2;
+
+        var trailFwd = tboard.create('curve', [[], []], {
+            strokeColor: 'rgba(34,197,94,0.7)', strokeWidth: 3, fixed: true, highlight: false,
+            lastArrow: {type: 2, size: 5}, visible: false
+        });
+        var trailRev = tboard.create('curve', [[], []], {
+            strokeColor: 'rgba(239,68,68,0.6)', strokeWidth: 3, fixed: true, highlight: false,
+            lastArrow: {type: 2, size: 5}, visible: false
+        });
+
+        /* particle dot */
+        var particlePt = tboard.create('point', [-3, 0], {
+            name: '', size: 5, color: '#1E293B', fixed: true, highlight: false
+        });
+
+        /* ── Build trail data ── */
+        /* We precompute the path: sample s at fine intervals, detect direction changes */
+        function buildTrail(t) {
+            /* sample positions */
+            var samples = [];
+            var dt = 0.05;
+            for (var tt = 0; tt <= t + 0.001; tt += dt) {
+                var tc = Math.min(tt, t);
+                samples.push({t: tc, s: sAt(tc)});
+            }
+            if (samples.length === 0) return {fwd: null, rev: null};
+
+            /* find turnaround: max s position (where v crosses zero going negative) */
+            /* For this specific curve: v=0 at t=4, then v<0 until t=8 */
+            /* So rightward leg: s(0) to s(4), leftward leg: s(4) to s(t) if t>4 */
+
+            var s0 = -3;
+            var sTurn = sAt(Math.min(t, 4));
+            var sCur = sAt(t);
+
+            var fwd = null, rev = null;
+
+            if (t > 0.01) {
+                /* rightward leg: from s0 to sTurn (or sCur if t<=4) */
+                var fwdEnd = (t <= 4) ? sCur : sTurn;
+                if (fwdEnd > s0 + 0.05) {
+                    fwd = {x0: s0, x1: fwdEnd, y: TRAIL_Y_FWD};
+                }
+            }
+            if (t > 4.01) {
+                /* leftward leg: from sTurn to sCur */
+                if (sTurn - sCur > 0.05) {
+                    rev = {x0: sTurn, x1: sCur, y: TRAIL_Y_REV};
+                }
+            }
+
+            return {fwd: fwd, rev: rev};
+        }
+
+        function updateTrail(t) {
+            var trail = buildTrail(t);
+            if (trail.fwd) {
+                trailFwd.dataX = [trail.fwd.x0, trail.fwd.x1];
+                trailFwd.dataY = [trail.fwd.y, trail.fwd.y];
+                trailFwd.setAttribute({visible: true});
+            } else {
+                trailFwd.dataX = [];
+                trailFwd.dataY = [];
+                trailFwd.setAttribute({visible: false});
+            }
+            if (trail.rev) {
+                trailRev.dataX = [trail.rev.x0, trail.rev.x1];
+                trailRev.dataY = [trail.rev.y, trail.rev.y];
+                trailRev.setAttribute({visible: true});
+            } else {
+                trailRev.dataX = [];
+                trailRev.dataY = [];
+                trailRev.setAttribute({visible: false});
+            }
+        }
+
+        /* ── Master update ── */
+        var slider = document.getElementById('t-slider');
+        var readoutEl = document.getElementById('readout');
+
+        function formatS(v) {
+            /* show minus sign as −, not hyphen */
+            var str = v.toFixed(2);
+            if (v < 0) str = '\u2212' + Math.abs(v).toFixed(2);
+            return str;
+        }
+
+        function masterUpdate(t) {
+            curT = t;
+
+            /* velocity board */
+            updateFills(t);
+            if (t > 0.01) {
+                markerLine.point1.setPosition(JXG.COORDS_BY_USER, [t, -3]);
+                markerLine.point2.setPosition(JXG.COORDS_BY_USER, [t, vAt(t)]);
+                markerLine.setAttribute({visible: true});
+            } else {
+                markerLine.setAttribute({visible: false});
+            }
+            vboard.update();
+
+            /* track */
+            var s = sAt(t);
+            particlePt.setPosition(JXG.COORDS_BY_USER, [s, 0]);
+            updateTrail(t);
+            tboard.update();
+
+            /* readout */
+            readoutEl.innerHTML = 't = ' + t.toFixed(2) + ' s, &nbsp;s = ' + formatS(s) + ' m';
+        }
+
+        masterUpdate(0);
+
+        /* slider */
+        slider.addEventListener('input', function() {
+            var t = parseFloat(this.value);
+            masterUpdate(t);
+            if (animRunning) stopAnim();
+        });
+
+        /* ── Animation ── */
+        var animRunning = false;
+        var animId = null;
+        var animStart = null;
+        var ANIM_DURATION = 6000; // ms
+
+        var playBtn = document.getElementById('play-btn');
+        var resetBtn = document.getElementById('reset-btn');
+
+        function startAnim() {
+            animRunning = true;
+            playBtn.textContent = '⏸ Pause';
+            var startT = parseFloat(slider.value);
+            if (startT >= 7.98) startT = 0;
+            animStart = performance.now() - (startT / 8) * ANIM_DURATION;
+
+            function frame(now) {
+                if (!animRunning) return;
+                var elapsed = now - animStart;
+                var frac = elapsed / ANIM_DURATION;
+                if (frac >= 1) {
+                    frac = 1;
+                    animRunning = false;
+                    playBtn.textContent = '▶ Play';
+                }
+                var t = frac * 8;
+                slider.value = t;
+                masterUpdate(t);
+                if (animRunning) animId = requestAnimationFrame(frame);
+            }
+            animId = requestAnimationFrame(frame);
+        }
+
+        function stopAnim() {
+            animRunning = false;
+            playBtn.textContent = '▶ Play';
+            if (animId) cancelAnimationFrame(animId);
+        }
+
+        playBtn.addEventListener('click', function() {
+            if (animRunning) { stopAnim(); }
+            else { startAnim(); }
+        });
+
+        resetBtn.addEventListener('click', function() {
+            stopAnim();
+            slider.value = 0;
+            masterUpdate(0);
+        });
+    })();
+    </script>
+</body>
+</html>
