@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velocity Graph</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.9.2/jsxgraph.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.9.2/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.6, 5.2, 9, -3.6],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Grid lines ─────────────────────────────────────────────── */
+        var i;
+        // Vertical grid lines t = 0..8
+        for (i = 0; i <= 8; i++) {
+            board.create('line', [[i, -4], [i, 6]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                straightFirst: true, straightLast: true,
+                fixed: true, highlight: false
+            });
+        }
+        // Horizontal grid lines v = -3..5
+        for (i = -3; i <= 5; i++) {
+            board.create('line', [[-1, i], [10, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                straightFirst: true, straightLast: true,
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── Axes ───────────────────────────────────────────────────── */
+        // t-axis (horizontal)
+        var tAxis = board.create('arrow', [[-0.5, 0], [8.8, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        // v-axis (vertical)
+        var vAxis = board.create('arrow', [[0, -3.4], [0, 5.05]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        /* ── Tick marks and labels ──────────────────────────────────── */
+        var tickLen = 0.12;
+
+        // t-axis ticks: 1 to 8
+        for (i = 1; i <= 8; i++) {
+            board.create('segment', [[i, -tickLen], [i, tickLen]], {
+                strokeColor: '#444444', strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            board.create('text', [i, -0.38, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // v-axis ticks: -3 to 5 (skip 0)
+        for (i = -3; i <= 5; i++) {
+            if (i === 0) continue;
+            board.create('segment', [[-tickLen, i], [tickLen, i]], {
+                strokeColor: '#444444', strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            board.create('text', [-0.32, i, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Origin label
+        board.create('text', [-0.25, -0.32, '0'], {
+            fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        /* ── Axis name labels ───────────────────────────────────────── */
+        board.create('text', [8.55, -0.42, '<i>t</i> (s)'], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+        board.create('text', [0.35, 4.95, '<i>v</i> (m/s)'], {
+            fontSize: 14, color: '#222222', anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        /* ── Piecewise linear curve ─────────────────────────────────── */
+        var pts = [[0,4],[2,4],[4,0],[5,-2],[7,-2],[8,0]];
+        var COL = '#2563EB';
+
+        for (i = 0; i < pts.length - 1; i++) {
+            board.create('segment', [pts[i], pts[i + 1]], {
+                strokeColor: COL, strokeWidth: 2.5,
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── Corner dots ────────────────────────────────────────────── */
+        for (i = 0; i < pts.length; i++) {
+            board.create('point', pts[i], {
+                name: '', size: 2.5, color: COL,
+                fixed: true, highlight: false, showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
