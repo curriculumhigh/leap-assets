@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Line Segment A to E</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 4, 40, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        var xA = 1;
+        var xB = xA + 8;
+        var xC = xB + 12;
+        var xD = xC + 10;
+        var xE = xD + 6;
+
+        var Y = 0;
+
+        // Main segment
+        board.create('segment', [[xA, Y], [xE, Y]], {
+            strokeColor: '#555555', strokeWidth: 2.2, fixed: true, highlight: false
+        });
+
+        // Points and labels
+        var pts = [
+            { x: xA, name: 'A' },
+            { x: xB, name: 'B' },
+            { x: xC, name: 'C' },
+            { x: xD, name: 'D' },
+            { x: xE, name: 'E' }
+        ];
+
+        for (var i = 0; i < pts.length; i++) {
+            board.create('point', [pts[i].x, Y], {
+                name: '', size: 2.5, color: '#222222', fixed: true,
+                highlight: false, showInfobox: false
+            });
+
+            board.create('text', [pts[i].x, Y + 0.2, '<b>' + pts[i].name + '</b>'], {
+                anchorX: 'middle', anchorY: 'bottom',
+                fontSize: 15, color: '#222222', fixed: true, highlight: false
+            });
+        }
+
+        // Distance labels
+        var gaps = [
+            { x1: xA, x2: xB, label: '8 m' },
+            { x1: xB, x2: xC, label: '12 m' },
+            { x1: xC, x2: xD, label: '10 m' },
+            { x1: xD, x2: xE, label: '6 m' }
+        ];
+
+        for (var g = 0; g < gaps.length; g++) {
+            var midX = (gaps[g].x1 + gaps[g].x2) / 2;
+
+            board.create('text', [midX, Y - 0.2, '<b>' + gaps[g].label + '</b>'], {
+                anchorX: 'middle', anchorY: 'top',
+                fontSize: 13, color: '#3B82F6', fixed: true, highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
