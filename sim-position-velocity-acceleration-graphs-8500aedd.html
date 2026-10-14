@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Position, velocity and acceleration graphs</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        // Static graphs of s(t) = t^3 - 15t^2 + 63t, v(t) = s'(t) and a(t) = v'(t) for 0 <= t <= 9 on one board (rules not shown).
+        function S(t) { return t * t * t - 15 * t * t + 63 * t; }
+        function V(t) { return 3 * t * t - 30 * t + 63; }
+        function A(t) { return 6 * t - 30; }
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.75, 106, 9.75, -47],
+            axis: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+        var i, AX = '#444444', GRID = '#D1D5DB';
+        var S_COL = '#222222', V_COL = '#2563EB', A_COL = '#059669';
+
+        // Grid: every 1 in t, every 10 vertically
+        for (i = 1; i <= 9; i++) {
+            board.create('segment', [[i, -40], [i, 100]], { strokeColor: GRID, strokeWidth: 0.4, fixed: true, highlight: false });
+        }
+        for (i = -40; i <= 100; i += 10) {
+            if (i === 0) continue;
+            board.create('segment', [[0, i], [9.35, i]], { strokeColor: GRID, strokeWidth: 0.4, fixed: true, highlight: false });
+        }
+
+        // Light dashed guides at t = 3, 5, 7
+        [3, 5, 7].forEach(function (g) {
+            board.create('segment', [[g, -40], [g, 100]], { strokeColor: '#9CA3AF', strokeWidth: 1, dash: 2, fixed: true, highlight: false });
+        });
+
+        // Axes
+        board.create('arrow', [[-0.15, 0], [9.55, 0]], { strokeColor: AX, strokeWidth: 1.2, lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false });
+        board.create('arrow', [[0, -42], [0, 104]], { strokeColor: AX, strokeWidth: 1.2, lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false });
+
+        // t ticks + numbers (placed on the side of each tick away from the curves crossing the axis)
+        var leftSide = { 3: true };
+        for (i = 1; i <= 9; i++) {
+            board.create('segment', [[i, -1.5], [i, 1.5]], { strokeColor: AX, strokeWidth: 1.0, fixed: true, highlight: false });
+            var l = !!leftSide[i];
+            var y = (i === 4) ? 5.5 : -5.5;   // at t = 4 both v and a run just below the axis, so this number goes above it
+            board.create('text', [l ? i - 0.1 : i + 0.1, y, String(i)], { fontSize: 11, color: AX, anchorX: l ? 'right' : 'left', anchorY: 'middle', fixed: true, highlight: false });
+        }
+        // vertical ticks + numbers every 20
+        for (i = -40; i <= 100; i += 20) {
+            if (i === 0) continue;
+            board.create('segment', [[-0.08, i], [0.08, i]], { strokeColor: AX, strokeWidth: 1.0, fixed: true, highlight: false });
+            board.create('text', [-0.15, i, String(i)], { fontSize: 11, color: AX, anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false });
+        }
+        board.create('text', [-0.15, -5.5, '0'], { fontSize: 11, color: AX, anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false });
+
+        // Axis name
+        board.create('text', [9.5, 5, 't'], { useKatex: true, fontSize: 14, color: AX, anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+
+        // Curves
+        board.create('functiongraph', [S, 0, 9], { strokeColor: S_COL, strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('functiongraph', [V, 0, 9], { strokeColor: V_COL, strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('functiongraph', [A, 0, 9], { strokeColor: A_COL, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Curve labels near the right end of each curve
+        board.create('text', [9.1, S(9), 's(t)'], { useKatex: true, fontSize: 13, color: S_COL, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false });
+        board.create('text', [9.1, V(9) + 2, 'v(t)'], { useKatex: true, fontSize: 13, color: V_COL, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false });
+        board.create('text', [9.1, A(9) - 3, 'a(t)'], { useKatex: true, fontSize: 13, color: A_COL, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false });
+    </script>
+</body>
+</html>
