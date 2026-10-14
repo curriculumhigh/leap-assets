@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shuttle Wait Time Area Model</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 12.5, 10, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_BLUE = '#2563EB';
+        var COL_GREEN = '#059669';
+        var COL_OUTLINE = '#555555';
+        var COL_AXIS = '#444444';
+
+        // ── Shaded strips (drawn FIRST so rectangle outline sits on top) ─
+
+        // Vertical strip: x ≤ 4 (full height of rectangle)
+        var vsP1 = board.create('point', [0, 0], { visible: false, fixed: true, name: '' });
+        var vsP2 = board.create('point', [4, 0], { visible: false, fixed: true, name: '' });
+        var vsP3 = board.create('point', [4, 10], { visible: false, fixed: true, name: '' });
+        var vsP4 = board.create('point', [0, 10], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [vsP1, vsP2, vsP3, vsP4], {
+            fillColor: COL_BLUE, fillOpacity: 0.12,
+            borders: { strokeWidth: 0, strokeColor: 'transparent' },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Horizontal strip: y ≤ 4 (full width of rectangle)
+        var hsP1 = board.create('point', [0, 0], { visible: false, fixed: true, name: '' });
+        var hsP2 = board.create('point', [8, 0], { visible: false, fixed: true, name: '' });
+        var hsP3 = board.create('point', [8, 4], { visible: false, fixed: true, name: '' });
+        var hsP4 = board.create('point', [0, 4], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [hsP1, hsP2, hsP3, hsP4], {
+            fillColor: COL_GREEN, fillOpacity: 0.12,
+            borders: { strokeWidth: 0, strokeColor: 'transparent' },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Rectangle outline (sample space) ────────────────────────────
+        var rP1 = board.create('point', [0, 0], { visible: false, fixed: true, name: '' });
+        var rP2 = board.create('point', [8, 0], { visible: false, fixed: true, name: '' });
+        var rP3 = board.create('point', [8, 10], { visible: false, fixed: true, name: '' });
+        var rP4 = board.create('point', [0, 10], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [rP1, rP2, rP3, rP4], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_OUTLINE, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Dashed boundary lines for the strips ────────────────────────
+        // Vertical line at x = 4
+        board.create('segment', [[4, 0], [4, 10]], {
+            strokeColor: COL_BLUE, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        // Horizontal line at y = 4
+        board.create('segment', [[0, 4], [8, 4]], {
+            strokeColor: COL_GREEN, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Custom axes ─────────────────────────────────────────────────
+        // x-axis
+        board.create('arrow', [[-0.3, 0], [9.2, 0]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        // y-axis
+        board.create('arrow', [[0, -0.3], [0, 11.5]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // ── Tick marks and labels ───────────────────────────────────────
+        var tickLen = 0.2;
+        var i;
+
+        // x-axis ticks (every 2, labeled)
+        for (i = 0; i <= 8; i += 2) {
+            if (i === 0) continue;
+            board.create('segment', [[i, -tickLen], [i, tickLen]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [i, -0.7, String(i)], {
+                fontSize: 11, color: '#333', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // y-axis ticks (every 2, labeled)
+        for (i = 0; i <= 10; i += 2) {
+            if (i === 0) continue;
+            board.create('segment', [[-tickLen, i], [tickLen, i]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [-0.6, i, String(i)], {
+                fontSize: 11, color: '#333', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Origin label
+        board.create('text', [-0.45, -0.6, '0'], {
+            fontSize: 11, color: '#333', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Axis title labels ───────────────────────────────────────────
+        // x-axis title — below axis, centered on rectangle
+        board.create('text', [4, -1.7, '\\text{Wait for Shuttle X (0\u20138 min)}'], {
+            fontSize: 13, color: '#333', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // y-axis title — rotated, left of axis, centered on rectangle height
+        board.create('text', [-1.8, 5, '\\text{Wait for Shuttle Y (0\u201310 min)}'], {
+            fontSize: 13, color: '#333', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false,
+            rotate: 90
+        });
+
+        // ── Strip labels ────────────────────────────────────────────────
+        // "x ≤ 4" label — in upper portion of vertical strip, avoiding overlap zone
+        board.create('text', [2, 7.5, 'x \\leq 4'], {
+            fontSize: 14, color: COL_BLUE, anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold;'
+        });
+
+        // "y ≤ 4" label — in right portion of horizontal strip, avoiding overlap zone
+        board.create('text', [6.2, 2, 'y \\leq 4'], {
+            fontSize: 14, color: COL_GREEN, anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold;'
+        });
+
+    </script>
+</body>
+</html>
