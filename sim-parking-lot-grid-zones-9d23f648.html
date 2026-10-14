@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parking Lot Grid</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 4.7, 5.8, -0.7],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Zone helper ─────────────────────────────────────────────────
+        function makeZone(x1, y1, x2, y2, fillColor, label) {
+            var p1 = board.create('point', [x1, y1], { visible: false, name: '' });
+            var p2 = board.create('point', [x2, y1], { visible: false, name: '' });
+            var p3 = board.create('point', [x2, y2], { visible: false, name: '' });
+            var p4 = board.create('point', [x1, y2], { visible: false, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: fillColor,
+                fillOpacity: 0.15,
+                borders: { visible: false },
+                vertices: { visible: false },
+                hasInnerPoints: false,
+                fixed: true,
+                highlight: false
+            });
+            var cx = (x1 + x2) / 2;
+            var cy = (y1 + y2) / 2;
+            board.create('text', [cx, cy, label], {
+                anchorX: 'middle',
+                anchorY: 'middle',
+                fontSize: 15,
+                color: '#222222',
+                cssStyle: 'font-weight:bold',
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // ── Zones ───────────────────────────────────────────────────────
+        makeZone(0, 2, 2, 4, '#DC2626', 'Staff');
+        makeZone(2, 2, 3, 4, '#D97706', 'Visitors');
+        makeZone(0, 0, 3, 2, '#7C3AED', 'Buses');
+        makeZone(3, 0, 5, 4, '#059669', 'Students');
+
+        // ── Grid lines ──────────────────────────────────────────────────
+        var borderColor = '#555555';
+        var borderWidth = 1.5;
+        var innerColor = '#555555';
+        var innerWidth = 0.7;
+        var i;
+
+        // Vertical lines x = 0 to 5
+        for (i = 0; i <= 5; i++) {
+            var isBorderV = (i === 0 || i === 5);
+            board.create('segment', [[i, 0], [i, 4]], {
+                strokeColor: isBorderV ? borderColor : innerColor,
+                strokeWidth: isBorderV ? borderWidth : innerWidth,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // Horizontal lines y = 0 to 4
+        for (i = 0; i <= 4; i++) {
+            var isBorderH = (i === 0 || i === 4);
+            board.create('segment', [[0, i], [5, i]], {
+                strokeColor: isBorderH ? borderColor : innerColor,
+                strokeWidth: isBorderH ? borderWidth : innerWidth,
+                fixed: true,
+                highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
