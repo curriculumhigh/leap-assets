@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Line — Points A through E</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var BLUE = '#2563EB';
+        var DOT_SIZE = 2.5;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 3, 20, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var pos = [0, 5, 9, 15, 18];
+        var names = ['A', 'B', 'C', 'D', 'E'];
+        var distances = [5, 4, 6, 3];
+        var Y = 0;
+
+        // Horizontal line from A to E
+        board.create('segment', [[pos[0], Y], [pos[4], Y]], {
+            strokeColor: BLUE, strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // Points and labels
+        for (var i = 0; i < names.length; i++) {
+            board.create('point', [pos[i], Y], {
+                name: '', size: DOT_SIZE, color: BLUE, fixed: true, highlight: false, showInfobox: false
+            });
+
+            board.create('text', [pos[i], Y + 0.1, names[i]], {
+                anchorX: 'middle', anchorY: 'bottom',
+                fontSize: 14, color: '#222222', fixed: true, highlight: false,
+                useKatex: true
+            });
+        }
+
+        // Distance labels
+        for (var d = 0; d < distances.length; d++) {
+            var midX = (pos[d] + pos[d + 1]) / 2;
+
+            board.create('text', [midX, Y - 0.1, String(distances[d])], {
+                anchorX: 'middle', anchorY: 'top',
+                fontSize: 13, color: '#222222', fixed: true, highlight: false,
+                useKatex: true
+            });
+        }
+    </script>
+</body>
+</html>
