@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velocity Graph & Particle Motion</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); display: flex; flex-direction: column; gap: 6px; }
+        .card { background: white; border-radius: 8px; padding: 10px; flex-shrink: 0; }
+        .graph-card { flex: 1; min-height: 0; }
+        #graph-board { width: 100%; height: 100%; }
+        .track-card { height: 72px; position: relative; }
+        #track-board { width: 100%; height: 100%; }
+        .controls-card { display: flex; align-items: center; gap: 10px; padding: 8px 14px; }
+        .ctrl-btn { font-size: 13px; padding: 4px 12px; border: 1px solid #d0d0d0; border-radius: 5px; background: #f5f5f5; color: #444; cursor: pointer; font-weight: 600; min-width: 56px; }
+        .ctrl-btn:hover { background: #e8e8e8; }
+        .slider-wrap { flex: 1; display: flex; align-items: center; gap: 8px; }
+        .slider-wrap label { font-size: 13px; font-weight: 600; color: #555; }
+        .slider-wrap input[type=range] { flex: 1; -webkit-appearance: none; appearance: none; height: 5px; border-radius: 3px; background: #e5e7eb; outline: none; }
+        .slider-wrap input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 15px; height: 15px; border-radius: 50%; background: #2563EB; cursor: pointer; }
+        .readout { font-size: 13px; color: #555; font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 160px; text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card graph-card">
+            <div id="graph-board"></div>
+        </div>
+        <div class="card track-card">
+            <div id="track-board"></div>
+        </div>
+        <div class="card controls-card">
+            <button class="ctrl-btn" id="btn-play">&#9654; Play</button>
+            <button class="ctrl-btn" id="btn-reset">&#8634; Reset</button>
+            <div class="slider-wrap">
+                <label>t</label>
+                <input type="range" id="slider-t" min="0" max="4" step="0.01" value="0">
+            </div>
+            <div class="readout" id="readout">t = 0.00 s &nbsp; s = 2.00 m</div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        // ── Math functions ──────────────────────────────────────────
+        function v(t) { return t * t - 2 * t - 3; }
+        function s(t) { return t * t * t / 3 - t * t - 3 * t + 2; }
+
+        var T_MAX = 4;
+        var T_ROOT = 3; // v(t) = 0 at t = 3 on [0,4]
+
+        // ── Current time state ──────────────────────────────────────
+        var tCur = 0;
+
+        // ══════════════════════════════════════════════════════════════
+        // GRAPH BOARD
+        // ══════════════════════════════════════════════════════════════
+        var gb = JXG.JSXGraph.initBoard('graph-board', {
+            boundingbox: [-0.55, 5.8, 4.55, -4.8],
+            axis: false, grid: false,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false }
+        });
+
+        // Grid
+        (function() {
+            var xMin = 0, xMax = 4, yMin = -4, yMax = 5;
+            var i;
+            for (i = xMin; i <= xMax; i++) {
+                gb.create('line', [[i, yMin - 1], [i, yMax + 1]], { strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false, dash: 0 });
+            }
+            for (i = yMin; i <= yMax; i++) {
+                gb.create('line', [[xMin - 1, i], [xMax + 1, i]], { strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false, dash: 0 });
+            }
+        })();
+
+        // Axes
+        gb.create('arrow', [[-0.3, 0], [4.4, 0]], { strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false, lastArrow: { type: 2, size: 6 } });
+        gb.create('arrow', [[0, -4.5], [0, 5.6]], { strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false, lastArrow: { type: 2, size: 6 } });
+
+        // x-axis ticks + labels
+        (function() {
+            var i;
+            for (i = 1; i <= 4; i++) {
+                gb.create('segment', [[i, -0.1], [i, 0.1]], { strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false });
+                gb.create('text', [i, -0.45, String(i)], { fontSize: 11, anchorX: 'middle', color: '#444444', fixed: true, highlight: false });
+            }
+        })();
+        // y-axis ticks + labels (every 1 tick, label at even)
+        (function() {
+            var i;
+            for (i = -4; i <= 5; i++) {
+                if (i === 0) continue;
+                gb.create('segment', [[-0.08, i], [0.08, i]], { strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false });
+                if (i % 2 === 0) {
+                    gb.create('text', [-0.32, i, String(i)], { fontSize: 11, anchorX: 'right', anchorY: 'middle', color: '#444444', fixed: true, highlight: false });
+                }
+            }
+        })();
+
+        // Axis labels
+        gb.create('text', [4.25, -0.55, 't (s)'], { fontSize: 13, color: '#444444', fixed: true, highlight: false });
+        gb.create('text', [0.2, 5.45, 'v (m/s)'], { fontSize: 13, color: '#444444', fixed: true, highlight: false });
+
+        // ── Shaded regions (dynamic) ────────────────────────────────
+        // Negative region: 0 to min(tCur, T_ROOT), below axis
+        var negFill = gb.create('curve', [[], []], {
+            strokeWidth: 0, fillColor: 'rgba(239,68,68,0.30)', fillOpacity: 1,
+            fixed: true, highlight: false, layer: 1
+        });
+        var negEdge = gb.create('curve', [[], []], {
+            strokeColor: '#EF4444', strokeWidth: 1.2, fixed: true, highlight: false, layer: 2
+        });
+
+        // Positive region: T_ROOT to tCur (only when tCur > T_ROOT)
+        var posFill = gb.create('curve', [[], []], {
+            strokeWidth: 0, fillColor: 'rgba(34,197,94,0.35)', fillOpacity: 1,
+            fixed: true, highlight: false, layer: 1
+        });
+        var posEdge = gb.create('curve', [[], []], {
+            strokeColor: '#22C55E', strokeWidth: 1.2, fixed: true, highlight: false, layer: 2
+        });
+
+        function updateShading() {
+            var dt = 0.02;
+            var t, xArr, yArr;
+
+            // Negative fill: polygon from t-axis down to curve, 0..min(tCur, T_ROOT)
+            var tNegEnd = Math.min(tCur, T_ROOT);
+            xArr = [0]; yArr = [0];
+            if (tNegEnd > 0.001) {
+                for (t = 0; t <= tNegEnd + dt / 2; t += dt) {
+                    var tt = Math.min(t, tNegEnd);
+                    xArr.push(tt);
+                    yArr.push(v(tt));
+                }
+                xArr.push(tNegEnd); yArr.push(0);
+            }
+            negFill.dataX = xArr; negFill.dataY = yArr;
+
+            // Negative edge (just the curve portion)
+            var exArr = [], eyArr = [];
+            if (tNegEnd > 0.001) {
+                for (t = 0; t <= tNegEnd + dt / 2; t += dt) {
+                    var tt2 = Math.min(t, tNegEnd);
+                    exArr.push(tt2); eyArr.push(v(tt2));
+                }
+            }
+            negEdge.dataX = exArr; negEdge.dataY = eyArr;
+
+            // Positive fill: T_ROOT..tCur
+            var pxArr = [], pyArr = [];
+            var peArr = [], peYArr = [];
+            if (tCur > T_ROOT + 0.001) {
+                pxArr.push(T_ROOT); pyArr.push(0);
+                for (t = T_ROOT; t <= tCur + dt / 2; t += dt) {
+                    var tt3 = Math.min(t, tCur);
+                    pxArr.push(tt3); pyArr.push(v(tt3));
+                    peArr.push(tt3); peYArr.push(v(tt3));
+                }
+                pxArr.push(tCur); pyArr.push(0);
+            }
+            posFill.dataX = pxArr; posFill.dataY = pyArr;
+            posEdge.dataX = peArr; posEdge.dataY = peYArr;
+        }
+
+        // ── Velocity curve ──────────────────────────────────────────
+        gb.create('functiongraph', [v, 0, 4], {
+            strokeColor: '#2563EB', strokeWidth: 1.8, fixed: true, highlight: false, layer: 3
+        });
+
+        // Curve label
+        gb.create('text', [0.25, 3.7, 'v(t) = t\u00B2 \u2212 2t \u2212 3'], {
+            fontSize: 12, color: '#2563EB', fixed: true, highlight: false
+        });
+
+        // ── Vertical marker at current t ────────────────────────────
+        var vMarker = gb.create('segment', [
+            [function() { return tCur; }, function() { return 0; }],
+            [function() { return tCur; }, function() { return v(tCur); }]
+        ], { strokeColor: '#1E293B', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false, layer: 4 });
+
+        var vDot = gb.create('point', [function() { return tCur; }, function() { return v(tCur); }], {
+            name: '', size: 4, color: '#1E293B', fixed: true, highlight: false, showInfobox: false, layer: 5
+        });
+
+        // ══════════════════════════════════════════════════════════════
+        // TRACK BOARD (number line)
+        // ══════════════════════════════════════════════════════════════
+        var tb = JXG.JSXGraph.initBoard('track-board', {
+            boundingbox: [-9, 3.2, 5, -1.5],
+            axis: false, grid: false,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false }
+        });
+
+        // Number line
+        tb.create('arrow', [[-8.5, 0], [4.5, 0]], { strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false, lastArrow: { type: 2, size: 6 } });
+
+        // Ticks + labels
+        (function() {
+            var i;
+            for (i = -8; i <= 4; i++) {
+                var tickH = 0.18;
+                tb.create('segment', [[i, -tickH], [i, tickH]], { strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false });
+                if (i % 2 === 0) {
+                    tb.create('text', [i, -0.65, String(i)], { fontSize: 11, anchorX: 'middle', color: '#444444', fixed: true, highlight: false });
+                }
+            }
+        })();
+        // Axis label
+        tb.create('text', [4.2, -0.65, 's (m)'], { fontSize: 11, color: '#444444', fixed: true, highlight: false });
+
+        // Start marker (hollow circle at s(0) = 2)
+        var S0 = s(0);
+        tb.create('point', [S0, 0], {
+            name: '', size: 5, fillColor: '#ffffff', strokeColor: '#1E293B', strokeWidth: 1.5,
+            fixed: true, highlight: false, showInfobox: false
+        });
+        tb.create('text', [S0, 0.6, 'start'], { fontSize: 11, anchorX: 'middle', color: '#666', fixed: true, highlight: false });
+
+        // ── Trail segments (leftward = red, rightward = green) ──────
+        // We draw the trail as two offset polylines above the number line
+        var TRAIL_Y_LEFT = 0.9;   // leftward trail y-offset
+        var TRAIL_Y_RIGHT = 1.6;  // rightward trail y-offset
+
+        var leftTrail = tb.create('curve', [[], []], {
+            strokeColor: '#EF4444', strokeWidth: 2.5, fixed: true, highlight: false, layer: 3
+        });
+        var rightTrail = tb.create('curve', [[], []], {
+            strokeColor: '#22C55E', strokeWidth: 2.5, fixed: true, highlight: false, layer: 3
+        });
+
+        // Arrowheads for trails (manual small triangles)
+        var leftArrow = tb.create('polygon', [[0, 0], [0, 0], [0, 0]], {
+            fillColor: '#EF4444', fillOpacity: 1, fixed: true, highlight: false,
+            borders: { strokeWidth: 0, visible: false }, vertices: { visible: false }, hasInnerPoints: false
+        });
+        var rightArrow = tb.create('polygon', [[0, 0], [0, 0], [0, 0]], {
+            fillColor: '#22C55E', fillOpacity: 1, fixed: true, highlight: false,
+            borders: { strokeWidth: 0, visible: false }, vertices: { visible: false }, hasInnerPoints: false
+        });
+
+        // Trail labels
+        var leftLabel = tb.create('text', [0, TRAIL_Y_LEFT + 0.5, 'leftward'], {
+            fontSize: 10, color: '#EF4444', anchorX: 'middle', fixed: true, highlight: false, visible: false
+        });
+        var rightLabel = tb.create('text', [0, TRAIL_Y_RIGHT + 0.5, 'rightward'], {
+            fontSize: 10, color: '#22C55E', anchorX: 'middle', fixed: true, highlight: false, visible: false
+        });
+
+        function updateTrails() {
+            var sCur = s(tCur);
+            var sStart = S0;       // 2
+            var sMin = s(T_ROOT);  // -7
+
+            // Leftward trail: from s(0)=2 to s(min(tCur, T_ROOT))
+            var tLeft = Math.min(tCur, T_ROOT);
+            var sLeft = s(tLeft);
+
+            if (tLeft > 0.01) {
+                leftTrail.dataX = [sStart, sLeft];
+                leftTrail.dataY = [TRAIL_Y_LEFT, TRAIL_Y_LEFT];
+                // Arrowhead pointing left
+                var ax = sLeft, ay = TRAIL_Y_LEFT, as = 0.3;
+                leftArrow.vertices[0].moveTo([ax, ay]);
+                leftArrow.vertices[1].moveTo([ax + as, ay + as * 0.6]);
+                leftArrow.vertices[2].moveTo([ax + as, ay - as * 0.6]);
+                leftArrow.setAttribute({ visible: true });
+                // Label
+                var midLeft = (sStart + sLeft) / 2;
+                leftLabel.moveTo([midLeft, TRAIL_Y_LEFT + 0.55]);
+                leftLabel.setAttribute({ visible: true });
+            } else {
+                leftTrail.dataX = []; leftTrail.dataY = [];
+                leftArrow.setAttribute({ visible: false });
+                leftLabel.setAttribute({ visible: false });
+            }
+
+            // Rightward trail: from s(T_ROOT)=-7 to s(tCur) when tCur > T_ROOT
+            if (tCur > T_ROOT + 0.01) {
+                var sRight = sCur;
+                rightTrail.dataX = [sMin, sRight];
+                rightTrail.dataY = [TRAIL_Y_RIGHT, TRAIL_Y_RIGHT];
+                // Arrowhead pointing right
+                var bx = sRight, by = TRAIL_Y_RIGHT, bs = 0.3;
+                rightArrow.vertices[0].moveTo([bx, by]);
+                rightArrow.vertices[1].moveTo([bx - bs, by + bs * 0.6]);
+                rightArrow.vertices[2].moveTo([bx - bs, by - bs * 0.6]);
+                rightArrow.setAttribute({ visible: true });
+                // Label
+                var midRight = (sMin + sRight) / 2;
+                rightLabel.moveTo([midRight, TRAIL_Y_RIGHT + 0.55]);
+                rightLabel.setAttribute({ visible: true });
+            } else {
+                rightTrail.dataX = []; rightTrail.dataY = [];
+                rightArrow.setAttribute({ visible: false });
+                rightLabel.setAttribute({ visible: false });
+            }
+        }
+
+        // ── Particle dot ────────────────────────────────────────────
+        var particle = tb.create('point', [function() { return s(tCur); }, 0], {
+            name: '', size: 6, color: '#1E293B', fixed: true, highlight: false, showInfobox: false, layer: 5
+        });
+
+        // ══════════════════════════════════════════════════════════════
+        // CONTROLS
+        // ══════════════════════════════════════════════════════════════
+        var slider = document.getElementById('slider-t');
+        var readout = document.getElementById('readout');
+        var btnPlay = document.getElementById('btn-play');
+        var btnReset = document.getElementById('btn-reset');
+        var animId = null;
+        var playing = false;
+
+        function updateAll() {
+            updateShading();
+            updateTrails();
+            gb.update();
+            tb.update();
+            var sCur = s(tCur);
+            readout.textContent = 't = ' + tCur.toFixed(2) + ' s    s = ' + sCur.toFixed(2) + ' m';
+        }
+
+        slider.addEventListener('input', function() {
+            tCur = parseFloat(this.value);
+            updateAll();
+        });
+
+        // Animation: ~6 seconds for t: 0→4
+        var ANIM_DURATION = 6000;
+        var animStart = null;
+        var animT0 = 0;
+
+        function animFrame(timestamp) {
+            if (!animStart) animStart = timestamp;
+            var elapsed = timestamp - animStart;
+            var frac = elapsed / ANIM_DURATION;
+            if (frac >= 1) {
+                frac = 1;
+                stopAnim();
+            }
+            tCur = animT0 + frac * (T_MAX - animT0);
+            slider.value = tCur;
+            updateAll();
+            if (playing) animId = requestAnimationFrame(animFrame);
+        }
+
+        function startAnim() {
+            if (tCur >= T_MAX - 0.01) {
+                tCur = 0; slider.value = 0; updateAll();
+            }
+            playing = true;
+            animStart = null;
+            animT0 = tCur;
+            // Adjust duration proportionally to remaining range
+            ANIM_DURATION = 6000 * (T_MAX - animT0) / T_MAX;
+            btnPlay.innerHTML = '&#9646;&#9646; Pause';
+            animId = requestAnimationFrame(animFrame);
+        }
+
+        function stopAnim() {
+            playing = false;
+            btnPlay.innerHTML = '&#9654; Play';
+            if (animId) cancelAnimationFrame(animId);
+            animId = null;
+        }
+
+        btnPlay.addEventListener('click', function() {
+            if (playing) stopAnim(); else startAnim();
+        });
+
+        btnReset.addEventListener('click', function() {
+            stopAnim();
+            tCur = 0;
+            slider.value = 0;
+            updateAll();
+        });
+
+        // Initial render
+        updateAll();
+    })();
+    </script>
+</body>
+</html>
