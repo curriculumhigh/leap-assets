@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tree Diagram — Incomplete (Missing MH)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 11, 16, -1],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Layout coordinates ──────────────────────────────────────────
+        var cx = 7;
+
+        var yTitle = 10.2;
+        var yShot1 = 8;
+        var yShot2 = 5;
+        var ySample = 2.2;
+
+        var shot1Spread = 3.8;
+        var xH1 = cx - shot1Spread;
+        var xM1 = cx + shot1Spread;
+
+        var shot2Spread = 1.8;
+        var xHH = xH1 - shot2Spread;
+        var xHM = xH1 + shot2Spread;
+        var xMM = xM1;
+
+        // ── Row labels (left side) ──────────────────────────────────────
+        var lblX = -3.5;
+        var rowLblAttr = { fontSize: 9, color: '#666666', fixed: true, highlight: false, anchorX: 'left', anchorY: 'middle' };
+
+        board.create('text', [lblX, yShot1, 'Shot 1'], rowLblAttr);
+        board.create('text', [lblX, yShot2, 'Shot 2'], rowLblAttr);
+        board.create('text', [lblX, ySample, 'Sample'], rowLblAttr);
+        board.create('text', [lblX, ySample - 0.7, 'Space'], rowLblAttr);
+
+        // ── Title ───────────────────────────────────────────────────────
+        board.create('text', [cx, yTitle, 'Outcomes'], {
+            fontSize: 11, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:600'
+        });
+
+        // ── Nodes ───────────────────────────────────────────────────────
+        var nodeAttr = { name: '', size: 1.5, color: '#222222', fixed: true, highlight: false };
+
+        var root = board.create('point', [cx, yTitle - 0.8], nodeAttr);
+        var nH1 = board.create('point', [xH1, yShot1], nodeAttr);
+        var nM1 = board.create('point', [xM1, yShot1], nodeAttr);
+        var nHH = board.create('point', [xHH, yShot2], nodeAttr);
+        var nHM = board.create('point', [xHM, yShot2], nodeAttr);
+        var nMM = board.create('point', [xMM, yShot2], nodeAttr);
+
+        // ── Branches ────────────────────────────────────────────────────
+        var branchAttr = { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false };
+
+        board.create('segment', [root, nH1], branchAttr);
+        board.create('segment', [root, nM1], branchAttr);
+        board.create('segment', [nH1, nHH], branchAttr);
+        board.create('segment', [nH1, nHM], branchAttr);
+        board.create('segment', [nM1, nMM], branchAttr);
+
+        // ── Vertical connectors to sample space ─────────────────────────
+        var vertAttr = { strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false };
+        board.create('segment', [[xHH, yShot2], [xHH, ySample + 0.6]], vertAttr);
+        board.create('segment', [[xHM, yShot2], [xHM, ySample + 0.6]], vertAttr);
+        board.create('segment', [[xMM, yShot2], [xMM, ySample + 0.6]], vertAttr);
+
+        // ── Branch labels ───────────────────────────────────────────────
+        var branchLblAttr = { fontSize: 10, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' };
+
+        // Root → Shot 1
+        var midRH1x = (cx + xH1) / 2;
+        var midRH1y = (yTitle - 0.8 + yShot1) / 2;
+        board.create('text', [midRH1x - 0.55, midRH1y + 0.25, 'H'], branchLblAttr);
+
+        var midRM1x = (cx + xM1) / 2;
+        var midRM1y = (yTitle - 0.8 + yShot1) / 2;
+        board.create('text', [midRM1x + 0.55, midRM1y + 0.25, 'M'], branchLblAttr);
+
+        // Shot 1 H → Shot 2
+        var midHHx = (xH1 + xHH) / 2;
+        var midHHy = (yShot1 + yShot2) / 2;
+        board.create('text', [midHHx - 0.5, midHHy + 0.2, 'H'], branchLblAttr);
+
+        var midHMx = (xH1 + xHM) / 2;
+        var midHMy = (yShot1 + yShot2) / 2;
+        board.create('text', [midHMx + 0.5, midHMy + 0.2, 'M'], branchLblAttr);
+
+        // Shot 1 M → Shot 2 (single branch)
+        var midMMx = (xM1 + xMM) / 2;
+        var midMMy = (yShot1 + yShot2) / 2;
+        board.create('text', [midMMx + 0.5, midMMy + 0.2, 'M'], branchLblAttr);
+
+        // ── Outcome labels ──────────────────────────────────────────────
+        var outcomeAttr = { fontSize: 11, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-weight:700' };
+
+        board.create('text', [xHH, ySample, 'HH'], outcomeAttr);
+        board.create('text', [xHM, ySample, 'HM'], outcomeAttr);
+        board.create('text', [xMM, ySample, 'MM'], outcomeAttr);
+    </script>
+</body>
+</html>
