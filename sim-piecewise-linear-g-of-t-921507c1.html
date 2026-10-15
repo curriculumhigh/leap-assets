@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piecewise-linear graph of g(t)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 5.2, 7.2, -4.8],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [6.8, -0.45, 't'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 4.8, 's'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+
+        // Vertices
+        var vertices = [
+            [0, -1],
+            [1, 3],
+            [3, 3],
+            [5, -3],
+            [6, -3]
+        ];
+
+        // Draw segments
+        for (var i = 0; i < vertices.length - 1; i++) {
+            board.create('segment', [vertices[i], vertices[i + 1]], {
+                strokeColor: '#222222',
+                strokeWidth: 1.8,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // Draw vertex dots
+        for (var j = 0; j < vertices.length; j++) {
+            board.create('point', vertices[j], {
+                name: '',
+                size: 5,
+                color: '#222222',
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+        }
+
+        // Function label (name only)
+        board.create('text', [0.15, 1.6, 'g(t)'], {
+            useKatex: true,
+            fontSize: 13,
+            color: '#222222',
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
