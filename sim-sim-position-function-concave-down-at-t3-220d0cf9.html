@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Position Function Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 9, 5.8, -1.5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels: t (horizontal), s (vertical)
+        board.create('text', [5.4, -0.45, 't'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 8.6, 's'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+
+        // s(t) = -1/3 t^3 + 2t^2 - t + 1
+        function sFunc(t) {
+            return (-1 / 3) * t * t * t + 2 * t * t - t + 1;
+        }
+
+        // Plot the curve over [0, 5]
+        board.create('functiongraph', [
+            function(t) { return sFunc(t); },
+            0, 5
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Endpoint dots
+        board.create('point', [0, sFunc(0)], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('point', [5, sFunc(5)], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Dashed blue vertical segment from t-axis (y=0) up to the curve at t=3
+        var sAt3 = sFunc(3);
+        board.create('segment', [[3, 0], [3, sAt3]], {
+            strokeColor: '#2563EB',
+            strokeWidth: 2,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        // Small red label on t-axis at t = 3
+        board.create('text', [3, -0.7, 't = 3'], {
+            useKatex: true,
+            fontSize: 12,
+            color: '#DC2626',
+            anchorX: 'middle',
+            fixed: true,
+            highlight: false
+        });
+
+        // Function label — name only
+        board.create('text', [4.8, 6.2, 's(t)'], {
+            useKatex: true,
+            fontSize: 13,
+            color: '#222222',
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
