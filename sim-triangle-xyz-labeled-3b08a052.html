@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle XYZ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 13, 25.5, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var X = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+        var Z = board.create('point', [22, 0], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+        var Y = board.create('point', [12.94, 9.06], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+
+        // ── Triangle edges (no fill) ────────────────────────────────────
+        board.create('polygon', [X, Z, Y], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Vertex labels (bold, black) ─────────────────────────────────
+        board.create('text', [-1.2, -0.9, '<b>X</b>'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [12.94, 10.2, '<b>Y</b>'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [23.2, -0.9, '<b>Z</b>'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // ── Angle arcs (red, nonReflexAngle) ────────────────────────────
+        var COL_ARC = '#DC2626';
+        var ARC_R = 1.6;
+
+        board.create('nonReflexAngle', [Z, X, Y], {
+            radius: ARC_R,
+            fillColor: COL_ARC, fillOpacity: 0.08,
+            strokeColor: COL_ARC, strokeWidth: 1.5,
+            fixed: true, highlight: false,
+            name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [X, Y, Z], {
+            radius: ARC_R,
+            fillColor: COL_ARC, fillOpacity: 0.08,
+            strokeColor: COL_ARC, strokeWidth: 1.5,
+            fixed: true, highlight: false,
+            name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [Y, Z, X], {
+            radius: ARC_R,
+            fillColor: COL_ARC, fillOpacity: 0.08,
+            strokeColor: COL_ARC, strokeWidth: 1.5,
+            fixed: true, highlight: false,
+            name: '', withLabel: false
+        });
+
+        // ── Angle labels (along bisectors, red) ────────────────────────
+        function bisectorLabel(vx, vy, p1x, p1y, p2x, p2y, dist) {
+            var d1x = p1x - vx, d1y = p1y - vy;
+            var len1 = Math.sqrt(d1x * d1x + d1y * d1y);
+            d1x /= len1; d1y /= len1;
+            var d2x = p2x - vx, d2y = p2y - vy;
+            var len2 = Math.sqrt(d2x * d2x + d2y * d2y);
+            d2x /= len2; d2y /= len2;
+            var bx = d1x + d2x, by = d1y + d2y;
+            var blen = Math.sqrt(bx * bx + by * by);
+            bx /= blen; by /= blen;
+            return [vx + bx * dist, vy + by * dist];
+        }
+
+        var lblPosX = bisectorLabel(0, 0, 22, 0, 12.94, 9.06, 2.6);
+        board.create('text', [lblPosX[0], lblPosX[1], '35\u00B0'], {
+            fontSize: 13, color: COL_ARC, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-weight:600'
+        });
+
+        var lblPosY = bisectorLabel(12.94, 9.06, 0, 0, 22, 0, 2.8);
+        board.create('text', [lblPosY[0], lblPosY[1], '100\u00B0'], {
+            fontSize: 13, color: COL_ARC, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-weight:600'
+        });
+
+        var lblPosZ = bisectorLabel(22, 0, 12.94, 9.06, 0, 0, 2.6);
+        board.create('text', [lblPosZ[0], lblPosZ[1], '45\u00B0'], {
+            fontSize: 13, color: COL_ARC, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-weight:600'
+        });
+
+        // ── Side labels (blue bold, offset outward) ─────────────────────
+        var COL_SIDE = '#3B82F6';
+
+        function sideLabelPos(ax, ay, bx, by, oppx, oppy, dist) {
+            var mx = (ax + bx) / 2, my = (ay + by) / 2;
+            var dx = bx - ax, dy = by - ay;
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var n1x = -dy / len, n1y = dx / len;
+            var toOppX = oppx - mx, toOppY = oppy - my;
+            var dot = n1x * toOppX + n1y * toOppY;
+            if (dot > 0) { n1x = -n1x; n1y = -n1y; }
+            return [mx + n1x * dist, my + n1y * dist];
+        }
+
+        var lblXY = sideLabelPos(0, 0, 12.94, 9.06, 22, 0, 1.4);
+        board.create('text', [lblXY[0], lblXY[1], '15.8'], {
+            fontSize: 14, color: COL_SIDE, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-weight:bold'
+        });
+
+        var lblYZ = sideLabelPos(12.94, 9.06, 22, 0, 0, 0, 1.4);
+        board.create('text', [lblYZ[0], lblYZ[1], '12.8'], {
+            fontSize: 14, color: COL_SIDE, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-weight:bold'
+        });
+
+        var lblXZ = sideLabelPos(0, 0, 22, 0, 12.94, 9.06, 1.4);
+        board.create('text', [lblXZ[0], lblXZ[1], '22'], {
+            fontSize: 14, color: COL_SIDE, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-weight:bold'
+        });
+    </script>
+</body>
+</html>
