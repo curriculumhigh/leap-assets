@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle PQR with Altitude QS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 7.5, 10, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var Q = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+        var P = board.create('point', [0, 6], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+        var R = board.create('point', [8, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+
+        // ── Foot of altitude S ──────────────────────────────────────────
+        var S = board.create('point', [2.88, 3.84], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+
+        // ── Triangle edges ──────────────────────────────────────────────
+        board.create('segment', [P, Q], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [Q, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [P, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Altitude QS ────────────────────────────────────────────────
+        board.create('segment', [Q, S], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at Q (between PQ going up and QR going right) ──
+        var RA_SIZE = 0.45;
+
+        var raq1 = board.create('point', [0, RA_SIZE], { visible: false, fixed: true, name: '' });
+        var raq2 = board.create('point', [RA_SIZE, RA_SIZE], { visible: false, fixed: true, name: '' });
+        var raq3 = board.create('point', [RA_SIZE, 0], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [Q, raq1, raq2, raq3], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at S (between SQ and SP directions along PR) ──
+        var dSP_x = -0.8, dSP_y = 0.6;
+        var dSQ_x = -0.6, dSQ_y = -0.8;
+
+        var ras1 = board.create('point', [2.88 + RA_SIZE * dSQ_x, 3.84 + RA_SIZE * dSQ_y], {
+            visible: false, fixed: true, name: ''
+        });
+        var ras2 = board.create('point', [2.88 + RA_SIZE * (dSQ_x + dSP_x), 3.84 + RA_SIZE * (dSQ_y + dSP_y)], {
+            visible: false, fixed: true, name: ''
+        });
+        var ras3 = board.create('point', [2.88 + RA_SIZE * dSP_x, 3.84 + RA_SIZE * dSP_y], {
+            visible: false, fixed: true, name: ''
+        });
+        board.create('polygon', [S, ras1, ras2, ras3], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── Vertex labels (KaTeX) ───────────────────────────────────────
+        board.create('text', [-0.55, 6.25, 'P'], {
+            fontSize: 15, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [-0.6, -0.55, 'Q'], {
+            fontSize: 15, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [8.25, -0.55, 'R'], {
+            fontSize: 15, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [3.15, 4.2, 'S'], {
+            fontSize: 15, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Segment labels (blue, KaTeX italic) ────────────────────────
+        board.create('text', [-0.65, 3.0, 'c'], {
+            fontSize: 14, color: '#3B82F6', useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('text', [4.0, -0.6, 'd'], {
+            fontSize: 14, color: '#3B82F6', useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('text', [0.95, 5.3, 'u'], {
+            fontSize: 14, color: '#3B82F6', useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('text', [5.75, 1.6, 'v'], {
+            fontSize: 14, color: '#3B82F6', useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('text', [0.9, 2.15, 'w'], {
+            fontSize: 14, color: '#3B82F6', useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
