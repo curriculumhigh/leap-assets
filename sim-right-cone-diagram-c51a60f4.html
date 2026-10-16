@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Cone Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 8.5, 7, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_SLANT = '#2563EB';
+        var COL_RADIUS = '#059669';
+        var COL_HEIGHT = '#222222';
+        var COL_ANGLE = '#D97706';
+        var COL_RIGHT = '#DC2626';
+
+        var slantLen = 6;
+        var baseAngleDeg = 50;
+        var baseAngleRad = baseAngleDeg * Math.PI / 180;
+
+        var radius = slantLen * Math.cos(baseAngleRad);
+        var height = slantLen * Math.sin(baseAngleRad);
+
+        var cx = 2;
+        var cy = 1;
+
+        var baseCenter = board.create('point', [cx, cy], {
+            name: '', fixed: true, size: 0, visible: false
+        });
+        var baseRight = board.create('point', [cx + radius, cy], {
+            name: '', fixed: true, size: 0, visible: false
+        });
+        var apex = board.create('point', [cx, cy + height], {
+            name: '', fixed: true, size: 0, visible: false
+        });
+
+        var baseLeft = board.create('point', [cx - radius, cy], {
+            name: '', fixed: true, size: 0, visible: false
+        });
+
+        var semiMinor = 0.6;
+
+        board.create('curve', [
+            function(t) { return cx + radius * Math.cos(t); },
+            function(t) { return cy + semiMinor * Math.sin(t); },
+            Math.PI, 2 * Math.PI
+        ], {
+            strokeColor: '#999999', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('curve', [
+            function(t) { return cx + radius * Math.cos(t); },
+            function(t) { return cy + semiMinor * Math.sin(t); },
+            0, Math.PI
+        ], {
+            strokeColor: '#999999', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [baseLeft, apex], {
+            strokeColor: '#AAAAAA', strokeWidth: 1.5, dash: 0, fixed: true, highlight: false
+        });
+
+        board.create('segment', [baseRight, apex], {
+            strokeColor: COL_SLANT, strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [apex, baseCenter], {
+            strokeColor: COL_HEIGHT, strokeWidth: 1.8, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [baseCenter, baseRight], {
+            strokeColor: COL_RADIUS, strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        var sqSize = 0.35;
+        board.create('polygon', [
+            [cx, cy],
+            [cx + sqSize, cy],
+            [cx + sqSize, cy + sqSize],
+            [cx, cy + sqSize]
+        ], {
+            fillColor: COL_RIGHT, fillOpacity: 0.12,
+            borders: { strokeColor: COL_RIGHT, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        var arcRadius = 1.0;
+        board.create('curve', [
+            function(t) { return (cx + radius) + arcRadius * Math.cos(t); },
+            function(t) { return cy + arcRadius * Math.sin(t); },
+            Math.PI - baseAngleRad,
+            Math.PI
+        ], {
+            strokeColor: COL_ANGLE, strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        var bisectorAngle = Math.PI - baseAngleRad / 2;
+        var labelR = arcRadius + 0.55;
+        board.create('text', [
+            cx + radius + labelR * Math.cos(bisectorAngle),
+            cy + labelR * Math.sin(bisectorAngle),
+            '50^\\circ'
+        ], {
+            useKatex: true, fontSize: 13, color: COL_ANGLE,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var slantMidX = (cx + radius + cx) / 2;
+        var slantMidY = (cy + cy + height) / 2;
+        var slantAngle = Math.atan2(height, -radius);
+        var offsetDist = 0.55;
+        var perpAngle = slantAngle - Math.PI / 2;
+
+        board.create('text', [
+            slantMidX + offsetDist * Math.cos(perpAngle),
+            slantMidY + offsetDist * Math.sin(perpAngle),
+            '15 \\text{ ft}'
+        ], {
+            useKatex: true, fontSize: 13, color: COL_SLANT,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('point', [cx, cy], {
+            name: '', fixed: true, size: 2, color: COL_HEIGHT, highlight: false
+        });
+        board.create('point', [cx + radius, cy], {
+            name: '', fixed: true, size: 2, color: COL_HEIGHT, highlight: false
+        });
+        board.create('point', [cx, cy + height], {
+            name: '', fixed: true, size: 2, color: COL_HEIGHT, highlight: false
+        });
+    </script>
+</body>
+</html>
