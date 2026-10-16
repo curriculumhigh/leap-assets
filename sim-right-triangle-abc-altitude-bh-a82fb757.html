@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle ABC with Altitude BH</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.8, 5.8, 10, -1.8],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var A = board.create('point', [0, 0], {
+            name: 'A', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, -14] }
+        });
+        var C = board.create('point', [8.2, 0], {
+            name: 'C', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -14] }
+        });
+        var B = board.create('point', [3.2, 4], {
+            name: 'B', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, 14] }
+        });
+        var H = board.create('point', [3.2, 0], {
+            name: 'H', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, -18] }
+        });
+
+        // ── Triangle sides ──────────────────────────────────────────────
+        board.create('segment', [A, B], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [B, C], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [A, C], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // ── Altitude BH ────────────────────────────────────────────────
+        board.create('segment', [B, H], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at B ─────────────────────────────────────
+        var s = 0.35;
+
+        var BA_dx = A.X() - B.X();
+        var BA_dy = A.Y() - B.Y();
+        var BA_len = Math.sqrt(BA_dx * BA_dx + BA_dy * BA_dy);
+        var uBA_x = BA_dx / BA_len;
+        var uBA_y = BA_dy / BA_len;
+
+        var BC_dx = C.X() - B.X();
+        var BC_dy = C.Y() - B.Y();
+        var BC_len = Math.sqrt(BC_dx * BC_dx + BC_dy * BC_dy);
+        var uBC_x = BC_dx / BC_len;
+        var uBC_y = BC_dy / BC_len;
+
+        var Bsq1 = board.create('point', [B.X() + s * uBA_x, B.Y() + s * uBA_y], { visible: false, fixed: true, name: '' });
+        var Bsq2 = board.create('point', [B.X() + s * uBA_x + s * uBC_x, B.Y() + s * uBA_y + s * uBC_y], { visible: false, fixed: true, name: '' });
+        var Bsq3 = board.create('point', [B.X() + s * uBC_x, B.Y() + s * uBC_y], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [Bsq1, Bsq2, Bsq3], {
+            vertices: { visible: false },
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.5 },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        // ── Right-angle marker at H ─────────────────────────────────────
+        var Hsq1 = board.create('point', [H.X() + s, H.Y()], { visible: false, fixed: true, name: '' });
+        var Hsq2 = board.create('point', [H.X() + s, H.Y() + s], { visible: false, fixed: true, name: '' });
+        var Hsq3 = board.create('point', [H.X(), H.Y() + s], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [Hsq1, Hsq2, Hsq3], {
+            vertices: { visible: false },
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.5 },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        // ── Dimension labels ────────────────────────────────────────────
+        board.create('text', [1.6, -0.7, '3.2\\text{ ft}'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('text', [5.7, -0.7, '5.0\\text{ ft}'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('text', [3.7, 2.0, 'x'], {
+            fontSize: 14, color: '#2563EB', anchorX: 'left', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
