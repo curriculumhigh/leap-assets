@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Composite Solid — Cylinder + Cone</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 460px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8.5, 16.5, 10.5, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 4;
+        var hCyl = 8;
+        var hCone = 6;
+        var eR = 0.18;
+        var OUTLINE = '#555555';
+        var OUTLINE_W = 1.8;
+        var FILL_CYL = '#DBEAFE';
+        var FILL_CONE = '#E0F2FE';
+        var DIM_COL = '#DC2626';
+        var DIM_W = 1.0;
+
+        var yBot = 0;
+        var yJunc = yBot + hCyl;
+        var yApex = yJunc + hCone;
+
+        function ellipseX(t) { return R * Math.cos(t); }
+        function ellipseY(cy, t) { return cy + R * eR * Math.sin(t); }
+
+        var NPTS = 60;
+        var i, t;
+
+        // ── Cylinder body fill ──────────────────────────────────────────
+        var cylBody = [];
+        cylBody.push([-R, yJunc]);
+        cylBody.push([-R, yBot]);
+        for (i = 0; i <= NPTS; i++) {
+            t = Math.PI + (Math.PI * i / NPTS);
+            cylBody.push([ellipseX(t), ellipseY(yBot, t)]);
+        }
+        cylBody.push([R, yBot]);
+        cylBody.push([R, yJunc]);
+        for (i = 0; i <= NPTS; i++) {
+            t = 0 + (Math.PI * i / NPTS);
+            cylBody.push([ellipseX(t), ellipseY(yJunc, t)]);
+        }
+
+        var cylPts = [];
+        for (i = 0; i < cylBody.length; i++) {
+            cylPts.push(board.create('point', cylBody[i], { visible: false, name: '', fixed: true }));
+        }
+        board.create('polygon', cylPts, {
+            fillColor: FILL_CYL, fillOpacity: 0.55,
+            borders: { strokeColor: 'none', strokeWidth: 0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Cone body fill ──────────────────────────────────────────────
+        var conePts = [];
+        conePts.push([0, yApex]);
+        conePts.push([-R, yJunc]);
+        for (i = 0; i <= NPTS; i++) {
+            t = Math.PI + (Math.PI * i / NPTS);
+            conePts.push([ellipseX(t), ellipseY(yJunc, t)]);
+        }
+        conePts.push([R, yJunc]);
+
+        var conePolPts = [];
+        for (i = 0; i < conePts.length; i++) {
+            conePolPts.push(board.create('point', conePts[i], { visible: false, name: '', fixed: true }));
+        }
+        board.create('polygon', conePolPts, {
+            fillColor: FILL_CONE, fillOpacity: 0.55,
+            borders: { strokeColor: 'none', strokeWidth: 0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Outlines ────────────────────────────────────────────────────
+
+        // Cylinder side edges
+        board.create('segment', [[-R, yBot], [-R, yJunc]], {
+            strokeColor: OUTLINE, strokeWidth: OUTLINE_W, fixed: true, highlight: false
+        });
+        board.create('segment', [[R, yBot], [R, yJunc]], {
+            strokeColor: OUTLINE, strokeWidth: OUTLINE_W, fixed: true, highlight: false
+        });
+
+        // Bottom ellipse — front half (solid)
+        board.create('curve', [
+            function(t) { return ellipseX(t); },
+            function(t) { return ellipseY(yBot, t); },
+            Math.PI, 2 * Math.PI
+        ], { strokeColor: OUTLINE, strokeWidth: OUTLINE_W, fixed: true, highlight: false });
+
+        // Bottom ellipse — back half (dashed)
+        board.create('curve', [
+            function(t) { return ellipseX(t); },
+            function(t) { return ellipseY(yBot, t); },
+            0, Math.PI
+        ], { strokeColor: OUTLINE, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+
+        // Junction ellipse — fully dashed (hidden behind cone)
+        board.create('curve', [
+            function(t) { return ellipseX(t); },
+            function(t) { return ellipseY(yJunc, t); },
+            0, 2 * Math.PI
+        ], { strokeColor: OUTLINE, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false });
+
+        // Cone slant edges
+        board.create('segment', [[-R, yJunc], [0, yApex]], {
+            strokeColor: OUTLINE, strokeWidth: OUTLINE_W, fixed: true, highlight: false
+        });
+        board.create('segment', [[R, yJunc], [0, yApex]], {
+            strokeColor: OUTLINE, strokeWidth: OUTLINE_W, fixed: true, highlight: false
+        });
+
+        // ── Center axis (dashed) ────────────────────────────────────────
+        board.create('segment', [[0, yBot], [0, yApex]], {
+            strokeColor: '#999999', strokeWidth: 0.8, dash: 3, fixed: true, highlight: false
+        });
+
+        // Center dots
+        board.create('point', [0, yBot], {
+            name: '', size: 2.5, color: '#222222', fixed: true,
+            highlight: false, showInfobox: false
+        });
+        board.create('point', [0, yJunc], {
+            name: '', size: 2, color: '#999999', fixed: true,
+            highlight: false, showInfobox: false
+        });
+
+        // ── Dimension lines ─────────────────────────────────────────────
+        var dimX = R + 2.0;
+        var serifLen = 0.35;
+
+        // Cylinder height dimension
+        board.create('segment', [[dimX, yBot], [dimX, yJunc]], {
+            strokeColor: DIM_COL, strokeWidth: DIM_W, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 }, lastArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[dimX - serifLen, yBot], [dimX + serifLen, yBot]], {
+            strokeColor: DIM_COL, strokeWidth: DIM_W, fixed: true, highlight: false
+        });
+        board.create('segment', [[dimX - serifLen, yJunc], [dimX + serifLen, yJunc]], {
+            strokeColor: DIM_COL, strokeWidth: DIM_W, fixed: true, highlight: false
+        });
+        board.create('text', [dimX + 0.6, yBot + hCyl / 2, '8 \\text{ cm}'], {
+            useKatex: true, fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+
+        // Cone height dimension
+        board.create('segment', [[dimX, yJunc], [dimX, yApex]], {
+            strokeColor: DIM_COL, strokeWidth: DIM_W, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 }, lastArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[dimX - serifLen, yApex], [dimX + serifLen, yApex]], {
+            strokeColor: DIM_COL, strokeWidth: DIM_W, fixed: true, highlight: false
+        });
+        board.create('text', [dimX + 0.6, yJunc + hCone / 2, '6 \\text{ cm}'], {
+            useKatex: true, fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+
+        // Radius dimension line
+        board.create('segment', [[0, yBot], [R, yBot]], {
+            strokeColor: DIM_COL, strokeWidth: DIM_W, dash: 2, fixed: true, highlight: false
+        });
+        board.create('text', [R / 2, yBot - 0.8, '4 \\text{ cm}'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'top'
+        });
+
+    </script>
+</body>
+</html>
