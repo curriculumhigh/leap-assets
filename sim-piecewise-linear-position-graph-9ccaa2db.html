@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piecewise-Linear Position Graph s = f(t)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.2, 7.2, 11.8, -5.2],
+            axis: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Manual grid lines ───────────────────────────────────────────
+        var gridAttr = { strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false, dash: 0 };
+
+        // Vertical grid lines: t = -1 to 11
+        for (var gx = -1; gx <= 11; gx++) {
+            board.create('segment', [[gx, -5.2], [gx, 7.2]], gridAttr);
+        }
+        // Horizontal grid lines: s = -5 to 7
+        for (var gy = -5; gy <= 7; gy++) {
+            board.create('segment', [[-1.2, gy], [11.8, gy]], gridAttr);
+        }
+
+        // ── Axes ────────────────────────────────────────────────────────
+        var xAxis = board.create('arrow', [[-1.2, 0], [11.5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        var yAxis = board.create('arrow', [[0, -5.2], [0, 7]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // ── X-axis ticks and labels ─────────────────────────────────────
+        for (var tx = 1; tx <= 11; tx++) {
+            // Tick mark
+            board.create('segment', [[tx, -0.12], [tx, 0.12]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            // Label
+            board.create('text', [tx, -0.5, String(tx)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Y-axis ticks and labels ─────────────────────────────────────
+        for (var ty = -4; ty <= 6; ty++) {
+            if (ty === 0) continue;
+            // Tick mark
+            board.create('segment', [[-0.12, ty], [0.12, ty]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            // Label
+            board.create('text', [-0.35, ty, String(ty)], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Axis name labels ────────────────────────────────────────────
+        board.create('text', [11.3, -0.45, 't'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.3, 6.8, 's'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+
+        // ── Piecewise-linear segments ───────────────────────────────────
+        var vertices = [
+            [0, -2],
+            [3, 4],
+            [6, 4],
+            [9, -2],
+            [10, -2]
+        ];
+
+        for (var i = 0; i < vertices.length - 1; i++) {
+            board.create('segment', [vertices[i], vertices[i + 1]], {
+                strokeColor: '#222222',
+                strokeWidth: 1.8,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // ── Filled dots at each vertex ──────────────────────────────────
+        for (var j = 0; j < vertices.length; j++) {
+            board.create('point', vertices[j], {
+                name: '',
+                size: 3,
+                color: '#222222',
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+        }
+
+        // ── Graph label f(t) — name only ────────────────────────────────
+        board.create('text', [8, 4.7, 'f(t)'], {
+            useKatex: true,
+            fontSize: 13,
+            color: '#222222',
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
