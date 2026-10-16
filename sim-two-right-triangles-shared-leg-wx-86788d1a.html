@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Right Triangles Sharing Leg WX</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7.5, 5.8, 6.5, -2.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Scale & coordinates ─────────────────────────────────────────
+        var SCALE = 0.5;
+        var sxLen = 11 * SCALE;   // 5.5 units
+        var xtLen = 9 * SCALE;    // 4.5 units
+        var wxLen = 11 * Math.tan(35 * Math.PI / 180) * SCALE; // ≈ 3.85 units
+
+        // Vertices
+        var xCoord = [0, 0];
+        var sCoord = [-sxLen, 0];
+        var tCoord = [xtLen, 0];
+        var wCoord = [0, wxLen];
+
+        // ── Points (invisible, structural) ──────────────────────────────
+        var ptX = board.create('point', xCoord, { name: '', visible: false, fixed: true });
+        var ptS = board.create('point', sCoord, { name: '', visible: false, fixed: true });
+        var ptT = board.create('point', tCoord, { name: '', visible: false, fixed: true });
+        var ptW = board.create('point', wCoord, { name: '', visible: false, fixed: true });
+
+        // ── Segments ────────────────────────────────────────────────────
+        var segColor = '#555555';
+        var segWidth = 2.0;
+
+        // SX (bottom-left horizontal)
+        board.create('segment', [ptS, ptX], { strokeColor: segColor, strokeWidth: segWidth, fixed: true, highlight: false });
+        // XT (bottom-right horizontal)
+        board.create('segment', [ptX, ptT], { strokeColor: segColor, strokeWidth: segWidth, fixed: true, highlight: false });
+        // WX (vertical shared leg)
+        board.create('segment', [ptW, ptX], { strokeColor: segColor, strokeWidth: segWidth, fixed: true, highlight: false });
+        // WS (hypotenuse left)
+        board.create('segment', [ptW, ptS], { strokeColor: segColor, strokeWidth: segWidth, fixed: true, highlight: false });
+        // WT (hypotenuse right)
+        board.create('segment', [ptW, ptT], { strokeColor: segColor, strokeWidth: segWidth, fixed: true, highlight: false });
+
+        // ── Right-angle marker at X (on the S-side, i.e. to the left) ──
+        var sqSize = 0.4;
+        var sq1 = board.create('point', [-sqSize, 0], { visible: false, fixed: true, name: '' });
+        var sq2 = board.create('point', [-sqSize, sqSize], { visible: false, fixed: true, name: '' });
+        var sq3 = board.create('point', [0, sqSize], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [sq1, sq2], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [sq2, sq3], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // ── Angle arc at S (∠WSX = 35°) ─────────────────────────────────
+        board.create('nonReflexAngle', [ptX, ptS, ptW], {
+            radius: 0.8,
+            strokeColor: '#DC2626',
+            fillColor: '#DC2626',
+            fillOpacity: 0.08,
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false,
+            name: '',
+            withLabel: false
+        });
+
+        // 35° label — positioned along the bisector of the angle at S
+        var angleRad = 35 * Math.PI / 180;
+        var bisectorAngle = angleRad / 2;
+        var labelDist = 1.3;
+        var angleLabelX = sCoord[0] + labelDist * Math.cos(bisectorAngle);
+        var angleLabelY = sCoord[1] + labelDist * Math.sin(bisectorAngle);
+
+        board.create('text', [angleLabelX, angleLabelY, '35^\\circ'], {
+            useKatex: true,
+            fontSize: 13,
+            color: '#DC2626',
+            anchorX: 'left',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Measurement labels (blue) ───────────────────────────────────
+        var measColor = '#3B82F6';
+        var measOffsetY = -0.55;
+
+        // "11 ft" below SX
+        board.create('text', [sCoord[0] / 2, measOffsetY, '11 \\text{ ft}'], {
+            useKatex: true,
+            fontSize: 13,
+            color: measColor,
+            anchorX: 'middle',
+            anchorY: 'top',
+            fixed: true,
+            highlight: false
+        });
+
+        // "9 ft" below XT
+        board.create('text', [tCoord[0] / 2, measOffsetY, '9 \\text{ ft}'], {
+            useKatex: true,
+            fontSize: 13,
+            color: measColor,
+            anchorX: 'middle',
+            anchorY: 'top',
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Vertex labels (bold, black) ─────────────────────────────────
+        var vtxColor = '#222222';
+        var vtxSize = 14;
+
+        // W — above
+        board.create('text', [wCoord[0], wCoord[1] + 0.35, '\\mathbf{W}'], {
+            useKatex: true,
+            fontSize: vtxSize,
+            color: vtxColor,
+            anchorX: 'middle',
+            anchorY: 'bottom',
+            fixed: true,
+            highlight: false
+        });
+
+        // S — to the left
+        board.create('text', [sCoord[0] - 0.35, sCoord[1], '\\mathbf{S}'], {
+            useKatex: true,
+            fontSize: vtxSize,
+            color: vtxColor,
+            anchorX: 'right',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+
+        // X — below
+        board.create('text', [xCoord[0], xCoord[1] - 0.35, '\\mathbf{X}'], {
+            useKatex: true,
+            fontSize: vtxSize,
+            color: vtxColor,
+            anchorX: 'middle',
+            anchorY: 'top',
+            fixed: true,
+            highlight: false
+        });
+
+        // T — to the right
+        board.create('text', [tCoord[0] + 0.35, tCoord[1], '\\mathbf{T}'], {
+            useKatex: true,
+            fontSize: vtxSize,
+            color: vtxColor,
+            anchorX: 'left',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Small vertex dots ───────────────────────────────────────────
+        board.create('point', xCoord, { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        board.create('point', sCoord, { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        board.create('point', tCoord, { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        board.create('point', wCoord, { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+    </script>
+</body>
+</html>
