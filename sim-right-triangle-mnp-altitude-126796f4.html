@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle MNP with Altitude</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 11.5, 33, -3],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var M = board.create('point', [0, 0], {
+            name: 'M', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, -10], useKatex: true }
+        });
+        var N = board.create('point', [3, 9], {
+            name: 'N', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-6, 12], useKatex: true }
+        });
+        var P = board.create('point', [30, 0], {
+            name: 'P', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -10], useKatex: true }
+        });
+        var Q = board.create('point', [3, 0], {
+            name: 'Q', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-6, -14], useKatex: true }
+        });
+
+        // ── Triangle sides ──────────────────────────────────────────────
+        board.create('segment', [M, N], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [N, P], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [M, P], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // ── Altitude NQ ─────────────────────────────────────────────────
+        board.create('segment', [N, Q], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at N ─────────────────────────────────────
+        var RA_SIZE = 0.9;
+
+        var nmDx = M.X() - N.X();
+        var nmDy = M.Y() - N.Y();
+        var nmLen = Math.sqrt(nmDx * nmDx + nmDy * nmDy);
+        var nmUx = nmDx / nmLen;
+        var nmUy = nmDy / nmLen;
+
+        var npDx = P.X() - N.X();
+        var npDy = P.Y() - N.Y();
+        var npLen = Math.sqrt(npDx * npDx + npDy * npDy);
+        var npUx = npDx / npLen;
+        var npUy = npDy / npLen;
+
+        var raN1 = board.create('point', [N.X() + RA_SIZE * nmUx, N.Y() + RA_SIZE * nmUy], { visible: false, fixed: true, name: '' });
+        var raN2 = board.create('point', [N.X() + RA_SIZE * (nmUx + npUx), N.Y() + RA_SIZE * (nmUy + npUy)], { visible: false, fixed: true, name: '' });
+        var raN3 = board.create('point', [N.X() + RA_SIZE * npUx, N.Y() + RA_SIZE * npUy], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [raN1, raN2], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [raN2, raN3], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // ── Right-angle marker at Q ─────────────────────────────────────
+        var RA_SIZE_Q = 0.9;
+
+        var raQ1 = board.create('point', [Q.X(), Q.Y() + RA_SIZE_Q], { visible: false, fixed: true, name: '' });
+        var raQ2 = board.create('point', [Q.X() + RA_SIZE_Q, Q.Y() + RA_SIZE_Q], { visible: false, fixed: true, name: '' });
+        var raQ3 = board.create('point', [Q.X() + RA_SIZE_Q, Q.Y()], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [raQ1, raQ2], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [raQ2, raQ3], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // ── Segment labels ──────────────────────────────────────────────
+        board.create('text', [1.5, -1.2, '3'], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('text', [16.5, -1.2, '27'], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('text', [4.2, 4.5, 'x'], {
+            fontSize: 14, color: '#222222', anchorX: 'left', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
