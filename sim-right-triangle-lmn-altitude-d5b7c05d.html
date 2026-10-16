@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle LMN with Altitude</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 11, 20, -2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Points ──────────────────────────────────────────────────────
+        var L = board.create('point', [0, 0], {
+            name: 'L', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, -10] }
+        });
+        var N = board.create('point', [18, 0], {
+            name: 'N', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -10] }
+        });
+        var O = board.create('point', [8, 0], {
+            name: 'O', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, -16] }
+        });
+        var M = board.create('point', [8, 8.94], {
+            name: 'M', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, 12] }
+        });
+
+        // ── Triangle edges ──────────────────────────────────────────────
+        board.create('segment', [L, M], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [M, N], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [L, N], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // ── Altitude M-O ────────────────────────────────────────────────
+        board.create('segment', [M, O], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at M (∠LMN) ─────────────────────────────
+        var rSize = 0.7;
+
+        // Direction M→L
+        var dxML = L.X() - M.X();
+        var dyML = L.Y() - M.Y();
+        var lenML = Math.sqrt(dxML * dxML + dyML * dyML);
+        var uxML = dxML / lenML;
+        var uyML = dyML / lenML;
+
+        // Direction M→N
+        var dxMN = N.X() - M.X();
+        var dyMN = N.Y() - M.Y();
+        var lenMN = Math.sqrt(dxMN * dxMN + dyMN * dyMN);
+        var uxMN = dxMN / lenMN;
+        var uyMN = dyMN / lenMN;
+
+        // Right-angle square at M
+        var mA = board.create('point', [M.X() + rSize * uxML, M.Y() + rSize * uyML], { visible: false, fixed: true, name: '' });
+        var mC = board.create('point', [M.X() + rSize * uxMN, M.Y() + rSize * uyMN], { visible: false, fixed: true, name: '' });
+        var mB = board.create('point', [M.X() + rSize * (uxML + uxMN), M.Y() + rSize * (uyML + uyMN)], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [mA, mB], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [mB, mC], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // ── Right-angle marker at O (∠MOL) ──────────────────────────────
+        var oA = board.create('point', [O.X(), O.Y() + rSize], { visible: false, fixed: true, name: '' });
+        var oC = board.create('point', [O.X() - rSize, O.Y()], { visible: false, fixed: true, name: '' });
+        var oB = board.create('point', [O.X() - rSize, O.Y() + rSize], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [oA, oB], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [oB, oC], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // ── Side labels ─────────────────────────────────────────────────
+        // "12" on LM — to the left of segment midpoint
+        var midLM_x = (L.X() + M.X()) / 2;
+        var midLM_y = (L.Y() + M.Y()) / 2;
+        var nxLM = -(M.Y() - L.Y()) / lenML;
+        var nyLM = (M.X() - L.X()) / lenML;
+        board.create('text', [midLM_x + 1.2 * nxLM, midLM_y + 1.2 * nyLM, '12'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // "10" on ON — below the segment midpoint
+        var midON_x = (O.X() + N.X()) / 2;
+        var midON_y = (O.Y() + N.Y()) / 2;
+        board.create('text', [midON_x, midON_y - 1.0, '10'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // "x" on LO — above the segment midpoint
+        var midLO_x = (L.X() + O.X()) / 2;
+        var midLO_y = (L.Y() + O.Y()) / 2;
+        board.create('text', [midLO_x, midLO_y + 0.9, 'x'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
