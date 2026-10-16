@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Square with Diagonal</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 7.5, 8.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices (visible small fixed points with labels) ───────────
+        var A = board.create('point', [1, 0.5], {
+            name: 'A', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, -14], cssStyle: 'font-weight:bold; font-style:italic;' }
+        });
+        var B = board.create('point', [6, 0.5], {
+            name: 'B', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [10, -14], cssStyle: 'font-weight:bold; font-style:italic;' }
+        });
+        var C = board.create('point', [6, 5.5], {
+            name: 'C', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [10, 8], cssStyle: 'font-weight:bold; font-style:italic;' }
+        });
+        var D = board.create('point', [1, 5.5], {
+            name: 'D', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, 8], cssStyle: 'font-weight:bold; font-style:italic;' }
+        });
+
+        // ── Four sides ──────────────────────────────────────────────────
+        board.create('segment', [A, B], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [B, C], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [C, D], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [D, A], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+
+        // ── Diagonal A→C ────────────────────────────────────────────────
+        board.create('segment', [A, C], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+
+        // ── Diagonal label "18 ft" ──────────────────────────────────────
+        var midX = 3.5 + 0.55 * Math.cos(3 * Math.PI / 4);
+        var midY = 3.0 + 0.55 * Math.sin(3 * Math.PI / 4);
+        board.create('text', [midX, midY, '18 ft'], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Helper point factory (invisible, no label) ──────────────────
+        function hp(x, y) {
+            return board.create('point', [x, y], {
+                visible: false, fixed: true, name: '', withLabel: false
+            });
+        }
+
+        // ── 45° angle arc at vertex A (between AB and AC) ──────────────
+        var arcA_start = hp(A.X() + 0.7, A.Y());
+        var arcA_end = hp(A.X() + 0.7 * Math.cos(Math.PI / 4), A.Y() + 0.7 * Math.sin(Math.PI / 4));
+
+        board.create('arc', [A, arcA_start, arcA_end], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false,
+            fillColor: 'none', fillOpacity: 0
+        });
+
+        // 45° label at A
+        var bisA = Math.PI / 8;
+        board.create('text', [
+            A.X() + 1.15 * Math.cos(bisA),
+            A.Y() + 1.15 * Math.sin(bisA),
+            '45\u00B0'
+        ], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── 45° angle arc at vertex C (between CA and CD) ──────────────
+        var angCA = 5 * Math.PI / 4;
+        var angCD = Math.PI;
+
+        var arcC_start = hp(C.X() + 0.7 * Math.cos(angCD), C.Y() + 0.7 * Math.sin(angCD));
+        var arcC_end = hp(C.X() + 0.7 * Math.cos(angCA), C.Y() + 0.7 * Math.sin(angCA));
+
+        board.create('arc', [C, arcC_start, arcC_end], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false,
+            fillColor: 'none', fillOpacity: 0
+        });
+
+        // 45° label at C
+        var bisC = 9 * Math.PI / 8;
+        board.create('text', [
+            C.X() + 1.15 * Math.cos(bisC),
+            C.Y() + 1.15 * Math.sin(bisC),
+            '45\u00B0'
+        ], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at vertex B ──────────────────────────────
+        var raSize = 0.55;
+        var raP1 = hp(B.X() - raSize, B.Y());
+        var raP2 = hp(B.X() - raSize, B.Y() + raSize);
+        var raP3 = hp(B.X(), B.Y() + raSize);
+
+        board.create('segment', [raP1, raP2], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [raP2, raP3], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // ── Tick marks (equal side indicators) ──────────────────────────
+        var tickLen = 0.25;
+
+        // AB (horizontal, bottom): vertical tick at midpoint
+        board.create('segment', [[3.5, 0.5 - tickLen], [3.5, 0.5 + tickLen]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // CD (horizontal, top): vertical tick at midpoint
+        board.create('segment', [[3.5, 5.5 - tickLen], [3.5, 5.5 + tickLen]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // BC (vertical, right): horizontal tick at midpoint
+        board.create('segment', [[6 - tickLen, 3.0], [6 + tickLen, 3.0]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // DA (vertical, left): horizontal tick at midpoint
+        board.create('segment', [[1 - tickLen, 3.0], [1 + tickLen, 3.0]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
