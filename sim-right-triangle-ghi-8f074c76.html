@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle GHI</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 9, 12, -2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var angleG_rad = 28 * Math.PI / 180;
+        var visual_GH = 7;
+        var visual_HI = visual_GH * Math.tan(angleG_rad);
+
+        var Hx = 8, Hy = 1;
+        var Gx = Hx, Gy = Hy + visual_GH;
+        var Ix = Hx - visual_HI, Iy = Hy;
+
+        var ptG = board.create('point', [Gx, Gy], {
+            name: '', fixed: true, size: 0, visible: false
+        });
+        var ptH = board.create('point', [Hx, Hy], {
+            name: '', fixed: true, size: 0, visible: false
+        });
+        var ptI = board.create('point', [Ix, Iy], {
+            name: '', fixed: true, size: 0, visible: false
+        });
+
+        board.create('segment', [ptG, ptH], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [ptH, ptI], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [ptI, ptG], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var sqSize = 0.5;
+        var sq1 = board.create('point', [Hx - sqSize, Hy], { visible: false, fixed: true, name: '' });
+        var sq2 = board.create('point', [Hx - sqSize, Hy + sqSize], { visible: false, fixed: true, name: '' });
+        var sq3 = board.create('point', [Hx, Hy + sqSize], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [sq1, sq2], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [sq2, sq3], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('nonReflexAngle', [ptH, ptG, ptI], {
+            radius: 1.0,
+            fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        var dIx = Ix - Gx, dIy = Iy - Gy;
+        var dIlen = Math.sqrt(dIx * dIx + dIy * dIy);
+        var uIx = dIx / dIlen, uIy = dIy / dIlen;
+        var uHx = 0, uHy = -1;
+        var bx = uHx + uIx, by = uHy + uIy;
+        var blen = Math.sqrt(bx * bx + by * by);
+        bx /= blen; by /= blen;
+
+        var labelDist = 1.6;
+        board.create('text', [Gx + bx * labelDist, Gy + by * labelDist, '28^\\circ'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var midHIx = (Hx + Ix) / 2;
+        var midHIy = Hy - 0.6;
+        board.create('text', [midHIx, midHIy, '11'], {
+            fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [Gx + 0.5, Gy + 0.4, '\\textbf{G}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'left', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Hx + 0.5, Hy - 0.4, '\\textbf{H}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'left', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Ix - 0.5, Iy - 0.4, '\\textbf{I}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'right', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
