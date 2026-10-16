@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle JKL with Altitude KM</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 6.5, 9, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var K = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var J = board.create('point', [0, 5], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var L = board.create('point', [7, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // Foot of altitude: projection of K onto line JL
+        var tParam = 25 / 74;
+        var Mx = 0 + tParam * 7;
+        var My = 5 + tParam * (-5);
+
+        var M = board.create('point', [Mx, My], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // ── Triangle sides ──────────────────────────────────────────────
+        board.create('segment', [J, K], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [K, L], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [J, L], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // ── Altitude KM ────────────────────────────────────────────────
+        board.create('segment', [K, M], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at K ─────────────────────────────────────
+        var rSize = 0.45;
+        board.create('polygon', [
+            [0, rSize], [rSize, rSize], [rSize, 0], [0, 0]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            vertices: { visible: false },
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.5 },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at M ─────────────────────────────────────
+        var jlLen = Math.sqrt(49 + 25);
+        var dxJL = 7 / jlLen;
+        var dyJL = -5 / jlLen;
+        var mkLen = Math.sqrt(Mx * Mx + My * My);
+        var dxMK = -Mx / mkLen;
+        var dyMK = -My / mkLen;
+
+        var rM = 0.4;
+        var mP1 = [Mx + rM * dxJL, My + rM * dyJL];
+        var mP2 = [Mx + rM * dxJL + rM * dxMK, My + rM * dyJL + rM * dyMK];
+        var mP3 = [Mx + rM * dxMK, My + rM * dyMK];
+
+        board.create('polygon', [
+            [Mx, My], mP1, mP2, mP3
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            vertices: { visible: false },
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.5 },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Vertex labels ───────────────────────────────────────────────
+        board.create('text', [-0.55, 5.2, 'J'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+        board.create('text', [-0.6, -0.5, 'K'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+        board.create('text', [7.2, -0.5, 'L'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+        board.create('text', [Mx + 0.3, My + 0.35, 'M'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        // ── Segment labels (blue, italic, KaTeX) ────────────────────────
+        board.create('text', [-0.65, 2.5, 'a'], {
+            fontSize: 14, color: '#3B82F6', useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('text', [3.5, -0.55, 'b'], {
+            fontSize: 14, color: '#3B82F6', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle'
+        });
+
+        var sMidX = (0 + Mx) / 2;
+        var sMidY = (5 + My) / 2;
+        var nxUL = 5 / jlLen;
+        var nyUL = 7 / jlLen;
+        board.create('text', [sMidX + nxUL * 0.45, sMidY + nyUL * 0.45, 's'], {
+            fontSize: 14, color: '#3B82F6', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var tMidX = (Mx + 7) / 2;
+        var tMidY = (My + 0) / 2;
+        board.create('text', [tMidX + nxUL * 0.45, tMidY + nyUL * 0.45, 't'], {
+            fontSize: 14, color: '#3B82F6', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var dMidX = Mx / 2;
+        var dMidY = My / 2;
+        var nxKM = My / mkLen;
+        var nyKM = -Mx / mkLen;
+        board.create('text', [dMidX + nxKM * 0.5, dMidY + nyKM * 0.5, 'd'], {
+            fontSize: 14, color: '#3B82F6', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
