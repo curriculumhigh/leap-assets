@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle with Altitude to Hypotenuse</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 8.5, 14, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var Px = 1, Py = 1;
+        var Qx = 12, Qy = 1;
+        var Sx = 5, Sy = 1;
+        var Rx = 5, Ry = 1 + Math.sqrt(28); // ≈ 6.292
+
+        var P = board.create('point', [Px, Py], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var Q = board.create('point', [Qx, Qy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var R = board.create('point', [Rx, Ry], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var S = board.create('point', [Sx, Sy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // ── Triangle sides ──────────────────────────────────────────────
+        board.create('segment', [P, Q], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [P, R], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [R, Q], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // ── Altitude RS ─────────────────────────────────────────────────
+        board.create('segment', [R, S], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at R ─────────────────────────────────────
+        var RP_len = Math.sqrt((Px - Rx) * (Px - Rx) + (Py - Ry) * (Py - Ry));
+        var RQ_len = Math.sqrt((Qx - Rx) * (Qx - Rx) + (Qy - Ry) * (Qy - Ry));
+        var uRP_x = (Px - Rx) / RP_len;
+        var uRP_y = (Py - Ry) / RP_len;
+        var uRQ_x = (Qx - Rx) / RQ_len;
+        var uRQ_y = (Qy - Ry) / RQ_len;
+
+        var raSize = 0.45;
+        var rA1 = [Rx + raSize * uRP_x, Ry + raSize * uRP_y];
+        var rA2 = [Rx + raSize * (uRP_x + uRQ_x), Ry + raSize * (uRP_y + uRQ_y)];
+        var rA3 = [Rx + raSize * uRQ_x, Ry + raSize * uRQ_y];
+
+        board.create('segment', [rA1, rA2], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [rA2, rA3], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at S ─────────────────────────────────────
+        var raS1 = [Sx, Sy + raSize];
+        var raS2 = [Sx + raSize, Sy + raSize];
+        var raS3 = [Sx + raSize, Sy];
+
+        board.create('segment', [raS1, raS2], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [raS2, raS3], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Numeric labels ──────────────────────────────────────────────
+        board.create('text', [(Px + Sx) / 2, Py - 0.65, '\\mathbf{4}'], {
+            useKatex: true, fontSize: 14, anchorX: 'middle', anchorY: 'middle',
+            color: '#222222', fixed: true, highlight: false
+        });
+
+        board.create('text', [(Sx + Qx) / 2, Qy - 0.65, '\\mathbf{7}'], {
+            useKatex: true, fontSize: 14, anchorX: 'middle', anchorY: 'middle',
+            color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Label "z" on leg PR, offset outward (upper-left) ────────────
+        var midPR_x = (Px + Rx) / 2;
+        var midPR_y = (Py + Ry) / 2;
+        var PR_dx = Rx - Px;
+        var PR_dy = Ry - Py;
+        var nLen = Math.sqrt(PR_dx * PR_dx + PR_dy * PR_dy);
+        var outN_x = -PR_dy / nLen;
+        var outN_y = PR_dx / nLen;
+        var zOffset = 0.6;
+
+        board.create('text', [midPR_x + zOffset * outN_x, midPR_y + zOffset * outN_y, '\\boldsymbol{z}'], {
+            useKatex: true, fontSize: 15, anchorX: 'middle', anchorY: 'middle',
+            color: '#222222', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
