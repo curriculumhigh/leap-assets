@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle — Child to Treehouse</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 13, 22, -3.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices (invisible helper points) ─────────────────────────
+        var A = board.create('point', [0, 0], { visible: false, fixed: true, name: '' });
+        var B = board.create('point', [17, 0], { visible: false, fixed: true, name: '' });
+        var C = board.create('point', [17, 10], { visible: false, fixed: true, name: '' });
+
+        // ── Ground line ─────────────────────────────────────────────────
+        board.create('segment', [[-2, 0], [19.5, 0]], {
+            strokeColor: '#888888', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Grass / ground texture marks ────────────────────────────────
+        var grassPositions = [-1.5, -0.5];
+        for (var i = 0; i < grassPositions.length; i++) {
+            var gx = grassPositions[i];
+            board.create('segment', [[gx, -0.15], [gx - 0.25, -0.55]], {
+                strokeColor: '#888888', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('segment', [[gx, -0.15], [gx + 0.05, -0.55]], {
+                strokeColor: '#888888', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('segment', [[gx, -0.15], [gx + 0.3, -0.45]], {
+                strokeColor: '#888888', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+
+        // ── Tree base mark ──────────────────────────────────────────────
+        board.create('segment', [[16.5, 0], [17.5, 0]], {
+            strokeColor: '#555555', strokeWidth: 2.5, fixed: true, highlight: false
+        });
+
+        // ── Platform mark at treehouse ──────────────────────────────────
+        board.create('segment', [[16.3, 10], [17.7, 10]], {
+            strokeColor: '#555555', strokeWidth: 2.5, fixed: true, highlight: false
+        });
+
+        // ── Triangle sides ──────────────────────────────────────────────
+        // Horizontal leg
+        board.create('segment', [A, B], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        // Vertical leg
+        board.create('segment', [B, C], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        // Hypotenuse
+        board.create('segment', [A, C], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at B (17, 0) ────────────────────────────
+        var sq = 0.9;
+        board.create('segment', [[17 - sq, 0], [17 - sq, sq]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[17 - sq, sq], [17, sq]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Angle arc at A (Child) ─────────────────────────────────────
+        board.create('nonReflexAngle', [B, A, C], {
+            radius: 2.2,
+            fillColor: '#DC2626', fillOpacity: 0.06,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // ── Theta label (red, along bisector) ──────────────────────────
+        var thetaAngle = Math.atan2(10, 17) / 2; // bisector of angle at origin
+        var thetaDist = 3.0;
+        board.create('text', [
+            thetaDist * Math.cos(thetaAngle),
+            thetaDist * Math.sin(thetaAngle),
+            '\\theta'
+        ], {
+            useKatex: true, fontSize: 15, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Dimension labels (blue) ────────────────────────────────────
+        // "17 ft" below horizontal leg
+        board.create('text', [8.5, -1.2, '17\\text{ ft}'], {
+            useKatex: true, fontSize: 14, color: '#3B82F6',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // "10 ft" to the right of vertical leg
+        board.create('text', [18.6, 5, '10\\text{ ft}'], {
+            useKatex: true, fontSize: 14, color: '#3B82F6',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Contextual labels ──────────────────────────────────────────
+        // "Child" below origin
+        board.create('text', [0, -1.8, '<b>Child</b>'], {
+            fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // "Treehouse" above (17, 10)
+        board.create('text', [17, 11.4, '<b>Treehouse</b>'], {
+            fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Small vertex dots ──────────────────────────────────────────
+        board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        board.create('point', [17, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        board.create('point', [17, 10], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+    </script>
+</body>
+</html>
