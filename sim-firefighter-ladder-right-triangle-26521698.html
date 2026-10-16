@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firefighter Ladder Right Triangle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 14, 14, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertex coordinates ──────────────────────────────────────────
+        var Px = 1, Py = 1;
+        var Bx = 6, By = 1;
+        var Tx = 6, Ty = 9.66;
+
+        // ── Ground line with extension past P and B ─────────────────────
+        board.create('segment', [[Px - 1.5, Py], [Bx + 1.5, Py]], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Hatch marks below ground line ───────────────────────────────
+        var hatchCount = 8;
+        var hatchStart = Px - 1.2;
+        var hatchEnd = Bx + 1.2;
+        var hatchSpacing = (hatchEnd - hatchStart) / (hatchCount - 1);
+        var hatchLen = 0.5;
+
+        for (var i = 0; i < hatchCount; i++) {
+            var hx = hatchStart + i * hatchSpacing;
+            board.create('segment', [[hx, Py], [hx - 0.35, Py - hatchLen]], {
+                strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+        }
+
+        // ── Triangle sides ──────────────────────────────────────────────
+        // Horizontal side P-B
+        board.create('segment', [[Px, Py], [Bx, By]], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // Vertical side B-T
+        board.create('segment', [[Bx, By], [Tx, Ty]], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // Hypotenuse P-T
+        board.create('segment', [[Px, Py], [Tx, Ty]], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at B ─────────────────────────────────────
+        var sqSize = 0.6;
+        board.create('segment', [[Bx - sqSize, By], [Bx - sqSize, By + sqSize]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[Bx - sqSize, By + sqSize], [Bx, By + sqSize]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── 60° arc at P ────────────────────────────────────────────────
+        var arcRadius = 1.4;
+        var angleToT = Math.atan2(Ty - Py, Tx - Px);
+
+        board.create('curve', [
+            function(t) { return Px + arcRadius * Math.cos(t); },
+            function(t) { return Py + arcRadius * Math.sin(t); },
+            0,
+            angleToT
+        ], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // 60° label just outside the arc
+        var labelAngle = angleToT / 2;
+        var labelR = arcRadius + 0.7;
+        board.create('text', [
+            Px + labelR * Math.cos(labelAngle),
+            Py + labelR * Math.sin(labelAngle),
+            '60^\\circ'
+        ], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Points ──────────────────────────────────────────────────────
+        // P — filled dot
+        board.create('point', [Px, Py], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false,
+            showInfobox: false
+        });
+        board.create('text', [Px - 0.5, Py - 0.7, 'P'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:600; font-style:italic;'
+        });
+
+        // B — no visible dot, label below
+        board.create('text', [Bx, By - 0.7, 'B'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:600; font-style:italic;'
+        });
+
+        // T — small dot
+        board.create('point', [Tx, Ty], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false,
+            showInfobox: false
+        });
+        board.create('text', [Tx + 0.5, Ty + 0.5, 'T'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:600; font-style:italic;'
+        });
+
+        // ── Hypotenuse label "28 ft" ────────────────────────────────────
+        var hypMidX = (Px + Tx) / 2;
+        var hypMidY = (Py + Ty) / 2;
+        var dx = Tx - Px;
+        var dy = Ty - Py;
+        var segLen = Math.sqrt(dx * dx + dy * dy);
+        var nx = -dy / segLen;
+        var ny = dx / segLen;
+        var labelOffset = 1.0;
+
+        board.create('text', [
+            hypMidX + nx * labelOffset,
+            hypMidY + ny * labelOffset,
+            '28 \\text{ ft}'
+        ], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Vertical side label "h" in red bold ─────────────────────────
+        var vertMidY = (By + Ty) / 2;
+        board.create('text', [Bx + 0.7, vertMidY, '\\boldsymbol{h}'], {
+            useKatex: true, fontSize: 16, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
