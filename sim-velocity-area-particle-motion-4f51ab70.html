@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velocity Graph with Accumulating Area</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); display: flex; flex-direction: column; gap: 6px; }
+        .card { background: white; border-radius: 8px; padding: 10px; flex-shrink: 0; }
+        .graph-card { flex: 1; min-height: 0; }
+        #graph-board { width: 100%; height: 100%; }
+        .track-card { height: 64px; position: relative; }
+        #track-board { width: 100%; height: 100%; }
+        .controls-card { display: flex; align-items: center; gap: 10px; padding: 8px 14px; }
+        .ctrl-btn { font-size: 13px; padding: 4px 14px; border: 1px solid #d0d0d0; border-radius: 5px; background: #f5f5f5; color: #444; cursor: pointer; font-weight: 600; min-width: 56px; }
+        .ctrl-btn:hover { background: #e8e8e8; }
+        .ctrl-btn:disabled { opacity: 0.4; cursor: default; }
+        .slider-group { display: flex; align-items: center; gap: 6px; flex: 1; }
+        .slider-group label { font-size: 13px; font-weight: 600; color: #555; white-space: nowrap; }
+        .slider-group input[type=range] { flex: 1; -webkit-appearance: none; appearance: none; height: 5px; border-radius: 3px; background: #e5e7eb; outline: none; }
+        .slider-group input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #2563EB; cursor: pointer; }
+        .readout { font-size: 13px; color: #333; font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 150px; text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card graph-card">
+            <div id="graph-board"></div>
+        </div>
+        <div class="card track-card">
+            <div id="track-board"></div>
+        </div>
+        <div class="card controls-card">
+            <button class="ctrl-btn" id="btn-play">&#9654; Play</button>
+            <button class="ctrl-btn" id="btn-reset">&#8634; Reset</button>
+            <div class="slider-group">
+                <label>t</label>
+                <input type="range" id="slider-t" min="1" max="3" step="0.01" value="1">
+            </div>
+            <div class="readout" id="readout"></div>
+        </div>
+    </div>
+
+    <script>
+        /* ── constants ──────────────────────────────────────────────── */
+        var T_MIN = 1, T_MAX = 3;
+        var COL_CURVE = '#2563EB';
+        var COL_AREA_FILL = 'rgba(34,197,94,0.35)';
+        var COL_AREA_EDGE = '#22C55E';
+        var COL_PARTICLE = '#1E293B';
+        var COL_TRAIL = 'rgba(30,41,59,0.18)';
+
+        function v(t) { return 2 * t + 1; }
+        function s(t) { return t * t + t + 2; }
+
+        var tNow = T_MIN;
+        var animId = null;
+        var animStart = null;
+        var ANIM_DURATION = 6000;
+
+        /* ── graph board ────────────────────────────────────────────── */
+        var gb = JXG.JSXGraph.initBoard('graph-board', {
+            boundingbox: [-0.4, 8.8, 3.8, -0.8],
+            axis: false, grid: false,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        /* axes: t-axis along y=0, v-axis along t=0 */
+        gb.create('axis', [[-0.4, 0], [3.8, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            ticks: { visible: false },
+            highlight: false
+        });
+        gb.create('axis', [[0, -0.8], [0, 8.8]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            ticks: { visible: false },
+            highlight: false
+        });
+
+        /* t-axis ticks at 0, 1, 2, 3 with labels */
+        var i;
+        for (i = 0; i <= 3; i++) {
+            gb.create('segment', [[i, -0.12], [i, 0.12]], { strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false });
+            gb.create('text', [i, -0.42, String(i)], { fontSize: 11, anchorX: 'middle', anchorY: 'middle', color: '#444', fixed: true, highlight: false });
+        }
+        /* half-integer minor ticks (no labels) */
+        var xMinorTicks = [0.5, 1.5, 2.5, 3.5];
+        for (i = 0; i < xMinorTicks.length; i++) {
+            gb.create('segment', [[xMinorTicks[i], -0.08], [xMinorTicks[i], 0.08]], { strokeColor: '#aaa', strokeWidth: 0.7, fixed: true, highlight: false });
+        }
+
+        /* v-axis ticks every 1, all labeled 1–8 */
+        for (i = 1; i <= 8; i++) {
+            gb.create('segment', [[-0.06, i], [0.06, i]], { strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false });
+            gb.create('text', [-0.22, i, String(i)], { fontSize: 11, anchorX: 'middle', anchorY: 'middle', color: '#444', fixed: true, highlight: false });
+        }
+
+        /* axis labels */
+        gb.create('text', [3.6, -0.45, 't (s)'], { fontSize: 13, color: '#444', fixed: true, highlight: false, cssStyle: 'font-style:italic' });
+        gb.create('text', [-0.28, 8.5, 'v (m/s)'], { fontSize: 13, color: '#444', fixed: true, highlight: false, cssStyle: 'font-style:italic' });
+
+        /* dashed extension of v(t) = 2t+1 from t=0 to t=1 */
+        gb.create('functiongraph', [function(t) { return v(t); }, 0, 1], {
+            strokeColor: '#2563EB', strokeWidth: 1.2, dash: 2, strokeOpacity: 0.35, fixed: true, highlight: false
+        });
+        /* dashed extension from t=3 to t=3.5 */
+        gb.create('functiongraph', [function(t) { return v(t); }, 3, 3.5], {
+            strokeColor: '#2563EB', strokeWidth: 1.2, dash: 2, strokeOpacity: 0.35, fixed: true, highlight: false
+        });
+
+        /* main velocity curve on [1,3] */
+        gb.create('functiongraph', [function(t) { return v(t); }, 1, 3], {
+            strokeColor: COL_CURVE, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        /* shaded area polygon — updates via dynamic vertices */
+        var AREA_N = 60;
+        var areaPts = [];
+        /* bottom-left corner */
+        areaPts.push(gb.create('point', [
+            function() { return T_MIN; }, 0
+        ], { visible: false, name: '' }));
+        /* along the curve */
+        for (i = 0; i <= AREA_N; i++) {
+            (function(idx) {
+                var frac = idx / AREA_N;
+                areaPts.push(gb.create('point', [
+                    function() { return T_MIN + frac * (tNow - T_MIN); },
+                    function() {
+                        var tt = T_MIN + frac * (tNow - T_MIN);
+                        return (tNow <= T_MIN + 0.001) ? 0 : v(tt);
+                    }
+                ], { visible: false, name: '' }));
+            })(i);
+        }
+        /* bottom-right corner */
+        areaPts.push(gb.create('point', [
+            function() { return tNow; }, 0
+        ], { visible: false, name: '' }));
+
+        gb.create('polygon', areaPts, {
+            fillColor: COL_AREA_FILL, fillOpacity: 1,
+            borders: { strokeColor: COL_AREA_EDGE, strokeWidth: 0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        /* top edge of area (green line along the curve) */
+        gb.create('curve', [
+            function(u) { var tt = T_MIN + u * (tNow - T_MIN); return tt; },
+            function(u) { var tt = T_MIN + u * (tNow - T_MIN); return v(tt); },
+            0, 1
+        ], {
+            strokeColor: COL_AREA_EDGE, strokeWidth: 1.5,
+            numberPointsHigh: 120, fixed: true, highlight: false
+        });
+
+        /* vertical marker at current t */
+        gb.create('segment', [
+            [function() { return tNow; }, 0],
+            [function() { return tNow; }, function() { return v(tNow); }]
+        ], {
+            strokeColor: COL_AREA_EDGE, strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+        });
+
+        /* dot on curve at current t */
+        gb.create('point', [
+            function() { return tNow; },
+            function() { return v(tNow); }
+        ], {
+            name: '', size: 4, color: COL_CURVE, fixed: true, highlight: false, showInfobox: false
+        });
+
+        /* function label near t=3.3 */
+        gb.create('text', [3.32, v(3.3) + 0.35, 'v(t) = 2t + 1'], {
+            fontSize: 12, color: '#2563EB', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'bottom',
+            cssStyle: 'font-style:italic'
+        });
+
+        /* ── track board (number line) ──────────────────────────────── */
+        var tb = JXG.JSXGraph.initBoard('track-board', {
+            boundingbox: [-0.8, 2.2, 17.8, -1.0],
+            axis: false, grid: false,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        /* number line */
+        tb.create('segment', [[0, 0], [16, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.4, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        /* ticks every 2, labelled */
+        for (i = 0; i <= 16; i += 2) {
+            var tickH = 0.3;
+            tb.create('segment', [[i, -tickH], [i, tickH]], { strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false });
+            tb.create('text', [i, -0.65, String(i)], { fontSize: 11, anchorX: 'middle', anchorY: 'middle', color: '#444', fixed: true, highlight: false });
+        }
+        /* minor ticks at odds */
+        for (i = 1; i <= 15; i += 2) {
+            tb.create('segment', [[i, -0.15], [i, 0.15]], { strokeColor: '#aaa', strokeWidth: 0.7, fixed: true, highlight: false });
+        }
+
+        /* s label */
+        tb.create('text', [16.4, 0.7, 's (m)'], { fontSize: 12, color: '#444', fixed: true, highlight: false, cssStyle: 'font-style:italic', anchorX: 'middle', anchorY: 'middle' });
+
+        /* start marker — hollow circle at s(1)=4 */
+        tb.create('point', [s(T_MIN), 0], {
+            name: '', size: 5, fillColor: '#ffffff', strokeColor: '#666', strokeWidth: 1.5,
+            fixed: true, highlight: false, showInfobox: false
+        });
+        tb.create('text', [s(T_MIN), 0.7, 'start'], {
+            fontSize: 10, anchorX: 'middle', anchorY: 'middle', color: '#666', fixed: true, highlight: false
+        });
+
+        /* trail — a curve that traces s from t=1 up to tNow */
+        var TRAIL_N = 200;
+        tb.create('curve', [
+            function(u) {
+                var tt = T_MIN + u * (tNow - T_MIN);
+                return s(tt);
+            },
+            function(u) { return 0.55; },
+            0, 1
+        ], {
+            strokeColor: COL_TRAIL, strokeWidth: 3, numberPointsHigh: TRAIL_N,
+            fixed: true, highlight: false
+        });
+
+        /* particle dot */
+        var particle = tb.create('point', [
+            function() { return s(tNow); }, 0
+        ], {
+            name: '', size: 5, color: COL_PARTICLE, fixed: true, highlight: false, showInfobox: false
+        });
+
+        /* ── controls ───────────────────────────────────────────────── */
+        var slider = document.getElementById('slider-t');
+        var readout = document.getElementById('readout');
+        var btnPlay = document.getElementById('btn-play');
+        var btnReset = document.getElementById('btn-reset');
+
+        function updateAll() {
+            slider.value = tNow.toFixed(3);
+            gb.update();
+            tb.update();
+            readout.textContent = 't = ' + tNow.toFixed(2) + ' s,   s = ' + s(tNow).toFixed(2) + ' m';
+        }
+
+        slider.addEventListener('input', function() {
+            stopAnim();
+            tNow = parseFloat(this.value);
+            updateAll();
+        });
+
+        function stopAnim() {
+            if (animId !== null) {
+                cancelAnimationFrame(animId);
+                animId = null;
+                animStart = null;
+                btnPlay.textContent = '\u25B6 Play';
+                btnPlay.disabled = false;
+            }
+        }
+
+        function animStep(ts) {
+            if (animStart === null) animStart = ts;
+            var elapsed = ts - animStart;
+            var frac = Math.min(elapsed / ANIM_DURATION, 1);
+            tNow = T_MIN + frac * (T_MAX - T_MIN);
+            updateAll();
+            if (frac < 1) {
+                animId = requestAnimationFrame(animStep);
+            } else {
+                animId = null;
+                animStart = null;
+                btnPlay.textContent = '\u25B6 Play';
+                btnPlay.disabled = false;
+            }
+        }
+
+        btnPlay.addEventListener('click', function() {
+            if (animId !== null) return;
+            /* if at end, reset first */
+            if (tNow >= T_MAX - 0.005) {
+                tNow = T_MIN;
+                updateAll();
+            }
+            btnPlay.textContent = '\u25A0 ...';
+            btnPlay.disabled = true;
+            /* adjust start so animation continues from current t */
+            var alreadyFrac = (tNow - T_MIN) / (T_MAX - T_MIN);
+            animStart = null;
+            var offsetMs = alreadyFrac * ANIM_DURATION;
+            animId = requestAnimationFrame(function(ts) {
+                animStart = ts - offsetMs;
+                animStep(ts);
+            });
+        });
+
+        btnReset.addEventListener('click', function() {
+            stopAnim();
+            tNow = T_MIN;
+            updateAll();
+        });
+
+        /* initial render */
+        updateAll();
+    </script>
+</body>
+</html>
