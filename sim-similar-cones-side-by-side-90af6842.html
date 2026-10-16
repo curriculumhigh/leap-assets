@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Similar Cones</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 8.5, 18.5, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var OUTLINE = '#555555';
+        var MEAS = '#3B82F6';
+        var LABEL_COL = '#222222';
+
+        /* ================================================================
+           CONE A  —  radius 6 ft, V_A = 45\pi ft^3
+        ================================================================ */
+        var cA_cx = 3.2, cA_by = 0.5, cA_r = 2.2, cA_h = 5.0;
+        var cA_apex = [cA_cx, cA_by + cA_h];
+        var cA_ery = 0.45;
+
+        // Back half of ellipse (dashed)
+        board.create('curve', [
+            function(t) { return cA_cx + cA_r * Math.cos(t); },
+            function(t) { return cA_by + cA_ery * Math.sin(t); },
+            Math.PI, 2 * Math.PI
+        ], {
+            strokeColor: OUTLINE, strokeWidth: 1.5, dash: 2,
+            fixed: true, highlight: false, layer: 1
+        });
+
+        // Cone body — two slant edges
+        board.create('segment', [[cA_cx - cA_r, cA_by], cA_apex], {
+            strokeColor: OUTLINE, strokeWidth: 2, fixed: true, highlight: false, layer: 3
+        });
+        board.create('segment', [[cA_cx + cA_r, cA_by], cA_apex], {
+            strokeColor: OUTLINE, strokeWidth: 2, fixed: true, highlight: false, layer: 3
+        });
+
+        // Front half of ellipse (dashed)
+        board.create('curve', [
+            function(t) { return cA_cx + cA_r * Math.cos(t); },
+            function(t) { return cA_by + cA_ery * Math.sin(t); },
+            0, Math.PI
+        ], {
+            strokeColor: OUTLINE, strokeWidth: 1.5, dash: 2,
+            fixed: true, highlight: false, layer: 4
+        });
+
+        // Dashed height line
+        board.create('segment', [cA_apex, [cA_cx, cA_by]], {
+            strokeColor: MEAS, strokeWidth: 1.0, dash: 3,
+            fixed: true, highlight: false, layer: 2
+        });
+
+        // Dashed radius line
+        board.create('segment', [[cA_cx, cA_by], [cA_cx + cA_r, cA_by]], {
+            strokeColor: MEAS, strokeWidth: 1.2, dash: 3,
+            fixed: true, highlight: false, layer: 5
+        });
+
+        // Small dot at base center
+        board.create('point', [cA_cx, cA_by], {
+            name: '', size: 1.5, color: MEAS, fixed: true, highlight: false, showInfobox: false
+        });
+
+        // "Cone A" above apex
+        board.create('text', [cA_cx, cA_by + cA_h + 0.8, '\\textbf{Cone A}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14, color: LABEL_COL,
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // Radius label "6 ft"
+        board.create('text', [cA_cx + cA_r * 0.5, cA_by - 0.55, '6\\text{ ft}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12, color: MEAS,
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // Volume label V_A
+        board.create('text', [cA_cx, cA_by - 1.7, 'V_A = 45\\pi\\text{ ft}^3'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13, color: LABEL_COL,
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        /* ================================================================
+           CONE B  —  radius 15 ft, V_B = ?
+        ================================================================ */
+        var cB_cx = 12.5, cB_by = 0.5, cB_r = 3.8, cB_h = 6.8;
+        var cB_apex = [cB_cx, cB_by + cB_h];
+        var cB_ery = 0.75;
+
+        // Back half of ellipse (dashed)
+        board.create('curve', [
+            function(t) { return cB_cx + cB_r * Math.cos(t); },
+            function(t) { return cB_by + cB_ery * Math.sin(t); },
+            Math.PI, 2 * Math.PI
+        ], {
+            strokeColor: OUTLINE, strokeWidth: 1.5, dash: 2,
+            fixed: true, highlight: false, layer: 1
+        });
+
+        // Cone body — two slant edges
+        board.create('segment', [[cB_cx - cB_r, cB_by], cB_apex], {
+            strokeColor: OUTLINE, strokeWidth: 2, fixed: true, highlight: false, layer: 3
+        });
+        board.create('segment', [[cB_cx + cB_r, cB_by], cB_apex], {
+            strokeColor: OUTLINE, strokeWidth: 2, fixed: true, highlight: false, layer: 3
+        });
+
+        // Front half of ellipse (dashed)
+        board.create('curve', [
+            function(t) { return cB_cx + cB_r * Math.cos(t); },
+            function(t) { return cB_by + cB_ery * Math.sin(t); },
+            0, Math.PI
+        ], {
+            strokeColor: OUTLINE, strokeWidth: 1.5, dash: 2,
+            fixed: true, highlight: false, layer: 4
+        });
+
+        // Dashed height line
+        board.create('segment', [cB_apex, [cB_cx, cB_by]], {
+            strokeColor: MEAS, strokeWidth: 1.0, dash: 3,
+            fixed: true, highlight: false, layer: 2
+        });
+
+        // Dashed radius line
+        board.create('segment', [[cB_cx, cB_by], [cB_cx + cB_r, cB_by]], {
+            strokeColor: MEAS, strokeWidth: 1.2, dash: 3,
+            fixed: true, highlight: false, layer: 5
+        });
+
+        // Small dot at base center
+        board.create('point', [cB_cx, cB_by], {
+            name: '', size: 1.5, color: MEAS, fixed: true, highlight: false, showInfobox: false
+        });
+
+        // "Cone B" above apex
+        board.create('text', [cB_cx, cB_by + cB_h + 0.8, '\\textbf{Cone B}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14, color: LABEL_COL,
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // Radius label "15 ft"
+        board.create('text', [cB_cx + cB_r * 0.5, cB_by - 0.55, '15\\text{ ft}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12, color: MEAS,
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // Volume label V_B
+        board.create('text', [cB_cx, cB_by - 1.7, 'V_B = \\;?'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13, color: LABEL_COL,
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        /* ================================================================
+           SIMILARITY SYMBOL between the two cones
+        ================================================================ */
+        board.create('text', [7.8, 3.5, '\\sim'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 22, color: '#888888',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
