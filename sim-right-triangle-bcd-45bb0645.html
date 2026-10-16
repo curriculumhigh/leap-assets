@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle BCD</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 10, 27, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Colors
+        var COL_OUTLINE = '#555555';
+        var COL_MEASURE = '#3B82F6';
+        var COL_RIGHT   = '#DC2626';
+        var COL_VERTEX  = '#222222';
+
+        // Vertices
+        var B = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: COL_OUTLINE,
+            highlight: false, showInfobox: false
+        });
+        var C = board.create('point', [24, 0], {
+            name: '', fixed: true, size: 2, color: COL_OUTLINE,
+            highlight: false, showInfobox: false
+        });
+        var D = board.create('point', [24, 7], {
+            name: '', fixed: true, size: 2, color: COL_OUTLINE,
+            highlight: false, showInfobox: false
+        });
+
+        // Triangle
+        board.create('polygon', [B, C, D], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_OUTLINE, strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Right-angle marker at C
+        var sqSize = 1.2;
+        var rp1 = board.create('point', [24 - sqSize, 0], { visible: false, fixed: true, name: '' });
+        var rp2 = board.create('point', [24 - sqSize, sqSize], { visible: false, fixed: true, name: '' });
+        var rp3 = board.create('point', [24, sqSize], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [rp1, rp2], {
+            strokeColor: COL_RIGHT, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [rp2, rp3], {
+            strokeColor: COL_RIGHT, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Vertex labels — bold italic, placed just outside each vertex
+        board.create('text', [-1.2, -0.2, '\\boldsymbol{B}'], {
+            useKatex: true, fontSize: 15, color: COL_VERTEX,
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+        board.create('text', [25.2, -0.6, '\\boldsymbol{C}'], {
+            useKatex: true, fontSize: 15, color: COL_VERTEX,
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+        board.create('text', [25.2, 7.6, '\\boldsymbol{D}'], {
+            useKatex: true, fontSize: 15, color: COL_VERTEX,
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Side labels — blue, bold
+        // BC = 24 (centered below the bottom side)
+        board.create('text', [12, -1.5, '\\color{#3B82F6}{\\mathbf{24}}'], {
+            useKatex: true, fontSize: 14, color: COL_MEASURE,
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // CD = 7 (to the right of the vertical side)
+        board.create('text', [26, 3.5, '\\color{#3B82F6}{\\mathbf{7}}'], {
+            useKatex: true, fontSize: 14, color: COL_MEASURE,
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // BD = 25 (along the hypotenuse, offset upper-left)
+        var hypMidX = 12;
+        var hypMidY = 3.5;
+        var normLen = Math.sqrt(7 * 7 + 24 * 24);
+        var offX = hypMidX + (-7 / normLen) * 2.0;
+        var offY = hypMidY + (24 / normLen) * 2.0;
+
+        board.create('text', [offX, offY, '\\color{#3B82F6}{\\mathbf{25}}'], {
+            useKatex: true, fontSize: 14, color: COL_MEASURE,
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
