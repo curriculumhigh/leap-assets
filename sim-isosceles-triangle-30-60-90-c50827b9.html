@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Isosceles Triangle 30-60-90</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 10.5, 12.5, -1.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var h = 5 * Math.sqrt(3);
+
+        var B = board.create('point', [0, 0], {
+            name: 'B', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-16, -10] }
+        });
+        var C = board.create('point', [10, 0], {
+            name: 'C', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -10] }
+        });
+        var A = board.create('point', [5, h], {
+            name: 'A', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, 12] }
+        });
+        var M = board.create('point', [5, 0], {
+            name: 'M', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [0, -14] }
+        });
+
+        board.create('segment', [B, A], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [A, C], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [B, C], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        board.create('segment', [A, M], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var sq = 0.5;
+        var sqP1 = board.create('point', [5 - sq, 0], { visible: false, fixed: true, name: '' });
+        var sqP2 = board.create('point', [5 - sq, sq], { visible: false, fixed: true, name: '' });
+        var sqP3 = board.create('point', [5, sq], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [sqP1, sqP2], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [sqP2, sqP3], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('nonReflexAngle', [C, B, A], {
+            radius: 1.2,
+            fillColor: '#555555', fillOpacity: 0.05,
+            strokeColor: '#555555', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [A, C, B], {
+            radius: 1.2,
+            fillColor: '#555555', fillOpacity: 0.05,
+            strokeColor: '#555555', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [B, A, M], {
+            radius: 1.5,
+            fillColor: '#555555', fillOpacity: 0.05,
+            strokeColor: '#555555', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [M, A, C], {
+            radius: 1.5,
+            fillColor: '#555555', fillOpacity: 0.05,
+            strokeColor: '#555555', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        var angLabelR = 1.9;
+        var bBisect = Math.PI / 6;
+        board.create('text', [
+            angLabelR * Math.cos(bBisect),
+            angLabelR * Math.sin(bBisect),
+            '60^\\circ'
+        ], {
+            useKatex: true, fontSize: 12, color: '#444444',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var cBisect = Math.PI - Math.PI / 6;
+        board.create('text', [
+            10 + angLabelR * Math.cos(cBisect),
+            angLabelR * Math.sin(cBisect),
+            '60^\\circ'
+        ], {
+            useKatex: true, fontSize: 12, color: '#444444',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var abAngle = Math.atan2(0 - h, 0 - 5);
+        var amAngle = -Math.PI / 2;
+        var aLeftBisect = (abAngle + amAngle) / 2;
+        var aLabelR = 2.2;
+        board.create('text', [
+            5 + aLabelR * Math.cos(aLeftBisect),
+            h + aLabelR * Math.sin(aLeftBisect),
+            '30^\\circ'
+        ], {
+            useKatex: true, fontSize: 12, color: '#444444',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var acAngle = Math.atan2(0 - h, 10 - 5);
+        var aRightBisect = (amAngle + acAngle) / 2;
+        board.create('text', [
+            5 + aLabelR * Math.cos(aRightBisect),
+            h + aLabelR * Math.sin(aRightBisect),
+            '30^\\circ'
+        ], {
+            useKatex: true, fontSize: 12, color: '#444444',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var baMidX = 2.5, baMidY = h / 2;
+        var baPerp = Math.atan2(h, 5) + Math.PI / 2;
+        var sideLabelOff = 0.6;
+        board.create('text', [
+            baMidX + sideLabelOff * Math.cos(baPerp),
+            baMidY + sideLabelOff * Math.sin(baPerp),
+            '10'
+        ], {
+            useKatex: true, fontSize: 13, color: '#444444',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var caMidX = 7.5, caMidY = h / 2;
+        var caPerp = Math.atan2(h, -5) - Math.PI / 2;
+        board.create('text', [
+            caMidX + sideLabelOff * Math.cos(caPerp),
+            caMidY + sideLabelOff * Math.sin(caPerp),
+            '10'
+        ], {
+            useKatex: true, fontSize: 13, color: '#444444',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [2.5, -0.6, '5'], {
+            useKatex: true, fontSize: 13, color: '#444444',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [7.5, -0.6, '5'], {
+            useKatex: true, fontSize: 13, color: '#444444',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [4.3, h / 2, '\\color{#DC2626}{h}'], {
+            useKatex: true, fontSize: 14, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
