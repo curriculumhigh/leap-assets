@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle GHJ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 11, 19, -3],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertices
+        var H = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var J = board.create('point', [15, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var G = board.create('point', [0, 8], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // Triangle edges
+        board.create('segment', [G, H], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [H, J], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [G, J], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // Right-angle marker at H (square marker)
+        var sqSize = 1.0;
+        var sq1 = board.create('point', [sqSize, 0], { visible: false, fixed: true, name: '' });
+        var sq2 = board.create('point', [sqSize, sqSize], { visible: false, fixed: true, name: '' });
+        var sq3 = board.create('point', [0, sqSize], { visible: false, fixed: true, name: '' });
+        board.create('segment', [sq1, sq2], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [sq2, sq3], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Vertex labels — bold
+        board.create('text', [-1.2, 8.4, '\\mathbf{G}'], {
+            useKatex: true, fontSize: 15, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [-1.2, -1.2, '\\mathbf{H}'], {
+            useKatex: true, fontSize: 15, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [15.4, -1.2, '\\mathbf{J}'], {
+            useKatex: true, fontSize: 15, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Side labels — numbers only
+        // 8 — left of vertical leg
+        board.create('text', [-1.6, 4, '8'], {
+            useKatex: true, fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // 15 — below horizontal leg
+        board.create('text', [7.5, -1.6, '15'], {
+            useKatex: true, fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // 17 — along hypotenuse, offset up-right from midpoint
+        board.create('text', [8.8, 5.5, '17'], {
+            useKatex: true, fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
