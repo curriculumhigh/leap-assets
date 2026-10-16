@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardboard Square Method — Clock Tower</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 36, 22.5, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Color constants ─────────────────────────────────────────────
+        var COL_STRUCT = '#555555';
+        var COL_CYAN = '#0EA5E9';
+        var COL_RED = '#DC2626';
+        var COL_DARK = '#222222';
+        var COL_DIM = '#444444';
+
+        // ── Layout constants ────────────────────────────────────────────
+        var PX = 2;
+        var GROUND = 0;
+        var EYE_H = 5.8;
+        var HEAD_R = 0.7;
+        var HEAD_CY = EYE_H + HEAD_R + 0.3;
+
+        var TX1 = 15;
+        var TX2 = 19;
+        var TOWER_H = 28;
+        var TOWER_CX = (TX1 + TX2) / 2;
+
+        // ── Ground line ─────────────────────────────────────────────────
+        board.create('segment', [[-3, GROUND], [22, GROUND]], {
+            strokeColor: COL_STRUCT, strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // ── Clock Tower ─────────────────────────────────────────────────
+        var tP1 = board.create('point', [TX1, GROUND], { visible: false, fixed: true, name: '' });
+        var tP2 = board.create('point', [TX2, GROUND], { visible: false, fixed: true, name: '' });
+        var tP3 = board.create('point', [TX2, TOWER_H], { visible: false, fixed: true, name: '' });
+        var tP4 = board.create('point', [TX1, TOWER_H], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [tP1, tP2, tP3, tP4], {
+            fillColor: '#f0f0f0', fillOpacity: 0.5,
+            borders: { strokeColor: COL_STRUCT, strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Clock face circle near top
+        var clockCY = TOWER_H - 3;
+        board.create('circle', [[TOWER_CX, clockCY], 1.3], {
+            strokeColor: COL_STRUCT, strokeWidth: 1.5, fillColor: '#ffffff', fillOpacity: 1,
+            fixed: true, highlight: false
+        });
+        board.create('point', [TOWER_CX, clockCY], {
+            name: '', size: 1.5, color: COL_STRUCT, fixed: true, highlight: false
+        });
+        board.create('segment', [[TOWER_CX, clockCY], [TOWER_CX + 0.5, clockCY + 0.7]], {
+            strokeColor: COL_STRUCT, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[TOWER_CX, clockCY], [TOWER_CX - 0.3, clockCY - 0.6]], {
+            strokeColor: COL_STRUCT, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Stick Figure ────────────────────────────────────────────────
+        board.create('circle', [[PX, HEAD_CY], HEAD_R], {
+            strokeColor: COL_DARK, strokeWidth: 1.8, fillColor: '#ffffff', fillOpacity: 1,
+            fixed: true, highlight: false
+        });
+
+        var NECK_Y = HEAD_CY - HEAD_R;
+        var WAIST_Y = 2.8;
+        board.create('segment', [[PX, NECK_Y], [PX, WAIST_Y]], {
+            strokeColor: COL_DARK, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[PX, WAIST_Y], [PX - 0.8, GROUND]], {
+            strokeColor: COL_DARK, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [[PX, WAIST_Y], [PX + 0.8, GROUND]], {
+            strokeColor: COL_DARK, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[PX, NECK_Y - 0.5], [PX - 1, 3.5]], {
+            strokeColor: COL_DARK, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        var CARD_X = PX + 2.2;
+        var CARD_Y = EYE_H;
+        board.create('segment', [[PX, NECK_Y - 0.5], [CARD_X - 0.3, CARD_Y - 0.3]], {
+            strokeColor: COL_DARK, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        board.create('point', [PX + 0.3, EYE_H], {
+            name: '', size: 1.5, color: COL_DARK, fixed: true, highlight: false
+        });
+
+        // ── Cardboard Square ────────────────────────────────────────────
+        var CSZ = 1.4;
+        var CSX = CARD_X;
+        var CSY = CARD_Y - CSZ / 2;
+        var cP1 = board.create('point', [CSX - CSZ, CSY], { visible: false, fixed: true, name: '' });
+        var cP2 = board.create('point', [CSX, CSY], { visible: false, fixed: true, name: '' });
+        var cP3 = board.create('point', [CSX, CSY + CSZ], { visible: false, fixed: true, name: '' });
+        var cP4 = board.create('point', [CSX - CSZ, CSY + CSZ], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [cP1, cP2, cP3, cP4], {
+            fillColor: '#FEF3C7', fillOpacity: 0.7,
+            borders: { strokeColor: COL_DARK, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        var RA_SZ = 0.35;
+        board.create('segment', [[CSX - RA_SZ, CSY], [CSX - RA_SZ, CSY + RA_SZ]], {
+            strokeColor: COL_RED, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[CSX - RA_SZ, CSY + RA_SZ], [CSX, CSY + RA_SZ]], {
+            strokeColor: COL_RED, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Sight Lines (dashed cyan) ───────────────────────────────────
+        var EYE_X = CSX;
+        var EYE_Y = CARD_Y;
+
+        board.create('segment', [[EYE_X, EYE_Y], [TX1, TOWER_H]], {
+            strokeColor: COL_CYAN, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[EYE_X, EYE_Y], [TX1, GROUND]], {
+            strokeColor: COL_CYAN, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[EYE_X, EYE_Y], [TX1, EYE_Y]], {
+            strokeColor: COL_CYAN, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('point', [TX1, EYE_Y], {
+            name: '', size: 1.5, color: COL_CYAN, fixed: true, highlight: false
+        });
+
+        // ── Right-Angle Marker at Tower Base ────────────────────────────
+        var RA2 = 0.8;
+        board.create('segment', [[TX1 + RA2, GROUND], [TX1 + RA2, RA2]], {
+            strokeColor: COL_RED, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[TX1 + RA2, RA2], [TX1, RA2]], {
+            strokeColor: COL_RED, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Dimension: Eye Height (left side, vertical) ────────────────
+        var DIM_X = -1.2;
+        var TICK_W = 0.4;
+
+        board.create('arrow', [[DIM_X, GROUND], [DIM_X, EYE_H]], {
+            strokeColor: COL_DIM, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }, firstArrow: { type: 2, size: 5 }
+        });
+
+        board.create('segment', [[DIM_X - TICK_W, GROUND], [DIM_X + TICK_W, GROUND]], {
+            strokeColor: COL_DIM, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[DIM_X - TICK_W, EYE_H], [DIM_X + TICK_W, EYE_H]], {
+            strokeColor: COL_DIM, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        board.create('text', [DIM_X - 0.2, EYE_H / 2, '4.8\\text{ ft}'], {
+            useKatex: true, fontSize: 12, color: COL_DIM,
+            anchorX: 'right', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Dimension: Horizontal Distance (bottom) ────────────────────
+        var DIM_Y = -1.5;
+        var TICK_H = 0.4;
+
+        var PERSON_BASE_X = PX;
+        var TOWER_BASE_X = TX1;
+
+        board.create('arrow', [[PERSON_BASE_X, DIM_Y], [TOWER_BASE_X, DIM_Y]], {
+            strokeColor: COL_DIM, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }, firstArrow: { type: 2, size: 5 }
+        });
+
+        board.create('segment', [[PERSON_BASE_X, DIM_Y - TICK_H], [PERSON_BASE_X, DIM_Y + TICK_H]], {
+            strokeColor: COL_DIM, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[TOWER_BASE_X, DIM_Y - TICK_H], [TOWER_BASE_X, DIM_Y + TICK_H]], {
+            strokeColor: COL_DIM, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        board.create('text', [(PERSON_BASE_X + TOWER_BASE_X) / 2, DIM_Y - 0.3, '12\\text{ ft}'], {
+            useKatex: true, fontSize: 12, color: COL_DIM,
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
