@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle DEF</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 12, 25, -16],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var D = board.create('point', [1, 10], {
+            name: 'D', fixed: true, size: 2, color: '#222222',
+            highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, 8] }
+        });
+
+        var F = board.create('point', [21, 10], {
+            name: 'F', fixed: true, size: 2, color: '#222222',
+            highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, 8] }
+        });
+
+        var E = board.create('point', [21, -11], {
+            name: 'E', fixed: true, size: 2, color: '#222222',
+            highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -12] }
+        });
+
+        // ── Triangle (no fill) ──────────────────────────────────────────
+        board.create('polygon', [D, F, E], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: {
+                strokeColor: '#555555',
+                strokeWidth: 2.0,
+                fixed: true,
+                highlight: false
+            },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // Re-show vertices on top of polygon
+        D.setAttribute({ visible: true });
+        F.setAttribute({ visible: true });
+        E.setAttribute({ visible: true });
+
+        // ── Right-angle mark at F ───────────────────────────────────────
+        var sq = 0.7;
+        var raP1 = board.create('point', [F.X() - sq, F.Y()], { visible: false, fixed: true, name: '' });
+        var raP2 = board.create('point', [F.X() - sq, F.Y() - sq], { visible: false, fixed: true, name: '' });
+        var raP3 = board.create('point', [F.X(), F.Y() - sq], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [raP1, raP2], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [raP2, raP3], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Side labels ─────────────────────────────────────────────────
+        // "20" centred above DF (horizontal top side)
+        board.create('text', [(D.X() + F.X()) / 2, D.Y() + 1.2, '20'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#222222',
+            fixed: true, highlight: false
+        });
+
+        // "21" to the right of EF (vertical right side)
+        board.create('text', [F.X() + 1.4, (F.Y() + E.Y()) / 2, '21'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#222222',
+            fixed: true, highlight: false
+        });
+
+        // "29" to the left of DE (diagonal hypotenuse)
+        var midX = (D.X() + E.X()) / 2;
+        var midY = (D.Y() + E.Y()) / 2;
+        var perpLen = Math.sqrt(21 * 21 + 20 * 20);
+        var offX = 21 / perpLen * 1.4;
+        var offY = 20 / perpLen * 1.4;
+        board.create('text', [midX - offX, midY + offY, '29'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#222222',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
