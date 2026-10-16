@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kite JKLM</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-33, 26, 33, -40],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var J = board.create('point', [0, 18], {
+            name: 'J', fixed: true, size: 2.5, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, 14] }
+        });
+        var K = board.create('point', [24, 0], {
+            name: 'K', fixed: true, size: 2.5, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [10, -2] }
+        });
+        var L = board.create('point', [0, -32], {
+            name: 'L', fixed: true, size: 2.5, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, -18] }
+        });
+        var M = board.create('point', [-24, 0], {
+            name: 'M', fixed: true, size: 2.5, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, -2] }
+        });
+        var N = board.create('point', [0, 0], {
+            name: 'N', fixed: true, size: 2.5, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -14] }
+        });
+
+        // ── Kite outline (polygon, no fill) ─────────────────────────────
+        var kite = board.create('polygon', [J, K, L, M], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Dashed diagonals ────────────────────────────────────────────
+        board.create('segment', [J, L], {
+            strokeColor: '#555555', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [K, M], {
+            strokeColor: '#555555', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at N (upper-right quadrant) ──────────────
+        var sq = 2.2;
+        var raP1 = board.create('point', [sq, 0], { visible: false, fixed: true, name: '' });
+        var raP2 = board.create('point', [sq, sq], { visible: false, fixed: true, name: '' });
+        var raP3 = board.create('point', [0, sq], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [raP1, raP2], {
+            strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [raP2, raP3], {
+            strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Measurement labels (blue, KaTeX) ────────────────────────────
+        var COL_MEAS = '#3B82F6';
+
+        // "30 cm" along JK — midpoint of J(0,18) and K(24,0) is (12,9), offset outward (upper-right)
+        board.create('text', [14.5, 11.5, '30\\text{ cm}'], {
+            useKatex: true, fontSize: 13, color: COL_MEAS,
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // "40 cm" along LK — midpoint of L(0,-32) and K(24,0) is (12,-16), offset outward (lower-right)
+        board.create('text', [14.5, -18, '40\\text{ cm}'], {
+            useKatex: true, fontSize: 13, color: COL_MEAS,
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // "50 cm" along JL (vertical diagonal) — midpoint of J(0,18) and L(0,-32) is (0,-7), offset left
+        board.create('text', [-5, -7, '50\\text{ cm}'], {
+            useKatex: true, fontSize: 13, color: COL_MEAS,
+            anchorX: 'right', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
