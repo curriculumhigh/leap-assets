@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle ABC with Altitude BD</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 8, 10, -1],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var Ax = 1, Ay = 6;
+        var Bx = 1, By = 1;
+        var Cx = 8, Cy = 1;
+
+        // Compute D: foot of perpendicular from B to line AC
+        var ACx = Cx - Ax, ACy = Cy - Ay;
+        var ABx = Bx - Ax, ABy = By - Ay;
+        var t = (ABx * ACx + ABy * ACy) / (ACx * ACx + ACy * ACy);
+        var Dx = Ax + t * ACx;
+        var Dy = Ay + t * ACy;
+
+        // ── Points ──────────────────────────────────────────────────────
+        var A = board.create('point', [Ax, Ay], {
+            name: 'A', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, 8], cssStyle: 'font-weight:bold' }
+        });
+        var B = board.create('point', [Bx, By], {
+            name: 'B', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, -14], cssStyle: 'font-weight:bold' }
+        });
+        var C = board.create('point', [Cx, Cy], {
+            name: 'C', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, -14], cssStyle: 'font-weight:bold' }
+        });
+        var D = board.create('point', [Dx, Dy], {
+            name: 'D', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, 8], cssStyle: 'font-weight:bold' }
+        });
+
+        // ── Triangle edges ──────────────────────────────────────────────
+        board.create('segment', [A, B], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [B, C], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [A, C], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Altitude BD ─────────────────────────────────────────────────
+        board.create('segment', [B, D], {
+            strokeColor: '#555555', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker helper ───────────────────────────────────
+        function drawRightAngle(vertex, p1, p2, size) {
+            var vx = vertex.X(), vy = vertex.Y();
+
+            var d1x = p1.X() - vx, d1y = p1.Y() - vy;
+            var len1 = Math.sqrt(d1x * d1x + d1y * d1y);
+            d1x /= len1; d1y /= len1;
+
+            var d2x = p2.X() - vx, d2y = p2.Y() - vy;
+            var len2 = Math.sqrt(d2x * d2x + d2y * d2y);
+            d2x /= len2; d2y /= len2;
+
+            var q1 = [vx + size * d1x, vy + size * d1y];
+            var q2 = [vx + size * (d1x + d2x), vy + size * (d1y + d2y)];
+            var q3 = [vx + size * d2x, vy + size * d2y];
+
+            board.create('segment', [q1, q2], {
+                strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            board.create('segment', [q2, q3], {
+                strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+            });
+        }
+
+        drawRightAngle(B, A, C, 0.45);
+        drawRightAngle(D, B, A, 0.45);
+
+    </script>
+</body>
+</html>
