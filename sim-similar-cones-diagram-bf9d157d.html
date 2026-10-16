@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Similar Cones</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 11, 19, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var OUTLINE = '#555555';
+        var REF = '#DC2626';
+        var LABEL_COL = '#222222';
+
+        // ── Cone A (larger) ─────────────────────────────────────────────
+        var cAx = 4;
+        var cAbase = 0;
+        var cAh = 8;
+        var cAr = 3;
+
+        var apexA = board.create('point', [cAx, cAbase + cAh], { visible: false, fixed: true, name: '' });
+        var baseAL = board.create('point', [cAx - cAr, cAbase], { visible: false, fixed: true, name: '' });
+        var baseAR = board.create('point', [cAx + cAr, cAbase], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [apexA, baseAL], { strokeColor: OUTLINE, strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [apexA, baseAR], { strokeColor: OUTLINE, strokeWidth: 2, fixed: true, highlight: false });
+
+        // Elliptical base (front half solid, back half dashed)
+        board.create('curve', [
+            function(t) { return cAx + cAr * Math.cos(t); },
+            function(t) { return cAbase + 0.7 * Math.sin(t); },
+            Math.PI, 2 * Math.PI
+        ], { strokeColor: OUTLINE, strokeWidth: 2, fixed: true, highlight: false });
+
+        board.create('curve', [
+            function(t) { return cAx + cAr * Math.cos(t); },
+            function(t) { return cAbase + 0.7 * Math.sin(t); },
+            0, Math.PI
+        ], { strokeColor: OUTLINE, strokeWidth: 1.5, dash: 2, fixed: true, highlight: false });
+
+        // Dashed height line
+        board.create('segment', [[cAx, cAbase + cAh], [cAx, cAbase]], {
+            strokeColor: REF, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // Height label — shifted down from center
+        board.create('text', [cAx + 0.5, cAbase + cAh * 0.35, '20 \\text{ ft}'], {
+            useKatex: true, fontSize: 13, color: REF, fixed: true, highlight: false, anchorX: 'left', anchorY: 'middle'
+        });
+
+        // "Cone A" title above
+        board.create('text', [cAx, cAbase + cAh + 1.2, '\\textbf{Cone A}'], {
+            useKatex: true, fontSize: 14, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Volume label below
+        board.create('text', [cAx, cAbase - 1.6, 'V_A = 250\\pi \\text{ ft}^3'], {
+            useKatex: true, fontSize: 13, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ── Cone B (smaller, scale factor 1/5) ─────────────────────────
+        var cBx = 13;
+        var cBbase = 0;
+        var cBh = cAh * 0.2;
+        var cBr = cAr * 0.2;
+
+        var apexB = board.create('point', [cBx, cBbase + cBh], { visible: false, fixed: true, name: '' });
+        var baseBL = board.create('point', [cBx - cBr, cBbase], { visible: false, fixed: true, name: '' });
+        var baseBR = board.create('point', [cBx + cBr, cBbase], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [apexB, baseBL], { strokeColor: OUTLINE, strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [apexB, baseBR], { strokeColor: OUTLINE, strokeWidth: 2, fixed: true, highlight: false });
+
+        // Elliptical base
+        board.create('curve', [
+            function(t) { return cBx + cBr * Math.cos(t); },
+            function(t) { return cBbase + 0.14 * Math.sin(t); },
+            Math.PI, 2 * Math.PI
+        ], { strokeColor: OUTLINE, strokeWidth: 2, fixed: true, highlight: false });
+
+        board.create('curve', [
+            function(t) { return cBx + cBr * Math.cos(t); },
+            function(t) { return cBbase + 0.14 * Math.sin(t); },
+            0, Math.PI
+        ], { strokeColor: OUTLINE, strokeWidth: 1.5, dash: 2, fixed: true, highlight: false });
+
+        // Dashed height line
+        board.create('segment', [[cBx, cBbase + cBh], [cBx, cBbase]], {
+            strokeColor: REF, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // Height label
+        board.create('text', [cBx + 0.5, cBbase + cBh / 2, '4 \\text{ ft}'], {
+            useKatex: true, fontSize: 13, color: REF, fixed: true, highlight: false, anchorX: 'left', anchorY: 'middle'
+        });
+
+        // "Cone B" title — same vertical position as Cone A title
+        board.create('text', [cBx, cAbase + cAh + 1.2, '\\textbf{Cone B}'], {
+            useKatex: true, fontSize: 14, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Volume label below
+        board.create('text', [cBx, cBbase - 1.6, 'V_B = \\, ?'], {
+            useKatex: true, fontSize: 13, color: LABEL_COL, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
