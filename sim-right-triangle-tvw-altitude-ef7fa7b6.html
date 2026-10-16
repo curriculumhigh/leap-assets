@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle TVW with Altitude</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 11, 27, -2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var T = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var W = board.create('point', [25, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var U = board.create('point', [4, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var V = board.create('point', [4, 9.17], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // ── Triangle edges (no fill) ────────────────────────────────────
+        board.create('segment', [T, V], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [V, W], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [T, W], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // ── Altitude VU ─────────────────────────────────────────────────
+        board.create('segment', [V, U], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at V ─────────────────────────────────────
+        var raSize = 1.2;
+
+        var vtDx = T.X() - V.X(), vtDy = T.Y() - V.Y();
+        var vtLen = Math.sqrt(vtDx * vtDx + vtDy * vtDy);
+        var vtUx = vtDx / vtLen, vtUy = vtDy / vtLen;
+
+        var vwDx = W.X() - V.X(), vwDy = W.Y() - V.Y();
+        var vwLen = Math.sqrt(vwDx * vwDx + vwDy * vwDy);
+        var vwUx = vwDx / vwLen, vwUy = vwDy / vwLen;
+
+        var raV1 = [V.X() + raSize * vtUx, V.Y() + raSize * vtUy];
+        var raV2 = [V.X() + raSize * vtUx + raSize * vwUx, V.Y() + raSize * vtUy + raSize * vwUy];
+        var raV3 = [V.X() + raSize * vwUx, V.Y() + raSize * vwUy];
+
+        board.create('segment', [raV1, raV2], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [raV2, raV3], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at U ─────────────────────────────────────
+        var raU_size = 1.2;
+        var raU1 = [U.X(), U.Y() + raU_size];
+        var raU2 = [U.X() - raU_size, U.Y() + raU_size];
+        var raU3 = [U.X() - raU_size, U.Y()];
+
+        board.create('segment', [raU1, raU2], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [raU2, raU3], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Vertex labels ───────────────────────────────────────────────
+        board.create('text', [-0.8, -1.0, 'T'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [3.5, 10.0, 'V'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [25.4, -1.0, 'W'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [3.6, -1.2, 'U'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+
+        // ── Side labels ─────────────────────────────────────────────────
+        var tvMidX = (T.X() + V.X()) / 2;
+        var tvMidY = (T.Y() + V.Y()) / 2;
+        var tvNx = -vtUy, tvNy = vtUx;
+        board.create('text', [tvMidX + 1.3 * tvNx - 0.3, tvMidY + 1.3 * tvNy, '10'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false, useKatex: true,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var tuMidX = (T.X() + U.X()) / 2;
+        board.create('text', [tuMidX, 0.8, 'x'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false, useKatex: true,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var uwMidX = (U.X() + W.X()) / 2;
+        board.create('text', [uwMidX, -1.0, '21'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false, useKatex: true,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
