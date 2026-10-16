@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velocity–Time Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 8, 9, -5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [8.6, -0.45, 't'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 7.6, 'v'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+
+        // ── Hermite piecewise cubic interpolation ────────────────────────
+        var knots = [
+            { t: 0,   v: 0,  dv: 5 },
+            { t: 2,   v: 6,  dv: 0 },
+            { t: 5,   v: 0,  dv: -3 },
+            { t: 6.5, v: -3, dv: 0 },
+            { t: 8,   v: 0,  dv: 2.5 }
+        ];
+
+        function hermite(p0, m0, p1, m1, s) {
+            var s2 = s * s;
+            var s3 = s2 * s;
+            return (2 * s3 - 3 * s2 + 1) * p0
+                 + (s3 - 2 * s2 + s) * m0
+                 + (-2 * s3 + 3 * s2) * p1
+                 + (s3 - s2) * m1;
+        }
+
+        function vFunc(t) {
+            if (t <= knots[0].t) return knots[0].v;
+            if (t >= knots[knots.length - 1].t) return knots[knots.length - 1].v;
+
+            var idx = 0;
+            for (var i = 0; i < knots.length - 1; i++) {
+                if (t >= knots[i].t && t <= knots[i + 1].t) { idx = i; break; }
+            }
+
+            var t0 = knots[idx].t, t1 = knots[idx + 1].t;
+            var p0 = knots[idx].v, p1 = knots[idx + 1].v;
+            var dt = t1 - t0;
+            var m0 = knots[idx].dv * dt;
+            var m1 = knots[idx + 1].dv * dt;
+            var s = (t - t0) / dt;
+
+            return hermite(p0, m0, p1, m1, s);
+        }
+
+        // ── Blue shaded region (0 ≤ t ≤ 5, above t-axis) ───────────────
+        var NUM = 200;
+        var bluePts = [];
+
+        for (var i = 0; i <= NUM; i++) {
+            var t = 5 * i / NUM;
+            bluePts.push(board.create('point', [t, vFunc(t)], { visible: false, fixed: true, name: '' }));
+        }
+        bluePts.push(board.create('point', [5, 0], { visible: false, fixed: true, name: '' }));
+        bluePts.push(board.create('point', [0, 0], { visible: false, fixed: true, name: '' }));
+
+        board.create('polygon', bluePts, {
+            fillColor: '#2563EB',
+            fillOpacity: 0.12,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Red shaded region (5 ≤ t ≤ 8, below t-axis) ────────────────
+        var redPts = [];
+
+        redPts.push(board.create('point', [5, 0], { visible: false, fixed: true, name: '' }));
+        redPts.push(board.create('point', [8, 0], { visible: false, fixed: true, name: '' }));
+
+        for (var i = NUM; i >= 0; i--) {
+            var t = 5 + 3 * i / NUM;
+            redPts.push(board.create('point', [t, vFunc(t)], { visible: false, fixed: true, name: '' }));
+        }
+
+        board.create('polygon', redPts, {
+            fillColor: '#DC2626',
+            fillOpacity: 0.12,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Curve on top of shading ─────────────────────────────────────
+        board.create('functiongraph', [function(t) { return vFunc(t); }, 0, 8], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Key points ──────────────────────────────────────────────────
+        board.create('point', [2, 6], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [2.25, 6.5, '(2,\\, 6)'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+        board.create('point', [6.5, -3], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [6.75, -3.6, '(6.5,\\, \\text{-}3)'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Function label ──────────────────────────────────────────────
+        board.create('text', [0.55, 4.8, 'v(t)'], {
+            useKatex: true, fontSize: 13, color: '#222222', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
