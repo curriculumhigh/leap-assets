@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardboard Square Method — Tree Height</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 22, 20, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── CONSTANTS ───────────────────────────────────────────────────
+        var PERSON_X = 2;
+        var EYE_H = 5.5;
+        var TREE_X = 14;
+        var TREE_TOP = 16.5;
+        var GROUND_Y = 0;
+
+        // Colors
+        var COL_DARK = '#222222';
+        var COL_GRAY = '#555555';
+        var COL_CYAN = '#0EA5E9';
+        var COL_RED = '#DC2626';
+        var COL_TRUNK = '#7C5B3A';
+        var COL_CANOPY = '#059669';
+        var COL_ORANGE = '#D97706';
+
+        // ── GROUND LINE ─────────────────────────────────────────────────
+        board.create('segment', [[-3, 0], [19.5, 0]], {
+            strokeColor: COL_GRAY, strokeWidth: 2.2, fixed: true, highlight: false
+        });
+
+        // ── TREE ────────────────────────────────────────────────────────
+        // Trunk — rectangle from (13.5, 0) to (14.5, 10)
+        var trunkW = 0.5;
+        var trunkTop = 10;
+        board.create('polygon', [
+            [TREE_X - trunkW, 0],
+            [TREE_X + trunkW, 0],
+            [TREE_X + trunkW, trunkTop],
+            [TREE_X - trunkW, trunkTop]
+        ], {
+            fillColor: COL_TRUNK, fillOpacity: 0.7,
+            borders: { strokeColor: COL_TRUNK, strokeWidth: 1.2 },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        // Canopy — triangle
+        board.create('polygon', [
+            [TREE_X, TREE_TOP],
+            [TREE_X - 3, trunkTop - 1],
+            [TREE_X + 3, trunkTop - 1]
+        ], {
+            fillColor: COL_CANOPY, fillOpacity: 0.30,
+            borders: { strokeColor: COL_CANOPY, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        // Extra canopy layer for fullness
+        board.create('polygon', [
+            [TREE_X, TREE_TOP + 1],
+            [TREE_X - 3.5, trunkTop + 0.5],
+            [TREE_X + 3.5, trunkTop + 0.5]
+        ], {
+            fillColor: COL_CANOPY, fillOpacity: 0.20,
+            borders: { strokeColor: COL_CANOPY, strokeWidth: 1.2 },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        // ── STICK FIGURE ────────────────────────────────────────────────
+        var headR = 0.55;
+        var headCY = EYE_H + headR * 0.4;
+        var neckY = headCY - headR;
+        var torsoBot = 2.2;
+        var shoulderY = neckY - 0.3;
+
+        // Head
+        board.create('circle', [[PERSON_X, headCY], headR], {
+            strokeColor: COL_DARK, strokeWidth: 1.5, fillColor: 'none',
+            fixed: true, highlight: false
+        });
+
+        // Body (neck to torso bottom)
+        board.create('segment', [[PERSON_X, neckY], [PERSON_X, torsoBot]], {
+            strokeColor: COL_DARK, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Left leg
+        board.create('segment', [[PERSON_X, torsoBot], [PERSON_X - 0.8, 0]], {
+            strokeColor: COL_DARK, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        // Right leg
+        board.create('segment', [[PERSON_X, torsoBot], [PERSON_X + 0.8, 0]], {
+            strokeColor: COL_DARK, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Left arm (down)
+        board.create('segment', [[PERSON_X, shoulderY], [PERSON_X - 1.0, 3.0]], {
+            strokeColor: COL_DARK, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Right arm — raised to hold the cardboard square near the eye
+        var armEndX = PERSON_X + 1.1;
+        var armEndY = EYE_H - 0.1;
+        board.create('segment', [[PERSON_X, shoulderY], [armEndX, armEndY]], {
+            strokeColor: COL_DARK, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Eye point (invisible, used as reference)
+        var eyeX = PERSON_X + 0.5;
+        var eyeY = EYE_H;
+
+        // ── CARDBOARD SQUARE ────────────────────────────────────────────
+        var sqCX = PERSON_X + 1.4;
+        var sqCY = EYE_H + 0.05;
+        var sqS = 0.6; // half-side
+
+        var sqL = sqCX - sqS;
+        var sqR = sqCX + sqS;
+        var sqB = sqCY - sqS;
+        var sqT = sqCY + sqS;
+
+        board.create('polygon', [
+            [sqL, sqB], [sqR, sqB], [sqR, sqT], [sqL, sqT]
+        ], {
+            fillColor: COL_ORANGE, fillOpacity: 0.12,
+            borders: { strokeColor: COL_ORANGE, strokeWidth: 1.8 },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        // Right-angle marker inside the cardboard square (bottom-right corner)
+        var raSize = 0.25;
+        board.create('segment', [[sqR - raSize, sqB], [sqR - raSize, sqB + raSize]], {
+            strokeColor: COL_RED, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[sqR - raSize, sqB + raSize], [sqR, sqB + raSize]], {
+            strokeColor: COL_RED, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── SIGHT LINES (CYAN DASHED) ───────────────────────────────────
+        // Eye to tree top
+        board.create('segment', [[eyeX, eyeY], [TREE_X, TREE_TOP]], {
+            strokeColor: COL_CYAN, strokeWidth: 1.3, dash: 3,
+            fixed: true, highlight: false
+        });
+
+        // Eye to tree base
+        board.create('segment', [[eyeX, eyeY], [TREE_X, 0]], {
+            strokeColor: COL_CYAN, strokeWidth: 1.3, dash: 3,
+            fixed: true, highlight: false
+        });
+
+        // Horizontal line from eye to tree at eye height
+        board.create('segment', [[eyeX, eyeY], [TREE_X, eyeY]], {
+            strokeColor: COL_CYAN, strokeWidth: 1.3, dash: 3,
+            fixed: true, highlight: false
+        });
+
+        // ── RIGHT-ANGLE MARKER AT TREE BASE ─────────────────────────────
+        var ra2 = 0.6;
+        board.create('segment', [[TREE_X - ra2, 0], [TREE_X - ra2, ra2]], {
+            strokeColor: COL_RED, strokeWidth: 1.3, fixed: true, highlight: false
+        });
+        board.create('segment', [[TREE_X - ra2, ra2], [TREE_X, ra2]], {
+            strokeColor: COL_RED, strokeWidth: 1.3, fixed: true, highlight: false
+        });
+
+        // ── DIMENSION: EYE HEIGHT (left side) ───────────────────────────
+        var dimX_eyeH = -1.2;
+        // Double-headed arrow
+        board.create('arrow', [[dimX_eyeH, 0], [dimX_eyeH, eyeY]], {
+            strokeColor: COL_DARK, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }, firstArrow: { type: 2, size: 5 }
+        });
+        // Label
+        board.create('text', [dimX_eyeH - 0.3, eyeY / 2, '5.5\\text{ ft}'], {
+            useKatex: true, fontSize: 12, color: COL_DARK, anchorX: 'right', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── DIMENSION: HORIZONTAL DISTANCE (bottom) ─────────────────────
+        var dimY_dist = -1.8;
+        board.create('arrow', [[PERSON_X, dimY_dist], [TREE_X, dimY_dist]], {
+            strokeColor: COL_DARK, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }, firstArrow: { type: 2, size: 5 }
+        });
+        // Label
+        board.create('text', [(PERSON_X + TREE_X) / 2, dimY_dist - 0.6, '11\\text{ ft}'], {
+            useKatex: true, fontSize: 12, color: COL_DARK, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── SMALL DOT AT EYE POSITION ───────────────────────────────────
+        board.create('point', [eyeX, eyeY], {
+            name: '', size: 1.5, color: COL_DARK, fixed: true, highlight: false, showInfobox: false
+        });
+
+    </script>
+</body>
+</html>
