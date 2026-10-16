@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Composite Solid — Prism + Cone</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 22, 15, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var DEPTH_ANGLE = 30 * Math.PI / 180;
+        var DEPTH_SCALE = 0.40;
+
+        var W = 8;
+        var D = 8;
+        var H = 10;
+
+        var CR = 4;
+        var CH = 9;
+
+        var OX = 0;
+        var OY = 0;
+
+        function proj(x, y, z) {
+            return [
+                OX + x + z * DEPTH_SCALE * Math.cos(DEPTH_ANGLE),
+                OY + y + z * DEPTH_SCALE * Math.sin(DEPTH_ANGLE)
+            ];
+        }
+
+        var pA = proj(0, 0, 0);
+        var pB = proj(W, 0, 0);
+        var pC = proj(W, 0, D);
+        var pD = proj(0, 0, D);
+        var pE = proj(0, H, 0);
+        var pF = proj(W, H, 0);
+        var pG = proj(W, H, D);
+        var pH = proj(0, H, D);
+
+        var COL_OUTLINE = '#555555';
+        var COL_HIDDEN = '#AAAAAA';
+        var COL_DIM = '#DC2626';
+        var COL_PRISM_FILL = 'rgba(37, 99, 235, 0.07)';
+        var COL_CONE_FILL = 'rgba(217, 119, 6, 0.10)';
+
+        function solidEdge(p1, p2, opts) {
+            opts = opts || {};
+            board.create('segment', [p1, p2], {
+                strokeColor: opts.color || COL_OUTLINE,
+                strokeWidth: opts.width || 1.5,
+                fixed: true, highlight: false,
+                dash: opts.dash || 0
+            });
+        }
+
+        function dashedEdge(p1, p2) {
+            board.create('segment', [p1, p2], {
+                strokeColor: COL_HIDDEN,
+                strokeWidth: 1.0,
+                dash: 3,
+                fixed: true, highlight: false
+            });
+        }
+
+        board.create('polygon', [pA, pB, pF, pE], {
+            fillColor: COL_PRISM_FILL, fillOpacity: 1,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+        board.create('polygon', [pB, pC, pG, pF], {
+            fillColor: 'rgba(37, 99, 235, 0.04)', fillOpacity: 1,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+        board.create('polygon', [pE, pF, pG, pH], {
+            fillColor: 'rgba(37, 99, 235, 0.05)', fillOpacity: 1,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        dashedEdge(pA, pD);
+        dashedEdge(pD, pC);
+        dashedEdge(pD, pH);
+
+        solidEdge(pA, pB);
+        solidEdge(pB, pC);
+        solidEdge(pA, pE);
+        solidEdge(pB, pF);
+        solidEdge(pC, pG);
+        solidEdge(pE, pF);
+        solidEdge(pF, pG);
+        solidEdge(pG, pH);
+        solidEdge(pH, pE);
+
+        var cBaseCenter3D = [W / 2, H, D / 2];
+        var cBase2D = proj(cBaseCenter3D[0], cBaseCenter3D[1], cBaseCenter3D[2]);
+        var cApex3D = [W / 2, H + CH, D / 2];
+        var cApex2D = proj(cApex3D[0], cApex3D[1], cApex3D[2]);
+
+        var ELLIPSE_PTS = 80;
+
+        function coneBasePoint(t) {
+            var x3 = cBaseCenter3D[0] + CR * Math.cos(t);
+            var z3 = cBaseCenter3D[2] + CR * Math.sin(t);
+            return proj(x3, H, z3);
+        }
+
+        var frontPts = [];
+        var backPts = [];
+        for (var i = 0; i <= ELLIPSE_PTS; i++) {
+            var t = -Math.PI / 2 + i * (Math.PI / ELLIPSE_PTS);
+            frontPts.push(coneBasePoint(t));
+        }
+        for (var i = 0; i <= ELLIPSE_PTS; i++) {
+            var t = Math.PI / 2 + i * (Math.PI / ELLIPSE_PTS);
+            backPts.push(coneBasePoint(t));
+        }
+
+        var coneOutlinePts = [cApex2D];
+        for (var i = 0; i <= ELLIPSE_PTS * 2; i++) {
+            var t = -Math.PI / 2 + i * (2 * Math.PI / (ELLIPSE_PTS * 2));
+            coneOutlinePts.push(coneBasePoint(t));
+        }
+        board.create('polygon', coneOutlinePts, {
+            fillColor: COL_CONE_FILL, fillOpacity: 1,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        var backX = [], backY = [];
+        for (var i = 0; i < backPts.length; i++) {
+            backX.push(backPts[i][0]);
+            backY.push(backPts[i][1]);
+        }
+        board.create('curve', [backX, backY], {
+            strokeColor: COL_HIDDEN, strokeWidth: 1.0, dash: 3,
+            fixed: true, highlight: false
+        });
+
+        var frontX = [], frontY = [];
+        for (var i = 0; i < frontPts.length; i++) {
+            frontX.push(frontPts[i][0]);
+            frontY.push(frontPts[i][1]);
+        }
+        board.create('curve', [frontX, frontY], {
+            strokeColor: COL_OUTLINE, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        var cLeft2D = coneBasePoint(Math.PI);
+        var cRight2D = coneBasePoint(0);
+        solidEdge(cApex2D, cLeft2D);
+        solidEdge(cApex2D, cRight2D);
+
+        function dimLine(p1, p2, label, labelPos, opts) {
+            opts = opts || {};
+            board.create('segment', [p1, p2], {
+                strokeColor: COL_DIM, strokeWidth: 1.0,
+                dash: opts.dash || 0,
+                fixed: true, highlight: false,
+                firstArrow: { type: 2, size: 4 },
+                lastArrow: { type: 2, size: 4 }
+            });
+            board.create('text', [labelPos[0], labelPos[1], label], {
+                useKatex: true, fontSize: 12, color: '#222222',
+                anchorX: opts.anchorX || 'middle',
+                anchorY: opts.anchorY || 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        var dimW1 = [pA[0], pA[1] - 1.5];
+        var dimW2 = [pB[0], pB[1] - 1.5];
+        board.create('segment', [[pA[0], pA[1] - 0.3], dimW1], { strokeColor: COL_DIM, strokeWidth: 0.8, fixed: true, highlight: false });
+        board.create('segment', [[pB[0], pB[1] - 0.3], dimW2], { strokeColor: COL_DIM, strokeWidth: 0.8, fixed: true, highlight: false });
+        dimLine(dimW1, dimW2, '8\\,\\text{m}', [(dimW1[0] + dimW2[0]) / 2, dimW1[1] - 0.7]);
+
+        var depthOffX = 1.2 * Math.cos(DEPTH_ANGLE - Math.PI / 2);
+        var depthOffY = 1.2 * Math.sin(DEPTH_ANGLE - Math.PI / 2);
+        var dimD1 = [pB[0] + depthOffX, pB[1] + depthOffY - 1.2];
+        var dimD2 = [pC[0] + depthOffX, pC[1] + depthOffY - 1.2];
+        board.create('segment', [[pB[0], pB[1] - 0.3], dimD1], { strokeColor: COL_DIM, strokeWidth: 0.8, fixed: true, highlight: false });
+        board.create('segment', [[pC[0], pC[1] - 0.3], dimD2], { strokeColor: COL_DIM, strokeWidth: 0.8, fixed: true, highlight: false });
+        dimLine(dimD1, dimD2, '8\\,\\text{m}', [(dimD1[0] + dimD2[0]) / 2 + 0.8, (dimD1[1] + dimD2[1]) / 2 - 0.7]);
+
+        var dimH1 = [pA[0] - 1.8, pA[1]];
+        var dimH2 = [pE[0] - 1.8, pE[1]];
+        board.create('segment', [[pA[0] - 0.3, pA[1]], dimH1], { strokeColor: COL_DIM, strokeWidth: 0.8, fixed: true, highlight: false });
+        board.create('segment', [[pE[0] - 0.3, pE[1]], dimH2], { strokeColor: COL_DIM, strokeWidth: 0.8, fixed: true, highlight: false });
+        dimLine(dimH1, dimH2, '10\\,\\text{m}', [dimH1[0] - 1.4, (dimH1[1] + dimH2[1]) / 2]);
+
+        board.create('segment', [cBase2D, cApex2D], {
+            strokeColor: COL_DIM, strokeWidth: 1.0, dash: 3,
+            fixed: true, highlight: false
+        });
+        dimLine(
+            [cBase2D[0] + 1.2, cBase2D[1]],
+            [cApex2D[0] + 1.2, cApex2D[1]],
+            '9\\,\\text{m}',
+            [cBase2D[0] + 3.2, (cBase2D[1] + cApex2D[1]) / 2]
+        );
+        board.create('segment', [[cBase2D[0] + 0.3, cBase2D[1]], [cBase2D[0] + 1.2, cBase2D[1]]], { strokeColor: COL_DIM, strokeWidth: 0.8, fixed: true, highlight: false });
+        board.create('segment', [[cApex2D[0] + 0.3, cApex2D[1]], [cApex2D[0] + 1.2, cApex2D[1]]], { strokeColor: COL_DIM, strokeWidth: 0.8, fixed: true, highlight: false });
+    </script>
+</body>
+</html>
