@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Cone — r = 9 m, h = 14 m</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 9.2, 5.5, -4.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_HEIGHT = '#2563EB';
+        var COL_RADIUS = '#DC2626';
+        var COL_SHAPE  = '#555555';
+
+        var apexX = 0, apexY = 8;
+        var baseY = -1.5;
+        var baseCX = 0;
+        var baseR = 4.2;
+        var ellipseB = 1.0;
+
+        // Apex point
+        board.create('point', [apexX, apexY], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Base center point
+        board.create('point', [baseCX, baseY], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Back arc (dashed — hidden behind cone)
+        board.create('curve', [
+            function(t) { return baseCX + baseR * Math.cos(t); },
+            function(t) { return baseY + ellipseB * Math.sin(t); },
+            0, Math.PI
+        ], {
+            strokeColor: COL_SHAPE, strokeWidth: 1.5, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // Front arc (solid — visible to viewer)
+        board.create('curve', [
+            function(t) { return baseCX + baseR * Math.cos(t); },
+            function(t) { return baseY + ellipseB * Math.sin(t); },
+            Math.PI, 2 * Math.PI
+        ], {
+            strokeColor: COL_SHAPE, strokeWidth: 2.0,
+            fixed: true, highlight: false
+        });
+
+        // Slant edges
+        board.create('segment', [[apexX, apexY], [baseCX - baseR, baseY]], {
+            strokeColor: COL_SHAPE, strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[apexX, apexY], [baseCX + baseR, baseY]], {
+            strokeColor: COL_SHAPE, strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // Height (dashed blue)
+        board.create('segment', [[baseCX, baseY], [apexX, apexY]], {
+            strokeColor: COL_HEIGHT, strokeWidth: 1.2, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // Radius (solid red)
+        board.create('segment', [[baseCX, baseY], [baseCX + baseR, baseY]], {
+            strokeColor: COL_RADIUS, strokeWidth: 1.2,
+            fixed: true, highlight: false
+        });
+
+        // Right-angle marker
+        var sq = 0.45;
+        board.create('polygon', [
+            [baseCX + sq, baseY],
+            [baseCX + sq, baseY + sq],
+            [baseCX, baseY + sq],
+            [baseCX, baseY]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#222222', strokeWidth: 1.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // Height label — shifted right and down
+        board.create('text', [0.35, 2.5, '14 \\text{ m}'], {
+            useKatex: true, fontSize: 15, color: COL_HEIGHT,
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Radius label
+        board.create('text', [baseCX + baseR / 2, baseY - 1.45, '9 \\text{ m}'], {
+            useKatex: true, fontSize: 15, color: COL_RADIUS,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
