@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velocity-Time Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 8, 9, -5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [8.6, -0.45, 't'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.2, 7.5, 'v(t)'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+
+        // ── Smooth curve via cubic Hermite interpolation ──────────────
+        var dataX = [0, 2, 5, 6.5, 8];
+        var dataY = [0, 6, 0, -3, 0];
+        var n = dataX.length;
+
+        var dx = [];
+        var dy = [];
+        var slopes = [];
+        var m = [];
+        var i;
+
+        for (i = 0; i < n - 1; i++) {
+            dx[i] = dataX[i + 1] - dataX[i];
+            dy[i] = dataY[i + 1] - dataY[i];
+            slopes[i] = dy[i] / dx[i];
+        }
+
+        m[0] = slopes[0];
+        m[n - 1] = slopes[n - 2];
+        for (i = 1; i < n - 1; i++) {
+            if (slopes[i - 1] * slopes[i] <= 0) {
+                m[i] = 0;
+            } else {
+                m[i] = (slopes[i - 1] + slopes[i]) / 2;
+            }
+        }
+
+        for (i = 0; i < n - 1; i++) {
+            if (Math.abs(slopes[i]) < 1e-10) {
+                m[i] = 0;
+                m[i + 1] = 0;
+            } else {
+                var alpha = m[i] / slopes[i];
+                var beta = m[i + 1] / slopes[i];
+                var tau = alpha * alpha + beta * beta;
+                if (tau > 9) {
+                    var t_fc = 3 / Math.sqrt(tau);
+                    m[i] = t_fc * alpha * slopes[i];
+                    m[i + 1] = t_fc * beta * slopes[i];
+                }
+            }
+        }
+
+        m[0] = 0;
+        m[n - 1] = 1.5;
+
+        function vCurve(t) {
+            if (t <= dataX[0]) return dataY[0];
+            if (t >= dataX[n - 1]) return dataY[n - 1];
+            var k = 0;
+            for (var j = 0; j < n - 1; j++) {
+                if (t >= dataX[j] && t <= dataX[j + 1]) { k = j; break; }
+            }
+            var h = dx[k];
+            var s = (t - dataX[k]) / h;
+            var s2 = s * s;
+            var s3 = s2 * s;
+            var h00 = 2 * s3 - 3 * s2 + 1;
+            var h10 = s3 - 2 * s2 + s;
+            var h01 = -2 * s3 + 3 * s2;
+            var h11 = s3 - s2;
+            return h00 * dataY[k] + h10 * h * m[k] + h01 * dataY[k + 1] + h11 * h * m[k + 1];
+        }
+
+        // ── Shaded regions ───────────────────────────────────────────
+        var blueX = [0];
+        var blueY = [0];
+        var step = 0.05;
+        var tt;
+        for (tt = 0; tt <= 5; tt += step) {
+            blueX.push(tt);
+            blueY.push(Math.max(vCurve(tt), 0));
+        }
+        blueX.push(5);
+        blueY.push(0);
+        blueX.push(5);
+        blueY.push(0);
+        blueX.push(0);
+        blueY.push(0);
+
+        var bluePts = [];
+        for (i = 0; i < blueX.length; i++) {
+            bluePts.push(board.create('point', [blueX[i], blueY[i]], { visible: false, fixed: true, name: '' }));
+        }
+        board.create('polygon', bluePts, {
+            fillColor: '#2563EB', fillOpacity: 0.12,
+            borders: { strokeWidth: 0, visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        var redX = [5];
+        var redY = [0];
+        for (tt = 5; tt <= 8; tt += step) {
+            redX.push(tt);
+            redY.push(Math.min(vCurve(tt), 0));
+        }
+        redX.push(8);
+        redY.push(0);
+        redX.push(8);
+        redY.push(0);
+        redX.push(5);
+        redY.push(0);
+
+        var redPts = [];
+        for (i = 0; i < redX.length; i++) {
+            redPts.push(board.create('point', [redX[i], redY[i]], { visible: false, fixed: true, name: '' }));
+        }
+        board.create('polygon', redPts, {
+            fillColor: '#DC2626', fillOpacity: 0.12,
+            borders: { strokeWidth: 0, visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        // ── Main curve ───────────────────────────────────────────────
+        board.create('functiongraph', [
+            function(t) { return vCurve(t); }, 0, 8
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Key points (size 2) ──────────────────────────────────────
+        // Peak (2, 6)
+        board.create('point', [2, 6], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [2.25, 6.5, '(2,\\, 6)'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Trough (6.5, -3)
+        board.create('point', [6.5, -3], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [6.75, -3.6, '(6.5,\\, -3)'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Curve label ──────────────────────────────────────────────
+        board.create('text', [0.6, 4.8, 'v(t)'], {
+            useKatex: true, fontSize: 13, color: '#222222', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
