@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velocity Graph with Labeled Region Areas</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.9, 5.5, 10.2, -5.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Axes ──────────────────────────────────────────────────
+        // t-axis (horizontal) — tick marks only, no auto labels
+        var tAxis = board.create('axis', [[0, 0], [1, 0]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            highlight: false,
+            ticks: {
+                drawZero: false,
+                strokeColor: '#444444',
+                minorTicks: 0,
+                ticksDistance: 1,
+                majorHeight: 8,
+                label: { visible: false }
+            }
+        });
+
+        // v-axis (vertical) — no tick labels
+        var vAxis = board.create('axis', [[0, 0], [0, 1]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            highlight: false,
+            ticks: {
+                drawZero: false,
+                strokeColor: '#444444',
+                minorTicks: 0,
+                ticksDistance: 1,
+                majorHeight: 8,
+                label: { visible: false }
+            }
+        });
+
+        // ── Manual t-axis tick labels ─────────────────────────────
+        // Place labels below axis. For t = 3, 7, 9 (where curve crosses axis)
+        // offset a bit more to avoid collision with the curve at the axis.
+        var tLabels = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+        var crossingTs = {3: true, 7: true, 9: true};
+        for (var i = 0; i < tLabels.length; i++) {
+            var tVal = tLabels[i];
+            var yOff = crossingTs[tVal] ? -0.65 : -0.45;
+            board.create('text', [tVal, yOff, String(tVal)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Axis name labels (moved left to avoid clipping)
+        board.create('text', [9.2, -0.55, 't\\text{ (s)}'], {
+            fontSize: 14, fixed: true, highlight: false, useKatex: true, color: '#222222'
+        });
+        board.create('text', [0.25, 5.15, 'v\\text{ (m/s)}'], {
+            fontSize: 14, fixed: true, highlight: false, useKatex: true, color: '#222222'
+        });
+
+        // ── Velocity piecewise function ─────────────────────────────
+        function v1(t) { return (7 * Math.PI / 6) * Math.sin(Math.PI * t / 3); }
+        function v2(t) { return -(10 * Math.PI / 8) * Math.sin(Math.PI * (t - 3) / 4); }
+        function v3(t) { return (5 * Math.PI / 4) * Math.sin(Math.PI * (t - 7) / 2); }
+
+        // ── Shaded regions ──────────────────────────────────────────
+        var SHADE_COL = 'rgba(37,99,235,0.15)';
+        var SHADE_STROKE = 'rgba(37,99,235,0.0)';
+
+        // Region 1: [0, 3] above axis
+        var r1pts = [];
+        var dt1 = 0.05;
+        for (var t = 0; t <= 3.001; t += dt1) {
+            r1pts.push([Math.min(t, 3), v1(Math.min(t, 3))]);
+        }
+        r1pts.push([3, 0]);
+        r1pts.push([0, 0]);
+        var r1vertices = [];
+        for (var i = 0; i < r1pts.length; i++) {
+            r1vertices.push(board.create('point', r1pts[i], { visible: false, fixed: true, name: '' }));
+        }
+        board.create('polygon', r1vertices, {
+            fillColor: SHADE_COL, fillOpacity: 1,
+            borders: { strokeColor: SHADE_STROKE, strokeWidth: 0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Region 2: [3, 7] below axis
+        var r2pts = [];
+        var dt2 = 0.05;
+        for (var t = 3; t <= 7.001; t += dt2) {
+            r2pts.push([Math.min(t, 7), v2(Math.min(t, 7))]);
+        }
+        r2pts.push([7, 0]);
+        r2pts.push([3, 0]);
+        var r2vertices = [];
+        for (var i = 0; i < r2pts.length; i++) {
+            r2vertices.push(board.create('point', r2pts[i], { visible: false, fixed: true, name: '' }));
+        }
+        board.create('polygon', r2vertices, {
+            fillColor: SHADE_COL, fillOpacity: 1,
+            borders: { strokeColor: SHADE_STROKE, strokeWidth: 0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Region 3: [7, 9] above axis
+        var r3pts = [];
+        var dt3 = 0.05;
+        for (var t = 7; t <= 9.001; t += dt3) {
+            r3pts.push([Math.min(t, 9), v3(Math.min(t, 9))]);
+        }
+        r3pts.push([9, 0]);
+        r3pts.push([7, 0]);
+        var r3vertices = [];
+        for (var i = 0; i < r3pts.length; i++) {
+            r3vertices.push(board.create('point', r3pts[i], { visible: false, fixed: true, name: '' }));
+        }
+        board.create('polygon', r3vertices, {
+            fillColor: SHADE_COL, fillOpacity: 1,
+            borders: { strokeColor: SHADE_STROKE, strokeWidth: 0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Velocity curve ──────────────────────────────────────────
+        board.create('functiongraph', [function(t) { return v1(t); }, 0, 3], {
+            strokeColor: '#2563EB', strokeWidth: 2.5, fixed: true, highlight: false
+        });
+        board.create('functiongraph', [function(t) { return v2(t); }, 3, 7], {
+            strokeColor: '#2563EB', strokeWidth: 2.5, fixed: true, highlight: false
+        });
+        board.create('functiongraph', [function(t) { return v3(t); }, 7, 9], {
+            strokeColor: '#2563EB', strokeWidth: 2.5, fixed: true, highlight: false
+        });
+
+        // ── Mark t = 3, 7, 9 on the t-axis ─────────────────────────
+        var transitionTs = [3, 7, 9];
+        for (var i = 0; i < transitionTs.length; i++) {
+            board.create('segment', [[transitionTs[i], -0.18], [transitionTs[i], 0.18]], {
+                strokeColor: '#444444', strokeWidth: 1.8, fixed: true, highlight: false
+            });
+        }
+
+        // ── Area labels centered in each region ─────────────────────
+        board.create('text', [1.5, 1.65, '7'], {
+            fontSize: 18, color: '#1E293B', anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:bold', fixed: true, highlight: false
+        });
+
+        board.create('text', [5, -1.85, '10'], {
+            fontSize: 18, color: '#1E293B', anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:bold', fixed: true, highlight: false
+        });
+
+        board.create('text', [8, 1.75, '5'], {
+            fontSize: 18, color: '#1E293B', anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:bold', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
