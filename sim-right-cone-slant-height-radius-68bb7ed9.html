@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Cone Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 12.5, 9.5, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Cone dimensions (visual coordinates) ────────────────────────
+        var cx = 2;          // base center x
+        var cy = 0.5;        // base center y
+        var rVis = 3.5;      // visual radius of base ellipse
+        var apexX = cx;
+        var apexY = 10.5;    // apex y
+        var ellipseRy = 0.8; // vertical radius of the ellipse (perspective)
+
+        // ── Base ellipse (dashed) ───────────────────────────────────────
+        board.create('curve', [
+            function(t) { return cx + rVis * Math.cos(t); },
+            function(t) { return cy + ellipseRy * Math.sin(t); },
+            0, 2 * Math.PI
+        ], {
+            strokeColor: '#555555', strokeWidth: 1.2, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── Slant edges (apex to base ellipse endpoints) ────────────────
+        board.create('segment', [[apexX, apexY], [cx - rVis, cy]], {
+            strokeColor: '#555555', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[apexX, apexY], [cx + rVis, cy]], {
+            strokeColor: '#555555', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        // ── Height dashed line (apex to base center) ────────────────────
+        board.create('segment', [[apexX, apexY], [cx, cy]], {
+            strokeColor: '#555555', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── Radius line (base center to right edge) ─────────────────────
+        board.create('segment', [[cx, cy], [cx + rVis, cy]], {
+            strokeColor: '#555555', strokeWidth: 1.2,
+            fixed: true, highlight: false
+        });
+
+        // ── Center dot ──────────────────────────────────────────────────
+        board.create('point', [cx, cy], {
+            name: '', size: 2, color: '#222222', fixed: true,
+            highlight: false, showInfobox: false
+        });
+
+        // ── Apex dot ────────────────────────────────────────────────────
+        board.create('point', [apexX, apexY], {
+            name: '', size: 1.5, color: '#222222', fixed: true,
+            highlight: false, showInfobox: false
+        });
+
+        // ── Right angle marker at base center ───────────────────────────
+        var sqSize = 0.45;
+        board.create('segment', [[cx, cy + sqSize], [cx + sqSize, cy + sqSize]], {
+            strokeColor: '#555555', strokeWidth: 1.0,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[cx + sqSize, cy + sqSize], [cx + sqSize, cy]], {
+            strokeColor: '#555555', strokeWidth: 1.0,
+            fixed: true, highlight: false
+        });
+
+        // ── Labels (KaTeX) ──────────────────────────────────────────────
+        var slantMidX = (apexX + cx + rVis) / 2;
+        var slantMidY = (apexY + cy) / 2;
+        board.create('text', [slantMidX + 0.9, slantMidY + 0.2, '15 \\text{ cm}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var radMidX = cx + rVis / 2;
+        board.create('text', [radMidX, cy - 1.2, '6 \\text{ cm}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
