@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle MNP</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 7.5, 8.5, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var N = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var M = board.create('point', [6, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var P = board.create('point', [0, 4.5], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // ── Triangle (no fill) ──────────────────────────────────────────
+        board.create('polygon', [N, M, P], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at N ─────────────────────────────────────
+        var sq = 0.45;
+        var raP1 = board.create('point', [sq, 0], { visible: false, fixed: true, name: '' });
+        var raP2 = board.create('point', [sq, sq], { visible: false, fixed: true, name: '' });
+        var raP3 = board.create('point', [0, sq], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [raP1, raP2], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [raP2, raP3], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Vertex labels (bold) ────────────────────────────────────────
+        board.create('text', [6.3, -0.4, '<b>M</b>'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'top'
+        });
+        board.create('text', [-0.5, -0.5, '<b>N</b>'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'right', anchorY: 'top'
+        });
+        board.create('text', [-0.5, 4.9, '<b>P</b>'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'right', anchorY: 'bottom'
+        });
+
+        // ── Side labels (italic) ────────────────────────────────────────
+        // s — centred below the bottom leg MN
+        board.create('text', [3, -0.7, '<i>s</i>'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'top'
+        });
+
+        // t — centred to the left of the vertical leg NP
+        board.create('text', [-0.7, 2.25, '<i>t</i>'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'right', anchorY: 'middle'
+        });
+
+        // u — centred along the hypotenuse, offset outward
+        var hx = 3;
+        var hy = 2.25;
+        var nLen = Math.sqrt(4.5 * 4.5 + 6 * 6);
+        var offDist = 0.6;
+        var ux = hx + (4.5 / nLen) * offDist;
+        var uy = hy + (6 / nLen) * offDist;
+
+        board.create('text', [ux, uy, '<i>u</i>'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
