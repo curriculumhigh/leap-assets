@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boom Lift Right Triangle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 12, 14, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var P = board.create('point', [1, 1], {
+            name: '', fixed: true, size: 3, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+        var B = board.create('point', [9, 1], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+        var T = board.create('point', [9, 8], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+
+        // ── Vertex labels (KaTeX) ───────────────────────────────────────
+        board.create('text', [0.4, 0.3, 'P'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            useKatex: true, anchorX: 'middle', anchorY: 'middle'
+        });
+        board.create('text', [9.6, 0.3, 'B'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            useKatex: true, anchorX: 'middle', anchorY: 'middle'
+        });
+        board.create('text', [9.6, 8.5, 'T'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            useKatex: true, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ── Triangle sides ──────────────────────────────────────────────
+        // P–B (horizontal base)
+        board.create('segment', [P, B], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // B–T (vertical rise — blue)
+        board.create('segment', [B, T], {
+            strokeColor: '#2563EB', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // P–T (hypotenuse)
+        board.create('segment', [P, T], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Hypotenuse label: "200 ft" ─────────────────────────────────
+        var hypMidX = (1 + 9) / 2;
+        var hypMidY = (1 + 8) / 2;
+        var nLen = Math.sqrt(49 + 64);
+        var nxOff = -7 / nLen * 0.7;
+        var nyOff = 8 / nLen * 0.7;
+
+        board.create('text', [hypMidX + nxOff, hypMidY + nyOff, '200 \\text{ ft}'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            useKatex: true, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ── Vertical rise label: "h" (bold blue) ───────────────────────
+        var hMidY = (1 + 8) / 2;
+        board.create('text', [10.1, hMidY, '\\mathbf{h}'], {
+            fontSize: 15, color: '#2563EB', fixed: true, highlight: false,
+            useKatex: true, anchorX: 'left', anchorY: 'middle'
+        });
+
+        // ── Right-angle marker at B ─────────────────────────────────────
+        var sqSize = 0.55;
+        var sq1 = board.create('point', [9 - sqSize, 1], { visible: false, fixed: true, name: '' });
+        var sq2 = board.create('point', [9 - sqSize, 1 + sqSize], { visible: false, fixed: true, name: '' });
+        var sq3 = board.create('point', [9, 1 + sqSize], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [sq1, sq2], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [sq2, sq3], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Angle arc at P with θ label ─────────────────────────────────
+        var angleArc = board.create('nonReflexAngle', [B, P, T], {
+            radius: 1.3,
+            fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false,
+            highlight: false
+        });
+
+        var angPB = Math.atan2(0, 1);
+        var angPT = Math.atan2(8 - 1, 9 - 1);
+        var bisector = (angPB + angPT) / 2;
+        var labelR = 1.8;
+
+        board.create('text', [
+            1 + labelR * Math.cos(bisector),
+            1 + labelR * Math.sin(bisector),
+            '\\theta'
+        ], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            useKatex: true, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ── Ground line ─────────────────────────────────────────────────
+        board.create('segment', [[-0.5, 1], [10.5, 1]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Hatch marks under ground line ───────────────────────────────
+        var hatchSpacing = 0.6;
+        var hatchLen = 0.4;
+        var hatchStart = -0.5;
+        var hatchEnd = 10.5;
+
+        for (var hx = hatchStart; hx <= hatchEnd; hx += hatchSpacing) {
+            board.create('segment', [
+                [hx, 1],
+                [hx - hatchLen * 0.7, 1 - hatchLen]
+            ], {
+                strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+
+    </script>
+</body>
+</html>
