@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle ABC — 30-60-90</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 6.5, 9, -1],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Colors
+        var COL_SIDE = '#555555';
+        var COL_MARK = '#DC2626';
+        var COL_MEASURE = '#3B82F6';
+
+        // Vertices
+        var A = board.create('point', [1, 4.5], {
+            name: '', fixed: true, size: 0, visible: false
+        });
+        var B = board.create('point', [1, 1.5], {
+            name: '', fixed: true, size: 0, visible: false
+        });
+        var C = board.create('point', [6.2, 1.5], {
+            name: '', fixed: true, size: 0, visible: false
+        });
+
+        // Triangle sides
+        board.create('segment', [A, B], {
+            strokeColor: COL_SIDE, strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [B, C], {
+            strokeColor: COL_SIDE, strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [A, C], {
+            strokeColor: COL_SIDE, strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // Right-angle square marker at B
+        var sqSize = 0.4;
+        var sqP1 = board.create('point', [1 + sqSize, 1.5], { visible: false, fixed: true, name: '' });
+        var sqP2 = board.create('point', [1 + sqSize, 1.5 + sqSize], { visible: false, fixed: true, name: '' });
+        var sqP3 = board.create('point', [1, 1.5 + sqSize], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [B, sqP1, sqP2, sqP3], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_MARK, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Angle arc at A (from B to C through interior = non-reflex)
+        var angleA = board.create('nonReflexAngle', [B, A, C], {
+            radius: 0.6,
+            fillColor: COL_MARK, fillOpacity: 0.08,
+            strokeColor: COL_MARK, strokeWidth: 1.5,
+            fixed: true, highlight: false,
+            name: '', withLabel: false
+        });
+
+        // Angle arc at C (from A to B through interior = non-reflex)
+        var angleC = board.create('nonReflexAngle', [A, C, B], {
+            radius: 0.7,
+            fillColor: COL_MARK, fillOpacity: 0.08,
+            strokeColor: COL_MARK, strokeWidth: 1.5,
+            fixed: true, highlight: false,
+            name: '', withLabel: false
+        });
+
+        // Angle label at A: "60°" along bisector
+        var abx = 0, aby = -3;
+        var acx = 5.2, acy = -3;
+        var abLen = 3, acLen = Math.sqrt(5.2*5.2 + 9);
+        var bisAx2 = abx/abLen + acx/acLen;
+        var bisAy2 = aby/abLen + acy/acLen;
+        var bisAlen2 = Math.sqrt(bisAx2*bisAx2 + bisAy2*bisAy2);
+        var labelA_dist = 1.05;
+        var labelA_x = 1 + labelA_dist * bisAx2 / bisAlen2;
+        var labelA_y = 4.5 + labelA_dist * bisAy2 / bisAlen2;
+
+        board.create('text', [labelA_x, labelA_y, '60^\\circ'], {
+            useKatex: true, fontSize: 13, color: COL_MARK,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Angle label at C: "30°" along bisector
+        var cax = 1 - 6.2, cay = 4.5 - 1.5;
+        var cbx = 1 - 6.2, cby = 0;
+        var caLen = Math.sqrt(cax*cax + cay*cay);
+        var cbLen = Math.abs(cbx);
+        var bisCx = cax/caLen + cbx/cbLen;
+        var bisCy = cay/caLen + cby/cbLen;
+        var bisClen = Math.sqrt(bisCx*bisCx + bisCy*bisCy);
+        var labelC_dist = 1.15;
+        var labelC_x = 6.2 + labelC_dist * bisCx / bisClen;
+        var labelC_y = 1.5 + labelC_dist * bisCy / bisClen;
+
+        board.create('text', [labelC_x, labelC_y, '30^\\circ'], {
+            useKatex: true, fontSize: 13, color: COL_MARK,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Vertex labels — bold black
+        board.create('text', [0.5, 4.85, '\\textbf{A}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [0.5, 1.15, '\\textbf{B}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [6.65, 1.15, '\\textbf{C}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Side labels — blue
+        // Side AB (vertical, left side): "3" offset to left of midpoint
+        board.create('text', [0.35, 3.0, '3'], {
+            useKatex: true, fontSize: 14, color: COL_MEASURE,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Side BC (horizontal, bottom): "3√3" offset below midpoint
+        board.create('text', [3.6, 0.85, '3\\sqrt{3}'], {
+            useKatex: true, fontSize: 14, color: COL_MEASURE,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Side AC (hypotenuse): "6" offset above-right of midpoint
+        var acMidX = (1 + 6.2) / 2;
+        var acMidY = (4.5 + 1.5) / 2;
+        var perpX = 3, perpY = 5.2;
+        var perpLen = Math.sqrt(perpX*perpX + perpY*perpY);
+        var labelAC_offset = 0.55;
+        var labelAC_x = acMidX + labelAC_offset * perpX / perpLen;
+        var labelAC_y = acMidY + labelAC_offset * perpY / perpLen;
+
+        board.create('text', [labelAC_x, labelAC_y, '6'], {
+            useKatex: true, fontSize: 14, color: COL_MEASURE,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
