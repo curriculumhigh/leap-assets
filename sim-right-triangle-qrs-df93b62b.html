@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle QRS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 7, 13, -2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertices
+        var R = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var S = board.create('point', [11, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var Q = board.create('point', [0, 5], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // Triangle (no fill)
+        board.create('polygon', [R, S, Q], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Right-angle marker at R (toward interior: +x and +y)
+        var markerSize = 0.7;
+        var raSeg1 = board.create('segment', [[markerSize, 0], [markerSize, markerSize]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        var raSeg2 = board.create('segment', [[markerSize, markerSize], [0, markerSize]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Vertex labels (bold black)
+        board.create('text', [-0.6, 5.2, '<b>Q</b>'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [-0.6, -0.6, '<b>R</b>'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [11.5, -0.6, '<b>S</b>'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        // Side labels in blue
+        // "5" at midpoint of QR (left side), offset left
+        board.create('text', [-0.7, 2.5, '<b>5</b>'], {
+            fontSize: 14, color: '#3B82F6', fixed: true, highlight: false, anchorX: 'right', anchorY: 'middle'
+        });
+
+        // "11" at midpoint of RS (bottom side), offset below
+        board.create('text', [5.5, -0.7, '<b>11</b>'], {
+            fontSize: 14, color: '#3B82F6', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'top'
+        });
+    </script>
+</body>
+</html>
