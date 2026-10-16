@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>45-45-90 Triangle STU</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 5.8, 3.5, -1.8],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var L = 3.5;
+        var halfBase = L / Math.sqrt(2);
+        var Tx = 0, Ty = 4;
+        var Sx = -halfBase, Sy = Ty - halfBase;
+        var Ux = halfBase, Uy = Ty - halfBase;
+
+        var S = board.create('point', [Sx, Sy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+        var U = board.create('point', [Ux, Uy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+        var T = board.create('point', [Tx, Ty], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+
+        // ── Triangle (no fill) ──────────────────────────────────────────
+        board.create('polygon', [S, U, T], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Right-angle square marker at T ──────────────────────────────
+        var markSize = 0.38;
+        var dSx = (Sx - Tx), dSy = (Sy - Ty);
+        var lenS = Math.sqrt(dSx * dSx + dSy * dSy);
+        var uSx = dSx / lenS, uSy = dSy / lenS;
+        var dUx = (Ux - Tx), dUy = (Uy - Ty);
+        var lenU = Math.sqrt(dUx * dUx + dUy * dUy);
+        var uUx = dUx / lenU, uUy = dUy / lenU;
+
+        var rp1x = Tx + markSize * uSx;
+        var rp1y = Ty + markSize * uSy;
+        var rp2x = Tx + markSize * uSx + markSize * uUx;
+        var rp2y = Ty + markSize * uSy + markSize * uUy;
+        var rp3x = Tx + markSize * uUx;
+        var rp3y = Ty + markSize * uUy;
+
+        var rp1 = board.create('point', [rp1x, rp1y], { visible: false, fixed: true, name: '' });
+        var rp2 = board.create('point', [rp2x, rp2y], { visible: false, fixed: true, name: '' });
+        var rp3 = board.create('point', [rp3x, rp3y], { visible: false, fixed: true, name: '' });
+        var rpT = board.create('point', [Tx, Ty], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [rp1, rp2, rp3, rpT], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Angle arcs at S and U (45°) ─────────────────────────────────
+        board.create('nonReflexAngle', [U, S, T], {
+            radius: 0.55,
+            fillColor: '#555555', fillOpacity: 0.06,
+            strokeColor: '#555555', strokeWidth: 1,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        board.create('nonReflexAngle', [T, U, S], {
+            radius: 0.55,
+            fillColor: '#555555', fillOpacity: 0.06,
+            strokeColor: '#555555', strokeWidth: 1,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // ── Angle labels (45°) ──────────────────────────────────────────
+        var bisS_angle = (Math.atan2(Ty - Sy, Tx - Sx) + Math.atan2(Uy - Sy, Ux - Sx)) / 2;
+        var angleLabelDist = 0.9;
+        board.create('text', [
+            Sx + angleLabelDist * Math.cos(bisS_angle),
+            Sy + angleLabelDist * Math.sin(bisS_angle),
+            '45^\\circ'
+        ], { useKatex: true, fontSize: 11, color: '#555555', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+
+        var angUT = Math.atan2(Ty - Uy, Tx - Ux);
+        var angUS = Math.atan2(Sy - Uy, Sx - Ux);
+        var bisU_angle = (angUT + angUS) / 2;
+        if (Math.sin(bisU_angle) < 0) bisU_angle += Math.PI;
+        board.create('text', [
+            Ux + angleLabelDist * Math.cos(bisU_angle),
+            Uy + angleLabelDist * Math.sin(bisU_angle),
+            '45^\\circ'
+        ], { useKatex: true, fontSize: 11, color: '#555555', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false });
+
+        // ── Vertex labels ───────────────────────────────────────────────
+        board.create('text', [Sx - 0.45, Sy - 0.45, '\\textbf{S}'], {
+            useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+        board.create('text', [Ux + 0.45, Uy - 0.45, '\\textbf{U}'], {
+            useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+        board.create('text', [Tx, Ty + 0.45, '\\textbf{T}'], {
+            useKatex: true, fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Side labels ─────────────────────────────────────────────────
+        var midSTx = (Sx + Tx) / 2;
+        var midSTy = (Sy + Ty) / 2;
+        var nSTx = -(Ty - Sy) / lenS;
+        var nSTy = (Tx - Sx) / lenS;
+        var cx = (Sx + Ux + Tx) / 3;
+        var cy = (Sy + Uy + Ty) / 3;
+        var dotST = nSTx * (midSTx + nSTx - cx) + nSTy * (midSTy + nSTy - cy);
+        if (dotST < 0) { nSTx = -nSTx; nSTy = -nSTy; }
+        var sideOffset = 0.5;
+        board.create('text', [midSTx + sideOffset * nSTx, midSTy + sideOffset * nSTy, '4'], {
+            useKatex: true, fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        var midTUx = (Tx + Ux) / 2;
+        var midTUy = (Ty + Uy) / 2;
+        var nTUx = -(Uy - Ty) / lenU;
+        var nTUy = (Ux - Tx) / lenU;
+        var dotTU = nTUx * (midTUx + nTUx - cx) + nTUy * (midTUy + nTUy - cy);
+        if (dotTU < 0) { nTUx = -nTUx; nTUy = -nTUy; }
+        board.create('text', [midTUx + sideOffset * nTUx, midTUy + sideOffset * nTUy, '4'], {
+            useKatex: true, fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        var midSUx = (Sx + Ux) / 2;
+        var midSUy = (Sy + Uy) / 2;
+        var lenSU = Math.sqrt((Ux - Sx) * (Ux - Sx) + (Uy - Sy) * (Uy - Sy));
+        var nSUx = -(Uy - Sy) / lenSU;
+        var nSUy = (Ux - Sx) / lenSU;
+        var dotSU = nSUx * (midSUx + nSUx - cx) + nSUy * (midSUy + nSUy - cy);
+        if (dotSU < 0) { nSUx = -nSUx; nSUy = -nSUy; }
+        board.create('text', [midSUx + sideOffset * nSUx, midSUy + sideOffset * nSUy, '4\\sqrt{2}'], {
+            useKatex: true, fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
