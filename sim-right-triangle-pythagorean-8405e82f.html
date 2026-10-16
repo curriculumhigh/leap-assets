@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 9.5, 13, -3],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertices
+        var A = board.create('point', [0, 0], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+        var B = board.create('point', [9, 0], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+        var C = board.create('point', [0, 7], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Triangle polygon
+        board.create('polygon', [A, B, C], {
+            fillColor: 'none',
+            fillOpacity: 0,
+            borders: {
+                strokeColor: '#555555',
+                strokeWidth: 2
+            },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // Make vertex points visible on top of polygon (polygon hides them)
+        A.setAttribute({ visible: true });
+        B.setAttribute({ visible: true });
+        C.setAttribute({ visible: true });
+
+        // Right-angle marker at A (small square, side 0.6)
+        board.create('segment', [[0.6, 0], [0.6, 0.6]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[0.6, 0.6], [0, 0.6]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Labels in blue
+        // '9' centered below the horizontal base
+        board.create('text', [4.5, -1.3, '9'], {
+            fontSize: 16, color: '#3B82F6', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // '7' centered to the left of the vertical leg
+        board.create('text', [-1.3, 3.5, '7'], {
+            fontSize: 16, color: '#3B82F6', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // 'x' centered along the hypotenuse, offset outward, semi-bold
+        board.create('text', [5.5, 4.5, 'x'], {
+            fontSize: 16, color: '#3B82F6', anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:600; font-style:italic;',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
