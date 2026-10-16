@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>45-45-90 Right Triangle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 6.5, 6.5, -1.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var A = board.create('point', [0, 5], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false
+        });
+        var B = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false
+        });
+        var C = board.create('point', [5, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false
+        });
+
+        // ── Triangle edges ──────────────────────────────────────────────
+        board.create('segment', [A, B], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [B, C], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [A, C], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // ── Right angle marker at B (small red square) ──────────────────
+        var sq = 0.45;
+        var sqP1 = board.create('point', [0, sq], { visible: false, fixed: true, name: '' });
+        var sqP2 = board.create('point', [sq, sq], { visible: false, fixed: true, name: '' });
+        var sqP3 = board.create('point', [sq, 0], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [sqP1, sqP2, sqP3, B], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Angle arc at A (45°) ────────────────────────────────────────
+        board.create('nonReflexAngle', [C, A, B], {
+            radius: 0.65,
+            fillColor: '#DC2626', fillOpacity: 0.06,
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        // Label for angle A — along the bisector
+        board.create('text', [0.55, 4.15, '45°'], {
+            fontSize: 12, color: '#DC2626', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle', useKatex: true
+        });
+
+        // ── Angle arc at C (45°) ────────────────────────────────────────
+        board.create('nonReflexAngle', [B, C, A], {
+            radius: 0.65,
+            fillColor: '#DC2626', fillOpacity: 0.06,
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        // Label for angle C — along the bisector
+        board.create('text', [3.95, 0.55, '45°'], {
+            fontSize: 12, color: '#DC2626', fixed: true, highlight: false,
+            anchorX: 'right', anchorY: 'middle', useKatex: true
+        });
+
+        // ── Side labels (outside the triangle) ─────────────────────────
+        // Left leg (A→B): "13", offset to the left
+        board.create('text', [-0.6, 2.5, '13'], {
+            fontSize: 14, color: '#333333', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+
+        // Bottom leg (B→C): "13", offset below
+        board.create('text', [2.5, -0.55, '13'], {
+            fontSize: 14, color: '#333333', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+
+        // Hypotenuse (A→C): "x", offset above-right of midpoint
+        board.create('text', [2.95, 3.1, 'x'], {
+            fontSize: 14, color: '#333333', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+
+        // ── Vertex labels (outside the triangle) ───────────────────────
+        board.create('text', [-0.4, 5.4, 'A'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:600; font-style:italic;'
+        });
+        board.create('text', [-0.4, -0.45, 'B'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:600; font-style:italic;'
+        });
+        board.create('text', [5.4, -0.45, 'C'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:600; font-style:italic;'
+        });
+    </script>
+</body>
+</html>
