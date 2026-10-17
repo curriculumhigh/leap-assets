@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sphere with Radius 9 cm</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 5.5, 5.5, -5.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 3.5;
+        var cx = 0, cy = 0;
+
+        // Sphere shading (subtle gradient effect using layered circles)
+        var shadingSteps = 10;
+        for (var i = shadingSteps; i >= 0; i--) {
+            var t = i / shadingSteps;
+            var sr = R * (0.3 + 0.7 * t);
+            var offX = -0.5 * (1 - t);
+            var offY = 0.4 * (1 - t);
+            var gray = Math.round(220 + 35 * (1 - t));
+            var col = 'rgb(' + gray + ',' + gray + ',' + (gray + 5) + ')';
+            board.create('circle', [[cx + offX, cy + offY], sr], {
+                strokeWidth: 0,
+                fillColor: col,
+                fillOpacity: 0.25,
+                fixed: true,
+                highlight: false,
+                layer: 0
+            });
+        }
+
+        // Sphere outline
+        board.create('circle', [[cx, cy], R], {
+            strokeColor: '#555555',
+            strokeWidth: 2.0,
+            fillColor: 'none',
+            fixed: true,
+            highlight: false,
+            layer: 1
+        });
+
+        // Dashed great circle (horizontal ellipse for 3D effect)
+        var ellipseA = R;
+        var ellipseB = R * 0.28;
+
+        // Back half (dashed, behind sphere)
+        board.create('curve', [
+            function(t) { return cx + ellipseA * Math.cos(t); },
+            function(t) { return cy + ellipseB * Math.sin(t); },
+            Math.PI, 2 * Math.PI
+        ], {
+            strokeColor: '#555555',
+            strokeWidth: 1.5,
+            dash: 3,
+            fixed: true,
+            highlight: false,
+            layer: 2
+        });
+
+        // Front half (solid, in front)
+        board.create('curve', [
+            function(t) { return cx + ellipseA * Math.cos(t); },
+            function(t) { return cy + ellipseB * Math.sin(t); },
+            0, Math.PI
+        ], {
+            strokeColor: '#555555',
+            strokeWidth: 1.5,
+            dash: 3,
+            fixed: true,
+            highlight: false,
+            layer: 5
+        });
+
+        // Center point
+        board.create('point', [cx, cy], {
+            name: '',
+            size: 2.5,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            showInfobox: false,
+            layer: 6
+        });
+
+        // Radius line (center to upper-right surface)
+        var radAngle = 40 * Math.PI / 180;
+        var rx = cx + R * Math.cos(radAngle);
+        var ry = cy + R * Math.sin(radAngle);
+
+        board.create('segment', [[cx, cy], [rx, ry]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false,
+            layer: 6
+        });
+
+        // Endpoint on surface
+        board.create('point', [rx, ry], {
+            name: '',
+            size: 2,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            showInfobox: false,
+            layer: 6
+        });
+
+        // Radius label: "9 cm"
+        var midX = (cx + rx) / 2;
+        var midY = (cy + ry) / 2;
+        var offDist = 0.55;
+        var labelX = midX - offDist * Math.sin(radAngle);
+        var labelY = midY + offDist * Math.cos(radAngle);
+
+        board.create('text', [labelX, labelY, '9 \\text{ cm}'], {
+            useKatex: true,
+            fontSize: 14,
+            color: '#222222',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false,
+            layer: 7
+        });
+    </script>
+</body>
+</html>
