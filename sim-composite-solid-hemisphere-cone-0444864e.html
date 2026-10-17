@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Composite Solid — Hemisphere + Cone</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-9, 8.5, 11, -13.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Dimensions (in board units)
+        var R = 5;
+        var H = 9;
+        var cx = 0;
+        var cy = 0;
+
+        // Hemisphere (upper half — semicircle)
+        board.create('curve', [
+            function(t) { return cx + R * Math.cos(t); },
+            function(t) { return cy + R * Math.sin(t); },
+            0, Math.PI
+        ], {
+            strokeColor: '#2563EB', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // Hemisphere fill — polygon approximation
+        var hemiPts = [];
+        var hemiSteps = 60;
+        for (var i = 0; i <= hemiSteps; i++) {
+            var angle = Math.PI * i / hemiSteps;
+            hemiPts.push(board.create('point', [cx + R * Math.cos(angle), cy + R * Math.sin(angle)], { visible: false, fixed: true, name: '' }));
+        }
+        board.create('polygon', hemiPts, {
+            fillColor: '#DBEAFE', fillOpacity: 0.5,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Cone (pointing downward)
+        var apexY = cy - H;
+        var pConeLeft = board.create('point', [cx - R, cy], { visible: false, fixed: true, name: '' });
+        var pConeRight = board.create('point', [cx + R, cy], { visible: false, fixed: true, name: '' });
+        var pConeApex = board.create('point', [cx, apexY], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [pConeLeft, pConeRight, pConeApex], {
+            fillColor: '#FEF3C7', fillOpacity: 0.5,
+            borders: { strokeColor: '#D97706', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Dashed join line (diameter at the shared base)
+        board.create('segment', [[cx - R, cy], [cx + R, cy]], {
+            strokeColor: '#555555', strokeWidth: 1.2, dash: 3, fixed: true, highlight: false
+        });
+
+        // Dashed center/height line (from top of hemisphere to apex)
+        board.create('segment', [[cx, cy + R], [cx, apexY]], {
+            strokeColor: '#555555', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // Radius dimension label (5 cm)
+        var dimRadY = cy - 0.7;
+
+        board.create('segment', [[cx, dimRadY], [cx + R, dimRadY]], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[cx, dimRadY - 0.4], [cx, dimRadY + 0.4]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[cx + R, dimRadY - 0.4], [cx + R, dimRadY + 0.4]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('text', [cx + R / 2, dimRadY - 0.9, '5\\text{ cm}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // Height dimension label (9 cm)
+        var dimHX = cx + R + 1.5;
+
+        board.create('segment', [[dimHX, cy], [dimHX, apexY]], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[dimHX - 0.4, cy], [dimHX + 0.4, cy]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[dimHX - 0.4, apexY], [dimHX + 0.4, apexY]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('text', [dimHX + 0.6, cy - H / 2, '9\\text{ cm}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
