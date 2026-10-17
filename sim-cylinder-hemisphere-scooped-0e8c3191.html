@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cylinder with Hemisphere Scooped Out</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 16, 19, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: true
+        });
+
+        var CX = 6;
+        var TOP_Y = 12;
+        var BOT_Y = 0;
+        var RAD = 4;
+        var ELLIPSE_RY = 1.0;
+        var HEMI_RY = 2.8;
+
+        var STEPS = 60;
+        var i, t;
+
+        function drawEllipse(cx, cy, rx, ry, t0, t1, attrs) {
+            return board.create('curve', [
+                function(t) { return cx + rx * Math.cos(t); },
+                function(t) { return cy + ry * Math.sin(t); },
+                t0, t1
+            ], attrs);
+        }
+
+        // ── Cylinder body shading ──────────────────────────────────────
+        var bodyPts = [];
+        for (i = 0; i <= STEPS; i++) {
+            t = Math.PI + (Math.PI * i / STEPS);
+            bodyPts.push([CX + RAD * Math.cos(t), TOP_Y + ELLIPSE_RY * Math.sin(t)]);
+        }
+        bodyPts.push([CX + RAD, BOT_Y]);
+        for (i = 0; i <= STEPS; i++) {
+            t = 0 + (Math.PI * i / STEPS);
+            bodyPts.push([CX + RAD * Math.cos(t), BOT_Y + ELLIPSE_RY * Math.sin(t)]);
+        }
+        bodyPts.push([CX - RAD, TOP_Y]);
+
+        var bodyPolyPts = [];
+        for (i = 0; i < bodyPts.length; i++) {
+            bodyPolyPts.push(board.create('point', bodyPts[i], { visible: false, fixed: true, name: '' }));
+        }
+        board.create('polygon', bodyPolyPts, {
+            fillColor: '#F3F4F6', fillOpacity: 0.6,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── Hemisphere scoop shading ───────────────────────────────────
+        var scoopPts = [];
+        for (i = 0; i <= STEPS; i++) {
+            t = Math.PI - (Math.PI * i / STEPS);
+            scoopPts.push([CX + RAD * Math.cos(t), BOT_Y + ELLIPSE_RY * Math.sin(t)]);
+        }
+        for (i = 0; i <= STEPS; i++) {
+            t = 0 + (Math.PI * i / STEPS);
+            scoopPts.push([CX + RAD * Math.cos(t), BOT_Y + HEMI_RY * Math.sin(t)]);
+        }
+
+        var scoopPolyPts = [];
+        for (i = 0; i < scoopPts.length; i++) {
+            scoopPolyPts.push(board.create('point', scoopPts[i], { visible: false, fixed: true, name: '' }));
+        }
+        board.create('polygon', scoopPolyPts, {
+            fillColor: '#DBEAFE', fillOpacity: 0.55,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── Top ellipse (full, solid) ──────────────────────────────────
+        drawEllipse(CX, TOP_Y, RAD, ELLIPSE_RY, 0, 2 * Math.PI, {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Vertical sides ─────────────────────────────────────────────
+        board.create('segment', [[CX - RAD, TOP_Y], [CX - RAD, BOT_Y]], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[CX + RAD, TOP_Y], [CX + RAD, BOT_Y]], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Bottom ellipse (back solid, front dashed) ──────────────────
+        drawEllipse(CX, BOT_Y, RAD, ELLIPSE_RY, Math.PI, 2 * Math.PI, {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        drawEllipse(CX, BOT_Y, RAD, ELLIPSE_RY, 0, Math.PI, {
+            strokeColor: '#999999', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Hemisphere scoop curve (front only, solid blue) ────────────
+        drawEllipse(CX, BOT_Y, RAD, HEMI_RY, 0, Math.PI, {
+            strokeColor: '#2563EB', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Dimension: Diameter 14 cm (top) ────────────────────────────
+        var dimTopY = TOP_Y + 2.4;
+        board.create('segment', [[CX - RAD, dimTopY - 0.4], [CX - RAD, dimTopY + 0.4]], {
+            strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[CX + RAD, dimTopY - 0.4], [CX + RAD, dimTopY + 0.4]], {
+            strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('arrow', [[CX - 1.0, dimTopY], [CX - RAD, dimTopY]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+        board.create('arrow', [[CX + 1.0, dimTopY], [CX + RAD, dimTopY]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+        board.create('text', [CX, dimTopY + 0.6, '14\\text{ cm}'], {
+            anchorX: 'middle', anchorY: 'bottom', fontSize: 12, color: '#222222',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Dimension: Height 12 cm (right side) ───────────────────────
+        var dimRightX = CX + RAD + 2.4;
+        board.create('segment', [[dimRightX - 0.4, TOP_Y], [dimRightX + 0.4, TOP_Y]], {
+            strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[dimRightX - 0.4, BOT_Y], [dimRightX + 0.4, BOT_Y]], {
+            strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('arrow', [[dimRightX, TOP_Y - 0.8], [dimRightX, TOP_Y]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+        board.create('arrow', [[dimRightX, BOT_Y + 0.8], [dimRightX, BOT_Y]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+        board.create('text', [dimRightX + 0.5, (TOP_Y + BOT_Y) / 2, '12\\text{ cm}'], {
+            anchorX: 'left', anchorY: 'middle', fontSize: 12, color: '#222222',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Dimension: Radius 7 cm (hemisphere) ────────────────────────
+        board.create('segment', [[CX, BOT_Y], [CX - RAD, BOT_Y]], {
+            strokeColor: '#2563EB', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('point', [CX, BOT_Y], {
+            name: '', size: 2, color: '#2563EB', fixed: true, highlight: false,
+            showInfobox: false
+        });
+        board.create('point', [CX - RAD, BOT_Y], {
+            name: '', size: 2, color: '#2563EB', fixed: true, highlight: false,
+            showInfobox: false
+        });
+        board.create('text', [CX - RAD / 2, BOT_Y - 0.8, '7\\text{ cm}'], {
+            anchorX: 'middle', anchorY: 'top', fontSize: 11, color: '#2563EB',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
