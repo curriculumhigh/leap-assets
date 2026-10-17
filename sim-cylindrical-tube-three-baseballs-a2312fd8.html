@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cylindrical Tube with Three Baseballs</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 14.5, 10, -2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var CX = 1.5;
+        var CYbot = 0;
+        var CYtop = 9;
+        var R = 1.5;
+        var ELLY = 0.45;
+        var ballR = 1.5;
+
+        var COL_CYL = '#555555';
+        var COL_CYL_FILL = '#f0f4f8';
+        var COL_BALL_STROKE = '#2563EB';
+        var COL_BALL_FILL = '#EFF6FF';
+        var COL_STITCH = '#2563EB';
+        var COL_DIM = '#DC2626';
+
+        function drawEllipse(cx, cy, rx, ry, attrs) {
+            return board.create('curve', [
+                function(t) { return cx + rx * Math.cos(t); },
+                function(t) { return cy + ry * Math.sin(t); },
+                0, 2 * Math.PI
+            ], attrs);
+        }
+
+        function drawHalfEllipse(cx, cy, rx, ry, startAng, endAng, attrs) {
+            return board.create('curve', [
+                function(t) { return cx + rx * Math.cos(t); },
+                function(t) { return cy + ry * Math.sin(t); },
+                startAng, endAng
+            ], attrs);
+        }
+
+        drawHalfEllipse(CX, CYbot, R, ELLY, 0, Math.PI, {
+            strokeColor: COL_CYL, strokeWidth: 1.5, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        board.create('segment', [[CX - R, CYbot], [CX - R, CYtop]], {
+            strokeColor: COL_CYL, strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[CX + R, CYbot], [CX + R, CYtop]], {
+            strokeColor: COL_CYL, strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        var fillPts = [];
+        var npts = 40;
+        for (var i = 0; i <= npts; i++) {
+            var t = Math.PI + (Math.PI * i / npts);
+            fillPts.push([CX + R * Math.cos(t), CYbot + ELLY * Math.sin(t)]);
+        }
+        fillPts.push([CX + R, CYtop]);
+        for (var i = 0; i <= npts; i++) {
+            var t = 0 + (Math.PI * i / npts);
+            fillPts.push([CX + R * Math.cos(t), CYtop + ELLY * Math.sin(t)]);
+        }
+        fillPts.push([CX - R, CYbot]);
+
+        var fillPoints = [];
+        for (var i = 0; i < fillPts.length; i++) {
+            fillPoints.push(board.create('point', fillPts[i], { visible: false, fixed: true, name: '' }));
+        }
+        board.create('polygon', fillPoints, {
+            fillColor: COL_CYL_FILL, fillOpacity: 0.35,
+            borders: { strokeWidth: 0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        var ballCenters = [
+            CYbot + ballR,
+            CYbot + 3 * ballR,
+            CYbot + 5 * ballR
+        ];
+
+        for (var b = 0; b < 3; b++) {
+            var by = ballCenters[b];
+
+            board.create('circle', [[CX, by], ballR], {
+                strokeColor: COL_BALL_STROKE, strokeWidth: 1.2,
+                fillColor: COL_BALL_FILL, fillOpacity: 1.0,
+                fixed: true, highlight: false
+            });
+
+            board.create('curve', [
+                function(cx, cy, sr) {
+                    return function(t) { return cx - sr + 0.25 * Math.cos(t); };
+                }(CX, by, ballR * 0.55),
+                function(cx, cy, sr) {
+                    return function(t) { return cy + sr * Math.sin(t); };
+                }(CX, by, ballR * 0.55),
+                -Math.PI * 0.6, Math.PI * 0.6
+            ], {
+                strokeColor: COL_STITCH, strokeWidth: 0.8, strokeOpacity: 0.35,
+                fixed: true, highlight: false
+            });
+
+            board.create('curve', [
+                function(cx, cy, sr) {
+                    return function(t) { return cx + sr - 0.25 * Math.cos(t); };
+                }(CX, by, ballR * 0.55),
+                function(cx, cy, sr) {
+                    return function(t) { return cy + sr * Math.sin(t); };
+                }(CX, by, ballR * 0.55),
+                Math.PI - Math.PI * 0.6, Math.PI + Math.PI * 0.6
+            ], {
+                strokeColor: COL_STITCH, strokeWidth: 0.8, strokeOpacity: 0.35,
+                fixed: true, highlight: false
+            });
+        }
+
+        drawHalfEllipse(CX, CYbot, R, ELLY, Math.PI, 2 * Math.PI, {
+            strokeColor: COL_CYL, strokeWidth: 2,
+            fixed: true, highlight: false
+        });
+
+        drawEllipse(CX, CYtop, R, ELLY, {
+            strokeColor: COL_CYL, strokeWidth: 2,
+            fixed: true, highlight: false
+        });
+
+        var dimX = CX + R + 1.8;
+
+        board.create('segment', [[dimX, CYbot], [dimX, CYtop]], {
+            strokeColor: COL_DIM, strokeWidth: 1.2,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        board.create('segment', [[dimX - 0.4, CYbot], [dimX + 0.4, CYbot]], {
+            strokeColor: COL_DIM, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[dimX - 0.4, CYtop], [dimX + 0.4, CYtop]], {
+            strokeColor: COL_DIM, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        board.create('text', [dimX + 0.5, CYbot + 4.5, '9 \\text{ in}'], {
+            useKatex: true, fontSize: 13, color: COL_DIM,
+            fixed: true, highlight: false, anchorX: 'left', anchorY: 'middle'
+        });
+
+        var radDimY = CYtop + ELLY + 1.0;
+
+        board.create('segment', [[CX, radDimY], [CX + R, radDimY]], {
+            strokeColor: COL_DIM, strokeWidth: 1.2,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        board.create('segment', [[CX, radDimY - 0.4], [CX, radDimY + 0.4]], {
+            strokeColor: COL_DIM, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[CX + R, radDimY - 0.4], [CX + R, radDimY + 0.4]], {
+            strokeColor: COL_DIM, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        board.create('text', [CX + R / 2, radDimY + 0.8, '1.5 \\text{ in}'], {
+            useKatex: true, fontSize: 13, color: COL_DIM,
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        board.create('point', [CX, CYtop], {
+            name: '', size: 1.5, color: COL_DIM, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[CX, CYtop + ELLY], [CX, radDimY]], {
+            strokeColor: COL_DIM, strokeWidth: 0.8, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[CX + R, CYtop + ELLY], [CX + R, radDimY]], {
+            strokeColor: COL_DIM, strokeWidth: 0.8, dash: 2,
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
