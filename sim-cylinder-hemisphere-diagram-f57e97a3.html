@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cylinder with Hemisphere</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8, 12.5, 8, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            showInfobox: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: true
+        });
+
+        var R = 4;
+        var H = 7;
+        var ellipseRatio = 0.25;
+        var ry = R * ellipseRatio;
+
+        var yBase = 0;
+        var yTop = yBase + H;
+
+        var COL_OUTLINE = '#555555';
+        var COL_CYL_FILL = '#E5E7EB';
+        var COL_HEMI_FILL = '#DBEAFE';
+        var COL_DIM = '#DC2626';
+
+        function drawEllipse(cx, cy, rx, ryy, startAngle, endAngle, attrs) {
+            return board.create('curve', [
+                function(t) { return cx + rx * Math.cos(t); },
+                function(t) { return cy + ryy * Math.sin(t); },
+                startAngle, endAngle
+            ], attrs);
+        }
+
+        var bodyPts = [];
+        var nPts = 40;
+        for (var i = 0; i <= nPts; i++) {
+            var a = Math.PI + (2 * Math.PI - Math.PI) * (i / nPts);
+            bodyPts.push(board.create('point', [R * Math.cos(a), yBase + ry * Math.sin(a)], {
+                visible: false, fixed: true, name: '', showInfobox: false
+            }));
+        }
+        bodyPts.push(board.create('point', [R, yTop], {
+            visible: false, fixed: true, name: '', showInfobox: false
+        }));
+        for (var i2 = 0; i2 <= nPts; i2++) {
+            var a2 = 0 - Math.PI * (i2 / nPts);
+            bodyPts.push(board.create('point', [R * Math.cos(a2), yTop + ry * Math.sin(a2)], {
+                visible: false, fixed: true, name: '', showInfobox: false
+            }));
+        }
+        bodyPts.push(board.create('point', [-R, yBase], {
+            visible: false, fixed: true, name: '', showInfobox: false
+        }));
+
+        board.create('polygon', bodyPts, {
+            fillColor: COL_CYL_FILL, fillOpacity: 0.6,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        var hemiPts = [];
+        var nH = 60;
+        for (var j = 0; j <= nH; j++) {
+            var angle = Math.PI - Math.PI * (j / nH);
+            hemiPts.push(board.create('point', [R * Math.cos(angle), yTop + R * Math.sin(angle)], {
+                visible: false, fixed: true, name: '', showInfobox: false
+            }));
+        }
+        for (var j2 = 0; j2 <= nPts; j2++) {
+            var a3 = 0 - Math.PI * (j2 / nPts);
+            hemiPts.push(board.create('point', [R * Math.cos(a3), yTop + ry * Math.sin(a3)], {
+                visible: false, fixed: true, name: '', showInfobox: false
+            }));
+        }
+
+        board.create('polygon', hemiPts, {
+            fillColor: COL_HEMI_FILL, fillOpacity: 0.6,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[-R, yBase], [-R, yTop]], {
+            strokeColor: COL_OUTLINE, strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [[R, yBase], [R, yTop]], {
+            strokeColor: COL_OUTLINE, strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        drawEllipse(0, yBase, R, ry, Math.PI, 2 * Math.PI, {
+            strokeColor: COL_OUTLINE, strokeWidth: 2, fixed: true, highlight: false
+        });
+        drawEllipse(0, yBase, R, ry, 0, Math.PI, {
+            strokeColor: COL_OUTLINE, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+
+        drawEllipse(0, yTop, R, ry, Math.PI, 2 * Math.PI, {
+            strokeColor: COL_OUTLINE, strokeWidth: 2, fixed: true, highlight: false
+        });
+        drawEllipse(0, yTop, R, ry, 0, Math.PI, {
+            strokeColor: COL_OUTLINE, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('curve', [
+            function(t) { return R * Math.cos(t); },
+            function(t) { return yTop + R * Math.sin(t); },
+            0, Math.PI
+        ], {
+            strokeColor: COL_OUTLINE, strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        var dimOffset = 1.6;
+
+        board.create('segment', [[-R - dimOffset, yBase], [-R - dimOffset, yTop]], {
+            strokeColor: COL_DIM, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[-R - dimOffset - 0.4, yTop], [-R - dimOffset + 0.4, yTop]], {
+            strokeColor: COL_DIM, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[-R - dimOffset - 0.4, yBase], [-R - dimOffset + 0.4, yBase]], {
+            strokeColor: COL_DIM, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('text', [-R - dimOffset - 0.5, yBase + H / 2, '7 \\text{ ft}'], {
+            useKatex: true, fontSize: 13, color: COL_DIM, anchorX: 'right', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var yRadiusLine = yTop + 0.15;
+        board.create('segment', [[0, yRadiusLine], [R, yRadiusLine]], {
+            strokeColor: COL_DIM, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[0, yRadiusLine - 0.4], [0, yRadiusLine + 0.4]], {
+            strokeColor: COL_DIM, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[R, yRadiusLine - 0.4], [R, yRadiusLine + 0.4]], {
+            strokeColor: COL_DIM, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('text', [R / 2, yRadiusLine + 0.8, '4 \\text{ ft}'], {
+            useKatex: true, fontSize: 13, color: COL_DIM, anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+
+        board.create('point', [0, yRadiusLine], {
+            name: '', size: 1.5, color: COL_DIM, fixed: true, highlight: false, showInfobox: false
+        });
+
+    </script>
+</body>
+</html>
