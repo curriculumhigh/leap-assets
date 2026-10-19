@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flagpole Cable Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px);
+        }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4.5, 12.5, 16, -3],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Key coordinates ─────────────────────────────────────────────
+        var baseX = 0, baseY = 0;
+        var poleHeight = 8;
+        var topX = baseX, topY = baseY + poleHeight;
+        var cableLen = 8 * Math.tan(50 * Math.PI / 180);
+        var garageX = topX + cableLen;
+        var garageY = topY;
+
+        // ── Ground line with hatching ───────────────────────────────────
+        var groundLeft = -3.5;
+        var groundRight = garageX + 3;
+        board.create('segment', [[groundLeft, baseY], [groundRight, baseY]], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var hatchSpacing = 0.7;
+        var hatchLen = 0.5;
+        for (var hx = groundLeft + 0.3; hx < groundRight; hx += hatchSpacing) {
+            board.create('segment', [[hx, baseY], [hx - 0.3, baseY - hatchLen]], {
+                strokeColor: '#888888', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+
+        // ── Garage wall (filled rectangle) ──────────────────────────────
+        var gWallLeft = garageX;
+        var gWallRight = garageX + 2.5;
+        var gWallTop = garageY + 2;
+        var gWallBot = baseY;
+
+        var gP1 = board.create('point', [gWallLeft, gWallBot], { visible: false, fixed: true, name: '' });
+        var gP2 = board.create('point', [gWallRight, gWallBot], { visible: false, fixed: true, name: '' });
+        var gP3 = board.create('point', [gWallRight, gWallTop], { visible: false, fixed: true, name: '' });
+        var gP4 = board.create('point', [gWallLeft, gWallTop], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [gP1, gP2, gP3, gP4], {
+            fillColor: '#9CA3AF', fillOpacity: 0.5,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('text', [(gWallLeft + gWallRight) / 2, (gWallBot + gWallTop) / 2, '<b>Garage</b>'], {
+            fontSize: 13, color: '#333333', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Flagpole (vertical segment) ─────────────────────────────────
+        board.create('segment', [[baseX, baseY], [topX, topY]], {
+            strokeColor: '#555555', strokeWidth: 2.5, fixed: true, highlight: false
+        });
+
+        // "Flagpole" label — positioned upper-left of the pole
+        board.create('text', [baseX - 1.8, baseY + poleHeight * 0.72, '<i>Flagpole</i>'], {
+            fontSize: 12, color: '#555555', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // "8 ft" dimension label — positioned lower-left of the pole
+        board.create('text', [baseX - 1.5, baseY + poleHeight * 0.32, '8 \\text{ ft}'], {
+            fontSize: 13, color: '#3B82F6', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // Dimension bracket ticks
+        board.create('segment', [[baseX - 0.7, baseY + 0.1], [baseX - 0.7, baseY + poleHeight - 0.1]], {
+            strokeColor: '#3B82F6', strokeWidth: 0.8, fixed: true, highlight: false
+        });
+        board.create('segment', [[baseX - 0.9, baseY], [baseX - 0.5, baseY]], {
+            strokeColor: '#3B82F6', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[baseX - 0.9, topY], [baseX - 0.5, topY]], {
+            strokeColor: '#3B82F6', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        // ── Cable (horizontal segment) ──────────────────────────────────
+        board.create('segment', [[topX, topY], [garageX, garageY]], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        board.create('text', [(topX + garageX) / 2, topY + 0.7, '<i>Cable</i>'], {
+            fontSize: 12, color: '#555555', anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+
+        // ── Sun's ray (diagonal — hypotenuse) ──────────────────────────
+        board.create('segment', [[baseX, baseY], [garageX, garageY]], {
+            strokeColor: '#D97706', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        var midRayX = (baseX + garageX) / 2;
+        var midRayY = (baseY + garageY) / 2;
+        board.create('text', [midRayX + 0.6, midRayY - 1.0, "<i>Sun's ray</i>"], {
+            fontSize: 12, color: '#D97706', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // ── 50° angle-of-elevation arc ──────────────────────────────────
+        var arcRadius = 2.0;
+        board.create('curve', [
+            function(t) { return baseX + arcRadius * Math.cos(t); },
+            function(t) { return baseY + arcRadius * Math.sin(t); },
+            0,
+            50 * Math.PI / 180
+        ], {
+            strokeColor: '#D97706', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('text', [baseX + 2.8, baseY + 1.0, '50^\\circ'], {
+            fontSize: 13, color: '#D97706', anchorX: 'left', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at top of flagpole ───────────────────────
+        var raSize = 0.5;
+        board.create('segment', [[topX, topY - raSize], [topX + raSize, topY - raSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[topX + raSize, topY - raSize], [topX + raSize, topY]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Key points (small fixed dots) ───────────────────────────────
+        board.create('point', [baseX, baseY], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('point', [topX, topY], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('point', [garageX, garageY], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Sun icon ────────────────────────────────────────────────────
+        var sunCX = garageX + 0.5;
+        var sunCY = garageY + 2.2;
+        var sunR = 0.55;
+
+        board.create('circle', [[sunCX, sunCY], sunR], {
+            strokeColor: '#F59E0B', strokeWidth: 1.5,
+            fillColor: '#FCD34D', fillOpacity: 0.9,
+            fixed: true, highlight: false
+        });
+
+        var numRays = 8;
+        var rayInner = sunR + 0.15;
+        var rayOuter = sunR + 0.5;
+        for (var i = 0; i < numRays; i++) {
+            var angle = (i / numRays) * 2 * Math.PI;
+            board.create('segment', [
+                [sunCX + rayInner * Math.cos(angle), sunCY + rayInner * Math.sin(angle)],
+                [sunCX + rayOuter * Math.cos(angle), sunCY + rayOuter * Math.sin(angle)]
+            ], {
+                strokeColor: '#F59E0B', strokeWidth: 1.5, fixed: true, highlight: false
+            });
+        }
+
+    </script>
+</body>
+</html>
