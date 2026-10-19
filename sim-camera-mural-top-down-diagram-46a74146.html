@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera–Mural Top-Down Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-13, 13, 13, -9],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Constants ───────────────────────────────────────────────────
+        var CAM_X = 0, CAM_Y = -4;
+        var WALL_Y = 4;
+        var PERP_LEN = WALL_Y - CAM_Y;
+        var MID_X = 0, MID_Y = WALL_Y;
+
+        var DEG35 = 35 * Math.PI / 180;
+        var DEG55 = 55 * Math.PI / 180;
+
+        var MURAL_HALF = PERP_LEN * Math.tan(DEG35);
+        var ML_X = -MURAL_HALF, MR_X = MURAL_HALF;
+
+        var EXT_HALF = PERP_LEN * Math.tan(DEG55);
+        var EL_X = -EXT_HALF, ER_X = EXT_HALF;
+
+        var WALL_EXT = 12.5;
+
+        var COL_DARK = '#222222';
+        var COL_WALL = '#555555';
+        var COL_35 = '#2563EB';
+        var COL_55 = '#059669';
+
+        // ── Wall (thick bar) ────────────────────────────────────────────
+        board.create('segment', [[-WALL_EXT, WALL_Y], [WALL_EXT, WALL_Y]], {
+            strokeColor: COL_WALL, strokeWidth: 7, fixed: true, highlight: false,
+            lineCap: 'round'
+        });
+
+        board.create('text', [9.5, WALL_Y + 1.2, 'Wall'], {
+            fontSize: 14, color: COL_WALL, fixed: true, highlight: false,
+            anchorX: 'middle', cssStyle: 'font-weight:600'
+        });
+
+        // ── Mural highlight ─────────────────────────────────────────────
+        board.create('segment', [[ML_X, WALL_Y], [MR_X, WALL_Y]], {
+            strokeColor: '#333333', strokeWidth: 7, fixed: true, highlight: false,
+            lineCap: 'butt'
+        });
+
+        board.create('text', [0, WALL_Y + 1.2, 'Mural'], {
+            fontSize: 14, color: COL_DARK, fixed: true, highlight: false,
+            anchorX: 'middle', cssStyle: 'font-weight:600'
+        });
+
+        // ── Fence-post markers (small filled squares) ───────────────────
+        function makePost(px, py) {
+            var s = 0.35;
+            var p1 = board.create('point', [px - s, py - s], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [px + s, py - s], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [px + s, py + s], { visible: false, fixed: true, name: '' });
+            var p4 = board.create('point', [px - s, py + s], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: COL_DARK, fillOpacity: 1,
+                borders: { strokeColor: COL_DARK, strokeWidth: 1 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        makePost(ML_X, WALL_Y);
+        makePost(MR_X, WALL_Y);
+        makePost(MID_X, WALL_Y);
+
+        // ── Camera point ────────────────────────────────────────────────
+        board.create('point', [CAM_X, CAM_Y], {
+            name: '', size: 4, color: COL_DARK, fixed: true, highlight: false
+        });
+
+        board.create('text', [CAM_X, CAM_Y - 1.1, 'Camera'], {
+            fontSize: 14, color: COL_DARK, fixed: true, highlight: false,
+            anchorX: 'middle', cssStyle: 'font-weight:600'
+        });
+
+        // ── Perpendicular line (dashed) ─────────────────────────────────
+        board.create('segment', [[CAM_X, CAM_Y], [MID_X, MID_Y]], {
+            strokeColor: COL_WALL, strokeWidth: 1.5, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [0.7, (CAM_Y + MID_Y) / 2, '15\\text{ ft}'], {
+            fontSize: 13, color: COL_DARK, useKatex: true, fixed: true, highlight: false,
+            anchorX: 'left'
+        });
+
+        // ── Right-angle marker at wall midpoint ─────────────────────────
+        var RA = 0.55;
+        board.create('segment', [[MID_X, MID_Y - RA], [MID_X + RA, MID_Y - RA]], {
+            strokeColor: COL_DARK, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[MID_X + RA, MID_Y - RA], [MID_X + RA, MID_Y]], {
+            strokeColor: COL_DARK, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── 35° lines (camera → mural ends, dashed blue) ───────────────
+        board.create('segment', [[CAM_X, CAM_Y], [ML_X, WALL_Y]], {
+            strokeColor: COL_35, strokeWidth: 1.2, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[CAM_X, CAM_Y], [MR_X, WALL_Y]], {
+            strokeColor: COL_35, strokeWidth: 1.2, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── 55° lines (camera → beyond mural, dashed green) ────────────
+        board.create('segment', [[CAM_X, CAM_Y], [EL_X, WALL_Y]], {
+            strokeColor: COL_55, strokeWidth: 1.2, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[CAM_X, CAM_Y], [ER_X, WALL_Y]], {
+            strokeColor: COL_55, strokeWidth: 1.2, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── Angle arcs ─────────────────────────────────────────────────
+        var ANG_PERP = Math.PI / 2;
+        var ANG_R35 = Math.PI / 2 - DEG35;
+        var ANG_L35 = Math.PI / 2 + DEG35;
+        var ANG_R55 = Math.PI / 2 - DEG55;
+        var ANG_L55 = Math.PI / 2 + DEG55;
+
+        // 35° arcs (blue)
+        var ARC_R35 = 2.2;
+        board.create('curve', [
+            function(t) { return CAM_X + ARC_R35 * Math.cos(t); },
+            function(t) { return CAM_Y + ARC_R35 * Math.sin(t); },
+            ANG_R35, ANG_PERP
+        ], {
+            strokeColor: COL_35, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('curve', [
+            function(t) { return CAM_X + ARC_R35 * Math.cos(t); },
+            function(t) { return CAM_Y + ARC_R35 * Math.sin(t); },
+            ANG_PERP, ANG_L35
+        ], {
+            strokeColor: COL_35, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // 35° labels
+        var LBL_R35 = 2.9;
+        var midR35 = (ANG_R35 + ANG_PERP) / 2;
+        board.create('text', [
+            CAM_X + LBL_R35 * Math.cos(midR35),
+            CAM_Y + LBL_R35 * Math.sin(midR35),
+            '35^\\circ'
+        ], {
+            fontSize: 12, color: COL_35, useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var midL35 = (ANG_PERP + ANG_L35) / 2;
+        board.create('text', [
+            CAM_X + LBL_R35 * Math.cos(midL35),
+            CAM_Y + LBL_R35 * Math.sin(midL35),
+            '35^\\circ'
+        ], {
+            fontSize: 12, color: COL_35, useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // 20° arcs (green)
+        var ARC_R20 = 3.5;
+        board.create('curve', [
+            function(t) { return CAM_X + ARC_R20 * Math.cos(t); },
+            function(t) { return CAM_Y + ARC_R20 * Math.sin(t); },
+            ANG_R55, ANG_R35
+        ], {
+            strokeColor: COL_55, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('curve', [
+            function(t) { return CAM_X + ARC_R20 * Math.cos(t); },
+            function(t) { return CAM_Y + ARC_R20 * Math.sin(t); },
+            ANG_L35, ANG_L55
+        ], {
+            strokeColor: COL_55, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // 20° labels
+        var LBL_R20 = 4.3;
+        var midR20 = (ANG_R55 + ANG_R35) / 2;
+        board.create('text', [
+            CAM_X + LBL_R20 * Math.cos(midR20),
+            CAM_Y + LBL_R20 * Math.sin(midR20),
+            '20^\\circ'
+        ], {
+            fontSize: 12, color: COL_55, useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var midL20 = (ANG_L35 + ANG_L55) / 2;
+        board.create('text', [
+            CAM_X + LBL_R20 * Math.cos(midL20),
+            CAM_Y + LBL_R20 * Math.sin(midL20),
+            '20^\\circ'
+        ], {
+            fontSize: 12, color: COL_55, useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+    </script>
+</body>
+</html>
