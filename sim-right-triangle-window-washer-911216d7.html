@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right-Triangle Scene — Window Washer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 13, 14, -3.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Coordinates ─────────────────────────────────────────────────
+        var Wx = 0, Wy = 0;
+        var Bx = 9, By = 0;
+        var Tx = 9, Ty = 10;
+
+        // ── Ground texture (earthy lines below ground) ──────────────────
+        var groundColors = ['#A0896C', '#8B7355', '#967B5E'];
+        var groundLines = [
+            [[-2.5, -0.6], [13.5, -0.6]],
+            [[-1.5, -1.1], [12.5, -1.1]],
+            [[-2, -1.7], [11, -1.7]],
+            [[1, -2.2], [13, -2.2]],
+            [[-1, -2.7], [10, -2.7]]
+        ];
+        for (var gi = 0; gi < groundLines.length; gi++) {
+            board.create('segment', [groundLines[gi][0], groundLines[gi][1]], {
+                strokeColor: groundColors[gi % groundColors.length],
+                strokeWidth: 0.8,
+                dash: 2,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // ── Ground line ─────────────────────────────────────────────────
+        board.create('segment', [[-2.5, 0], [13.5, 0]], {
+            strokeColor: '#555555',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Building face (light gray rectangle to the right of BT) ────
+        var bldgWidth = 3;
+        var bldgPts = [
+            board.create('point', [Bx, By], { visible: false, name: '' }),
+            board.create('point', [Bx + bldgWidth, By], { visible: false, name: '' }),
+            board.create('point', [Bx + bldgWidth, Ty], { visible: false, name: '' }),
+            board.create('point', [Tx, Ty], { visible: false, name: '' })
+        ];
+        board.create('polygon', [bldgPts[0], bldgPts[1], bldgPts[2], bldgPts[3]], {
+            fillColor: '#E5E7EB',
+            fillOpacity: 0.7,
+            borders: { strokeColor: '#AAAAAA', strokeWidth: 1 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // Window-line texture on building face
+        var windowYs = [1.8, 3.6, 5.4, 7.2, 8.8];
+        for (var wi = 0; wi < windowYs.length; wi++) {
+            board.create('segment', [[Bx + 0.4, windowYs[wi]], [Bx + bldgWidth - 0.4, windowYs[wi]]], {
+                strokeColor: '#C0C0C0',
+                strokeWidth: 0.8,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // ── Grass tufts along the ground line ───────────────────────────
+        var grassXs = [-2, -1, 0.8, 2, 3.2, 4.5, 5.5, 6.8, 7.8, 10, 11, 12, 13];
+        for (var gri = 0; gri < grassXs.length; gri++) {
+            var gx = grassXs[gri];
+            var gs = 0.25 + Math.random() * 0.1;
+            board.create('segment', [[gx, 0], [gx - gs * 0.5, gs]], {
+                strokeColor: '#4CAF50', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('segment', [[gx, 0], [gx + gs * 0.5, gs]], {
+                strokeColor: '#4CAF50', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+        }
+
+        // ── Triangle sides ──────────────────────────────────────────────
+        // Horizontal leg WB (along ground)
+        board.create('segment', [[Wx, Wy], [Bx, By]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Vertical leg BT
+        board.create('segment', [[Bx, By], [Tx, Ty]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Hypotenuse WT (dashed blue — line of sight)
+        board.create('segment', [[Wx, Wy], [Tx, Ty]], {
+            strokeColor: '#2563EB',
+            strokeWidth: 1.8,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Hypotenuse label "55 m" ────────────────────────────────────
+        var hypMidX = (Wx + Tx) / 2;
+        var hypMidY = (Wy + Ty) / 2;
+        // Offset perpendicular to hypotenuse (to the upper-left)
+        var hypDx = Tx - Wx;
+        var hypDy = Ty - Wy;
+        var hypLen = Math.sqrt(hypDx * hypDx + hypDy * hypDy);
+        var perpX = -hypDy / hypLen;
+        var perpY = hypDx / hypLen;
+        var labelOff = 1.0;
+        board.create('text', [hypMidX + perpX * labelOff, hypMidY + perpY * labelOff, '55\\text{ m}'], {
+            useKatex: true,
+            fontSize: 14,
+            color: '#2563EB',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false,
+            cssStyle: 'font-weight:bold'
+        });
+
+        // ── Angle of elevation arc at W ─────────────────────────────────
+        var angleRadius = 1.8;
+        var angleStart = 0;
+        var angleEnd = Math.atan2(Ty - Wy, Tx - Wx);
+
+        board.create('curve', [
+            function(t) { return Wx + angleRadius * Math.cos(t); },
+            function(t) { return Wy + angleRadius * Math.sin(t); },
+            angleStart,
+            angleEnd
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.2,
+            fixed: true,
+            highlight: false
+        });
+
+        // Angle label "47°"
+        var angleMid = (angleStart + angleEnd) / 2;
+        var angleLabelR = angleRadius + 0.9;
+        board.create('text', [
+            Wx + angleLabelR * Math.cos(angleMid),
+            Wy + angleLabelR * Math.sin(angleMid),
+            '47^\\circ'
+        ], {
+            useKatex: true,
+            fontSize: 13,
+            color: '#222222',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Right-angle marker at B ─────────────────────────────────────
+        var sqSize = 0.6;
+        board.create('segment', [[Bx - sqSize, By], [Bx - sqSize, By + sqSize]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[Bx - sqSize, By + sqSize], [Bx, By + sqSize]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Height label "h" with red bracket + arrow on right of BT ───
+        var bracketX = Bx + 0.7;
+        var bracketTopY = Ty - 0.3;
+        var bracketBotY = By + 0.3;
+        var bracketTickLen = 0.25;
+
+        // Vertical bracket line
+        board.create('segment', [[bracketX, bracketBotY], [bracketX, bracketTopY]], {
+            strokeColor: '#DC2626',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+
+        // Top tick
+        board.create('segment', [[bracketX - bracketTickLen, bracketTopY], [bracketX + bracketTickLen, bracketTopY]], {
+            strokeColor: '#DC2626',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+
+        // Bottom tick
+        board.create('segment', [[bracketX - bracketTickLen, bracketBotY], [bracketX + bracketTickLen, bracketBotY]], {
+            strokeColor: '#DC2626',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+
+        // Upward arrow at top of bracket
+        board.create('arrow', [[bracketX, bracketTopY - 0.6], [bracketX, bracketTopY]], {
+            strokeColor: '#DC2626',
+            strokeWidth: 1.5,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true,
+            highlight: false
+        });
+
+        // "h" label
+        board.create('text', [bracketX + 0.65, (By + Ty) / 2, 'h'], {
+            useKatex: true,
+            fontSize: 16,
+            color: '#DC2626',
+            anchorX: 'left',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false,
+            cssStyle: 'font-style:italic; font-weight:bold'
+        });
+
+        // ── Point markers (small, fixed) ────────────────────────────────
+        board.create('point', [Wx, Wy], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('point', [Bx, By], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('point', [Tx, Ty], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Point labels ────────────────────────────────────────────────
+        board.create('text', [Wx - 0.6, Wy - 0.7, '\\textbf{W}'], {
+            useKatex: true,
+            fontSize: 15,
+            color: '#222222',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+        board.create('text', [Bx + 0.5, By - 0.7, '\\textbf{B}'], {
+            useKatex: true,
+            fontSize: 15,
+            color: '#222222',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+        board.create('text', [Tx + 0.6, Ty + 0.6, '\\textbf{T}'], {
+            useKatex: true,
+            fontSize: 15,
+            color: '#222222',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
