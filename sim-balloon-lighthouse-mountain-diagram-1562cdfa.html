@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balloon Side-View Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 8.5, 16.5, -6.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Key positions (illustrative, NOT to scale) ──────────────────
+        var BX = 1, BY = 2;       // Balloon centre
+        var LX = 13, LY = -3;     // Lighthouse base
+        var MX = 7, MY = 5.5;     // Mountain peak
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_ICON_FILL = '#E5E7EB';
+        var COL_ICON_STROKE = '#555555';
+        var COL_LINE = '#222222';
+        var COL_DASH = '#444444';
+        var COL_DIM = '#666666';
+        var COL_DEP = '#DC2626';   // angle of depression — red
+        var COL_ELV = '#2563EB';   // angle of elevation — blue
+
+        // ── Helper: polygon shortcut ────────────────────────────────────
+        function poly(coords, fill, stroke, sw) {
+            var pts = [];
+            for (var i = 0; i < coords.length; i++) {
+                pts.push(board.create('point', coords[i], { visible: false, fixed: true, name: '' }));
+            }
+            return board.create('polygon', pts, {
+                fillColor: fill || COL_ICON_FILL, fillOpacity: 1,
+                borders: { strokeColor: stroke || COL_ICON_STROKE, strokeWidth: sw || 1.5 },
+                vertices: { visible: false }, fixed: true, highlight: false
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        //  BALLOON ICON  (circle envelope + basket + tether lines)
+        // ═══════════════════════════════════════════════════════════════
+        var balloonR = 0.7;
+        board.create('circle', [[BX, BY + 0.35], balloonR], {
+            strokeColor: '#D97706', strokeWidth: 2, fillColor: '#FEF3C7', fillOpacity: 1,
+            fixed: true, highlight: false
+        });
+        // Basket
+        poly([
+            [BX - 0.3, BY - 0.55],
+            [BX + 0.3, BY - 0.55],
+            [BX + 0.25, BY - 0.85],
+            [BX - 0.25, BY - 0.85]
+        ], '#D4A06A', '#8B6914', 1.2);
+        // Tether lines
+        board.create('segment', [[BX - 0.25, BY - 0.35], [BX - 0.3, BY - 0.55]], {
+            strokeColor: '#8B6914', strokeWidth: 1, fixed: true, highlight: false
+        });
+        board.create('segment', [[BX + 0.25, BY - 0.35], [BX + 0.3, BY - 0.55]], {
+            strokeColor: '#8B6914', strokeWidth: 1, fixed: true, highlight: false
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        //  LIGHTHOUSE ICON  (tall rectangle + triangle roof + lamp circle)
+        // ═══════════════════════════════════════════════════════════════
+        var lhBase = LY;
+        var lhTop = LY + 2.0;
+        var lhW = 0.4;
+        // Tower
+        poly([
+            [LX - lhW, lhBase],
+            [LX + lhW, lhBase],
+            [LX + lhW * 0.7, lhTop],
+            [LX - lhW * 0.7, lhTop]
+        ], '#E5E7EB', COL_ICON_STROKE, 1.5);
+        // Roof
+        poly([
+            [LX - lhW * 0.85, lhTop],
+            [LX + lhW * 0.85, lhTop],
+            [LX, lhTop + 0.5]
+        ], '#B91C1C', '#7F1D1D', 1.2);
+        // Lamp
+        board.create('circle', [[LX, lhTop + 0.08], 0.18], {
+            strokeColor: '#D97706', strokeWidth: 1.5, fillColor: '#FDE68A', fillOpacity: 1,
+            fixed: true, highlight: false
+        });
+        // Stripes on tower
+        for (var s = 0; s < 3; s++) {
+            var sy = lhBase + 0.4 + s * 0.55;
+            var frac = (sy - lhBase) / (lhTop - lhBase);
+            var hw = lhW - frac * (lhW - lhW * 0.7);
+            board.create('segment', [[LX - hw, sy], [LX + hw, sy]], {
+                strokeColor: '#B91C1C', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        //  MOUNTAIN ICON  (triangle peak)
+        // ═══════════════════════════════════════════════════════════════
+        poly([
+            [MX - 1.8, BY - 0.85],
+            [MX + 1.8, BY - 0.85],
+            [MX, MY]
+        ], '#BBF7D0', '#059669', 1.8);
+        // Snow cap
+        poly([
+            [MX - 0.5, MY - 0.7],
+            [MX + 0.5, MY - 0.7],
+            [MX, MY]
+        ], '#FFFFFF', '#059669', 1.2);
+
+        // ═══════════════════════════════════════════════════════════════
+        //  HORIZONTAL REFERENCE LINE (dashed, from balloon rightward)
+        // ═══════════════════════════════════════════════════════════════
+        board.create('segment', [[BX, BY], [LX + 1.5, BY]], {
+            strokeColor: COL_DASH, strokeWidth: 1.2, dash: 3,
+            fixed: true, highlight: false
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        //  LINES OF SIGHT
+        // ═══════════════════════════════════════════════════════════════
+        // Balloon → Lighthouse base
+        board.create('segment', [[BX, BY], [LX, LY]], {
+            strokeColor: COL_LINE, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+        // Balloon → Mountain peak
+        board.create('segment', [[BX, BY], [MX, MY]], {
+            strokeColor: COL_LINE, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        //  ANGLE ARCS + LABELS
+        // ═══════════════════════════════════════════════════════════════
+        // Helper points for angle arcs
+        var pBalloon = board.create('point', [BX, BY], { visible: false, fixed: true, name: '' });
+        var pHorizRight = board.create('point', [BX + 5, BY], { visible: false, fixed: true, name: '' });
+        var pLighthouse = board.create('point', [LX, LY], { visible: false, fixed: true, name: '' });
+        var pMountain = board.create('point', [MX, MY], { visible: false, fixed: true, name: '' });
+
+        // Angle of depression (32°) — from horizontal DOWN to lighthouse
+        board.create('nonReflexAngle', [pLighthouse, pBalloon, pHorizRight], {
+            radius: 1.6,
+            fillColor: COL_DEP, fillOpacity: 0.08,
+            strokeColor: COL_DEP, strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false
+        });
+        board.create('text', [BX + 2.6, BY - 0.85, '32^{\\circ}'], {
+            useKatex: true, fontSize: 13, color: COL_DEP,
+            anchorX: 'left', fixed: true, highlight: false
+        });
+
+        // Angle of elevation (25°) — from horizontal UP to mountain
+        board.create('nonReflexAngle', [pHorizRight, pBalloon, pMountain], {
+            radius: 1.6,
+            fillColor: COL_ELV, fillOpacity: 0.08,
+            strokeColor: COL_ELV, strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false
+        });
+        board.create('text', [BX + 2.3, BY + 0.65, '25^{\\circ}'], {
+            useKatex: true, fontSize: 13, color: COL_ELV,
+            anchorX: 'left', fixed: true, highlight: false
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        //  DIMENSION LINES
+        // ═══════════════════════════════════════════════════════════════
+
+        // --- Bottom dimension: Balloon ↔ Lighthouse (2800 m) ---
+        var dimBotY = -5.2;
+        // Horizontal line with arrows
+        board.create('arrow', [[BX, dimBotY], [LX, dimBotY]], {
+            strokeColor: COL_DIM, strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }, firstArrow: { type: 2, size: 5 }
+        });
+        // Tick marks at ends
+        board.create('segment', [[BX, dimBotY - 0.25], [BX, dimBotY + 0.25]], {
+            strokeColor: COL_DIM, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[LX, dimBotY - 0.25], [LX, dimBotY + 0.25]], {
+            strokeColor: COL_DIM, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        // Vertical connector lines (thin, dashed)
+        board.create('segment', [[BX, BY - 0.85], [BX, dimBotY + 0.25]], {
+            strokeColor: COL_DIM, strokeWidth: 0.6, dash: 4,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[LX, LY], [LX, dimBotY + 0.25]], {
+            strokeColor: COL_DIM, strokeWidth: 0.6, dash: 4,
+            fixed: true, highlight: false
+        });
+        // Label
+        board.create('text', [(BX + LX) / 2, dimBotY - 0.55, '\\textbf{2800 m}'], {
+            useKatex: true, fontSize: 13, color: COL_LINE,
+            anchorX: 'middle', fixed: true, highlight: false
+        });
+
+        // --- Top dimension: Balloon ↔ Mountain Peak (1500 m) ---
+        var dimTopY = 7.5;
+        board.create('arrow', [[BX, dimTopY], [MX, dimTopY]], {
+            strokeColor: COL_DIM, strokeWidth: 1.0, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }, firstArrow: { type: 2, size: 5 }
+        });
+        // Tick marks
+        board.create('segment', [[BX, dimTopY - 0.25], [BX, dimTopY + 0.25]], {
+            strokeColor: COL_DIM, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[MX, dimTopY - 0.25], [MX, dimTopY + 0.25]], {
+            strokeColor: COL_DIM, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        // Vertical connector lines
+        board.create('segment', [[BX, BY + 1.05], [BX, dimTopY - 0.25]], {
+            strokeColor: COL_DIM, strokeWidth: 0.6, dash: 4,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[MX, MY], [MX, dimTopY - 0.25]], {
+            strokeColor: COL_DIM, strokeWidth: 0.6, dash: 4,
+            fixed: true, highlight: false
+        });
+        // Label
+        board.create('text', [(BX + MX) / 2, dimTopY + 0.55, '\\textbf{1500 m}'], {
+            useKatex: true, fontSize: 13, color: COL_LINE,
+            anchorX: 'middle', fixed: true, highlight: false
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        //  TEXT LABELS
+        // ═══════════════════════════════════════════════════════════════
+        // Balloon label
+        board.create('text', [BX, BY + 1.6, '<b>Balloon</b>'], {
+            fontSize: 14, color: COL_LINE, anchorX: 'middle',
+            fixed: true, highlight: false
+        });
+        // Lighthouse label
+        board.create('text', [LX, LY - 0.55, '<b>Lighthouse</b>'], {
+            fontSize: 14, color: COL_LINE, anchorX: 'middle',
+            fixed: true, highlight: false
+        });
+        // Mountain Peak label
+        board.create('text', [MX, MY + 0.6, '<b>Mountain Peak</b>'], {
+            fontSize: 14, color: COL_LINE, anchorX: 'middle',
+            fixed: true, highlight: false
+        });
+        // "Not drawn to scale"
+        board.create('text', [15.5, -5.8, '<i>Not drawn to scale</i>'], {
+            fontSize: 11, color: '#999999', anchorX: 'right',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
