@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Law of Cosines — Chicago Landmarks Triangle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 8, 11, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertex positions ────────────────────────────────────────────
+        var Wx = 2.5, Wy = 5.5;
+
+        var angToN = 18 * Math.PI / 180;
+        var lenWN = 3.5;
+        var Nx = Wx + lenWN * Math.cos(angToN);
+        var Ny = Wy + lenWN * Math.sin(angToN);
+
+        var angToS = angToN - 140 * Math.PI / 180;
+        var lenWS = 5.2;
+        var Sx = Wx + lenWS * Math.cos(angToS);
+        var Sy = Wy + lenWS * Math.sin(angToS);
+
+        var W = board.create('point', [Wx, Wy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var N = board.create('point', [Nx, Ny], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var S = board.create('point', [Sx, Sy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // ── Triangle edges ──────────────────────────────────────────────
+        board.create('segment', [W, N], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [W, S], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [N, S], {
+            strokeColor: '#DC2626', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Angle arc at Willis Tower (140°) ────────────────────────────
+        board.create('nonReflexAngle', [S, W, N], {
+            radius: 0.65,
+            fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        var aWS = Math.atan2(Sy - Wy, Sx - Wx);
+        var bisAngle = aWS + 70 * Math.PI / 180;
+        var labelR = 1.15;
+
+        board.create('text', [
+            Wx + labelR * Math.cos(bisAngle),
+            Wy + labelR * Math.sin(bisAngle),
+            '140^\\circ'
+        ], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Vertex labels ───────────────────────────────────────────────
+        board.create('text', [Wx, Wy + 0.6, 'Willis Tower'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+        board.create('text', [Nx + 0.3, Ny + 0.3, 'Navy Pier'], {
+            fontSize: 13, color: '#222222', anchorX: 'left', anchorY: 'bottom',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+        board.create('text', [Sx, Sy - 0.4, 'Soldier Field'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        // ── Side labels ─────────────────────────────────────────────────
+        var midTopX = (Wx + Nx) / 2;
+        var midTopY = (Wy + Ny) / 2;
+        var dxT = Nx - Wx, dyT = Ny - Wy;
+        var lenT = Math.sqrt(dxT * dxT + dyT * dyT);
+        board.create('text', [
+            midTopX - dyT / lenT * 0.45,
+            midTopY + dxT / lenT * 0.45,
+            '0.8\\text{ mi}'
+        ], {
+            useKatex: true, fontSize: 13, color: '#555555',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var midLeftX = (Wx + Sx) / 2;
+        var midLeftY = (Wy + Sy) / 2;
+        var dxL = Sx - Wx, dyL = Sy - Wy;
+        var lenL = Math.sqrt(dxL * dxL + dyL * dyL);
+        board.create('text', [
+            midLeftX + dyL / lenL * 0.55,
+            midLeftY - dxL / lenL * 0.55,
+            '2.6\\text{ mi}'
+        ], {
+            useKatex: true, fontSize: 13, color: '#555555',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var midRightX = (Nx + Sx) / 2;
+        var midRightY = (Ny + Sy) / 2;
+        var dxR = Sx - Nx, dyR = Sy - Ny;
+        var lenR = Math.sqrt(dxR * dxR + dyR * dyR);
+        board.create('text', [
+            midRightX - dyR / lenR * 0.55,
+            midRightY + dxR / lenR * 0.55,
+            '\\boldsymbol{d}'
+        ], {
+            useKatex: true, fontSize: 16, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── "Not drawn to scale" note ───────────────────────────────────
+        board.create('text', [10.3, -2.8, 'Not drawn to scale'], {
+            fontSize: 11, color: '#999999', anchorX: 'right', anchorY: 'bottom',
+            fixed: true, highlight: false,
+            cssStyle: 'font-style:italic'
+        });
+    </script>
+</body>
+</html>
