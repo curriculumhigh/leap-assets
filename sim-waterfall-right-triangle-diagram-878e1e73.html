@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waterfall Right Triangle Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 12, 14, -3.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Triangle vertices ───────────────────────────────────────────
+        var Bx = 1, By = 1;
+        var Px = 10, Py = 1;
+        var Tx = 1, Ty = 9.5;
+
+        var B = board.create('point', [Bx, By], { name: '', fixed: true, size: 3, color: '#222222', highlight: false });
+        var P = board.create('point', [Px, Py], { name: '', fixed: true, size: 3, color: '#222222', highlight: false });
+        var T = board.create('point', [Tx, Ty], { name: '', fixed: true, size: 3, color: '#222222', highlight: false });
+
+        // ── Triangle sides ──────────────────────────────────────────────
+        board.create('segment', [B, T], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [B, P], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [P, T], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at B ─────────────────────────────────────
+        var raSize = 0.55;
+        board.create('polygon', [
+            [Bx, By],
+            [Bx + raSize, By],
+            [Bx + raSize, By + raSize],
+            [Bx, By + raSize]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── 55° angle arc at P ─────────────────────────────────────────
+        var angleArc = board.create('nonReflexAngle', [B, P, T], {
+            radius: 1.5,
+            fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false,
+            highlight: false
+        });
+
+        var angBisect = Math.atan2(Ty - Py, Tx - Px) / 2;
+        var labelR = 2.1;
+        board.create('text', [
+            Px + labelR * Math.cos(angBisect),
+            Py + labelR * Math.sin(angBisect),
+            '55^\\circ'
+        ], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Ground extensions ───────────────────────────────────────────
+        board.create('segment', [[Px, Py], [Px + 2.5, Py]], {
+            strokeColor: '#888888', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[Bx, By], [Bx - 1.8, By]], {
+            strokeColor: '#888888', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[Tx, Ty], [Tx - 1.8, Ty]], {
+            strokeColor: '#888888', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Parallel dashed lines (viewing direction) ───────────────────
+        var dx = Tx - Px;
+        var dy = Ty - Py;
+        var len = Math.sqrt(dx * dx + dy * dy);
+        var ux = dx / len;
+        var uy = dy / len;
+        var nx = uy;
+        var ny = -ux;
+
+        var dashOffsets = [0.5, 1.0, 1.5];
+        var dashStart = 0.25;
+        var dashEnd = 0.55;
+
+        for (var i = 0; i < dashOffsets.length; i++) {
+            var off = dashOffsets[i];
+            var x1 = Px + dx * dashStart + nx * off;
+            var y1 = Py + dy * dashStart + ny * off;
+            var x2 = Px + dx * dashEnd + nx * off;
+            var y2 = Py + dy * dashEnd + ny * off;
+            board.create('segment', [[x1, y1], [x2, y2]], {
+                strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Dimension line: 'h' (vertical, left of side BT) ────────────
+        var dimOffX = -1.4;
+        var capLen = 0.25;
+
+        board.create('arrow', [[Bx + dimOffX, By], [Bx + dimOffX, Ty]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[Bx + dimOffX - capLen, Ty], [Bx + dimOffX + capLen, Ty]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[Bx + dimOffX - capLen, By], [Bx + dimOffX + capLen, By]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [Bx + dimOffX - 0.6, (By + Ty) / 2, 'h'], {
+            useKatex: true, fontSize: 15, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Dimension line: '275 m' (horizontal, below side BP) ─────────
+        var dimOffY = -1.4;
+        var capLenV = 0.25;
+
+        board.create('arrow', [[Bx, By + dimOffY], [Px, By + dimOffY]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[Bx, By + dimOffY - capLenV], [Bx, By + dimOffY + capLenV]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[Px, By + dimOffY - capLenV], [Px, By + dimOffY + capLenV]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [(Bx + Px) / 2, By + dimOffY - 0.6, '275\\;\\text{m}'], {
+            useKatex: true, fontSize: 15, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
