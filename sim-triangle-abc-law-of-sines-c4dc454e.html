@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle ABC</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 8.8, 11.2, -1.2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var A = board.create('point', [1, 1], { name: '', fixed: true, visible: false });
+        var B = board.create('point', [9.2, 1], { name: '', fixed: true, visible: false });
+        var C = board.create('point', [3.5, 6.4], { name: '', fixed: true, visible: false });
+
+        // ── Triangle polygon ────────────────────────────────────────────
+        var tri = board.create('polygon', [A, B, C], {
+            fillColor: '#E0E7FF',
+            fillOpacity: 0.35,
+            borders: { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Centroid (for radial label placement) ───────────────────────
+        var cx = (1 + 9.2 + 3.5) / 3;
+        var cy = (1 + 1 + 6.4) / 3;
+
+        // Place vertex labels radially outward from centroid
+        function labelOffset(px, py, dist) {
+            var dx = px - cx;
+            var dy = py - cy;
+            var len = Math.sqrt(dx * dx + dy * dy);
+            return [px + (dx / len) * dist, py + (dy / len) * dist];
+        }
+
+        var offA = labelOffset(1, 1, 0.7);
+        var offB = labelOffset(9.2, 1, 0.7);
+        var offC = labelOffset(3.5, 6.4, 0.7);
+
+        board.create('text', [offA[0], offA[1], 'A'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:bold', fixed: true, highlight: false
+        });
+        board.create('text', [offB[0], offB[1], 'B'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:bold', fixed: true, highlight: false
+        });
+        board.create('text', [offC[0], offC[1], 'C'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:bold', fixed: true, highlight: false
+        });
+
+        // ── Angle arc at A (65°) ────────────────────────────────────────
+        var angleA = board.create('nonReflexAngle', [B, A, C], {
+            radius: 0.9,
+            fillColor: '#DC2626',
+            fillOpacity: 0.08,
+            strokeColor: '#DC2626',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false,
+            name: '',
+            withLabel: false
+        });
+
+        // Angle label along the bisector of angle A
+        var abAng = Math.atan2(B.Y() - A.Y(), B.X() - A.X());
+        var acAng = Math.atan2(C.Y() - A.Y(), C.X() - A.X());
+        var bisect = (abAng + acAng) / 2;
+        var lblR = 1.45;
+        var angLblX = A.X() + lblR * Math.cos(bisect);
+        var angLblY = A.Y() + lblR * Math.sin(bisect);
+
+        board.create('text', [angLblX, angLblY, '65^\\circ'], {
+            fontSize: 13, color: '#DC2626', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Side labels (measurement blue) ──────────────────────────────
+        // Side BC midpoint, offset outward from centroid
+        var bcMidX = (B.X() + C.X()) / 2;
+        var bcMidY = (B.Y() + C.Y()) / 2;
+        var bcOff = labelOffset(bcMidX, bcMidY, 0.65);
+
+        board.create('text', [bcOff[0], bcOff[1], '55\\text{ ft}'], {
+            fontSize: 14, color: '#3B82F6', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, cssStyle: 'font-weight:600', fixed: true, highlight: false
+        });
+
+        // Side AC midpoint, offset outward from centroid
+        var acMidX = (A.X() + C.X()) / 2;
+        var acMidY = (A.Y() + C.Y()) / 2;
+        var acOff = labelOffset(acMidX, acMidY, 0.65);
+
+        board.create('text', [acOff[0], acOff[1], '42\\text{ ft}'], {
+            fontSize: 14, color: '#3B82F6', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, cssStyle: 'font-weight:600', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
