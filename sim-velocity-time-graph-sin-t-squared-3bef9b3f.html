@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velocity-Time Graph: v(t) = 1 + 3sin(t²)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 5.5, 4.8, -3.5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        drawLabels: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: false
+        });
+
+        // ── Custom grid lines: only in the region t ≥ 0 ──────────────
+        var GRID_COL = '#D1D5DB';
+        var GRID_W = 0.8;
+        var bb = board.getBoundingBox();
+
+        // Vertical grid lines at t = 0, 1, 2, 3, 4
+        var vGridVals = [0, 1, 2, 3, 4];
+        for (var i = 0; i < vGridVals.length; i++) {
+            board.create('segment', [[vGridVals[i], bb[3]], [vGridVals[i], bb[1]]], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W, fixed: true, highlight: false, dash: 0
+            });
+        }
+
+        // Horizontal grid lines from t = 0 rightward at each integer v
+        var yMin = Math.ceil(bb[3]);
+        var yMax = Math.floor(bb[1]);
+        for (var j = yMin; j <= yMax; j++) {
+            if (j === 0) continue;
+            board.create('segment', [[0, j], [bb[2], j]], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W, fixed: true, highlight: false, dash: 0
+            });
+        }
+
+        // ── Custom x-axis labels at integers only ────────────────────
+        var xTickLabels = [1, 2, 3, 4];
+        for (var k = 0; k < xTickLabels.length; k++) {
+            board.create('text', [xTickLabels[k], -0.3, String(xTickLabels[k])], {
+                fontSize: 11, anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false, color: '#444444'
+            });
+        }
+
+        // Axis labels
+        board.create('text', [4.4, -0.35, 't \\text{ sec}'], {
+            fontSize: 14, fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [0.15, 5.1, 'v \\text{ m/s}'], {
+            fontSize: 14, fixed: true, highlight: false, useKatex: true
+        });
+
+        // Primary curve: v(t) = 1 + 3sin(t^2) on [0, 4]
+        board.create('functiongraph', [
+            function(t) { return 1 + 3 * Math.sin(t * t); },
+            0, 4
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Function label — name only
+        board.create('text', [3.6, 4.6, 'v(t)'], {
+            fontSize: 13,
+            color: '#222222',
+            useKatex: true,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
