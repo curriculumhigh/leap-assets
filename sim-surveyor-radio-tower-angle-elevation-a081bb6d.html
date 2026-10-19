@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surveyor and Radio Tower — Angle of Elevation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 550px; margin: 0; padding: 6px; height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white; border-radius: 8px; padding: 10px;
+            height: calc(100% - 20px);
+        }
+        #board { width: 100%; height: 100%; }
+
+        @keyframes blink-light {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+        .blink-anim {
+            animation: blink-light 1.5s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 18, 22, -3],
+            axis: false, grid: false,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        // ══════════════════════════════════════════════════════════════
+        // SKY BACKGROUND
+        // ══════════════════════════════════════════════════════════════
+        var skyPts = [
+            board.create('point', [-2, 18], {visible:false, name:'', fixed:true}),
+            board.create('point', [22, 18], {visible:false, name:'', fixed:true}),
+            board.create('point', [22, 2],  {visible:false, name:'', fixed:true}),
+            board.create('point', [-2, 2],  {visible:false, name:'', fixed:true})
+        ];
+        board.create('polygon', skyPts, {
+            fillColor: '#DBEAFE', fillOpacity: 0.7,
+            borders: {strokeWidth: 0}, vertices: {visible: false},
+            fixed: true, hasInnerPoints: false, highlight: false
+        });
+
+        // ── Sun (upper-left) ────────────────────────────────────────
+        var sunX = 2, sunY = 16;
+        board.create('circle', [[sunX, sunY], 1.0], {
+            fillColor: '#FBBF24', fillOpacity: 1,
+            strokeColor: '#F59E0B', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+        // Sun rays
+        var numRays = 10;
+        for (var i = 0; i < numRays; i++) {
+            var ang = (2 * Math.PI / numRays) * i;
+            var innerR = 1.2, outerR = 1.9;
+            board.create('segment', [
+                [sunX + innerR * Math.cos(ang), sunY + innerR * Math.sin(ang)],
+                [sunX + outerR * Math.cos(ang), sunY + outerR * Math.sin(ang)]
+            ], {
+                strokeColor: '#F59E0B', strokeWidth: 1.8, fixed: true, highlight: false
+            });
+        }
+
+        // ── Clouds ──────────────────────────────────────────────────
+        function drawCloud(cx, cy, scale) {
+            var offsets = [[-0.7,0], [0, 0.3], [0.7, 0.1], [0, -0.15]];
+            var radii  = [0.6, 0.7, 0.55, 0.5];
+            for (var i = 0; i < offsets.length; i++) {
+                board.create('circle', [[cx + offsets[i][0]*scale, cy + offsets[i][1]*scale], radii[i]*scale], {
+                    fillColor: '#ffffff', fillOpacity: 0.95,
+                    strokeColor: '#E5E7EB', strokeWidth: 0.5,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+        drawCloud(7, 16.5, 1.0);
+        drawCloud(16, 15.2, 0.8);
+
+        // ══════════════════════════════════════════════════════════════
+        // GROUND
+        // ══════════════════════════════════════════════════════════════
+        var groundPts = [
+            board.create('point', [-2, 2],  {visible:false, name:'', fixed:true}),
+            board.create('point', [22, 2],  {visible:false, name:'', fixed:true}),
+            board.create('point', [22, -3], {visible:false, name:'', fixed:true}),
+            board.create('point', [-2, -3], {visible:false, name:'', fixed:true})
+        ];
+        board.create('polygon', groundPts, {
+            fillColor: '#86EFAC', fillOpacity: 0.35,
+            borders: {strokeWidth: 0}, vertices: {visible: false},
+            fixed: true, hasInnerPoints: false, highlight: false
+        });
+        // Ground line
+        board.create('segment', [[-2, 2], [22, 2]], {
+            strokeColor: '#6B7280', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        // ── Grass tufts (left of surveyor) ──────────────────────────
+        function drawGrass(gx, gy) {
+            board.create('segment', [[gx, gy], [gx - 0.15, gy + 0.5]], {
+                strokeColor: '#22C55E', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('segment', [[gx, gy], [gx + 0.1, gy + 0.55]], {
+                strokeColor: '#16A34A', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('segment', [[gx, gy], [gx + 0.25, gy + 0.4]], {
+                strokeColor: '#22C55E', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+        drawGrass(0.5, 2);
+        drawGrass(1.5, 2);
+        drawGrass(2.5, 2);
+        drawGrass(0.0, 2);
+        drawGrass(-1.0, 2);
+
+        // ══════════════════════════════════════════════════════════════
+        // HILL (under tower base)
+        // ══════════════════════════════════════════════════════════════
+        var hillPts = [];
+        for (var t = -Math.PI; t <= 0; t += 0.1) {
+            var hx = 17.5 + 3.5 * Math.cos(t);
+            var hy = 2 + 2.2 * Math.sin(t + Math.PI);
+            hillPts.push(board.create('point', [hx, hy], {visible:false, name:'', fixed:true}));
+        }
+        hillPts.push(board.create('point', [21, 2], {visible:false, name:'', fixed:true}));
+        hillPts.push(board.create('point', [14, 2], {visible:false, name:'', fixed:true}));
+        board.create('polygon', hillPts, {
+            fillColor: '#4ADE80', fillOpacity: 0.5,
+            borders: {strokeWidth: 0}, vertices: {visible: false},
+            fixed: true, hasInnerPoints: false, highlight: false
+        });
+        // Hill outline
+        board.create('curve', [
+            function(tt) { return 17.5 + 3.5 * Math.cos(tt); },
+            function(tt) { return 2 + 2.2 * Math.sin(tt + Math.PI); },
+            -Math.PI, 0
+        ], {
+            strokeColor: '#16A34A', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ══════════════════════════════════════════════════════════════
+        // KEY GEOMETRY POINTS
+        // ══════════════════════════════════════════════════════════════
+        var survX = 3.5, survY = 5.0;
+        var baseX = 17.5, baseY = 4.2;
+        var topX = 17.5, topY = 15.0;
+
+        // ══════════════════════════════════════════════════════════════
+        // SURVEYOR FIGURE
+        // ══════════════════════════════════════════════════════════════
+        var sBodyX = survX;
+        // Legs
+        board.create('segment', [[sBodyX - 0.3, 2], [sBodyX, 3.2]], {
+            strokeColor: '#374151', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[sBodyX + 0.3, 2], [sBodyX, 3.2]], {
+            strokeColor: '#374151', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        // Torso
+        board.create('segment', [[sBodyX, 3.2], [sBodyX, 4.8]], {
+            strokeColor: '#374151', strokeWidth: 2.2, fixed: true, highlight: false
+        });
+        // Arms
+        board.create('segment', [[sBodyX, 4.2], [sBodyX - 0.7, 3.5]], {
+            strokeColor: '#374151', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [[sBodyX, 4.2], [sBodyX + 0.9, 5.0]], {
+            strokeColor: '#374151', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        // Clinometer
+        board.create('segment', [[sBodyX + 0.7, 4.9], [sBodyX + 1.3, 5.2]], {
+            strokeColor: '#6B7280', strokeWidth: 3, fixed: true, highlight: false
+        });
+        // Head
+        board.create('circle', [[sBodyX, 5.3], 0.45], {
+            fillColor: '#FBBF24', fillOpacity: 0.8,
+            strokeColor: '#374151', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+        // Hat
+        board.create('segment', [[sBodyX - 0.55, 5.65], [sBodyX + 0.55, 5.65]], {
+            strokeColor: '#374151', strokeWidth: 2.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[sBodyX - 0.25, 5.65], [sBodyX - 0.2, 6.1]], {
+            strokeColor: '#374151', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [[sBodyX + 0.25, 5.65], [sBodyX + 0.2, 6.1]], {
+            strokeColor: '#374151', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [[sBodyX - 0.2, 6.1], [sBodyX + 0.2, 6.1]], {
+            strokeColor: '#374151', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // ══════════════════════════════════════════════════════════════
+        // RADIO TOWER (lattice style)
+        // ══════════════════════════════════════════════════════════════
+        var twrLeft = baseX - 0.8;
+        var twrRight = baseX + 0.8;
+        var twrTopLeft = topX - 0.15;
+        var twrTopRight = topX + 0.15;
+        var twrBot = baseY;
+        var twrTop = topY;
+        var towerColor = '#6B7280';
+
+        // Left leg
+        board.create('segment', [[twrLeft, twrBot], [twrTopLeft, twrTop]], {
+            strokeColor: towerColor, strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        // Right leg
+        board.create('segment', [[twrRight, twrBot], [twrTopRight, twrTop]], {
+            strokeColor: towerColor, strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // Cross braces (lattice)
+        var numBraces = 8;
+        for (var b = 0; b < numBraces; b++) {
+            var frac = b / numBraces;
+            var fracNext = (b + 1) / numBraces;
+            var lx1 = twrLeft + (twrTopLeft - twrLeft) * frac;
+            var ly1 = twrBot + (twrTop - twrBot) * frac;
+            var rx1 = twrRight + (twrTopRight - twrRight) * frac;
+            var lx2 = twrLeft + (twrTopLeft - twrLeft) * fracNext;
+            var ly2 = twrBot + (twrTop - twrBot) * fracNext;
+            var rx2 = twrRight + (twrTopRight - twrRight) * fracNext;
+
+            // Horizontal
+            board.create('segment', [[lx1, ly1], [rx1, ly1]], {
+                strokeColor: towerColor, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            // Cross X
+            board.create('segment', [[lx1, ly1], [rx2, ly2]], {
+                strokeColor: towerColor, strokeWidth: 0.8, fixed: true, highlight: false
+            });
+            board.create('segment', [[rx1, ly1], [lx2, ly2]], {
+                strokeColor: towerColor, strokeWidth: 0.8, fixed: true, highlight: false
+            });
+        }
+        // Top horizontal
+        board.create('segment', [[twrTopLeft, twrTop], [twrTopRight, twrTop]], {
+            strokeColor: towerColor, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        // Antenna mast
+        board.create('segment', [[topX, twrTop], [topX, twrTop + 1.2]], {
+            strokeColor: '#374151', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        // Antenna cross pieces
+        board.create('segment', [[topX - 0.35, twrTop + 0.5], [topX + 0.35, twrTop + 0.5]], {
+            strokeColor: '#374151', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[topX - 0.2, twrTop + 0.9], [topX + 0.2, twrTop + 0.9]], {
+            strokeColor: '#374151', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        // Blinking red light at top of antenna
+        var blinkLight = board.create('circle', [[topX, twrTop + 1.35], 0.2], {
+            fillColor: '#EF4444', fillOpacity: 1,
+            strokeColor: '#DC2626', strokeWidth: 1,
+            fixed: true, highlight: false
+        });
+        // Glow ring
+        var glowLight = board.create('circle', [[topX, twrTop + 1.35], 0.4], {
+            fillColor: '#FCA5A5', fillOpacity: 0.3,
+            strokeColor: 'none', strokeWidth: 0,
+            fixed: true, highlight: false
+        });
+
+        // Blink animation via JS
+        var blinkOn = true;
+        setInterval(function() {
+            blinkOn = !blinkOn;
+            blinkLight.setAttribute({fillOpacity: blinkOn ? 1 : 0.15});
+            glowLight.setAttribute({fillOpacity: blinkOn ? 0.3 : 0});
+        }, 750);
+
+        // ══════════════════════════════════════════════════════════════
+        // RIGHT TRIANGLE
+        // ══════════════════════════════════════════════════════════════
+        var triA = [survX, survY];
+        var triB = [baseX, survY];
+        var triC = [baseX, topY];
+
+        // Horizontal leg (adjacent side)
+        board.create('segment', [triA, triB], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Vertical leg (opposite side)
+        board.create('segment', [triB, triC], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Hypotenuse (line of sight) — dashed
+        board.create('segment', [triA, triC], {
+            strokeColor: '#222222', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at tower base (triB) ─────────────────
+        var sqSize = 0.6;
+        board.create('segment', [[triB[0], triB[1] + sqSize], [triB[0] - sqSize, triB[1] + sqSize]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[triB[0] - sqSize, triB[1] + sqSize], [triB[0] - sqSize, triB[1]]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── 65° angle arc at surveyor's position ────────────────────
+        var angleRad = 65 * Math.PI / 180;
+        var arcRadius = 2.5;
+        board.create('curve', [
+            function(t) { return triA[0] + arcRadius * Math.cos(t); },
+            function(t) { return triA[1] + arcRadius * Math.sin(t); },
+            0, angleRad
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // 65° label
+        board.create('text', [
+            triA[0] + (arcRadius + 0.6) * Math.cos(angleRad / 2),
+            triA[1] + (arcRadius + 0.6) * Math.sin(angleRad / 2),
+            '65^\\circ'
+        ], {
+            useKatex: true, fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ══════════════════════════════════════════════════════════════
+        // DIMENSION LABELS
+        // ══════════════════════════════════════════════════════════════
+
+        // ── "150 ft" along the horizontal (below the leg) ───────────
+        var dimY = triA[1] - 1.3;
+        // Dimension line with serifs
+        board.create('segment', [[survX + 0.5, dimY], [baseX - 0.5, dimY]], {
+            strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: {type: 2, size: 5}, lastArrow: {type: 2, size: 5}
+        });
+        // Serif ticks
+        board.create('segment', [[survX + 0.5, dimY - 0.3], [survX + 0.5, dimY + 0.3]], {
+            strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[baseX - 0.5, dimY - 0.3], [baseX - 0.5, dimY + 0.3]], {
+            strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        // Label
+        board.create('text', [(survX + baseX) / 2, dimY - 0.7, '150 \\text{ ft}'], {
+            useKatex: true, fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ── "h" along the vertical (to the right of the leg) ────────
+        var dimX = triB[0] + 1.5;
+        board.create('segment', [[dimX, triB[1] + 0.5], [dimX, triC[1] - 0.5]], {
+            strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: {type: 2, size: 5}, lastArrow: {type: 2, size: 5}
+        });
+        // Serif ticks
+        board.create('segment', [[dimX - 0.3, triB[1] + 0.5], [dimX + 0.3, triB[1] + 0.5]], {
+            strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[dimX - 0.3, triC[1] - 0.5], [dimX + 0.3, triC[1] - 0.5]], {
+            strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        // Label
+        board.create('text', [dimX + 0.7, (triB[1] + triC[1]) / 2, 'h'], {
+            useKatex: true, fontSize: 16, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-style: italic;'
+        });
+
+    </script>
+</body>
+</html>
