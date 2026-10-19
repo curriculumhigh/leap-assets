@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle DEF</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var angleD_deg = 35;
+        var DE = 10;
+        var EF = 14;
+
+        var angleD = angleD_deg * Math.PI / 180;
+        var sinF = DE * Math.sin(angleD) / EF;
+        var angleF = Math.asin(sinF);
+        var angleE = Math.PI - angleD - angleF;
+
+        var edDir = 140 * Math.PI / 180;
+        var efDir = edDir - angleE;
+
+        var Ex = 0, Ey = 0;
+        var Dx = Ex + DE * Math.cos(edDir);
+        var Dy = Ey + DE * Math.sin(edDir);
+        var Fx = Ex + EF * Math.cos(efDir);
+        var Fy = Ey + EF * Math.sin(efDir);
+
+        var allX = [Dx, Ex, Fx];
+        var allY = [Dy, Ey, Fy];
+        var minX = Math.min.apply(null, allX) - 2.0;
+        var maxX = Math.max.apply(null, allX) + 2.0;
+        var minY = Math.min.apply(null, allY) - 2.0;
+        var maxY = Math.max.apply(null, allY) + 2.0;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [minX, maxY, maxX, minY],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var ptD = board.create('point', [Dx, Dy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var ptE = board.create('point', [Ex, Ey], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var ptF = board.create('point', [Fx, Fy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        board.create('polygon', [ptD, ptE, ptF], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('nonReflexAngle', [ptE, ptD, ptF], {
+            radius: 1.2,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, highlight: false,
+            name: '', withLabel: false
+        });
+
+        var dirDE = Math.atan2(Ey - Dy, Ex - Dx);
+        var dirDF = Math.atan2(Fy - Dy, Fx - Dx);
+        var bisD = (function() {
+            var a1 = dirDE;
+            var a2 = dirDF;
+            var diff = a2 - a1;
+            if (diff > Math.PI) diff -= 2 * Math.PI;
+            if (diff < -Math.PI) diff += 2 * Math.PI;
+            return a1 + diff / 2;
+        })();
+        var labelDist = 1.9;
+        board.create('text', [
+            Dx + labelDist * Math.cos(bisD),
+            Dy + labelDist * Math.sin(bisD),
+            '35\u00B0'
+        ], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#DC2626',
+            cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+
+        function outwardLabel(p1x, p1y, p2x, p2y, oppX, oppY, offset) {
+            var mx = (p1x + p2x) / 2;
+            var my = (p1y + p2y) / 2;
+            var dx = p2x - p1x;
+            var dy = p2y - p1y;
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var n1x = -dy / len, n1y = dx / len;
+            var toOppX = oppX - mx, toOppY = oppY - my;
+            var dot = n1x * toOppX + n1y * toOppY;
+            if (dot > 0) { n1x = -n1x; n1y = -n1y; }
+            return [mx + offset * n1x, my + offset * n1y];
+        }
+
+        var labelDE = outwardLabel(Dx, Dy, Ex, Ey, Fx, Fy, 0.9);
+        board.create('text', [labelDE[0], labelDE[1], '10'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#3B82F6',
+            cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+
+        var labelEF = outwardLabel(Ex, Ey, Fx, Fy, Dx, Dy, 0.9);
+        board.create('text', [labelEF[0], labelEF[1], '14'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#3B82F6',
+            cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [Dx - 0.6, Dy + 0.6, '<b>D</b>'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 15, color: '#222222',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Ex, Ey - 0.8, '<b>E</b>'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 15, color: '#222222',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Fx + 0.6, Fy + 0.6, '<b>F</b>'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 15, color: '#222222',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
