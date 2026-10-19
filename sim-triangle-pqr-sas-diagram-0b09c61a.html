@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle PQR</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        // --- Compute vertex positions ---
+        var s = 0.65;
+        var QR = 23 * s;
+        var PQ = 14 * s;
+        var angQ = 67 * Math.PI / 180;
+
+        // Q at bottom-left
+        var Qx = 1, Qy = 1;
+        // R at bottom-right
+        var Rx = Qx + QR, Ry = Qy;
+        // P at upper-left
+        var Px = Qx + PQ * Math.cos(angQ);
+        var Py = Qy + PQ * Math.sin(angQ);
+
+        // Bounding box with margin
+        var margin = 2.5;
+        var xMin = Math.min(Qx, Rx, Px) - margin;
+        var xMax = Math.max(Qx, Rx, Px) + margin;
+        var yMin = Math.min(Qy, Ry, Py) - margin;
+        var yMax = Math.max(Qy, Ry, Py) + margin;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [xMin, yMax, xMax, yMin],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // --- Vertices (small fixed points) ---
+        var Q = board.create('point', [Qx, Qy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var R = board.create('point', [Rx, Ry], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var P = board.create('point', [Px, Py], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // --- Triangle edges (no fill) ---
+        var tri = board.create('polygon', [Q, R, P], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // --- Vertex labels (bold italic, offset for readability) ---
+        board.create('text', [Qx - 0.9, Qy - 0.7, '<b><i>Q</i></b>'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+        board.create('text', [Rx + 0.9, Ry - 0.7, '<b><i>R</i></b>'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+        board.create('text', [Px - 0.7, Py + 0.7, '<b><i>P</i></b>'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // --- Side label: QR = 23 (centered along bottom edge, offset below) ---
+        var midQRx = (Qx + Rx) / 2;
+        var midQRy = (Qy + Ry) / 2;
+        board.create('text', [midQRx, midQRy - 1.0, '23'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+
+        // --- Side label: PQ = 14 (centered along left edge, offset to the left) ---
+        var midPQx = (Px + Qx) / 2;
+        var midPQy = (Py + Qy) / 2;
+        var dxPQ = Px - Qx;
+        var dyPQ = Py - Qy;
+        var lenPQ = Math.sqrt(dxPQ * dxPQ + dyPQ * dyPQ);
+        var nxPQ = -dyPQ / lenPQ;
+        var nyPQ = dxPQ / lenPQ;
+        board.create('text', [midPQx + nxPQ * 1.0, midPQy + nyPQ * 1.0, '14'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+
+        // --- Angle arc at Q = 67° ---
+        var angleArc = board.create('nonReflexAngle', [R, Q, P], {
+            radius: 1.4,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, highlight: false,
+            name: '', withLabel: false
+        });
+
+        // --- Angle label: 67° along the bisector ---
+        var dirQR_x = (Rx - Qx) / QR;
+        var dirQR_y = (Ry - Qy) / QR;
+        var dirQP_x = (Px - Qx) / PQ;
+        var dirQP_y = (Py - Qy) / PQ;
+        var bisX = dirQR_x + dirQP_x;
+        var bisY = dirQR_y + dirQP_y;
+        var bisLen = Math.sqrt(bisX * bisX + bisY * bisY);
+        bisX /= bisLen;
+        bisY /= bisLen;
+        var labelDist = 2.2;
+        board.create('text', [Qx + bisX * labelDist, Qy + bisY * labelDist, '67^\circ'], {
+            fontSize: 13, color: '#DC2626', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+    </script>
+</body>
+</html>
