@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle ABC</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.2, 19.72, 19.2, -2.2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var B = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var C = board.create('point', [17, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var A = board.create('point', [7.35, 17.52], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // ── Triangle (no fill) ──────────────────────────────────────────
+        board.create('polygon', [B, C, A], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Make vertex points visible again (polygon hides them)
+        B.setAttribute({ visible: true });
+        C.setAttribute({ visible: true });
+        A.setAttribute({ visible: true });
+
+        // ── Vertex labels ───────────────────────────────────────────────
+        board.create('text', [7.35, 17.52 + 1.1, 'A'], {
+            anchorX: 'middle', anchorY: 'bottom',
+            fontSize: 15, color: '#222222', fontWeight: 'bold',
+            fixed: true, highlight: false
+        });
+        board.create('text', [0 - 1.0, 0 - 0.6, 'B'], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 15, color: '#222222', fontWeight: 'bold',
+            fixed: true, highlight: false
+        });
+        board.create('text', [17 + 1.0, 0 - 0.6, 'C'], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 15, color: '#222222', fontWeight: 'bold',
+            fixed: true, highlight: false
+        });
+
+        // ── Outward normal helper ───────────────────────────────────────
+        var cx = (0 + 17 + 7.35) / 3;
+        var cy = (0 + 0 + 17.52) / 3;
+
+        function outwardNormal(p1x, p1y, p2x, p2y, offset) {
+            var mx = (p1x + p2x) / 2;
+            var my = (p1y + p2y) / 2;
+            var dx = p2x - p1x;
+            var dy = p2y - p1y;
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var nx = -dy / len;
+            var ny = dx / len;
+            var toCx = cx - mx;
+            var toCy = cy - my;
+            if (nx * toCx + ny * toCy > 0) {
+                nx = -nx;
+                ny = -ny;
+            }
+            return { x: mx + nx * offset, y: my + ny * offset };
+        }
+
+        // ── Side labels (offset along outward normal) ───────────────────
+        var posA = outwardNormal(0, 0, 17, 0, 1.4);
+        board.create('text', [posA.x, posA.y, 'a = 17'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#555555', useKatex: true,
+            fixed: true, highlight: false
+        });
+
+        var posC = outwardNormal(7.35, 17.52, 0, 0, 1.4);
+        board.create('text', [posC.x, posC.y, 'c = 19'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#555555', useKatex: true,
+            fixed: true, highlight: false
+        });
+
+        var posB = outwardNormal(7.35, 17.52, 17, 0, 1.4);
+        board.create('text', [posB.x, posB.y, 'b = 20'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#555555', useKatex: true,
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
