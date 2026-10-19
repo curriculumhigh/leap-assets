@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drone Triangle Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.8, 3.4, 12, -1.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertex coordinates ──────────────────────────────────────────
+        var scale = 10 / 380;
+        var angRad = 14 * Math.PI / 180;
+        var droneX = 200 * scale * Math.cos(angRad);  // ≈ 5.12
+        var droneY = 200 * scale * Math.sin(angRad);  // ≈ 1.27
+
+        // ── Vertices (small fixed structural points) ────────────────────
+        var LP = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var RT = board.create('point', [10, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var DR = board.create('point', [droneX, droneY], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // ── Polygon (unfilled, dark gray edges) ─────────────────────────
+        board.create('polygon', [LP, RT, DR], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Vertex labels ───────────────────────────────────────────────
+        board.create('text', [0, -0.5, 'Launch Pad'], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 13, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [10, -0.5, 'Relay Tower'], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 13, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [droneX, droneY + 0.35, 'Drone'], {
+            anchorX: 'middle', anchorY: 'bottom',
+            fontSize: 13, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Side labels ─────────────────────────────────────────────────
+        // Bottom side: "380 m" centered below
+        board.create('text', [5, -0.35, '380 m'], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        // Upper-left side (LP → Drone): "200 m"
+        var midLPDx = droneX / 2;
+        var midLPDy = droneY / 2;
+        var dxLD = droneX;
+        var dyLD = droneY;
+        var lenLD = Math.sqrt(dxLD * dxLD + dyLD * dyLD);
+        var perpLDx = -dyLD / lenLD;
+        var perpLDy = dxLD / lenLD;
+        var offsetLD = 0.4;
+        board.create('text', [midLPDx + perpLDx * offsetLD, midLPDy + perpLDy * offsetLD, '200 m'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        // Upper-right side (Drone → RT): "?"
+        var midDRx = (droneX + 10) / 2;
+        var midDRy = droneY / 2;
+        var dxDR = 10 - droneX;
+        var dyDR = 0 - droneY;
+        var lenDR = Math.sqrt(dxDR * dxDR + dyDR * dyDR);
+        var perpDRx = -dyDR / lenDR;
+        var perpDRy = dxDR / lenDR;
+        var offsetDR = 0.4;
+        board.create('text', [midDRx + perpDRx * offsetDR, midDRy + perpDRy * offsetDR, '?'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 16, color: '#888888', fixed: true, highlight: false,
+            cssStyle: 'font-weight:700'
+        });
+
+        // ── Angle arc at Launch Pad (14°) ───────────────────────────────
+        board.create('nonReflexAngle', [RT, LP, DR], {
+            radius: 0.9,
+            fillColor: '#DC2626', fillOpacity: 0.06,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Angle label along the bisector
+        var bisectorAngle = angRad / 2;
+        var labelR = 1.3;
+        board.create('text', [
+            labelR * Math.cos(bisectorAngle),
+            labelR * Math.sin(bisectorAngle),
+            '14\\degree'
+        ], {
+            anchorX: 'left', anchorY: 'middle',
+            fontSize: 13, color: '#DC2626', fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        // ── "Not drawn to scale" note ───────────────────────────────────
+        board.create('text', [11.5, -1.4, 'Not drawn to scale'], {
+            anchorX: 'right', anchorY: 'bottom',
+            fontSize: 10, color: '#aaaaaa', fixed: true, highlight: false,
+            cssStyle: 'font-style:italic'
+        });
+    </script>
+</body>
+</html>
