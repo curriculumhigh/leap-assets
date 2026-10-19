@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ski Lift Right Triangle Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 11, 13.5, -1],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertex coordinates ──────────────────────────────────────────
+        var Tx = 2, Ty = 8.5;
+        var Bx = 2, By = 2;
+        var Gx = 10.5, Gy = 2;
+
+        // ── Vertices (small fixed dots) ─────────────────────────────────
+        var T = board.create('point', [Tx, Ty], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+        var B = board.create('point', [Bx, By], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+        var G = board.create('point', [Gx, Gy], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+
+        // ── Vertex labels ───────────────────────────────────────────────
+        board.create('text', [Tx - 0.15, Ty + 0.55, 'T'], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+        board.create('text', [Bx - 0.55, By - 0.15, 'B'], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+        board.create('text', [Gx + 0.55, Gy - 0.15, 'G'], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+
+        // ── Triangle sides ──────────────────────────────────────────────
+        board.create('segment', [T, B], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [B, G], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [T, G], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Side label: "14 ft" on T–B (left side) ─────────────────────
+        board.create('text', [Tx - 0.9, (Ty + By) / 2, '14\\text{ ft}'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Hypotenuse label: "ski lift cable" (italic) ─────────────────
+        var midHx = (Tx + Gx) / 2;
+        var midHy = (Ty + Gy) / 2;
+        var dx = Gx - Tx;
+        var dy = Gy - Ty;
+        var hypLen = Math.sqrt(dx * dx + dy * dy);
+        var nx = -dy / hypLen;
+        var ny = dx / hypLen;
+        var offsetDist = 0.6;
+
+        board.create('text', [midHx + nx * offsetDist, midHy + ny * offsetDist, '\\textit{ski lift cable}'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at B ─────────────────────────────────────
+        var raSize = 0.5;
+        var raP1 = board.create('point', [Bx, By + raSize], { visible: false, fixed: true, name: '' });
+        var raP2 = board.create('point', [Bx + raSize, By + raSize], { visible: false, fixed: true, name: '' });
+        var raP3 = board.create('point', [Bx + raSize, By], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [raP1, raP2], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [raP2, raP3], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Dashed horizontal reference line from T to the right ────────
+        var dashEnd = board.create('point', [Gx + 1.5, Ty], { visible: false, fixed: true, name: '' });
+        board.create('segment', [T, dashEnd], {
+            strokeColor: '#555555', strokeWidth: 1.0, dash: 3,
+            fixed: true, highlight: false
+        });
+
+        // ── 38° angle-of-depression arc at T ───────────────────────────
+        var arcRadius = 1.8;
+
+        var horizPt = board.create('point', [Tx + arcRadius, Ty], { visible: false, fixed: true, name: '' });
+
+        var angTG = Math.atan2(Gy - Ty, Gx - Tx);
+        var arcPtOnHyp = board.create('point', [
+            Tx + arcRadius * Math.cos(angTG),
+            Ty + arcRadius * Math.sin(angTG)
+        ], { visible: false, fixed: true, name: '' });
+
+        board.create('arc', [T, arcPtOnHyp, horizPt], {
+            strokeColor: '#2563EB', strokeWidth: 1.5, fixed: true, highlight: false,
+            fillColor: '#2563EB', fillOpacity: 0.06
+        });
+
+        var bisectorAngle = angTG / 2;
+        var labelR = arcRadius + 0.6;
+        board.create('text', [
+            Tx + labelR * Math.cos(bisectorAngle),
+            Ty + labelR * Math.sin(bisectorAngle),
+            '38^\\circ'
+        ], {
+            fontSize: 13, color: '#2563EB', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
