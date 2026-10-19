@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open-Pit Quarry Cross-Section</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 550px; margin: 0; padding: 6px; height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px);
+        }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 10.5, 15, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Coordinates ─────────────────────────────────────────────────
+        var Bx = 1, By = 1;
+        var Cx = 11, Cy = 1;
+        var wallHeight = 10 * Math.tan(37 * Math.PI / 180); // ≈ 7.536
+        var Ax = 1, Ay = By + wallHeight; // ≈ 8.536
+
+        // ── Hidden anchor points ────────────────────────────────────────
+        var pB = board.create('point', [Bx, By], { visible: false, name: '', fixed: true });
+        var pC = board.create('point', [Cx, Cy], { visible: false, name: '', fixed: true });
+        var pA = board.create('point', [Ax, Ay], { visible: false, name: '', fixed: true });
+
+        // ── Wall and floor extensions (rock surfaces) ───────────────────
+        // Ground extends left of A (above wall top) and right of C
+        var extLen = 1.5;
+        // Wall extension above A
+        board.create('segment', [[Ax, Ay], [Ax, Ay + 1.2]], {
+            strokeColor: '#222222', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        // Wall extension below B
+        board.create('segment', [[Bx, By], [Bx, By - 0.8]], {
+            strokeColor: '#222222', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        // Ground extension left of A (horizontal at ground level = Ay)
+        board.create('segment', [[Ax, Ay], [Ax - extLen, Ay]], {
+            strokeColor: '#222222', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        // Ground extension right of C
+        board.create('segment', [[Cx, Cy], [Cx + extLen, Cy]], {
+            strokeColor: '#222222', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Triangle sides ──────────────────────────────────────────────
+        // Wall: B → A
+        board.create('segment', [pB, pA], {
+            strokeColor: '#222222', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        // Floor: B → C
+        board.create('segment', [pB, pC], {
+            strokeColor: '#222222', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        // Sun ray: C → A
+        board.create('segment', [pC, pA], {
+            strokeColor: '#D97706', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Hatch marks along wall (left side) ─────────────────────────
+        var hatchLen = 0.45;
+        var hatchCount = 12;
+        var wallStart = By - 0.6;
+        var wallEnd = Ay + 0.9;
+        var wallSpan = wallEnd - wallStart;
+        var i;
+        for (i = 0; i < hatchCount; i++) {
+            var hy = wallStart + (i + 0.5) * wallSpan / hatchCount;
+            board.create('segment', [
+                [Ax - hatchLen * 0.7, hy - hatchLen * 0.5],
+                [Ax + 0.05, hy + hatchLen * 0.5]
+            ], {
+                strokeColor: '#888888', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+
+        // ── Hatch marks along floor (bottom) ───────────────────────────
+        var floorHatchCount = 18;
+        var floorStart = Bx - 0.1;
+        var floorEnd = Cx + extLen;
+        var floorSpan = floorEnd - floorStart;
+        for (i = 0; i < floorHatchCount; i++) {
+            var hx = floorStart + (i + 0.5) * floorSpan / floorHatchCount;
+            board.create('segment', [
+                [hx - hatchLen * 0.5, By - hatchLen * 0.7],
+                [hx + hatchLen * 0.5, By + 0.05]
+            ], {
+                strokeColor: '#888888', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+
+        // ── Right-angle marker at B (red square) ───────────────────────
+        var sqSize = 0.55;
+        board.create('polygon', [
+            [Bx, By],
+            [Bx + sqSize, By],
+            [Bx + sqSize, By + sqSize],
+            [Bx, By + sqSize]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Angle arc at C (37°) ───────────────────────────────────────
+        var pCfloor = board.create('point', [Cx - 2, Cy], { visible: false, name: '', fixed: true });
+
+        board.create('nonReflexAngle', [pCfloor, pC, pA], {
+            radius: 1.4,
+            fillColor: '#DC2626', fillOpacity: 0.06,
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false,
+            highlight: false
+        });
+
+        // Angle label: 37°
+        var angLabelR = 1.9;
+        var angMid = (37 * Math.PI / 180) / 2;
+        board.create('text', [
+            Cx - angLabelR * Math.cos(angMid),
+            Cy + angLabelR * Math.sin(angMid),
+            '37^\\circ'
+        ], {
+            useKatex: true, fontSize: 13, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Dimension arrow: depth d (left of wall) ────────────────────
+        var dimXwall = Bx - 1.4;
+        var arrowInset = 0.15;
+        board.create('arrow', [
+            [dimXwall, By + arrowInset],
+            [dimXwall, Ay - arrowInset]
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 },
+            firstArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[dimXwall - 0.25, By], [dimXwall + 0.25, By]], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[dimXwall - 0.25, Ay], [dimXwall + 0.25, Ay]], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [dimXwall - 0.6, (By + Ay) / 2, 'd'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-style: italic;'
+        });
+
+        // ── Dimension arrow: 420 m (below floor) ───────────────────────
+        var dimYfloor = By - 1.4;
+        board.create('arrow', [
+            [Bx + arrowInset, dimYfloor],
+            [Cx - arrowInset, dimYfloor]
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 },
+            firstArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[Bx, dimYfloor - 0.25], [Bx, dimYfloor + 0.25]], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[Cx, dimYfloor - 0.25], [Cx, dimYfloor + 0.25]], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [(Bx + Cx) / 2, dimYfloor - 0.6, '420 \\text{ m}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Parallel sun ray lines ──────────────────────────────────────
+        var dx = Ax - Cx;
+        var dy = Ay - Cy;
+        var rayLen = Math.sqrt(dx * dx + dy * dy);
+        var ux = dx / rayLen;
+        var uy = dy / rayLen;
+        var px = uy;
+        var py = -ux;
+
+        var offsets = [1.3, 2.5, 3.7];
+        var raySegLen = 5.0;
+        var rayBaseX = (Ax + Cx) / 2 + 2.5;
+        var rayBaseY = (Ay + Cy) / 2 + 1.5;
+
+        for (i = 0; i < offsets.length; i++) {
+            var ox = rayBaseX + offsets[i] * px;
+            var oy = rayBaseY + offsets[i] * py;
+            var x1 = ox - (raySegLen / 2) * ux;
+            var y1 = oy - (raySegLen / 2) * uy;
+            var x2 = ox + (raySegLen / 2) * ux;
+            var y2 = oy + (raySegLen / 2) * uy;
+            board.create('arrow', [
+                [x2, y2], [x1, y1]
+            ], {
+                strokeColor: '#D97706', strokeWidth: 1.2, fixed: true, highlight: false,
+                lastArrow: { type: 2, size: 4 }
+            });
+        }
+
+        // ── Sun label ───────────────────────────────────────────────────
+        board.create('text', [12.5, 9.2, '\\text{Sun}'], {
+            useKatex: true, fontSize: 15, color: '#D97706',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold;'
+        });
+
+        // ── Sun icon (small circle) ─────────────────────────────────────
+        board.create('circle', [[12.5, 8.3], 0.5], {
+            strokeColor: '#D97706', strokeWidth: 1.5,
+            fillColor: '#FCD34D', fillOpacity: 0.6,
+            fixed: true, highlight: false
+        });
+        var sunCx = 12.5, sunCy = 8.3, sunR = 0.7, sunRayLen = 0.35;
+        var sunRayAngles = [0, 45, 90, 135, 180, 225, 270, 315];
+        for (i = 0; i < sunRayAngles.length; i++) {
+            var sa = sunRayAngles[i] * Math.PI / 180;
+            board.create('segment', [
+                [sunCx + sunR * Math.cos(sa), sunCy + sunR * Math.sin(sa)],
+                [sunCx + (sunR + sunRayLen) * Math.cos(sa), sunCy + (sunR + sunRayLen) * Math.sin(sa)]
+            ], {
+                strokeColor: '#D97706', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+        }
+
+        // ── Vertex labels ───────────────────────────────────────────────
+        board.create('text', [Ax - 0.6, Ay + 0.5, '\\textbf{A}'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Bx - 0.6, By - 0.5, '\\textbf{B}'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Cx + 0.5, Cy - 0.5, '\\textbf{C}'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
