@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle GHI</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 8.5, 11, -2.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertex coordinates (deliberately NOT to scale) ──────────────
+        var Gx = 1, Gy = 1;
+        var Ix = 9, Iy = 1;
+        var Hx = 2.2, Hy = 7;
+
+        // ── Vertices (invisible points) ─────────────────────────────────
+        var G = board.create('point', [Gx, Gy], { visible: false, fixed: true, name: '' });
+        var H = board.create('point', [Hx, Hy], { visible: false, fixed: true, name: '' });
+        var I = board.create('point', [Ix, Iy], { visible: false, fixed: true, name: '' });
+
+        // ── Triangle sides (solid black segments) ───────────────────────
+        board.create('segment', [G, H], { strokeColor: '#222222', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [H, I], { strokeColor: '#222222', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [G, I], { strokeColor: '#222222', strokeWidth: 2, fixed: true, highlight: false });
+
+        // ── Angle arc at G (red) ────────────────────────────────────────
+        board.create('nonReflexAngle', [I, G, H], {
+            radius: 1.0,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false,
+            highlight: false
+        });
+
+        // Angle label along bisector
+        var angGI = Math.atan2(Iy - Gy, Ix - Gx);
+        var angGH = Math.atan2(Hy - Gy, Hx - Gx);
+        var bisector = (angGI + angGH) / 2;
+        var labelR = 1.5;
+        board.create('text', [
+            Gx + labelR * Math.cos(bisector),
+            Gy + labelR * Math.sin(bisector),
+            '42^\\circ'
+        ], {
+            useKatex: true, fontSize: 13, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Vertex labels ───────────────────────────────────────────────
+        board.create('text', [Gx - 0.6, Gy - 0.5, '\\textbf{G}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Hx - 0.5, Hy + 0.5, '\\textbf{H}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Ix + 0.6, Iy - 0.5, '\\textbf{I}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Side labels (blue, along outward normal) ────────────────────
+        // Side g = HI (opposite G) — label offset outward from triangle
+        var midHIx = (Hx + Ix) / 2;
+        var midHIy = (Hy + Iy) / 2;
+        var dxHI = Ix - Hx, dyHI = Iy - Hy;
+        var nxHI = -dyHI, nyHI = dxHI;
+        var lenHI = Math.sqrt(nxHI * nxHI + nyHI * nyHI);
+        nxHI /= lenHI; nyHI /= lenHI;
+        var toGx = Gx - midHIx, toGy = Gy - midHIy;
+        var dot = nxHI * toGx + nyHI * toGy;
+        if (dot > 0) { nxHI = -nxHI; nyHI = -nyHI; }
+        var offsetDist = 0.7;
+        board.create('text', [
+            midHIx + nxHI * offsetDist,
+            midHIy + nyHI * offsetDist,
+            'g = 20'
+        ], {
+            useKatex: true, fontSize: 13, color: '#3B82F6',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Side h = GI (opposite H) — label offset outward (below)
+        var midGIx = (Gx + Ix) / 2;
+        var midGIy = (Gy + Iy) / 2;
+        var dxGI = Ix - Gx, dyGI = Iy - Gy;
+        var nxGI = -dyGI, nyGI = dxGI;
+        var lenGI = Math.sqrt(nxGI * nxGI + nyGI * nyGI);
+        nxGI /= lenGI; nyGI /= lenGI;
+        var toHx = Hx - midGIx, toHy = Hy - midGIy;
+        var dotH = nxGI * toHx + nyGI * toHy;
+        if (dotH > 0) { nxGI = -nxGI; nyGI = -nyGI; }
+        board.create('text', [
+            midGIx + nxGI * offsetDist,
+            midGIy + nyGI * offsetDist,
+            'h = 28'
+        ], {
+            useKatex: true, fontSize: 13, color: '#3B82F6',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── "Not drawn to scale" note ───────────────────────────────────
+        board.create('text', [10.5, -1.8, 'Not drawn to scale'], {
+            fontSize: 11, color: '#999999',
+            anchorX: 'right', anchorY: 'middle',
+            cssStyle: 'font-style: italic;',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
