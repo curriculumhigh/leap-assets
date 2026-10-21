@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Similar Pyramids</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 10.5, 16, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_OUTLINE = '#555555';
+        var COL_FACE_FRONT = '#E5E7EB';
+        var COL_FACE_SIDE = '#D1D5DB';
+        var COL_HEIGHT = '#DC2626';
+        var COL_LABEL = '#222222';
+
+        // ── Pyramid A (left, larger) ────────────────────────────────────
+        var A_cx = 4, A_cy = 1;
+        var A_h = 7;
+        var A_bw = 3.5;
+        var A_bd = 1.4;
+
+        var A_bl = [A_cx - A_bw, A_cy];
+        var A_br = [A_cx + A_bw, A_cy];
+        var A_tl = [A_cx - A_bw + A_bd, A_cy + A_bd];
+        var A_tr = [A_cx + A_bw + A_bd, A_cy + A_bd];
+        var A_apex = [A_cx + A_bd * 0.5, A_cy + A_h];
+
+        var A_base_center = [(A_bl[0] + A_br[0] + A_tl[0] + A_tr[0]) / 4,
+                             (A_bl[1] + A_br[1] + A_tl[1] + A_tr[1]) / 4];
+
+        function pt(coords) {
+            return board.create('point', coords, { visible: false, fixed: true, name: '' });
+        }
+
+        var pA_bl = pt(A_bl), pA_br = pt(A_br), pA_tl = pt(A_tl), pA_tr = pt(A_tr), pA_apex = pt(A_apex);
+        var pA_bc = pt(A_base_center);
+
+        // Back base edges (dashed)
+        board.create('segment', [pA_tl, pA_tr], { strokeColor: COL_OUTLINE, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false });
+        board.create('segment', [pA_tl, pA_bl], { strokeColor: COL_OUTLINE, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false });
+        board.create('segment', [pA_tr, pA_br], { strokeColor: COL_OUTLINE, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false });
+
+        board.create('segment', [pA_tl, pA_apex], { strokeColor: COL_OUTLINE, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false });
+
+        // Faces
+        board.create('polygon', [pA_bl, pA_apex, pA_tl], {
+            fillColor: COL_FACE_SIDE, fillOpacity: 0.5,
+            borders: { visible: false }, vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        board.create('polygon', [pA_br, pA_apex, pA_tr], {
+            fillColor: COL_FACE_SIDE, fillOpacity: 0.35,
+            borders: { visible: false }, vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        board.create('polygon', [pA_bl, pA_br, pA_apex], {
+            fillColor: COL_FACE_FRONT, fillOpacity: 0.6,
+            borders: { visible: false }, vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Front base edge
+        board.create('segment', [pA_bl, pA_br], { strokeColor: COL_OUTLINE, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Front edges to apex
+        board.create('segment', [pA_bl, pA_apex], { strokeColor: COL_OUTLINE, strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('segment', [pA_br, pA_apex], { strokeColor: COL_OUTLINE, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Back-right to apex
+        board.create('segment', [pA_tr, pA_apex], { strokeColor: COL_OUTLINE, strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // Height line (dashed, red)
+        board.create('segment', [pA_apex, pA_bc], {
+            strokeColor: COL_HEIGHT, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Pyramid B (right, smaller) — scale factor 6/15 = 0.4 ───────
+        var scale = 6 / 15;
+        var B_cx = 11.5, B_cy = 1;
+        var B_h = A_h * scale;
+        var B_bw = A_bw * scale;
+        var B_bd = A_bd * scale;
+
+        var B_bl = [B_cx - B_bw, B_cy];
+        var B_br = [B_cx + B_bw, B_cy];
+        var B_tl = [B_cx - B_bw + B_bd, B_cy + B_bd];
+        var B_tr = [B_cx + B_bw + B_bd, B_cy + B_bd];
+        var B_apex = [B_cx + B_bd * 0.5, B_cy + B_h];
+
+        var B_base_center = [(B_bl[0] + B_br[0] + B_tl[0] + B_tr[0]) / 4,
+                             (B_bl[1] + B_br[1] + B_tl[1] + B_tr[1]) / 4];
+
+        var pB_bl = pt(B_bl), pB_br = pt(B_br), pB_tl = pt(B_tl), pB_tr = pt(B_tr), pB_apex = pt(B_apex);
+        var pB_bc = pt(B_base_center);
+
+        // Back base edges (dashed)
+        board.create('segment', [pB_tl, pB_tr], { strokeColor: COL_OUTLINE, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false });
+        board.create('segment', [pB_tl, pB_bl], { strokeColor: COL_OUTLINE, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false });
+        board.create('segment', [pB_tr, pB_br], { strokeColor: COL_OUTLINE, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false });
+
+        board.create('segment', [pB_tl, pB_apex], { strokeColor: COL_OUTLINE, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false });
+
+        // Faces
+        board.create('polygon', [pB_bl, pB_apex, pB_tl], {
+            fillColor: COL_FACE_SIDE, fillOpacity: 0.5,
+            borders: { visible: false }, vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        board.create('polygon', [pB_br, pB_apex, pB_tr], {
+            fillColor: COL_FACE_SIDE, fillOpacity: 0.35,
+            borders: { visible: false }, vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        board.create('polygon', [pB_bl, pB_br, pB_apex], {
+            fillColor: COL_FACE_FRONT, fillOpacity: 0.6,
+            borders: { visible: false }, vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Front base edge
+        board.create('segment', [pB_bl, pB_br], { strokeColor: COL_OUTLINE, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Front edges to apex
+        board.create('segment', [pB_bl, pB_apex], { strokeColor: COL_OUTLINE, strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('segment', [pB_br, pB_apex], { strokeColor: COL_OUTLINE, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Back-right to apex
+        board.create('segment', [pB_tr, pB_apex], { strokeColor: COL_OUTLINE, strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // Height line (dashed, red)
+        board.create('segment', [pB_apex, pB_bc], {
+            strokeColor: COL_HEIGHT, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Labels — Pyramid A ──────────────────────────────────────────
+        board.create('text', [A_cx + A_bd * 0.5, A_cy + A_h + 0.7, '\\textbf{Pyramid A}'], {
+            useKatex: true, fontSize: 14, color: COL_LABEL, anchorX: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('text', [A_cx + A_bd * 0.5 + 0.4, A_cy + A_h * 0.38, '15 \\text{ cm}'], {
+            useKatex: true, fontSize: 12, color: COL_HEIGHT, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('text', [A_cx, A_cy - 0.7, 'V_A = 1{,}350 \\text{ cm}^3'], {
+            useKatex: true, fontSize: 12, color: COL_LABEL, anchorX: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Labels — Pyramid B ──────────────────────────────────────────
+        board.create('text', [B_cx + B_bd * 0.5, B_cy + B_h + 0.7, '\\textbf{Pyramid B}'], {
+            useKatex: true, fontSize: 14, color: COL_LABEL, anchorX: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('text', [B_cx + B_bd * 0.5 + 0.6, B_cy + B_h * 0.5, '6 \\text{ cm}'], {
+            useKatex: true, fontSize: 12, color: COL_HEIGHT, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('text', [B_cx, B_cy - 0.7, 'V_B'], {
+            useKatex: true, fontSize: 12, color: COL_LABEL, anchorX: 'middle', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
