@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cube + Square Pyramid Composite Solid</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 12.5, 11, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        // Oblique projection parameters
+        var dx = 2.4;
+        var dy = 1.6;
+
+        // Cube vertices (side = 5 units visually, representing 9 in.)
+        var S = 5;
+
+        // Front face
+        var A = [1, 0];
+        var B = [1 + S, 0];
+        var C = [1 + S, S];
+        var D = [1, S];
+
+        // Back face
+        var E = [A[0] + dx, A[1] + dy];
+        var F = [B[0] + dx, B[1] + dy];
+        var G = [C[0] + dx, C[1] + dy];
+        var H = [D[0] + dx, D[1] + dy];
+
+        // Pyramid apex
+        var topCenterX = (D[0] + G[0]) / 2;
+        var topCenterY = (D[1] + G[1]) / 2;
+        var pyrH = (7 / 9) * S;
+        var apex = [topCenterX, topCenterY + pyrH];
+
+        // Colors
+        var EDGE = '#555555';
+        var HIDDEN = '#999999';
+        var CUBE_FRONT = '#DBEAFE';
+        var CUBE_SIDE = '#BFDBFE';
+        var CUBE_TOP = '#93C5FD';
+        var PYR_FRONT = '#FEF3C7';
+        var PYR_SIDE = '#FDE68A';
+
+        // Helper: polygon
+        function makePoly(verts, fill, opacity) {
+            var pts = [];
+            for (var i = 0; i < verts.length; i++) {
+                pts.push(board.create('point', verts[i], { visible: false, fixed: true, name: '' }));
+            }
+            board.create('polygon', pts, {
+                fillColor: fill, fillOpacity: opacity || 0.6,
+                borders: { strokeColor: EDGE, strokeWidth: 1.8 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        function makeDashed(p1, p2, color, width) {
+            board.create('segment', [p1, p2], {
+                strokeColor: color || HIDDEN, strokeWidth: width || 1.2,
+                dash: 2, fixed: true, highlight: false
+            });
+        }
+
+        function makeSolid(p1, p2, color, width) {
+            board.create('segment', [p1, p2], {
+                strokeColor: color || EDGE, strokeWidth: width || 1.8,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Hidden edges
+        makeDashed(E, F);
+        makeDashed(E, H);
+        makeDashed(E, A);
+
+        // Cube faces
+        makePoly([D, C, G, H], CUBE_TOP, 0.5);
+        makePoly([B, F, G, C], CUBE_SIDE, 0.6);
+        makePoly([A, B, C, D], CUBE_FRONT, 0.6);
+
+        // Reinforce visible cube edges
+        makeSolid(H, G);
+        makeSolid(F, G);
+        makeSolid(B, F);
+        makeSolid(D, H);
+
+        // Pyramid faces
+        makePoly([D, H, apex], PYR_SIDE, 0.35);
+        makePoly([H, G, apex], PYR_SIDE, 0.45);
+        makePoly([G, C, apex], PYR_SIDE, 0.55);
+        makePoly([D, C, apex], PYR_FRONT, 0.65);
+
+        // Pyramid edges
+        makeSolid(D, apex);
+        makeSolid(C, apex);
+        makeSolid(G, apex);
+        makeSolid(H, apex);
+
+        // Pyramid height dashed line (no dot at base center)
+        var baseCenter = [(D[0] + G[0]) / 2, (D[1] + G[1]) / 2];
+        makeDashed(baseCenter, apex, '#DC2626', 1.4);
+
+        // Dimension labels
+
+        // 9 in. on bottom edge (front)
+        board.create('text', [(A[0] + B[0]) / 2, A[1] - 0.9, '9 \\text{ in.}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // 9 in. on right front vertical edge
+        board.create('text', [B[0] + 0.7, (B[1] + C[1]) / 2, '9 \\text{ in.}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // 9 in. depth label
+        board.create('text', [0, 4, '9 \\text{ in.}'], {
+            useKatex: true, fontSize: 11, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // 7 in. pyramid height
+        var hLabelX = baseCenter[0] + 0.6;
+        var hLabelY = (baseCenter[1] + apex[1]) / 2;
+        board.create('text', [hLabelX, hLabelY, '7 \\text{ in.}'], {
+            useKatex: true, fontSize: 12, color: '#DC2626',
+            anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // 16 in. total height (left side with arrows)
+        var totalLX = A[0] - 2.2;
+        var totalBot = A[1];
+        var totalTop = apex[1];
+
+        board.create('segment', [[totalLX, totalBot], [totalLX, totalTop]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[totalLX - 0.3, totalBot], [totalLX + 0.3, totalBot]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[totalLX - 0.3, totalTop], [totalLX + 0.3, totalTop]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        board.create('text', [totalLX - 0.3, (totalBot + totalTop) / 2, '16 \\text{ in.}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
