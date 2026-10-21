@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Static Cube</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        /* Cube geometry — identical to original */
+        var s = 2.8;
+        var ox = 0.5, oy = -1.2;
+        var dx = 1.2, dy = 1.2;
+
+        /* Compute center of all 8 vertices to center the bounding box */
+        var cx = ox + (s + dx) / 2;
+        var cy = oy + (s + dy) / 2;
+
+        /* Tight bounding box: ~0.6 unit padding around the extremes */
+        var pad = 0.6;
+        var xMin = ox - pad;
+        var xMax = ox + s + dx + pad;
+        var yMin = oy - pad;
+        var yMax = oy + s + dy + pad;
+
+        /* Make it square (keepAspectRatio) centered on (cx, cy) */
+        var halfSpan = Math.max((xMax - xMin), (yMax - yMin)) / 2;
+        var bb = [cx - halfSpan, cy + halfSpan, cx + halfSpan, cy - halfSpan];
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: bb,
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var A = [ox, oy];
+        var B = [ox + s, oy];
+        var C = [ox + s, oy + s];
+        var D = [ox, oy + s];
+
+        var E = [ox + dx, oy + dy];
+        var F = [ox + s + dx, oy + dy];
+        var G = [ox + s + dx, oy + s + dy];
+        var H = [ox + dx, oy + s + dy];
+
+        var hiddenPt = { name: '', visible: false, fixed: true };
+
+        var pA = board.create('point', A, hiddenPt);
+        var pB = board.create('point', B, hiddenPt);
+        var pC = board.create('point', C, hiddenPt);
+        var pD = board.create('point', D, hiddenPt);
+        var pE = board.create('point', E, hiddenPt);
+        var pF = board.create('point', F, hiddenPt);
+        var pG = board.create('point', G, hiddenPt);
+        var pH = board.create('point', H, hiddenPt);
+
+        var solidStyle = { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false };
+        var dashedStyle = { strokeColor: '#555555', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false };
+
+        /* Front face */
+        board.create('segment', [pA, pB], solidStyle);
+        board.create('segment', [pB, pC], solidStyle);
+        board.create('segment', [pC, pD], solidStyle);
+        board.create('segment', [pD, pA], solidStyle);
+
+        /* Back face */
+        board.create('segment', [pG, pH], solidStyle);
+        board.create('segment', [pF, pG], solidStyle);
+        board.create('segment', [pE, pF], dashedStyle);
+        board.create('segment', [pH, pE], dashedStyle);
+
+        /* Connecting edges */
+        board.create('segment', [pC, pG], solidStyle);
+        board.create('segment', [pD, pH], solidStyle);
+        board.create('segment', [pB, pF], solidStyle);
+        board.create('segment', [pA, pE], dashedStyle);
+    </script>
+</body>
+</html>
