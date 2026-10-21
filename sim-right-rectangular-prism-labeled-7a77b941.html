@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Rectangular Prism — 6m × 3m × 2.5m</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var L = 6;
+        var W = 3;
+        var H = 2.5;
+
+        var dScale = 0.5;
+        var angle = 35 * Math.PI / 180;
+        var dx = W * dScale * Math.cos(angle);
+        var dy = W * dScale * Math.sin(angle);
+
+        var ox = 1, oy = 1;
+        var A = [ox,     oy];
+        var B = [ox + L, oy];
+        var C = [ox + L, oy + H];
+        var D = [ox,     oy + H];
+
+        var E = [ox + dx,     oy + dy];
+        var F = [ox + L + dx, oy + dy];
+        var G = [ox + L + dx, oy + H + dy];
+        var Hv = [ox + dx,    oy + H + dy];
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, Hv[1] + 1.0, F[0] + 0.5, -0.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var dashStyle = { strokeColor: '#AAAAAA', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false };
+        board.create('segment', [A, E], dashStyle);
+        board.create('segment', [E, F], dashStyle);
+        board.create('segment', [E, Hv], dashStyle);
+
+        var pA = board.create('point', A, { visible: false, name: '' });
+        var pB = board.create('point', B, { visible: false, name: '' });
+        var pC = board.create('point', C, { visible: false, name: '' });
+        var pD = board.create('point', D, { visible: false, name: '' });
+        var pF = board.create('point', F, { visible: false, name: '' });
+        var pG = board.create('point', G, { visible: false, name: '' });
+        var pH = board.create('point', Hv, { visible: false, name: '' });
+
+        board.create('polygon', [pA, pB, pC, pD], {
+            fillColor: '#E8EDF2', fillOpacity: 0.7,
+            borders: { strokeColor: '#555555', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('polygon', [pB, pF, pG, pC], {
+            fillColor: '#D0D8E2', fillOpacity: 0.7,
+            borders: { strokeColor: '#555555', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('polygon', [pD, pC, pG, pH], {
+            fillColor: '#DCE3EC', fillOpacity: 0.7,
+            borders: { strokeColor: '#555555', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('text', [ox + L / 2, oy - 0.7, '6 m'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#333333', fixed: true, highlight: false,
+            cssStyle: 'font-weight: 600;'
+        });
+
+        board.create('text', [ox - 0.8, oy + H / 2, '2.5 m'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#333333', fixed: true, highlight: false,
+            cssStyle: 'font-weight: 600;'
+        });
+
+        var midTopBack = [(D[0] + Hv[0]) / 2 - 0.3, (D[1] + Hv[1]) / 2 + 0.55];
+        board.create('text', [midTopBack[0], midTopBack[1], '3 m'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#333333', fixed: true, highlight: false,
+            cssStyle: 'font-weight: 600;'
+        });
+    </script>
+</body>
+</html>
