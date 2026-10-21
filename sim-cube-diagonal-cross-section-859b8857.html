@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cube Diagonal Cross Section</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4.5, 4.5, 4.5, -4.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // 3D projection setup
+        var az = 0.62;
+        var el = 0.45;
+        var cosA = Math.cos(az), sinA = Math.sin(az);
+        var cosE = Math.cos(el), sinE = Math.sin(el);
+        var scale = 2.8;
+
+        function proj(x, y, z) {
+            var x1 = x * cosA - z * sinA;
+            var z1 = x * sinA + z * cosA;
+            var y2 = y * cosE - z1 * sinE;
+            var z2 = y * sinE + z1 * cosE;
+            return { px: x1 * scale, py: y2 * scale, depth: z2 };
+        }
+
+        // Cube vertices centered at origin
+        var v3 = {
+            A: [-1, -1, -1],
+            B: [ 1, -1, -1],
+            C: [ 1, -1,  1],
+            D: [-1, -1,  1],
+            E: [-1,  1, -1],
+            F: [ 1,  1, -1],
+            G: [ 1,  1,  1],
+            H: [-1,  1,  1]
+        };
+
+        var p2 = {};
+        var keys = ['A','B','C','D','E','F','G','H'];
+        for (var i = 0; i < keys.length; i++) {
+            var k = keys[i];
+            var r = proj(v3[k][0], v3[k][1], v3[k][2]);
+            p2[k] = { x: r.px, y: r.py, d: r.depth };
+        }
+
+        // Face visibility
+        var facesDef = [
+            { id: 'bottom', verts: ['A','B','C','D'], normal: [ 0,-1, 0] },
+            { id: 'top',    verts: ['E','F','G','H'], normal: [ 0, 1, 0] },
+            { id: 'front',  verts: ['A','B','F','E'], normal: [ 0, 0,-1] },
+            { id: 'back',   verts: ['D','C','G','H'], normal: [ 0, 0, 1] },
+            { id: 'left',   verts: ['A','D','H','E'], normal: [-1, 0, 0] },
+            { id: 'right',  verts: ['B','C','G','F'], normal: [ 1, 0, 0] }
+        ];
+
+        var faceVisible = {};
+        for (var f = 0; f < facesDef.length; f++) {
+            var n = facesDef[f].normal;
+            var z1n = n[0] * sinA + n[2] * cosA;
+            var z2n = n[1] * sinE + z1n * cosE;
+            faceVisible[facesDef[f].id] = z2n > 0;
+        }
+
+        var edgeFaces = {
+            'A-B': ['bottom','front'],  'B-C': ['bottom','right'],
+            'C-D': ['bottom','back'],   'D-A': ['bottom','left'],
+            'E-F': ['top','front'],     'F-G': ['top','right'],
+            'G-H': ['top','back'],      'H-E': ['top','left'],
+            'A-E': ['front','left'],    'B-F': ['front','right'],
+            'C-G': ['back','right'],    'D-H': ['back','left']
+        };
+
+        var edgeList = [];
+        for (var eKey in edgeFaces) {
+            var parts = eKey.split('-');
+            var adjFaces = edgeFaces[eKey];
+            var vis = faceVisible[adjFaces[0]] || faceVisible[adjFaces[1]];
+            edgeList.push({ v1: parts[0], v2: parts[1], visible: vis });
+        }
+
+        // Cross-section plane: top-front edge (E-F) to bottom-back edge (C-D)
+        var csCorners3D = [v3['E'], v3['F'], v3['C'], v3['D']];
+
+        // Extended plane beyond cube edges
+        var ext = 0.4;
+        var uDir = [1, 0, 0];
+        var vDir = [0, -1 / Math.sqrt(2), 1 / Math.sqrt(2)];
+
+        var csExt3D = [
+            [v3['E'][0] - ext * uDir[0] - ext * vDir[0],
+             v3['E'][1] - ext * uDir[1] - ext * vDir[1],
+             v3['E'][2] - ext * uDir[2] - ext * vDir[2]],
+            [v3['F'][0] + ext * uDir[0] - ext * vDir[0],
+             v3['F'][1] + ext * uDir[1] - ext * vDir[1],
+             v3['F'][2] + ext * uDir[2] - ext * vDir[2]],
+            [v3['C'][0] + ext * uDir[0] + ext * vDir[0],
+             v3['C'][1] + ext * uDir[1] + ext * vDir[1],
+             v3['C'][2] + ext * uDir[2] + ext * vDir[2]],
+            [v3['D'][0] - ext * uDir[0] + ext * vDir[0],
+             v3['D'][1] - ext * uDir[1] + ext * vDir[1],
+             v3['D'][2] - ext * uDir[2] + ext * vDir[2]]
+        ];
+
+        var csExtProj = [];
+        for (var i = 0; i < csExt3D.length; i++) {
+            var r = proj(csExt3D[i][0], csExt3D[i][1], csExt3D[i][2]);
+            csExtProj.push([r.px, r.py]);
+        }
+
+        var csProj = [];
+        for (var i = 0; i < csCorners3D.length; i++) {
+            var r = proj(csCorners3D[i][0], csCorners3D[i][1], csCorners3D[i][2]);
+            csProj.push([r.px, r.py]);
+        }
+
+        // DRAW: Hidden edges
+        for (var i = 0; i < edgeList.length; i++) {
+            var e = edgeList[i];
+            if (!e.visible) {
+                board.create('segment',
+                    [[p2[e.v1].x, p2[e.v1].y], [p2[e.v2].x, p2[e.v2].y]], {
+                    strokeColor: '#888888',
+                    strokeWidth: 0.9,
+                    dash: 2,
+                    fixed: true,
+                    highlight: false,
+                    layer: 1
+                });
+            }
+        }
+
+        // DRAW: Extended plane wash
+        var epP = [];
+        for (var i = 0; i < csExtProj.length; i++) {
+            epP.push(board.create('point', csExtProj[i], { visible: false, name: '', fixed: true }));
+        }
+        board.create('polygon', epP, {
+            fillColor: '#2563EB',
+            fillOpacity: 0.10,
+            borders: { strokeColor: '#2563EB', strokeWidth: 0.5, strokeOpacity: 0.3 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false,
+            layer: 3
+        });
+
+        // DRAW: Cross-section interior
+        var csP = [];
+        for (var i = 0; i < csProj.length; i++) {
+            csP.push(board.create('point', csProj[i], { visible: false, name: '', fixed: true }));
+        }
+        board.create('polygon', csP, {
+            fillColor: '#2563EB',
+            fillOpacity: 0.22,
+            borders: { strokeColor: '#2563EB', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false,
+            layer: 4
+        });
+
+        // DRAW: Visible edges
+        for (var i = 0; i < edgeList.length; i++) {
+            var e = edgeList[i];
+            if (e.visible) {
+                board.create('segment',
+                    [[p2[e.v1].x, p2[e.v1].y], [p2[e.v2].x, p2[e.v2].y]], {
+                    strokeColor: '#555555',
+                    strokeWidth: 1.5,
+                    fixed: true,
+                    highlight: false,
+                    layer: 6
+                });
+            }
+        }
+    </script>
+</body>
+</html>
