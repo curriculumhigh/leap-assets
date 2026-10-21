@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L-Shaped Region — Solid of Revolution</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 5.5, 5.5, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_SHAPE = '#222222';
+        var COL_AXIS = '#DC2626';
+        var COL_FILL = '#D1D5DB';
+        var RA_SIZE = 0.2;
+
+        // ── Axis of revolution (dashed vertical line at x=0) ────────────
+        board.create('segment', [[0, -1.2], [0, 5.2]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, dash: 3,
+            fixed: true, highlight: false, layer: 2
+        });
+
+        // ── L-shaped region ─────────────────────────────────────────────
+        var Lx = [0, 3, 3, 1, 1, 0];
+        var Ly = [0, 0, 2, 2, 4, 4];
+
+        var polyPts = [];
+        for (var p = 0; p < Lx.length; p++) {
+            polyPts.push(board.create('point', [Lx[p], Ly[p]], {
+                visible: false, fixed: true, name: ''
+            }));
+        }
+
+        board.create('polygon', polyPts, {
+            fillColor: COL_FILL, fillOpacity: 0.22,
+            borders: { strokeColor: COL_SHAPE, strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false,
+            layer: 5
+        });
+
+        // ── Right-angle marks ───────────────────────────────────────────
+        var corners = [
+            { x: 0, y: 0, dx1: 1, dy1: 0, dx2: 0, dy2: 1 },
+            { x: 3, y: 0, dx1: -1, dy1: 0, dx2: 0, dy2: 1 },
+            { x: 3, y: 2, dx1: 0, dy1: -1, dx2: -1, dy2: 0 },
+            { x: 1, y: 2, dx1: 0, dy1: 1, dx2: -1, dy2: 0 },
+            { x: 1, y: 4, dx1: -1, dy1: 0, dx2: 0, dy2: -1 },
+            { x: 0, y: 4, dx1: 1, dy1: 0, dx2: 0, dy2: -1 }
+        ];
+
+        for (var ra = 0; ra < corners.length; ra++) {
+            var cn = corners[ra];
+            var s = RA_SIZE;
+            var raPts = [
+                [cn.x + cn.dx1 * s, cn.y + cn.dy1 * s],
+                [cn.x + cn.dx1 * s + cn.dx2 * s, cn.y + cn.dy1 * s + cn.dy2 * s],
+                [cn.x + cn.dx2 * s, cn.y + cn.dy2 * s]
+            ];
+            board.create('segment', [raPts[0], raPts[1]], {
+                strokeColor: COL_SHAPE, strokeWidth: 1.0, fixed: true, highlight: false, layer: 6
+            });
+            board.create('segment', [raPts[1], raPts[2]], {
+                strokeColor: COL_SHAPE, strokeWidth: 1.0, fixed: true, highlight: false, layer: 6
+            });
+        }
+
+        // ── Dimension labels + arrows ───────────────────────────────────
+
+        // --- Bottom width = 3 ---
+        board.create('text', [1.5, -0.55, '3'], {
+            useKatex: true, fontSize: 14, color: COL_SHAPE,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, layer: 8
+        });
+        board.create('arrow', [[0, -0.55], [1.05, -0.55]], {
+            strokeColor: COL_SHAPE, strokeWidth: 0.8, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, layer: 8
+        });
+        board.create('arrow', [[3, -0.55], [1.95, -0.55]], {
+            strokeColor: COL_SHAPE, strokeWidth: 0.8, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, layer: 8
+        });
+        board.create('segment', [[0, -0.25], [0, -0.85]], {
+            strokeColor: COL_SHAPE, strokeWidth: 0.6, fixed: true, highlight: false, layer: 8
+        });
+        board.create('segment', [[3, -0.25], [3, -0.85]], {
+            strokeColor: COL_SHAPE, strokeWidth: 0.6, fixed: true, highlight: false, layer: 8
+        });
+
+        // --- Right height of lower rect = 2 ---
+        board.create('text', [3.65, 1.0, '2'], {
+            useKatex: true, fontSize: 14, color: COL_SHAPE,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, layer: 8
+        });
+        board.create('arrow', [[3.65, 0], [3.65, 0.55]], {
+            strokeColor: COL_SHAPE, strokeWidth: 0.8, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, layer: 8
+        });
+        board.create('arrow', [[3.65, 2], [3.65, 1.45]], {
+            strokeColor: COL_SHAPE, strokeWidth: 0.8, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, layer: 8
+        });
+        board.create('segment', [[3.25, 0], [4.05, 0]], {
+            strokeColor: COL_SHAPE, strokeWidth: 0.6, fixed: true, highlight: false, layer: 8
+        });
+        board.create('segment', [[3.25, 2], [4.05, 2]], {
+            strokeColor: COL_SHAPE, strokeWidth: 0.6, fixed: true, highlight: false, layer: 8
+        });
+
+        // --- Right height of upper rect = 2 ---
+        board.create('text', [1.65, 3.0, '2'], {
+            useKatex: true, fontSize: 14, color: COL_SHAPE,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, layer: 8
+        });
+        board.create('arrow', [[1.65, 2], [1.65, 2.55]], {
+            strokeColor: COL_SHAPE, strokeWidth: 0.8, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, layer: 8
+        });
+        board.create('arrow', [[1.65, 4], [1.65, 3.45]], {
+            strokeColor: COL_SHAPE, strokeWidth: 0.8, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, layer: 8
+        });
+        board.create('segment', [[1.25, 2], [2.05, 2]], {
+            strokeColor: COL_SHAPE, strokeWidth: 0.6, fixed: true, highlight: false, layer: 8
+        });
+        board.create('segment', [[1.25, 4], [2.05, 4]], {
+            strokeColor: COL_SHAPE, strokeWidth: 0.6, fixed: true, highlight: false, layer: 8
+        });
+
+        // --- Top width of upper rect = 1 ---
+        board.create('text', [0.5, 4.55, '1'], {
+            useKatex: true, fontSize: 14, color: COL_SHAPE,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, layer: 8
+        });
+        board.create('arrow', [[0, 4.55], [0.22, 4.55]], {
+            strokeColor: COL_SHAPE, strokeWidth: 0.8, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, layer: 8
+        });
+        board.create('arrow', [[1, 4.55], [0.78, 4.55]], {
+            strokeColor: COL_SHAPE, strokeWidth: 0.8, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 4 }, layer: 8
+        });
+        board.create('segment', [[0, 4.25], [0, 4.85]], {
+            strokeColor: COL_SHAPE, strokeWidth: 0.6, fixed: true, highlight: false, layer: 8
+        });
+        board.create('segment', [[1, 4.25], [1, 4.85]], {
+            strokeColor: COL_SHAPE, strokeWidth: 0.6, fixed: true, highlight: false, layer: 8
+        });
+    </script>
+</body>
+</html>
