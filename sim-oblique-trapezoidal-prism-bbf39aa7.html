@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oblique Trapezoidal Prism</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 18, 20, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Geometry constants ───────────────────────────────────────────
+        var DX = 3.0;
+        var DY = 3.0;
+        var LEAN_X = 3.0;
+        var PRISM_H = 10;
+
+        // ── Bottom face vertices ─────────────────────────────────────────
+        var fBL = [0, 0];
+        var fBR = [12, 0];
+        var backCenterX = (fBL[0] + fBR[0]) / 2 + DX;
+        var backY = fBL[1] + DY;
+        var bBL = [backCenterX - 3, backY];
+        var bBR = [backCenterX + 3, backY];
+
+        // ── Top face vertices ────────────────────────────────────────────
+        var fTL = [fBL[0] + LEAN_X, fBL[1] + PRISM_H];
+        var fTR = [fBR[0] + LEAN_X, fBR[1] + PRISM_H];
+        var bTL = [bBL[0] + LEAN_X, bBL[1] + PRISM_H];
+        var bTR = [bBR[0] + LEAN_X, bBR[1] + PRISM_H];
+
+        // ── Invisible anchor points ──────────────────────────────────────
+        function mkpt(c) {
+            return board.create('point', c, { visible: false, fixed: true, name: '' });
+        }
+
+        var pFBL = mkpt(fBL);
+        var pFBR = mkpt(fBR);
+        var pBBL = mkpt(bBL);
+        var pBBR = mkpt(bBR);
+        var pFTL = mkpt(fTL);
+        var pFTR = mkpt(fTR);
+        var pBTL = mkpt(bTL);
+        var pBTR = mkpt(bTR);
+
+        // ── Edge styles ──────────────────────────────────────────────────
+        var SOLID = { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false };
+        var DASHED = { strokeColor: '#999999', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false };
+
+        // ── Face shading ─────────────────────────────────────────────────
+        board.create('polygon', [pFBL, pFBR, pFTR, pFTL], {
+            fillColor: '#BFDBFE', fillOpacity: 0.12,
+            borders: { visible: false }, vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        board.create('polygon', [pFTL, pFTR, pBTR, pBTL], {
+            fillColor: '#93C5FD', fillOpacity: 0.20,
+            borders: { visible: false }, vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        board.create('polygon', [pFBR, pBBR, pBTR, pFTR], {
+            fillColor: '#A7F3D0', fillOpacity: 0.12,
+            borders: { visible: false }, vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Hidden (dashed) edges ────────────────────────────────────────
+        board.create('segment', [pBBL, pBBR], DASHED);
+        board.create('segment', [pFBL, pBBL], DASHED);
+        board.create('segment', [pBBL, pBTL], DASHED);
+
+        // ── Visible (solid) edges ────────────────────────────────────────
+        board.create('segment', [pFBL, pFBR], SOLID);
+        board.create('segment', [pFBR, pBBR], SOLID);
+        board.create('segment', [pFTL, pFTR], SOLID);
+        board.create('segment', [pFTR, pBTR], SOLID);
+        board.create('segment', [pBTR, pBTL], SOLID);
+        board.create('segment', [pBTL, pFTL], SOLID);
+        board.create('segment', [pFBL, pFTL], SOLID);
+        board.create('segment', [pFBR, pFTR], SOLID);
+        board.create('segment', [pBBR, pBTR], SOLID);
+
+        // ── Perpendicular height (red dashed) ───────────────────────────
+        var hTop = [fTL[0] + 1, fTL[1]];
+        var hBot = [fTL[0] + 1 - LEAN_X, fTL[1] - PRISM_H];
+
+        board.create('segment', [hTop, hBot], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, dash: 3,
+            fixed: true, highlight: false
+        });
+
+        // Right-angle marker
+        var sq = 0.55;
+        board.create('segment', [hBot, [hBot[0] + sq, hBot[1]]], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[hBot[0] + sq, hBot[1]], [hBot[0] + sq, hBot[1] + sq]], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── DIMENSION LABELS ─────────────────────────────────────────────
+
+        // 12 in. — below the front bottom edge
+        board.create('text', [
+            (fBL[0] + fBR[0]) / 2,
+            fBL[1] - 1.8,
+            '12 \\text{ in.}'
+        ], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // 6 in. — above the top face back edge
+        board.create('text', [
+            (bTL[0] + bTR[0]) / 2,
+            (bTL[1] + bTR[1]) / 2 + 1.2,
+            '6 \\text{ in.}'
+        ], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // 8 in. — to the right of the bottom-right side edge
+        var mid8X = (fBR[0] + bBR[0]) / 2 + 1.5;
+        var mid8Y = (fBR[1] + bBR[1]) / 2;
+        board.create('text', [
+            mid8X, mid8Y,
+            '8 \\text{ in.}'
+        ], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // 9 in. — to the RIGHT of the red perpendicular height line
+        board.create('text', [
+            (hTop[0] + hBot[0]) / 2 + 1.2,
+            (hTop[1] + hBot[1]) / 2,
+            '9 \\text{ in.}'
+        ], {
+            useKatex: true, fontSize: 13, color: '#DC2626',
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
