@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logistic Growth Solution Curves</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px);
+            display: flex; flex-direction: column;
+        }
+        .board-wrapper {
+            background: white; border-radius: 8px 8px 0 0; padding: 10px 14px 6px 14px;
+            flex: 1; min-height: 0;
+        }
+        #board { width: 100%; height: 100%; }
+        .toggle-strip {
+            background: white; border-radius: 0 0 8px 8px;
+            border-top: 1px solid #e5e7eb;
+            padding: 8px 14px;
+            display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+        }
+        .toggle-btn {
+            font-size: 12px; font-weight: 600; padding: 5px 12px;
+            border-radius: 5px; cursor: pointer;
+            border: 2px solid; transition: opacity 0.15s;
+            line-height: 1.4;
+        }
+        .toggle-btn .katex { font-size: 0.95em; }
+        .toggle-btn.active { opacity: 1; }
+        .toggle-btn.inactive { opacity: 0.35; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+        <div class="toggle-strip">
+            <span style="font-size:11px; color:#888; margin-right:4px;">Show/hide:</span>
+            <button class="toggle-btn active" id="btn-100"
+                style="color:#222222; border-color:#222222; background:rgba(34,34,34,0.08);"
+                onclick="toggleCurve(0)"><span id="katex-btn-0"></span></button>
+            <button class="toggle-btn inactive" id="btn-400"
+                style="color:#2563EB; border-color:#2563EB; background:rgba(37,99,235,0.08);"
+                onclick="toggleCurve(1)"><span id="katex-btn-1"></span></button>
+            <button class="toggle-btn inactive" id="btn-800"
+                style="color:#059669; border-color:#059669; background:rgba(5,150,105,0.08);"
+                onclick="toggleCurve(2)"><span id="katex-btn-2"></span></button>
+            <button class="toggle-btn inactive" id="btn-1000"
+                style="color:#D97706; border-color:#D97706; background:rgba(217,119,6,0.08);"
+                onclick="toggleCurve(3)"><span id="katex-btn-3"></span></button>
+        </div>
+    </div>
+
+    <script>
+        /* -- Render KaTeX button labels -- */
+        var btnLabels = ['P(0) = 100', 'P(0) = 400', 'P(0) = 800', 'P(0) = 1000'];
+        for (var bi = 0; bi < 4; bi++) {
+            katex.render(btnLabels[bi], document.getElementById('katex-btn-' + bi), { throwOnError: false });
+        }
+
+        /* -- Board ------------------------------------------------ */
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.8, 1150, 16.2, -100],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* -- Axes (manual) ---------------------------------------- */
+        var i;
+        // t-axis
+        board.create('arrow', [[0, 0], [15.8, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        // P-axis
+        board.create('arrow', [[0, 0], [0, 1120]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // t-axis ticks and labels
+        for (i = 3; i <= 15; i += 3) {
+            board.create('segment', [[i, -18], [i, 18]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [i, -50, String(i)], {
+                fontSize: 11, anchorX: 'middle', anchorY: 'top',
+                color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        // P-axis ticks and labels
+        for (i = 200; i <= 1000; i += 200) {
+            board.create('segment', [[-0.25, i], [0.25, i]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [-0.45, i, String(i)], {
+                fontSize: 11, anchorX: 'right', anchorY: 'middle',
+                color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        // Origin label
+        board.create('text', [-0.45, -50, '0'], {
+            fontSize: 11, anchorX: 'right', anchorY: 'top',
+            color: '#444444', fixed: true, highlight: false
+        });
+
+        // Axis name labels (KaTeX italic math)
+        board.create('text', [15.5, -55, 't'], {
+            fontSize: 14, color: '#444444', fixed: true, highlight: false,
+            useKatex: true
+        });
+        board.create('text', [0.5, 1100, 'P'], {
+            fontSize: 14, color: '#444444', fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        /* -- Equilibrium dashed line (construction = cyan) -------- */
+        // Segment from t=0 to right edge only, layer 5
+        board.create('segment', [[0, 800], [15.8, 800]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 3,
+            fixed: true, highlight: false, layer: 5
+        });
+        // Label above line on the right
+        board.create('text', [12.8, 850, 'P = 800'], {
+            fontSize: 13, color: '#0EA5E9', fixed: true, highlight: false,
+            anchorX: 'left', useKatex: true
+        });
+
+        /* -- Solution curves -------------------------------------- */
+        var P0_vals = [100, 400, 800, 1000];
+        var colors = ['#222222', '#2563EB', '#059669', '#D97706'];
+        var widths = [1.8, 1.5, 1.5, 1.5];
+        var btnIds = ['btn-100', 'btn-400', 'btn-800', 'btn-1000'];
+
+        // P(t) = 800 / (1 + b * e^(-0.8t)), b = (800 - P0)/P0
+        // For P0 = 800: P(t) = 800 constant
+        function logisticP(P0, t) {
+            if (P0 === 800) return 800;
+            var b = (800 - P0) / P0;
+            return 800 / (1 + b * Math.exp(-0.8 * t));
+        }
+
+        var curves = [];
+        var startPts = [];
+        var visible = [true, false, false, false];
+
+        for (i = 0; i < 4; i++) {
+            (function(idx) {
+                var P0 = P0_vals[idx];
+                var col = colors[idx];
+                var sw = widths[idx];
+
+                // Curves at layer 7, above the dashed line (layer 5)
+                var curve = board.create('functiongraph', [
+                    function(t) { return logisticP(P0, t); },
+                    0, 15.5
+                ], {
+                    strokeColor: col, strokeWidth: sw, fixed: true, highlight: false,
+                    visible: visible[idx], layer: 7
+                });
+
+                // Filled key points (not open circles)
+                var pt = board.create('point', [0, P0], {
+                    name: '', size: 5, strokeColor: col, fillColor: col,
+                    strokeWidth: 1.5, fixed: true, highlight: false,
+                    visible: visible[idx], layer: 8
+                });
+
+                curves.push(curve);
+                startPts.push(pt);
+            })(i);
+        }
+
+        /* -- Toggle logic ----------------------------------------- */
+        function toggleCurve(idx) {
+            visible[idx] = !visible[idx];
+            curves[idx].setAttribute({ visible: visible[idx] });
+            startPts[idx].setAttribute({ visible: visible[idx] });
+
+            var btn = document.getElementById(btnIds[idx]);
+            if (visible[idx]) {
+                btn.classList.remove('inactive');
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+                btn.classList.add('inactive');
+            }
+        }
+    </script>
+</body>
+</html>
