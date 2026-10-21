@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangular Prism</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 7.2, 12.8, -2.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var dx = 2.8;
+        var dy = 2.0;
+
+        var A = [0, 0];
+        var B = [9, 0];
+        var C = [4.5, 4];
+
+        var A2 = [A[0] + dx, A[1] + dy];
+        var B2 = [B[0] + dx, B[1] + dy];
+        var C2 = [C[0] + dx, C[1] + dy];
+
+        /* Hidden edges — dashed */
+        board.create('segment', [A, A2], {
+            strokeColor: '#999999', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [A2, B2], {
+            strokeColor: '#999999', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [A2, C2], {
+            strokeColor: '#999999', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        /* Back face fill */
+        var pA2 = board.create('point', A2, { visible: false, name: '' });
+        var pB2 = board.create('point', B2, { visible: false, name: '' });
+        var pC2 = board.create('point', C2, { visible: false, name: '' });
+        board.create('polygon', [pA2, pB2, pC2], {
+            fillColor: '#888888', fillOpacity: 0.06,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        /* Right side face fill */
+        var pC = board.create('point', C, { visible: false, name: '' });
+        var pB = board.create('point', B, { visible: false, name: '' });
+        board.create('polygon', [pC, pC2, pB2, pB], {
+            fillColor: '#059669', fillOpacity: 0.06,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        /* Bottom face fill */
+        var pA = board.create('point', A, { visible: false, name: '' });
+        board.create('polygon', [pA, pA2, pB2, pB], {
+            fillColor: '#888888', fillOpacity: 0.06,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        /* Front face fill */
+        board.create('polygon', [pA, pB, pC], {
+            fillColor: '#2563EB', fillOpacity: 0.10,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        /* Visible edges — solid */
+        board.create('segment', [A, B], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [B, C], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [C, A], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [B, B2], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [C, C2], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [B2, C2], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        /* Height dashed line + right-angle marker */
+        var footH = [4.5, 0];
+        board.create('segment', [C, footH], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        var rSize = 0.45;
+        board.create('segment', [[footH[0], footH[1] + rSize], [footH[0] + rSize, footH[1] + rSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[footH[0] + rSize, footH[1] + rSize], [footH[0] + rSize, footH[1]]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        /* Dimension labels */
+        board.create('text', [4.5, -1.2, '9 \\text{ cm}'], {
+            useKatex: true, fontSize: 11, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [3.2, 1.5, '4 \\text{ cm}'], {
+            useKatex: true, fontSize: 11, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var midDepthX = (B[0] + B2[0]) / 2 + 0.4;
+        var midDepthY = (B[1] + B2[1]) / 2;
+        board.create('text', [midDepthX, midDepthY, '7 \\text{ cm}'], {
+            useKatex: true, fontSize: 11, color: '#222222',
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
