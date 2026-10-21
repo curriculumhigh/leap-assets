@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Trapezoid — Axis of Revolution</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 5.5, 8, -5.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Trapezoid vertices (no visible points)
+        var pTL = board.create('point', [0, 3], { visible: false, name: '', fixed: true });
+        var pTR = board.create('point', [2, 3], { visible: false, name: '', fixed: true });
+        var pBR = board.create('point', [5, -3], { visible: false, name: '', fixed: true });
+        var pBL = board.create('point', [0, -3], { visible: false, name: '', fixed: true });
+
+        // Trapezoid polygon
+        board.create('polygon', [pTL, pTR, pBR, pBL], {
+            fillColor: '#222222',
+            fillOpacity: 0.10,
+            borders: { strokeColor: '#222222', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // Axis of revolution — vertical dashed line along the left side, extending beyond
+        board.create('segment', [[0, 4.6], [0, -4.6]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            dash: 4,
+            fixed: true,
+            highlight: false
+        });
+
+        // Right-angle mark at top-left corner (0, 3)
+        var raSize = 0.45;
+        board.create('segment', [[0, 3 - raSize], [raSize, 3 - raSize]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[raSize, 3 - raSize], [raSize, 3]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Right-angle mark at bottom-left corner (0, -3)
+        board.create('segment', [[0, -3 + raSize], [raSize, -3 + raSize]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[raSize, -3 + raSize], [raSize, -3]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Dimension labels (KaTeX)
+        // "2" on top side — centered above
+        board.create('text', [1, 3.55, '2'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+
+        // "5" on bottom side — centered below
+        board.create('text', [2.5, -3.55, '5'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // "6" on vertical side — to the left, centered vertically
+        board.create('text', [-0.9, 0, '6'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
