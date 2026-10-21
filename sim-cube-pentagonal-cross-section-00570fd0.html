@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cube — Pentagonal Cross Section</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var s = 2.8;
+        var ox = 0.5, oy = -1.2;
+        var dx = 1.2, dy = 1.2;
+
+        var cxBoard = ox + (s + dx) / 2;
+        var cyBoard = oy + (s + dy) / 2;
+        var pad = 1.4;
+        var halfSpan = Math.max(s + dx + 2 * pad, s + dy + 2 * pad) / 2;
+        var bb = [cxBoard - halfSpan, cyBoard + halfSpan, cxBoard + halfSpan, cyBoard - halfSpan];
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: bb,
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var V = [
+            [0,0,0],[1,0,0],[1,1,0],[0,1,0],
+            [0,0,1],[1,0,1],[1,1,1],[0,1,1]
+        ];
+
+        var edges = [
+            [0,1],[1,2],[2,3],[3,0],
+            [4,5],[5,6],[6,7],[7,4],
+            [0,4],[1,5],[2,6],[3,7]
+        ];
+
+        var hiddenEdges = [2, 3, 11];
+
+        function project(p3) {
+            return [ox + p3[0] * s + p3[1] * dx, oy + p3[2] * s + p3[1] * dy];
+        }
+
+        function dot3(a, b) { return a[0]*b[0] + a[1]*b[1] + a[2]*b[2]; }
+
+        var hiddenPt = { name: '', visible: false, fixed: true };
+        var pts2D = [];
+        for (var i = 0; i < 8; i++) {
+            pts2D.push(board.create('point', project(V[i]), hiddenPt));
+        }
+
+        var dashedStyle = { strokeColor: '#555555', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false, layer: 1 };
+
+        for (var ei = 0; ei < edges.length; ei++) {
+            if (hiddenEdges.indexOf(ei) >= 0) {
+                board.create('segment', [pts2D[edges[ei][0]], pts2D[edges[ei][1]]], dashedStyle);
+            }
+        }
+
+        var planeN = [1, 0.6, 0.8];
+        var planeD = 1.15;
+
+        function edgeIntersect(ia, ib) {
+            var va = V[ia], vb = V[ib];
+            var nA = dot3(planeN, va);
+            var diff = [vb[0]-va[0], vb[1]-va[1], vb[2]-va[2]];
+            var nD = dot3(planeN, diff);
+            if (Math.abs(nD) < 1e-12) return null;
+            var t = (planeD - nA) / nD;
+            if (t < -1e-9 || t > 1 + 1e-9) return null;
+            t = Math.max(0, Math.min(1, t));
+            return [va[0]+t*diff[0], va[1]+t*diff[1], va[2]+t*diff[2]];
+        }
+
+        var hits = [];
+        for (var ei = 0; ei < edges.length; ei++) {
+            var pt3 = edgeIntersect(edges[ei][0], edges[ei][1]);
+            if (pt3 !== null) {
+                hits.push({ pt3: pt3 });
+            }
+        }
+
+        var cx3 = 0, cy3 = 0, cz3 = 0;
+        for (var i = 0; i < hits.length; i++) {
+            cx3 += hits[i].pt3[0]; cy3 += hits[i].pt3[1]; cz3 += hits[i].pt3[2];
+        }
+        cx3 /= hits.length; cy3 /= hits.length; cz3 /= hits.length;
+
+        var nLen = Math.sqrt(dot3(planeN, planeN));
+        var nn = [planeN[0]/nLen, planeN[1]/nLen, planeN[2]/nLen];
+        var ref = (Math.abs(nn[0]) < 0.9) ? [1,0,0] : [0,1,0];
+        var rdn = dot3(ref, nn);
+        var u = [ref[0]-rdn*nn[0], ref[1]-rdn*nn[1], ref[2]-rdn*nn[2]];
+        var uLen = Math.sqrt(dot3(u, u));
+        u = [u[0]/uLen, u[1]/uLen, u[2]/uLen];
+        var vv = [nn[1]*u[2]-nn[2]*u[1], nn[2]*u[0]-nn[0]*u[2], nn[0]*u[1]-nn[1]*u[0]];
+
+        for (var i = 0; i < hits.length; i++) {
+            var d3 = [hits[i].pt3[0]-cx3, hits[i].pt3[1]-cy3, hits[i].pt3[2]-cz3];
+            hits[i].angle = Math.atan2(dot3(d3, vv), dot3(d3, u));
+        }
+        hits.sort(function(a, b) { return a.angle - b.angle; });
+
+        var ext = 1.8;
+        var planeCorners3DFixed = [];
+        for (var i = 0; i < 4; i++) {
+            var pu = (i === 0 || i === 3) ? -ext : ext;
+            var pv = (i === 0 || i === 1) ? -ext : ext;
+            planeCorners3DFixed.push([
+                cx3 + pu * u[0] + pv * vv[0],
+                cy3 + pu * u[1] + pv * vv[1],
+                cz3 + pu * u[2] + pv * vv[2]
+            ]);
+        }
+
+        var planePts2D = [];
+        for (var i = 0; i < 4; i++) {
+            planePts2D.push(board.create('point', project(planeCorners3DFixed[i]), hiddenPt));
+        }
+
+        board.create('polygon', planePts2D, {
+            fillColor: '#F97316',
+            fillOpacity: 0.14,
+            borders: { strokeColor: '#F97316', strokeWidth: 1.0, strokeOpacity: 0.35 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false,
+            layer: 3
+        });
+
+        var pentPts2D = [];
+        for (var i = 0; i < hits.length; i++) {
+            pentPts2D.push(board.create('point', project(hits[i].pt3), hiddenPt));
+        }
+
+        board.create('polygon', pentPts2D, {
+            fillColor: '#2563EB',
+            fillOpacity: 0.28,
+            borders: { strokeColor: '#2563EB', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false,
+            layer: 5
+        });
+
+        for (var ei = 0; ei < edges.length; ei++) {
+            if (hiddenEdges.indexOf(ei) < 0) {
+                board.create('segment', [pts2D[edges[ei][0]], pts2D[edges[ei][1]]],
+                    { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false, layer: 7 }
+                );
+            }
+        }
+    </script>
+</body>
+</html>
