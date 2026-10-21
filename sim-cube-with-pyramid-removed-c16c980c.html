@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cube with Pyramid Removed</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 12.5, 14, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var S = 8;
+        var D = S * 0.45;
+        var ANG = 35 * Math.PI / 180;
+        var dx = D * Math.cos(ANG);
+        var dy = D * Math.sin(ANG);
+
+        var ox = 1, oy = 0;
+        var A = [ox, oy];
+        var B = [ox + S, oy];
+        var C = [ox + S, oy + S];
+        var Dv = [ox, oy + S];
+
+        var E = [ox + dx, oy + dy];
+        var F = [ox + S + dx, oy + dy];
+        var G = [ox + S + dx, oy + S + dy];
+        var H = [ox + dx, oy + S + dy];
+
+        var SOLID = '#555555';
+        var HIDDEN = '#999999';
+
+        function seg(p1, p2, color, width, dash) {
+            board.create('segment', [p1, p2], {
+                strokeColor: color, strokeWidth: width,
+                dash: dash || 0, fixed: true, highlight: false,
+                point1: { visible: false }, point2: { visible: false }
+            });
+        }
+
+        seg(A, B, SOLID, 2);
+        seg(B, C, SOLID, 2);
+        seg(C, Dv, SOLID, 2);
+        seg(Dv, A, SOLID, 2);
+
+        seg(E, F, HIDDEN, 1.2, 2);
+        seg(E, H, HIDDEN, 1.2, 2);
+        seg(F, G, SOLID, 2);
+        seg(G, H, SOLID, 2);
+
+        seg(A, E, HIDDEN, 1.2, 2);
+        seg(B, F, SOLID, 2);
+        seg(C, G, SOLID, 2);
+        seg(Dv, H, SOLID, 2);
+
+        board.create('polygon', [A, B, C, Dv], {
+            fillColor: '#e0e0e0', fillOpacity: 0.08,
+            borders: { visible: false }, vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+        board.create('polygon', [Dv, C, G, H], {
+            fillColor: '#b0b0b0', fillOpacity: 0.10,
+            borders: { visible: false }, vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+        board.create('polygon', [B, F, G, C], {
+            fillColor: '#d0d0d0', fillOpacity: 0.06,
+            borders: { visible: false }, vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        var topCenterX = (Dv[0] + G[0]) / 2;
+        var topCenterY = (Dv[1] + G[1]) / 2;
+        var apexX = topCenterX;
+        var apexY = topCenterY - S;
+        var APEX = [apexX, apexY];
+
+        var PYR_COL = '#2563EB';
+
+        seg(Dv, APEX, PYR_COL, 1.5, 2);
+        seg(C, APEX, PYR_COL, 1.5, 2);
+        seg(G, APEX, PYR_COL, 1.2, 2);
+        seg(H, APEX, PYR_COL, 1.2, 2);
+
+        var dimBottomY = oy - 1.2;
+        board.create('segment', [[ox, dimBottomY], [ox + S, dimBottomY]], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 }, lastArrow: { type: 2, size: 5 },
+            point1: { visible: false }, point2: { visible: false }
+        });
+        seg([ox, dimBottomY - 0.3], [ox, dimBottomY + 0.3], '#222222', 1.0);
+        seg([ox + S, dimBottomY - 0.3], [ox + S, dimBottomY + 0.3], '#222222', 1.0);
+        board.create('text', [(ox + ox + S) / 2, dimBottomY - 0.7, '9 \\text{ in}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        var dimLeftX = ox - 1.4;
+        board.create('segment', [[dimLeftX, oy], [dimLeftX, oy + S]], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 }, lastArrow: { type: 2, size: 5 },
+            point1: { visible: false }, point2: { visible: false }
+        });
+        seg([dimLeftX - 0.3, oy], [dimLeftX + 0.3, oy], '#222222', 1.0);
+        seg([dimLeftX - 0.3, oy + S], [dimLeftX + 0.3, oy + S], '#222222', 1.0);
+        board.create('text', [dimLeftX - 0.8, (oy + oy + S) / 2, '9 \\text{ in}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('segment', [[topCenterX, topCenterY], APEX], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false,
+            point1: { visible: false }, point2: { visible: false }
+        });
+
+        var dimHX = topCenterX + 1.8;
+        board.create('segment', [[dimHX, topCenterY], [dimHX, apexY]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 }, lastArrow: { type: 2, size: 5 },
+            point1: { visible: false }, point2: { visible: false }
+        });
+        seg([dimHX - 0.3, topCenterY], [dimHX + 0.3, topCenterY], '#DC2626', 1.0);
+        seg([dimHX - 0.3, apexY], [dimHX + 0.3, apexY], '#DC2626', 1.0);
+        board.create('text', [dimHX + 1.0, (topCenterY + apexY) / 2, '9 \\text{ in}'], {
+            useKatex: true, fontSize: 12, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('text', [dimHX + 1.0, (topCenterY + apexY) / 2 - 0.9, '\\small{(\\text{pyramid})}'], {
+            useKatex: true, fontSize: 9, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
