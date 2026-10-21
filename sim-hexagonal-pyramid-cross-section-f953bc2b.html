@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hexagonal Pyramid Cross-Section</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 7, 5, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Oblique projection parameters ───────────────────────────────
+        var OBLIQUE_ANGLE = Math.PI / 6;
+        var OBLIQUE_SCALE = 0.45;
+
+        function project3D(x3, y3, z3) {
+            var sx = x3 + OBLIQUE_SCALE * y3 * Math.cos(OBLIQUE_ANGLE);
+            var sy = z3 + OBLIQUE_SCALE * y3 * Math.sin(OBLIQUE_ANGLE);
+            return [sx, sy];
+        }
+
+        // ── Hexagonal base vertices (3D) ────────────────────────────────
+        var BASE_RADIUS = 2.6;
+        var BASE_Z = 0;
+        var HEX_ROTATION = Math.PI / 6;
+
+        var baseVerts3D = [];
+        var baseVerts2D = [];
+        var i;
+        for (i = 0; i < 6; i++) {
+            var angle = HEX_ROTATION + (i * Math.PI / 3);
+            var bx = BASE_RADIUS * Math.cos(angle);
+            var by = BASE_RADIUS * Math.sin(angle);
+            baseVerts3D.push([bx, by, BASE_Z]);
+            baseVerts2D.push(project3D(bx, by, BASE_Z));
+        }
+
+        // ── Apex (3D) ──────────────────────────────────────────────────
+        var APEX_Z = 5.5;
+        var apex3D = [0, 0, APEX_Z];
+        var apex2D = project3D(0, 0, APEX_Z);
+
+        // ── Cross-section vertices (3D) — 40% up from base to apex ─────
+        var SLICE_T = 0.40;
+        var sliceVerts3D = [];
+        var sliceVerts2D = [];
+        for (i = 0; i < 6; i++) {
+            var sx = baseVerts3D[i][0] * (1 - SLICE_T) + apex3D[0] * SLICE_T;
+            var sy = baseVerts3D[i][1] * (1 - SLICE_T) + apex3D[1] * SLICE_T;
+            var sz = baseVerts3D[i][2] * (1 - SLICE_T) + apex3D[2] * SLICE_T;
+            sliceVerts3D.push([sx, sy, sz]);
+            sliceVerts2D.push(project3D(sx, sy, sz));
+        }
+
+        // ── Determine front/back edges for hidden-line rendering ────────
+        function isBackVertex(idx) {
+            return baseVerts3D[idx][1] > 0.1;
+        }
+
+        function isBackEdge(i1, i2) {
+            return isBackVertex(i1) && isBackVertex(i2);
+        }
+
+        // ── Create JSXGraph points (invisible, for polygon construction) ─
+        var basePts = [];
+        for (i = 0; i < 6; i++) {
+            basePts.push(board.create('point', baseVerts2D[i], {
+                visible: false, fixed: true, name: ''
+            }));
+        }
+
+        var apexPt = board.create('point', apex2D, {
+            name: '', fixed: true, size: 2.5, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+
+        var slicePts = [];
+        for (i = 0; i < 6; i++) {
+            slicePts.push(board.create('point', sliceVerts2D[i], {
+                visible: false, fixed: true, name: ''
+            }));
+        }
+
+        // ── Draw back base edges (dashed) ───────────────────────────────
+        for (i = 0; i < 6; i++) {
+            var next = (i + 1) % 6;
+            if (isBackEdge(i, next)) {
+                board.create('segment', [basePts[i], basePts[next]], {
+                    strokeColor: '#999999', strokeWidth: 1.0, dash: 2,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── Draw back lateral edges (dashed) ────────────────────────────
+        for (i = 0; i < 6; i++) {
+            if (isBackVertex(i)) {
+                board.create('segment', [basePts[i], apexPt], {
+                    strokeColor: '#999999', strokeWidth: 1.0, dash: 2,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── Base polygon fill (very light) ──────────────────────────────
+        board.create('polygon', basePts, {
+            fillColor: '#D1D5DB', fillOpacity: 0.10,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Draw front base edges (solid) ───────────────────────────────
+        for (i = 0; i < 6; i++) {
+            var next2 = (i + 1) % 6;
+            if (!isBackEdge(i, next2)) {
+                board.create('segment', [basePts[i], basePts[next2]], {
+                    strokeColor: '#555555', strokeWidth: 1.5,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── Lateral faces: light fill for front-facing triangular faces ─
+        for (i = 0; i < 6; i++) {
+            var next3 = (i + 1) % 6;
+            if (!isBackVertex(i) || !isBackVertex(next3)) {
+                board.create('polygon', [basePts[i], basePts[next3], apexPt], {
+                    fillColor: '#E5E7EB', fillOpacity: 0.08,
+                    borders: { visible: false },
+                    vertices: { visible: false },
+                    hasInnerPoints: false, fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── Cross-section fill (highlighted) ────────────────────────────
+        board.create('polygon', slicePts, {
+            fillColor: '#2563EB', fillOpacity: 0.22,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Cross-section edges ─────────────────────────────────────────
+        function isBackSliceVertex(idx) {
+            return sliceVerts3D[idx][1] > 0.1;
+        }
+
+        function isBackSliceEdge(i1, i2) {
+            return isBackSliceVertex(i1) && isBackSliceVertex(i2);
+        }
+
+        // Back slice edges (dashed, blue)
+        for (i = 0; i < 6; i++) {
+            var next4 = (i + 1) % 6;
+            if (isBackSliceEdge(i, next4)) {
+                board.create('segment', [slicePts[i], slicePts[next4]], {
+                    strokeColor: '#2563EB', strokeWidth: 1.4, dash: 2,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // Front slice edges (solid, blue)
+        for (i = 0; i < 6; i++) {
+            var next5 = (i + 1) % 6;
+            if (!isBackSliceEdge(i, next5)) {
+                board.create('segment', [slicePts[i], slicePts[next5]], {
+                    strokeColor: '#2563EB', strokeWidth: 1.8,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── Slicing plane indication ────────────────────────────────────
+        var PLANE_EXTEND = 0.7;
+        var sliceCenterX = 0, sliceCenterY = 0;
+        for (i = 0; i < 6; i++) {
+            sliceCenterX += sliceVerts2D[i][0];
+            sliceCenterY += sliceVerts2D[i][1];
+        }
+        sliceCenterX /= 6;
+        sliceCenterY /= 6;
+
+        var leftIdx = 0, rightIdx = 0, topIdx = 0, botIdx = 0;
+        for (i = 1; i < 6; i++) {
+            if (sliceVerts2D[i][0] < sliceVerts2D[leftIdx][0]) leftIdx = i;
+            if (sliceVerts2D[i][0] > sliceVerts2D[rightIdx][0]) rightIdx = i;
+            if (sliceVerts2D[i][1] > sliceVerts2D[topIdx][1]) topIdx = i;
+            if (sliceVerts2D[i][1] < sliceVerts2D[botIdx][1]) botIdx = i;
+        }
+
+        var planeExtPts = [];
+        var extremeIndices = [leftIdx, topIdx, rightIdx, botIdx];
+        for (i = 0; i < 4; i++) {
+            var ei = extremeIndices[i];
+            var dx = sliceVerts2D[ei][0] - sliceCenterX;
+            var dy = sliceVerts2D[ei][1] - sliceCenterY;
+            var len = Math.sqrt(dx * dx + dy * dy);
+            if (len < 0.01) len = 1;
+            var px = sliceVerts2D[ei][0] + PLANE_EXTEND * dx / len;
+            var py = sliceVerts2D[ei][1] + PLANE_EXTEND * dy / len;
+            planeExtPts.push(board.create('point', [px, py], {
+                visible: false, fixed: true, name: ''
+            }));
+        }
+
+        board.create('polygon', planeExtPts, {
+            fillColor: '#2563EB', fillOpacity: 0.06,
+            borders: { strokeColor: '#2563EB', strokeWidth: 0.6, strokeOpacity: 0.3 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Draw front lateral edges (solid) — ON TOP of cross-section ──
+        for (i = 0; i < 6; i++) {
+            if (!isBackVertex(i)) {
+                board.create('segment', [basePts[i], apexPt], {
+                    strokeColor: '#555555', strokeWidth: 1.5,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── Small base vertex dots at front vertices ────────────────────
+        for (i = 0; i < 6; i++) {
+            if (!isBackVertex(i)) {
+                board.create('point', baseVerts2D[i], {
+                    name: '', fixed: true, size: 1.5, color: '#555555',
+                    highlight: false, showInfobox: false
+                });
+            }
+        }
+
+    </script>
+</body>
+</html>
