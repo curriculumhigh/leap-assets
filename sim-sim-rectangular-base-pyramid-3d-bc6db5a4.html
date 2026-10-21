@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangular Base Pyramid</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var s = 0.7;
+        var baseW = 10 * s;
+        var baseD = 9 * s;
+
+        var depthScale = 0.35;
+        var depthAngle = Math.PI / 4;
+        var dx = depthScale * Math.cos(depthAngle);
+        var dy = depthScale * Math.sin(depthAngle);
+
+        var ox = 1.5;
+        var oy = 0.5;
+
+        var baseFL = [ox, oy];
+        var baseFR = [ox + baseW, oy];
+        var baseBR = [ox + baseW + baseD * dx, oy + baseD * dy];
+        var baseBL = [ox + baseD * dx, oy + baseD * dy];
+
+        var baseCX = (baseFL[0] + baseBR[0]) / 2;
+        var baseCY = (baseFL[1] + baseBR[1]) / 2;
+
+        var heightVis = 8 * s;
+        var apex = [baseCX, baseCY + heightVis];
+
+        var allX = [baseFL[0], baseFR[0], baseBR[0], baseBL[0], apex[0]];
+        var allY = [baseFL[1], baseFR[1], baseBR[1], baseBL[1], apex[1]];
+        var minX = Math.min.apply(null, allX);
+        var maxX = Math.max.apply(null, allX);
+        var minY = Math.min.apply(null, allY);
+        var maxY = Math.max.apply(null, allY);
+
+        var marginL = 2.0;
+        var marginR = 2.0;
+        var marginB = 2.0;
+        var marginT = 1.5;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [minX - marginL, maxY + marginT, maxX + marginR, minY - marginB],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var pFL = board.create('point', baseFL, { visible: false, fixed: true, name: '' });
+        var pFR = board.create('point', baseFR, { visible: false, fixed: true, name: '' });
+        var pBR = board.create('point', baseBR, { visible: false, fixed: true, name: '' });
+        var pBL = board.create('point', baseBL, { visible: false, fixed: true, name: '' });
+        var pApex = board.create('point', apex, { visible: false, fixed: true, name: '' });
+        var pBaseCenter = board.create('point', [baseCX, baseCY], { visible: false, fixed: true, name: '' });
+
+        /* Hidden edges (dashed) */
+        board.create('segment', [pBL, pBR], {
+            strokeColor: '#555555', strokeWidth: 1.5, dash: 4, fixed: true, highlight: false
+        });
+        board.create('segment', [pFL, pBL], {
+            strokeColor: '#555555', strokeWidth: 1.5, dash: 4, fixed: true, highlight: false
+        });
+        board.create('segment', [pBL, pApex], {
+            strokeColor: '#555555', strokeWidth: 1.5, dash: 4, fixed: true, highlight: false
+        });
+
+        /* Height line (dashed red) */
+        board.create('segment', [pApex, pBaseCenter], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, dash: 3, fixed: true, highlight: false
+        });
+
+        /* Right angle marker at base center */
+        var raSize = 0.35;
+        var raP1 = board.create('point', [baseCX + raSize, baseCY], { visible: false, fixed: true, name: '' });
+        var raP2 = board.create('point', [baseCX + raSize, baseCY + raSize], { visible: false, fixed: true, name: '' });
+        var raP3 = board.create('point', [baseCX, baseCY + raSize], { visible: false, fixed: true, name: '' });
+        board.create('segment', [raP1, raP2], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [raP2, raP3], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        /* Visible edges (solid) */
+        board.create('segment', [pFL, pFR], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [pFR, pBR], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [pFL, pApex], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [pFR, pApex], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [pBR, pApex], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        /* Dimension labels */
+        var frontMidX = (baseFL[0] + baseFR[0]) / 2;
+        var frontMidY = (baseFL[1] + baseFR[1]) / 2;
+        board.create('text', [frontMidX, frontMidY - 1.0, '10\\text{ m}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var midRightX = (baseFR[0] + baseBR[0]) / 2;
+        var midRightY = (baseFR[1] + baseBR[1]) / 2;
+        board.create('text', [midRightX + 0.8, midRightY - 0.3, '9\\text{ m}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        /* 8 m label — shifted right and down */
+        var midHX = (apex[0] + baseCX) / 2;
+        var midHY = (apex[1] + baseCY) / 2;
+        board.create('text', [midHX - 0.9, midHY - 0.5, '8\\text{ m}'], {
+            useKatex: true, fontSize: 12, color: '#DC2626',
+            anchorX: 'right', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
