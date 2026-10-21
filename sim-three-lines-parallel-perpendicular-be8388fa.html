@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three Lines — Parallel and Perpendicular</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var COL_A = '#222222';
+        var COL_B = '#2563EB';
+        var COL_C = '#059669';
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 6, 6, -5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [5.6, -0.45, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 5.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // ── Line a: through (-4, -1) and (2, 2) — slope 1/2 ──────────────
+        var a1 = board.create('point', [-4, -1], { name: '', visible: false, fixed: true });
+        var a2 = board.create('point', [2, 2], { name: '', visible: false, fixed: true });
+        board.create('line', [a1, a2], {
+            strokeColor: COL_A, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Points on line a
+        board.create('point', [-4, -1], {
+            name: '', size: 5, color: COL_A, fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [2, 2], {
+            name: '', size: 5, color: COL_A, fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Line label a
+        board.create('text', [5.0, 3.7, 'a'], {
+            useKatex: true, fontSize: 14, color: COL_A, fixed: true, highlight: false,
+            cssStyle: 'font-style: italic;'
+        });
+
+        // ── Line b: through (-3, 4) and (3, 1) — slope -1/2 ─────────────
+        var b1 = board.create('point', [-3, 4], { name: '', visible: false, fixed: true });
+        var b2 = board.create('point', [3, 1], { name: '', visible: false, fixed: true });
+        board.create('line', [b1, b2], {
+            strokeColor: COL_B, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Points on line b
+        board.create('point', [-3, 4], {
+            name: '', size: 5, color: COL_B, fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [3, 1], {
+            name: '', size: 5, color: COL_B, fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Line label b
+        board.create('text', [5.0, -1.0, 'b'], {
+            useKatex: true, fontSize: 14, color: COL_B, fixed: true, highlight: false,
+            cssStyle: 'font-style: italic;'
+        });
+
+        // ── Line c: through (-2, -3) and (4, 0) — slope 1/2 ─────────────
+        var c1 = board.create('point', [-2, -3], { name: '', visible: false, fixed: true });
+        var c2 = board.create('point', [4, 0], { name: '', visible: false, fixed: true });
+        board.create('line', [c1, c2], {
+            strokeColor: COL_C, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Points on line c
+        board.create('point', [-2, -3], {
+            name: '', size: 5, color: COL_C, fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [4, 0], {
+            name: '', size: 5, color: COL_C, fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Line label c
+        board.create('text', [5.0, 0.8, 'c'], {
+            useKatex: true, fontSize: 14, color: COL_C, fixed: true, highlight: false,
+            cssStyle: 'font-style: italic;'
+        });
+    </script>
+</body>
+</html>
