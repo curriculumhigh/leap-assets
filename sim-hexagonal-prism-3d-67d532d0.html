@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hexagonal Prism</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4.5, 5, 4.5, -4.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var rotY = 0.45;
+        var rotX = 0.55;
+
+        var cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+        var cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+
+        function project(x3, y3, z3) {
+            var rx = x3 * cosY + z3 * sinY;
+            var rz = -x3 * sinY + z3 * cosY;
+            var ry = y3;
+            var py = ry * cosX - rz * sinX;
+            return [rx, py];
+        }
+
+        function projectZ(x3, y3, z3) {
+            var rx = x3 * cosY + z3 * sinY;
+            var rz = -x3 * sinY + z3 * cosY;
+            var ry = y3;
+            var pz = ry * sinX + rz * cosX;
+            return pz;
+        }
+
+        var R = 2.2;
+        var H = 3.0;
+        var halfH = H / 2;
+
+        var bottomVerts3D = [];
+        var topVerts3D = [];
+        for (var i = 0; i < 6; i++) {
+            var angle = Math.PI / 6 + i * Math.PI / 3;
+            var cx = R * Math.cos(angle);
+            var cz = R * Math.sin(angle);
+            bottomVerts3D.push([cx, -halfH, cz]);
+            topVerts3D.push([cx, halfH, cz]);
+        }
+
+        var bottomVerts2D = [];
+        var topVerts2D = [];
+        var bottomVertsZ = [];
+        var topVertsZ = [];
+        for (var i = 0; i < 6; i++) {
+            var bv = bottomVerts3D[i];
+            var tv = topVerts3D[i];
+            bottomVerts2D.push(project(bv[0], bv[1], bv[2]));
+            topVerts2D.push(project(tv[0], tv[1], tv[2]));
+            bottomVertsZ.push(projectZ(bv[0], bv[1], bv[2]));
+            topVertsZ.push(projectZ(tv[0], tv[1], tv[2]));
+        }
+
+        function isLateralFaceVisible(i) {
+            var j = (i + 1) % 6;
+            var nx = (bottomVerts3D[i][0] + bottomVerts3D[j][0]) / 2;
+            var nz = (bottomVerts3D[i][2] + bottomVerts3D[j][2]) / 2;
+            var rz = -nx * sinY + nz * cosY;
+            return rz > 0;
+        }
+
+        var bottomBaseVisible = (-sinX) > 0;
+        var topBaseVisible = (sinX) > 0;
+
+        var COL_SOLID = '#555555';
+        var COL_HIDDEN = '#AAAAAA';
+        var W_SOLID = 2.0;
+        var W_HIDDEN = 1.2;
+
+        function drawEdge(p1, p2, visible) {
+            board.create('segment', [p1, p2], {
+                strokeColor: visible ? COL_SOLID : COL_HIDDEN,
+                strokeWidth: visible ? W_SOLID : W_HIDDEN,
+                dash: visible ? 0 : 2,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        var bPts = [];
+        var tPts = [];
+        for (var i = 0; i < 6; i++) {
+            bPts.push(board.create('point', bottomVerts2D[i], {
+                visible: false, fixed: true, name: ''
+            }));
+            tPts.push(board.create('point', topVerts2D[i], {
+                visible: false, fixed: true, name: ''
+            }));
+        }
+
+        var lateralVisible = [];
+        for (var i = 0; i < 6; i++) {
+            lateralVisible.push(isLateralFaceVisible(i));
+        }
+
+        function isBottomEdgeVisible(i) {
+            var j = (i + 5) % 6;
+            if (bottomBaseVisible) return true;
+            return lateralVisible[j] || lateralVisible[i];
+        }
+
+        function isTopEdgeVisible(i) {
+            var j = (i + 5) % 6;
+            if (topBaseVisible) return true;
+            return lateralVisible[j] || lateralVisible[i];
+        }
+
+        function isLateralEdgeVisible(i) {
+            var prev = (i + 5) % 6;
+            return lateralVisible[prev] || lateralVisible[i];
+        }
+
+        for (var i = 0; i < 6; i++) {
+            var j = (i + 1) % 6;
+            if (!isBottomEdgeVisible(i)) {
+                drawEdge(bPts[i], bPts[j], false);
+            }
+        }
+        for (var i = 0; i < 6; i++) {
+            var j = (i + 1) % 6;
+            if (!isTopEdgeVisible(i)) {
+                drawEdge(tPts[i], tPts[j], false);
+            }
+        }
+        for (var i = 0; i < 6; i++) {
+            if (!isLateralEdgeVisible(i)) {
+                drawEdge(bPts[i], tPts[i], false);
+            }
+        }
+
+        for (var i = 0; i < 6; i++) {
+            if (lateralVisible[i]) {
+                var j = (i + 1) % 6;
+                board.create('polygon', [bPts[i], bPts[j], tPts[j], tPts[i]], {
+                    fillColor: '#D1D5DB',
+                    fillOpacity: 0.10,
+                    borders: { visible: false },
+                    vertices: { visible: false },
+                    hasInnerPoints: false,
+                    fixed: true,
+                    highlight: false
+                });
+            }
+        }
+
+        if (topBaseVisible) {
+            board.create('polygon', tPts, {
+                fillColor: '#93C5FD',
+                fillOpacity: 0.12,
+                borders: { visible: false },
+                vertices: { visible: false },
+                hasInnerPoints: false,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        for (var i = 0; i < 6; i++) {
+            var j = (i + 1) % 6;
+            if (isBottomEdgeVisible(i)) {
+                drawEdge(bPts[i], bPts[j], true);
+            }
+        }
+        for (var i = 0; i < 6; i++) {
+            var j = (i + 1) % 6;
+            if (isTopEdgeVisible(i)) {
+                drawEdge(tPts[i], tPts[j], true);
+            }
+        }
+        for (var i = 0; i < 6; i++) {
+            if (isLateralEdgeVisible(i)) {
+                drawEdge(bPts[i], tPts[i], true);
+            }
+        }
+    </script>
+</body>
+</html>
