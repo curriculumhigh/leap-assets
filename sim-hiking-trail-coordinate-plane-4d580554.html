@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hiking Trail Coordinate Plane</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.8, 9.8, 8.2, -4.2],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [7.7, -0.45, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 9.4, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Hiking trail line — through (1,1) and (4,5), slope = 4/3
+        var trailLine = board.create('line', [[1, 1], [4, 5]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Key points on the trail
+        board.create('point', [1, 1], {
+            name: '',
+            size: 5,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            showInfobox: false
+        });
+
+        board.create('point', [4, 5], {
+            name: '',
+            size: 5,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            showInfobox: false
+        });
+
+        // Coordinate labels for trail points
+        board.create('text', [1.3, 0.25, '(1,\\, 1)'], {
+            useKatex: true,
+            fontSize: 12,
+            color: '#222222',
+            fixed: true,
+            highlight: false
+        });
+
+        board.create('text', [4.3, 4.35, '(4,\\, 5)'], {
+            useKatex: true,
+            fontSize: 12,
+            color: '#222222',
+            fixed: true,
+            highlight: false
+        });
+
+        // "hiking trail" label — placed along the line in a clear area
+        board.create('text', [5.1, 6.6, '\\text{hiking trail}'], {
+            useKatex: true,
+            fontSize: 13,
+            color: '#222222',
+            fixed: true,
+            highlight: false
+        });
+
+        // Trailhead point at (-2, 6)
+        board.create('point', [-2, 6], {
+            name: '',
+            size: 5,
+            color: '#2563EB',
+            fixed: true,
+            highlight: false,
+            showInfobox: false
+        });
+
+        // "trailhead" label
+        board.create('text', [-1.55, 6.45, '\\text{trailhead}'], {
+            useKatex: true,
+            fontSize: 13,
+            color: '#2563EB',
+            fixed: true,
+            highlight: false
+        });
+
+        // Coordinate label for trailhead
+        board.create('text', [-1.55, 5.4, '(-2,\\, 6)'], {
+            useKatex: true,
+            fontSize: 12,
+            color: '#2563EB',
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
