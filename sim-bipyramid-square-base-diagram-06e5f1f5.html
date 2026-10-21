@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bipyramid Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7.5, 10.5, 8.5, -10.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var dx = 1.4;
+        var dy = 1.6;
+
+        var A = [-3, 0];
+        var B = [3, 0];
+        var C = [3 + dx, dy];
+        var D = [-3 + dx, dy];
+
+        var cx = (A[0] + B[0] + C[0] + D[0]) / 4;
+        var cy = (A[1] + B[1] + C[1] + D[1]) / 4;
+        var TOP = [cx, cy + 7];
+        var BOT = [cx, cy - 7];
+
+        var pA = board.create('point', A, { visible: false, name: '', fixed: true });
+        var pB = board.create('point', B, { visible: false, name: '', fixed: true });
+        var pC = board.create('point', C, { visible: false, name: '', fixed: true });
+        var pD = board.create('point', D, { visible: false, name: '', fixed: true });
+        var pTop = board.create('point', TOP, { visible: false, name: '', fixed: true });
+        var pBot = board.create('point', BOT, { visible: false, name: '', fixed: true });
+
+        var SOLID = { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false };
+        var HIDDEN = { strokeColor: '#999999', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false };
+        var VERT_HIDDEN = { visible: false };
+
+        board.create('segment', [pD, pC], HIDDEN);
+        board.create('segment', [pA, pD], HIDDEN);
+        board.create('segment', [pTop, pD], HIDDEN);
+        board.create('segment', [pBot, pD], HIDDEN);
+
+        board.create('polygon', [pTop, pA, pB], {
+            borders: { visible: false },
+            vertices: VERT_HIDDEN,
+            fillColor: '#D1D5DB', fillOpacity: 0.15,
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        board.create('polygon', [pTop, pB, pC], {
+            borders: { visible: false },
+            vertices: VERT_HIDDEN,
+            fillColor: '#E5E7EB', fillOpacity: 0.22,
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        board.create('polygon', [pBot, pA, pB], {
+            borders: { visible: false },
+            vertices: VERT_HIDDEN,
+            fillColor: '#D1D5DB', fillOpacity: 0.15,
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        board.create('polygon', [pBot, pB, pC], {
+            borders: { visible: false },
+            vertices: VERT_HIDDEN,
+            fillColor: '#E5E7EB', fillOpacity: 0.22,
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('segment', [pA, pB], SOLID);
+        board.create('segment', [pB, pC], SOLID);
+
+        board.create('segment', [pTop, pA], SOLID);
+        board.create('segment', [pTop, pB], SOLID);
+        board.create('segment', [pTop, pC], SOLID);
+
+        board.create('segment', [pBot, pA], SOLID);
+        board.create('segment', [pBot, pB], SOLID);
+        board.create('segment', [pBot, pC], SOLID);
+
+        var DIM_COL = '#DC2626';
+        var ARROW_STYLE = { type: 2, size: 4 };
+
+        var labelOffY = -1.2;
+        board.create('segment', [[A[0], A[1] + labelOffY], [B[0], B[1] + labelOffY]], {
+            strokeColor: DIM_COL, strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: ARROW_STYLE, lastArrow: ARROW_STYLE
+        });
+        board.create('segment', [[A[0], A[1] - 0.5], [A[0], A[1] + labelOffY - 0.3]], {
+            strokeColor: DIM_COL, strokeWidth: 0.8, fixed: true, highlight: false
+        });
+        board.create('segment', [[B[0], B[1] - 0.5], [B[0], B[1] + labelOffY - 0.3]], {
+            strokeColor: DIM_COL, strokeWidth: 0.8, fixed: true, highlight: false
+        });
+        board.create('text', [0, labelOffY - 0.7, '6 \\text{ cm}'], {
+            useKatex: true, fontSize: 12, color: DIM_COL,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        var dimX = C[0] + 1.8;
+        var baseY = cy;
+        board.create('segment', [[dimX, baseY], [dimX, TOP[1]]], {
+            strokeColor: DIM_COL, strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: ARROW_STYLE, lastArrow: ARROW_STYLE
+        });
+        board.create('segment', [[dimX - 0.35, baseY], [dimX + 0.35, baseY]], {
+            strokeColor: DIM_COL, strokeWidth: 0.8, fixed: true, highlight: false
+        });
+        board.create('segment', [[dimX - 0.35, TOP[1]], [dimX + 0.35, TOP[1]]], {
+            strokeColor: DIM_COL, strokeWidth: 0.8, fixed: true, highlight: false
+        });
+        board.create('text', [dimX + 1.2, (baseY + TOP[1]) / 2, '7 \\text{ cm}'], {
+            useKatex: true, fontSize: 12, color: DIM_COL,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('segment', [[dimX, baseY], [dimX, BOT[1]]], {
+            strokeColor: DIM_COL, strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: ARROW_STYLE, lastArrow: ARROW_STYLE
+        });
+        board.create('segment', [[dimX - 0.35, BOT[1]], [dimX + 0.35, BOT[1]]], {
+            strokeColor: DIM_COL, strokeWidth: 0.8, fixed: true, highlight: false
+        });
+        board.create('text', [dimX + 1.2, (baseY + BOT[1]) / 2, '7 \\text{ cm}'], {
+            useKatex: true, fontSize: 12, color: DIM_COL,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
