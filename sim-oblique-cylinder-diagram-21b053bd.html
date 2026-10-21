@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oblique Cylinder Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7.5, 13, 10, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_SHAPE = '#555555';
+        var COL_REF = '#DC2626';
+        var COL_FILL = '#F5E6C8';
+
+        var rx = 3.0;
+        var ry = 0.85;
+
+        var bx = 0.5, by = 1.0;
+        var tx = 4.5, ty = 10.0;
+
+        var hx = bx - rx - 1.8;
+        var hBot = by;
+        var hTop = ty;
+
+        var nPts = 50;
+        var i, t;
+
+        function drawEllipseArc(cx, cy, a, b, tStart, tEnd, attrs) {
+            return board.create('curve', [
+                function(tt) { return cx + a * Math.cos(tt); },
+                function(tt) { return cy + b * Math.sin(tt); },
+                tStart, tEnd
+            ], attrs);
+        }
+
+        // ── Cylinder body fill ──────────────────────────────────────────
+        var bodyPtsX = [];
+        var bodyPtsY = [];
+
+        for (i = 0; i <= nPts; i++) {
+            t = Math.PI - (Math.PI * i / nPts);
+            bodyPtsX.push(bx + rx * Math.cos(t));
+            bodyPtsY.push(by + ry * Math.sin(t));
+        }
+        bodyPtsX.push(tx + rx);
+        bodyPtsY.push(ty);
+        for (i = 0; i <= nPts; i++) {
+            t = 0 - (Math.PI * i / nPts);
+            bodyPtsX.push(tx + rx * Math.cos(t));
+            bodyPtsY.push(ty + ry * Math.sin(t));
+        }
+        bodyPtsX.push(bx - rx);
+        bodyPtsY.push(by);
+
+        var bodyPoints = [];
+        for (i = 0; i < bodyPtsX.length; i++) {
+            bodyPoints.push(board.create('point', [bodyPtsX[i], bodyPtsY[i]], { visible: false, fixed: true, name: '' }));
+        }
+        board.create('polygon', bodyPoints, {
+            fillColor: COL_FILL, fillOpacity: 0.6,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── Top ellipse fill ────────────────────────────────────────────
+        var topCapX = [];
+        var topCapY = [];
+        for (i = 0; i <= nPts; i++) {
+            t = 2 * Math.PI * i / nPts;
+            topCapX.push(tx + rx * Math.cos(t));
+            topCapY.push(ty + ry * Math.sin(t));
+        }
+        var topCapPts = [];
+        for (i = 0; i < topCapX.length; i++) {
+            topCapPts.push(board.create('point', [topCapX[i], topCapY[i]], { visible: false, fixed: true, name: '' }));
+        }
+        board.create('polygon', topCapPts, {
+            fillColor: COL_FILL, fillOpacity: 0.45,
+            borders: { visible: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── Back edge of base ellipse (dashed) ─────────────────────────
+        drawEllipseArc(bx, by, rx, ry, Math.PI, 2 * Math.PI, {
+            strokeColor: COL_SHAPE, strokeWidth: 1.2, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── Side lines ─────────────────────────────────────────────────
+        board.create('segment', [[bx - rx, by], [tx - rx, ty]], {
+            strokeColor: COL_SHAPE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[bx + rx, by], [tx + rx, ty]], {
+            strokeColor: COL_SHAPE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Front edge of base ellipse (solid) ─────────────────────────
+        drawEllipseArc(bx, by, rx, ry, 0, Math.PI, {
+            strokeColor: COL_SHAPE, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        // ── Top ellipse back half (dashed) ─────────────────────────────
+        drawEllipseArc(tx, ty, rx, ry, Math.PI, 2 * Math.PI, {
+            strokeColor: COL_SHAPE, strokeWidth: 1.2, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── Top ellipse front half (solid) ─────────────────────────────
+        drawEllipseArc(tx, ty, rx, ry, 0, Math.PI, {
+            strokeColor: COL_SHAPE, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        // ── Radius line on base ellipse (dashed, center to right) ──────
+        board.create('segment', [[bx, by], [bx + rx, by]], {
+            strokeColor: COL_SHAPE, strokeWidth: 1.2, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── Radius label: "3 ft" ───────────────────────────────────────
+        board.create('text', [bx + rx / 2, by + 0.65, '3 \\text{ ft}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+
+        // ── Perpendicular height line (solid, left of cylinder) ────────
+        board.create('segment', [[hx, hBot], [hx, hTop]], {
+            strokeColor: '#222222', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        // Horizontal ticks at top and bottom
+        var tickLen = 0.3;
+        board.create('segment', [[hx - tickLen, hBot], [hx + tickLen, hBot]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[hx - tickLen, hTop], [hx + tickLen, hTop]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Horizontal dashed lines connecting height line to cylinder ──
+        board.create('segment', [[hx + tickLen, hBot], [bx - rx, hBot]], {
+            strokeColor: '#999999', strokeWidth: 0.8, dash: 3,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[hx + tickLen, hTop], [tx - rx, hTop]], {
+            strokeColor: '#999999', strokeWidth: 0.8, dash: 3,
+            fixed: true, highlight: false
+        });
+
+        // ── Right-angle mark at bottom of height line ──────────────────
+        var sqSize = 0.45;
+        board.create('segment', [[hx, hBot], [hx + sqSize, hBot]], {
+            strokeColor: COL_REF, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[hx + sqSize, hBot], [hx + sqSize, hBot + sqSize]], {
+            strokeColor: COL_REF, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[hx + sqSize, hBot + sqSize], [hx, hBot + sqSize]], {
+            strokeColor: COL_REF, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Height label: "10 ft" ──────────────────────────────────────
+        board.create('text', [hx - 0.5, (hBot + hTop) / 2, '10 \\text{ ft}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'right', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
