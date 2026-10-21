@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangular Pyramid</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 9.5, 11, -2.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var ax = 0.35;
+        var angD = Math.PI / 5;
+
+        var C3 = [0, 0, 0];
+        var A3 = [8, 0, 0];
+        var B3 = [0, 0, 5];
+        var D3 = [0, 6, 0];
+
+        function proj(p) {
+            var x2d = p[0] + ax * p[2] * Math.cos(angD);
+            var y2d = p[1] + ax * p[2] * Math.sin(angD);
+            return [x2d + 1.5, y2d + 0.8];
+        }
+
+        var C2 = proj(C3);
+        var A2 = proj(A3);
+        var B2 = proj(B3);
+        var D2 = proj(D3);
+
+        var ptC = board.create('point', C2, { visible: false, fixed: true, name: '' });
+        var ptA = board.create('point', A2, { visible: false, fixed: true, name: '' });
+        var ptB = board.create('point', B2, { visible: false, fixed: true, name: '' });
+        var ptD = board.create('point', D2, { visible: false, fixed: true, name: '' });
+
+        var SOLID = { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false };
+        var DASHED = { strokeColor: '#555555', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false };
+
+        board.create('segment', [ptC, ptA], SOLID);
+        board.create('segment', [ptC, ptB], SOLID);
+        board.create('segment', [ptA, ptB], DASHED);
+
+        board.create('segment', [ptD, ptC], SOLID);
+        board.create('segment', [ptD, ptA], SOLID);
+        board.create('segment', [ptD, ptB], SOLID);
+
+        board.create('segment', [ptD, ptC], {
+            strokeColor: '#888888', strokeWidth: 1.2, dash: 3,
+            fixed: true, highlight: false
+        });
+
+        var raSize = 0.55;
+        var dxCA = A2[0] - C2[0];
+        var dyCA = A2[1] - C2[1];
+        var lenCA = Math.sqrt(dxCA * dxCA + dyCA * dyCA);
+        var uxCA = dxCA / lenCA;
+        var uyCA = dyCA / lenCA;
+
+        var dxCB = B2[0] - C2[0];
+        var dyCB = B2[1] - C2[1];
+        var lenCB = Math.sqrt(dxCB * dxCB + dyCB * dyCB);
+        var uxCB = dxCB / lenCB;
+        var uyCB = dyCB / lenCB;
+
+        var ra1 = [C2[0] + raSize * uxCA, C2[1] + raSize * uyCA];
+        var ra2 = [C2[0] + raSize * uxCA + raSize * uxCB, C2[1] + raSize * uyCA + raSize * uyCB];
+        var ra3 = [C2[0] + raSize * uxCB, C2[1] + raSize * uyCB];
+
+        var raP1 = board.create('point', ra1, { visible: false, fixed: true, name: '' });
+        var raP2 = board.create('point', ra2, { visible: false, fixed: true, name: '' });
+        var raP3 = board.create('point', ra3, { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [raP1, raP2], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [raP2, raP3], { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // 8 cm
+        var midCA = [(C2[0] + A2[0]) / 2, (C2[1] + A2[1]) / 2];
+        board.create('text', [midCA[0], midCA[1] - 0.7, '8 \\text{ cm}'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'top',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // 5 cm
+        var midCB = [(C2[0] + B2[0]) / 2, (C2[1] + B2[1]) / 2];
+        var perpCBx = -uyCB;
+        var perpCBy = uxCB;
+        board.create('text', [midCB[0] + 2.4 * perpCBx, midCB[1] + 2.4 * perpCBy - 1.6, '5 \\text{ cm}'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // 6 cm
+        var midDC = [(D2[0] + C2[0]) / 2, (D2[1] + C2[1]) / 2];
+        board.create('text', [midDC[0] - 0.4, midDC[1], '6 \\text{ cm}'], {
+            fontSize: 13, color: '#222222', anchorX: 'right', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
