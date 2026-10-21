@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pentagonal Prism</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 8.5, 5.5, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var CR = 2.8;
+        var HEIGHT = 4.2;
+        var OBX = 0.32;
+        var OBY = 0.22;
+
+        var baseAngles = [];
+        var startAngle = -Math.PI / 2 + Math.PI / 5;
+        for (var i = 0; i < 5; i++) {
+            baseAngles.push(startAngle + i * 2 * Math.PI / 5);
+        }
+
+        var cx = -0.3;
+        var cy = -1.2;
+
+        var botVerts = [];
+        for (var i = 0; i < 5; i++) {
+            botVerts.push([
+                cx + CR * Math.cos(baseAngles[i]),
+                cy + CR * Math.sin(baseAngles[i])
+            ]);
+        }
+
+        var topVerts = [];
+        var depthShift = 1;
+        for (var i = 0; i < 5; i++) {
+            topVerts.push([
+                botVerts[i][0] + OBX * depthShift,
+                botVerts[i][1] + HEIGHT + OBY * depthShift
+            ]);
+        }
+
+        var frontBottomEdges = [[4, 0], [0, 1], [3, 4]];
+        var backBottomEdges = [[1, 2], [2, 3]];
+        var topEdges = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0]];
+        var frontVertEdges = [0, 1, 3, 4];
+        var backVertEdges = [2];
+
+        for (var i = 0; i < backBottomEdges.length; i++) {
+            var e = backBottomEdges[i];
+            board.create('segment', [botVerts[e[0]], botVerts[e[1]]], {
+                strokeColor: '#555555', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+        }
+
+        for (var i = 0; i < backVertEdges.length; i++) {
+            var vi = backVertEdges[i];
+            board.create('segment', [botVerts[vi], topVerts[vi]], {
+                strokeColor: '#555555', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+        }
+
+        var topPts = [];
+        for (var i = 0; i < 5; i++) {
+            topPts.push(board.create('point', topVerts[i], {
+                visible: false, fixed: true, name: ''
+            }));
+        }
+        board.create('polygon', topPts, {
+            fillColor: '#D1D5DB', fillOpacity: 0.15,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        for (var i = 0; i < frontBottomEdges.length; i++) {
+            var e = frontBottomEdges[i];
+            board.create('segment', [botVerts[e[0]], botVerts[e[1]]], {
+                strokeColor: '#555555', strokeWidth: 2.0,
+                fixed: true, highlight: false
+            });
+        }
+
+        for (var i = 0; i < topEdges.length; i++) {
+            var e = topEdges[i];
+            board.create('segment', [topVerts[e[0]], topVerts[e[1]]], {
+                strokeColor: '#555555', strokeWidth: 2.0,
+                fixed: true, highlight: false
+            });
+        }
+
+        for (var i = 0; i < frontVertEdges.length; i++) {
+            var vi = frontVertEdges[i];
+            board.create('segment', [botVerts[vi], topVerts[vi]], {
+                strokeColor: '#555555', strokeWidth: 2.0,
+                fixed: true, highlight: false
+            });
+        }
+
+        var midBotX = (botVerts[4][0] + botVerts[0][0]) / 2;
+        var midBotY = (botVerts[4][1] + botVerts[0][1]) / 2;
+        board.create('text', [midBotX, midBotY - 0.7, '5\\text{ ft}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var midVertX = (botVerts[0][0] + topVerts[0][0]) / 2;
+        var midVertY = (botVerts[0][1] + topVerts[0][1]) / 2;
+        board.create('text', [midVertX + 1.3, midVertY + 2.4, '7\\text{ ft}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
