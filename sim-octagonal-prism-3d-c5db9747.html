@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Octagonal Prism</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4.5, 4.5, 4.5, -4.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var elevAngle = 28 * Math.PI / 180;
+        var azimAngle = 22 * Math.PI / 180;
+        var cosEl = Math.cos(elevAngle), sinEl = Math.sin(elevAngle);
+        var cosAz = Math.cos(azimAngle), sinAz = Math.sin(azimAngle);
+
+        function project(x, y, z) {
+            var sx = x * cosAz - y * sinAz;
+            var sy = -x * sinAz * sinEl - y * cosAz * sinEl + z * cosEl;
+            return [sx, sy];
+        }
+
+        var N = 8;
+        var R = 2.4;
+        var H = 3.0;
+        var halfH = H / 2;
+        var rotOffset = Math.PI / 8;
+
+        var topVerts3D = [];
+        var botVerts3D = [];
+        var topVerts2D = [];
+        var botVerts2D = [];
+
+        var i;
+        for (i = 0; i < N; i++) {
+            var angle = (2 * Math.PI * i) / N + rotOffset;
+            var cx = R * Math.cos(angle);
+            var cy = R * Math.sin(angle);
+            topVerts3D.push([cx, cy, halfH]);
+            botVerts3D.push([cx, cy, -halfH]);
+            topVerts2D.push(project(cx, cy, halfH));
+            botVerts2D.push(project(cx, cy, -halfH));
+        }
+
+        var camDir = [sinAz * cosEl, cosAz * cosEl, sinEl];
+
+        function lateralFaceVisible(i) {
+            var i2 = (i + 1) % N;
+            var mx = (topVerts3D[i][0] + topVerts3D[i2][0]) / 2;
+            var my = (topVerts3D[i][1] + topVerts3D[i2][1]) / 2;
+            var len = Math.sqrt(mx * mx + my * my);
+            var nx = mx / len, ny = my / len;
+            var dot = nx * camDir[0] + ny * camDir[1];
+            return dot > 0;
+        }
+
+        var topVisible = camDir[2] > 0;
+        var botVisible = camDir[2] < 0;
+
+        var lateralFaceVis = [];
+        for (i = 0; i < N; i++) {
+            lateralFaceVis.push(lateralFaceVisible(i));
+        }
+
+        function isLateralEdgeVisible(i) {
+            var prev = (i - 1 + N) % N;
+            return lateralFaceVis[prev] || lateralFaceVis[i];
+        }
+
+        function isTopEdgeVisible(i) {
+            return topVisible || lateralFaceVis[i];
+        }
+
+        function isBotEdgeVisible(i) {
+            return botVisible || lateralFaceVis[i];
+        }
+
+        var SOLID = { strokeColor: '#555555', strokeWidth: 2.0, dash: 0, fixed: true, highlight: false };
+        var DASHED = { strokeColor: '#999999', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false };
+
+        var facesWithDepth = [];
+        for (i = 0; i < N; i++) {
+            if (lateralFaceVis[i]) {
+                var i2 = (i + 1) % N;
+                var avgDepth = (topVerts3D[i][0] * sinAz + topVerts3D[i][1] * cosAz +
+                                topVerts3D[i2][0] * sinAz + topVerts3D[i2][1] * cosAz) / 2;
+                facesWithDepth.push({ idx: i, depth: avgDepth });
+            }
+        }
+        facesWithDepth.sort(function(a, b) { return a.depth - b.depth; });
+
+        for (var f = 0; f < facesWithDepth.length; f++) {
+            var fi = facesWithDepth[f].idx;
+            var fi2 = (fi + 1) % N;
+            var p1 = board.create('point', topVerts2D[fi], { visible: false, name: '' });
+            var p2 = board.create('point', topVerts2D[fi2], { visible: false, name: '' });
+            var p3 = board.create('point', botVerts2D[fi2], { visible: false, name: '' });
+            var p4 = board.create('point', botVerts2D[fi], { visible: false, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: '#E8EDF2', fillOpacity: 0.30,
+                borders: { visible: false },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        if (topVisible) {
+            var topPts = [];
+            for (i = 0; i < N; i++) {
+                topPts.push(board.create('point', topVerts2D[i], { visible: false, name: '' }));
+            }
+            board.create('polygon', topPts, {
+                fillColor: '#D6DCE5', fillOpacity: 0.50,
+                borders: { visible: false },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        for (i = 0; i < N; i++) {
+            var i2 = (i + 1) % N;
+            if (!isBotEdgeVisible(i)) {
+                board.create('segment', [botVerts2D[i], botVerts2D[i2]], DASHED);
+            }
+        }
+        for (i = 0; i < N; i++) {
+            if (!isLateralEdgeVisible(i)) {
+                board.create('segment', [topVerts2D[i], botVerts2D[i]], DASHED);
+            }
+        }
+        for (i = 0; i < N; i++) {
+            var i2 = (i + 1) % N;
+            if (!isTopEdgeVisible(i)) {
+                board.create('segment', [topVerts2D[i], topVerts2D[i2]], DASHED);
+            }
+        }
+
+        for (i = 0; i < N; i++) {
+            var i2 = (i + 1) % N;
+            if (isBotEdgeVisible(i)) {
+                board.create('segment', [botVerts2D[i], botVerts2D[i2]], SOLID);
+            }
+        }
+        for (i = 0; i < N; i++) {
+            if (isLateralEdgeVisible(i)) {
+                board.create('segment', [topVerts2D[i], botVerts2D[i]], SOLID);
+            }
+        }
+        for (i = 0; i < N; i++) {
+            var i2 = (i + 1) % N;
+            if (isTopEdgeVisible(i)) {
+                board.create('segment', [topVerts2D[i], topVerts2D[i2]], SOLID);
+            }
+        }
+    </script>
+</body>
+</html>
