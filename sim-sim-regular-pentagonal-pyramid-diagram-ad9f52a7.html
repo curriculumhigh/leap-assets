@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regular Pentagonal Pyramid</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 8, 5, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Oblique cabinet projection ─────────────────────────── */
+        var fShort = 0.45;
+        var alphaObl = 210 * Math.PI / 180;
+
+        function proj(x3, y3, z3) {
+            return [
+                x3 + fShort * y3 * Math.cos(alphaObl),
+                z3 + fShort * y3 * Math.sin(alphaObl)
+            ];
+        }
+
+        /* ── Pyramid geometry ───────────────────────────────────── */
+        var TV_val = 10;
+        var angDeg = 55;
+        var angRad = angDeg * Math.PI / 180;
+        var TO_val = TV_val * Math.sin(angRad);
+        var OV_val = TV_val * Math.cos(angRad);
+
+        var sc = 0.50;
+        var hh = TO_val * sc;
+        var rr = OV_val * sc;
+
+        /* Base vertices (3D) */
+        var baseV3D = [];
+        var i;
+        for (i = 0; i < 5; i++) {
+            var theta = Math.PI / 2 + i * 2 * Math.PI / 5;
+            baseV3D.push([
+                rr * Math.cos(theta),
+                rr * Math.sin(theta),
+                0
+            ]);
+        }
+
+        var T3 = [0, 0, hh];
+        var O3 = [0, 0, 0];
+
+        /* Project to 2D */
+        var base2D = [];
+        for (i = 0; i < 5; i++) {
+            base2D.push(proj(baseV3D[i][0], baseV3D[i][1], baseV3D[i][2]));
+        }
+        var T2 = proj(T3[0], T3[1], T3[2]);
+        var O2 = proj(O3[0], O3[1], O3[2]);
+        var V2 = base2D[0];
+
+        /* Edge visibility */
+        var frontBaseEdges = [[0, 1], [4, 0]];
+        var backBaseEdges = [[1, 2], [2, 3], [3, 4]];
+        var frontLatIdx = [0, 1, 4];
+        var backLatIdx = [2, 3];
+
+        /* ── Create invisible anchor points ─────────────────────── */
+        var bPts = [];
+        for (i = 0; i < 5; i++) {
+            bPts.push(board.create('point', base2D[i], {
+                visible: false, fixed: true, name: '', showInfobox: false
+            }));
+        }
+        var pT = board.create('point', T2, { visible: false, fixed: true, name: '', showInfobox: false });
+        var pO = board.create('point', O2, { visible: false, fixed: true, name: '', showInfobox: false });
+
+        /* ── Back edges (dashed) ────────────────────────────────── */
+        for (i = 0; i < backBaseEdges.length; i++) {
+            var eb = backBaseEdges[i];
+            board.create('segment', [bPts[eb[0]], bPts[eb[1]]], {
+                strokeColor: '#AAAAAA', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+        }
+        for (i = 0; i < backLatIdx.length; i++) {
+            board.create('segment', [pT, bPts[backLatIdx[i]]], {
+                strokeColor: '#AAAAAA', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+        }
+
+        /* Height TO (dashed, internal) */
+        board.create('segment', [pT, pO], {
+            strokeColor: '#AAAAAA', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+        /* OV (dashed, internal) */
+        board.create('segment', [pO, bPts[0]], {
+            strokeColor: '#AAAAAA', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        /* ── Key triangle T-O-V highlighted in cyan ─────────────── */
+        board.create('segment', [pT, bPts[0]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.5,
+            fixed: true, highlight: false, layer: 7
+        });
+        board.create('segment', [pT, pO], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.5,
+            fixed: true, highlight: false, layer: 7
+        });
+        board.create('segment', [pO, bPts[0]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.5,
+            fixed: true, highlight: false, layer: 7
+        });
+
+        /* ── Front edges (solid) ────────────────────────────────── */
+        for (i = 0; i < frontBaseEdges.length; i++) {
+            var ef = frontBaseEdges[i];
+            board.create('segment', [bPts[ef[0]], bPts[ef[1]]], {
+                strokeColor: '#555555', strokeWidth: 1.8,
+                fixed: true, highlight: false
+            });
+        }
+        for (i = 0; i < frontLatIdx.length; i++) {
+            board.create('segment', [pT, bPts[frontLatIdx[i]]], {
+                strokeColor: '#555555', strokeWidth: 1.8,
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── Right-angle mark at O ──────────────────────────────── */
+        var dxOV = V2[0] - O2[0];
+        var dyOV = V2[1] - O2[1];
+        var lenOV2 = Math.sqrt(dxOV * dxOV + dyOV * dyOV);
+        var uxOV = dxOV / lenOV2;
+        var uyOV = dyOV / lenOV2;
+
+        var dxOT = T2[0] - O2[0];
+        var dyOT = T2[1] - O2[1];
+        var lenOT2 = Math.sqrt(dxOT * dxOT + dyOT * dyOT);
+        var uxOT = dxOT / lenOT2;
+        var uyOT = dyOT / lenOT2;
+
+        var raSz = 0.35;
+        var ra1 = [O2[0] + raSz * uxOV, O2[1] + raSz * uyOV];
+        var ra2 = [O2[0] + raSz * uxOV + raSz * uxOT, O2[1] + raSz * uyOV + raSz * uyOT];
+        var ra3 = [O2[0] + raSz * uxOT, O2[1] + raSz * uyOT];
+
+        board.create('segment', [ra1, ra2], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false, layer: 8
+        });
+        board.create('segment', [ra2, ra3], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false, layer: 8
+        });
+
+        /* ── 55° angle arc at V ─────────────────────────────────── */
+        var dxVT = T2[0] - V2[0];
+        var dyVT = T2[1] - V2[1];
+        var angVT = Math.atan2(dyVT, dxVT);
+
+        var dxVOd = O2[0] - V2[0];
+        var dyVOd = O2[1] - V2[1];
+        var angVO = Math.atan2(dyVOd, dxVOd);
+
+        var startAng = angVO;
+        var endAng = angVT;
+        var sweep = endAng - startAng;
+        if (sweep < 0) sweep += 2 * Math.PI;
+        if (sweep > Math.PI) {
+            startAng = angVT;
+            endAng = angVO;
+        }
+
+        var arcRad = 0.6;
+        board.create('curve', [
+            function(t) { return V2[0] + arcRad * Math.cos(t); },
+            function(t) { return V2[1] + arcRad * Math.sin(t); },
+            startAng, endAng
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, highlight: false, layer: 8
+        });
+
+        var angMid = (startAng + endAng) / 2;
+        var lblR = 1.1;
+        board.create('text', [
+            V2[0] + lblR * Math.cos(angMid),
+            V2[1] + lblR * Math.sin(angMid),
+            '55^{\\circ}'
+        ], {
+            useKatex: true, fontSize: 11, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, layer: 9
+        });
+
+        /* ── TV = 10 cm label ───────────────────────────────────── */
+        var midTV = [(T2[0] + V2[0]) / 2, (T2[1] + V2[1]) / 2];
+        var lenTV2D = Math.sqrt(dxVT * dxVT + dyVT * dyVT);
+        var perpX = dyVT / lenTV2D;
+        var perpY = -dxVT / lenTV2D;
+
+        /* Choose the outward perpendicular (away from O) */
+        var testX = midTV[0] + perpX;
+        var testY = midTV[1] + perpY;
+        var distToO = Math.sqrt((testX - O2[0]) * (testX - O2[0]) + (testY - O2[1]) * (testY - O2[1]));
+        var testX2 = midTV[0] - perpX;
+        var testY2 = midTV[1] - perpY;
+        var distToO2 = Math.sqrt((testX2 - O2[0]) * (testX2 - O2[0]) + (testY2 - O2[1]) * (testY2 - O2[1]));
+        if (distToO < distToO2) {
+            perpX = -perpX;
+            perpY = -perpY;
+        }
+        var lblOff = 0.7;
+
+        board.create('text', [
+            midTV[0] + lblOff * perpX,
+            midTV[1] + lblOff * perpY,
+            '10\\text{ cm}'
+        ], {
+            useKatex: true, fontSize: 12, color: '#0EA5E9',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, layer: 9
+        });
+
+        /* ── Vertex dots ────────────────────────────────────────── */
+        board.create('point', T2, {
+            name: '', size: 2.5, color: '#222222', fixed: true,
+            highlight: false, showInfobox: false, layer: 9
+        });
+        board.create('point', O2, {
+            name: '', size: 2.5, color: '#222222', fixed: true,
+            highlight: false, showInfobox: false, layer: 9
+        });
+        board.create('point', V2, {
+            name: '', size: 2.5, color: '#222222', fixed: true,
+            highlight: false, showInfobox: false, layer: 9
+        });
+
+        for (i = 1; i < 5; i++) {
+            board.create('point', base2D[i], {
+                name: '', size: 1.5, color: '#555555', fixed: true,
+                highlight: false, showInfobox: false
+            });
+        }
+
+        /* ── Vertex labels ──────────────────────────────────────── */
+        board.create('text', [T2[0] + 0.3, T2[1] + 0.4, 'T'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'left', anchorY: 'bottom',
+            fixed: true, highlight: false, layer: 9
+        });
+
+        board.create('text', [O2[0] + 0.3, O2[1] - 0.5, 'O'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'left', anchorY: 'top',
+            fixed: true, highlight: false, layer: 9
+        });
+
+        board.create('text', [V2[0], V2[1] - 0.45, 'V'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false, layer: 9
+        });
+    </script>
+</body>
+</html>
