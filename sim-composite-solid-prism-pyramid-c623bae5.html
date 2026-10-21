@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Composite Solid — Prism + Pyramid</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 11.5, 12, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: true
+        });
+
+        // ── Oblique projection parameters ───────────────────────────
+        var dx = 0.45;
+        var dy = 0.35;
+
+        // ── Prism dimensions (visual units) ─────────────────────────
+        var W = 5;
+        var D = 8;
+        var H = 3;
+        var PH = 4;
+
+        // ── Origin (front-bottom-left corner of prism) ──────────────
+        var ox = 0, oy = 0;
+
+        // ── Prism vertices ──────────────────────────────────────────
+        var A = [ox, oy];
+        var B = [ox + W, oy];
+        var C = [ox + W + D * dx, oy + D * dy];
+        var Dv = [ox + D * dx, oy + D * dy];
+
+        var E = [ox, oy + H];
+        var F = [ox + W, oy + H];
+        var G = [ox + W + D * dx, oy + H + D * dy];
+        var Hv = [ox + D * dx, oy + H + D * dy];
+
+        // ── Pyramid apex ────────────────────────────────────────────
+        var cx = (E[0] + G[0]) / 2;
+        var cy = (E[1] + G[1]) / 2;
+        var apex = [cx, cy + PH];
+
+        // ── Helper: draw a filled polygon ───────────────────────────
+        function drawFace(vertices, fill, fillOp, stroke, strokeW, dash) {
+            var pts = [];
+            for (var i = 0; i < vertices.length; i++) {
+                pts.push(board.create('point', vertices[i], { visible: false, fixed: true, name: '' }));
+            }
+            board.create('polygon', pts, {
+                fillColor: fill, fillOpacity: fillOp,
+                borders: { strokeColor: stroke, strokeWidth: strokeW, dash: dash || 0 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        // ── Helper: draw a line segment ─────────────────────────────
+        function drawEdge(p1, p2, color, width, dash) {
+            board.create('segment', [p1, p2], {
+                strokeColor: color, strokeWidth: width, dash: dash || 0,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Draw hidden edges first (dashed) ────────────────────────
+        drawEdge(A, Dv, '#999999', 1.0, 2);
+        drawEdge(Dv, C, '#999999', 1.0, 2);
+        drawEdge(Dv, Hv, '#999999', 1.0, 2);
+
+        // ── Draw prism faces (filled) ───────────────────────────────
+        drawFace([A, B, F, E], '#E5E7EB', 0.35, '#222222', 1.5);
+        drawFace([B, C, G, F], '#D1D5DB', 0.3, '#222222', 1.5);
+        drawFace([E, F, G, Hv], '#E5E7EB', 0.2, '#222222', 1.5);
+
+        // Back-top edge
+        drawEdge(Hv, G, '#222222', 1.5);
+
+        // ── Draw pyramid faces ──────────────────────────────────────
+        drawFace([E, F, apex], '#DBEAFE', 0.3, '#222222', 1.5);
+        drawFace([F, G, apex], '#C7D9F0', 0.25, '#222222', 1.5);
+        drawFace([G, Hv, apex], '#DBEAFE', 0.15, '#222222', 1.2);
+        drawEdge(Hv, apex, '#999999', 1.0, 2);
+
+        // ── Dashed altitude line (pyramid height) ───────────────────
+        var topCenter = [cx, cy];
+        drawEdge(topCenter, apex, '#DC2626', 1.0, 2);
+
+        // ── Right angle marker at altitude base ─────────────────────
+        var raSize = 0.35;
+        var rp1 = [cx + raSize, cy];
+        var rp2 = [cx + raSize, cy + raSize];
+        var rp3 = [cx, cy + raSize];
+        drawEdge(rp1, rp2, '#DC2626', 0.8);
+        drawEdge(rp2, rp3, '#DC2626', 0.8);
+
+        // ── DIMENSION LABELS ────────────────────────────────────────
+
+        // 5 in. — front bottom edge (width)
+        board.create('text', [(A[0] + B[0]) / 2, A[1] - 0.9, '5\\text{ in.}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // 8 in. — right bottom receding edge (depth)
+        var midDepthX = (B[0] + C[0]) / 2;
+        var midDepthY = (B[1] + C[1]) / 2;
+        board.create('text', [midDepthX + 0.6, midDepthY - 0.6, '8\\text{ in.}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // 3 in. — front left vertical edge (prism height)
+        board.create('text', [A[0] - 1.1, (A[1] + E[1]) / 2, '3\\text{ in.}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // 4 in. — pyramid height (along dashed altitude)
+        var midAltX = (topCenter[0] + apex[0]) / 2;
+        var midAltY = (topCenter[1] + apex[1]) / 2;
+        board.create('text', [midAltX + 0.9, midAltY, '4\\text{ in.}'], {
+            useKatex: true, fontSize: 12, color: '#DC2626',
+            anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Small dimension tick marks ──────────────────────────────
+        drawEdge([A[0], A[1] - 0.55], [A[0], A[1] - 1.25], '#555555', 0.8);
+        drawEdge([B[0], B[1] - 0.55], [B[0], B[1] - 1.25], '#555555', 0.8);
+
+        drawEdge([A[0] - 0.55, A[1]], [A[0] - 1.0, A[1]], '#555555', 0.8);
+        drawEdge([E[0] - 0.55, E[1]], [E[0] - 1.0, E[1]], '#555555', 0.8);
+
+    </script>
+</body>
+</html>
