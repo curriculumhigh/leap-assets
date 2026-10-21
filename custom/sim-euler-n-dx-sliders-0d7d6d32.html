@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Euler's Method Explorer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .left-panel {
+            width: 200px; flex-shrink: 0;
+            background: white; border-radius: 8px; padding: 16px;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .panel-label {
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: #888; margin-bottom: 6px;
+        }
+        .slider-group { margin-bottom: 2px; }
+        .slider-header {
+            display: flex; justify-content: space-between; align-items: baseline;
+            margin-bottom: 4px;
+        }
+        .slider-name { font-size: 13px; font-weight: 600; }
+        .slider-val { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+        .slider-input {
+            width: 100%; -webkit-appearance: none; appearance: none;
+            height: 5px; border-radius: 3px; background: #e5e7eb; outline: none;
+        }
+        .slider-dx::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 15px; height: 15px; border-radius: 50%; cursor: pointer;
+            background: #DC2626;
+        }
+        .slider-n::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 15px; height: 15px; border-radius: 50%; cursor: pointer;
+            background: #222222;
+        }
+        .readout-section { border-top: 1px solid #e5e7eb; padding-top: 12px; }
+        .readout-line { min-height: 24px; margin-bottom: 6px; }
+        .board-wrapper { flex: 1; background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #DC2626;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="left-panel">
+                <div class="panel-section">
+                    <div class="panel-label">Parameters</div>
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-name" id="dx-label" style="color: #DC2626;"></span>
+                            <span class="slider-val" id="dx-val" style="color: #DC2626;"></span>
+                        </div>
+                        <input type="range" id="slider-dx" class="slider-input slider-dx" min="-50" max="50" step="5" value="50">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-name" id="n-label" style="color: #222222;"></span>
+                            <span class="slider-val" id="n-val" style="color: #222222;"></span>
+                        </div>
+                        <input type="range" id="slider-n" class="slider-input slider-n" min="1" max="4" step="1" value="2">
+                    </div>
+                </div>
+                <div class="panel-section readout-section">
+                    <div class="panel-label">Endpoint</div>
+                    <div class="readout-line" id="readout-x"></div>
+                    <div class="readout-line" id="readout-y"></div>
+                </div>
+            </div>
+            <div class="board-wrapper">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+
+    <script>
+        /* ── Board ──────────────────────────────────────────── */
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.3, 11, 2.3, -1.5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: {
+                            fontSize: 11,
+                            offset: [0, -18],
+                            cssStyle: 'background:rgba(255,255,255,0.85); padding:0 2px; border-radius:2px;'
+                        },
+                        minorTicks: 0,
+                        ticksDistance: 0.5
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 2
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        /* Axis labels – x label moved ABOVE the axis near arrow tip to avoid tick-label collision */
+        board.create('text', [2.05, 0.55, 'x'], { fontSize: 14, fixed: true, highlight: false, useKatex: true, cssStyle: 'font-style:italic' });
+        board.create('text', [0.15, 10.5, 'y'], { fontSize: 14, fixed: true, highlight: false, useKatex: true, cssStyle: 'font-style:italic' });
+
+        /* ── Solution curve y = x + 1 + e^x through (0,2) ──────── */
+        var COL_SOL = '#2563EB';
+        var COL_EULER = '#DC2626';
+
+        board.create('functiongraph', [
+            function(x) { return x + 1 + Math.exp(x); }
+        ], { strokeColor: COL_SOL, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        /* Curve label */
+        board.create('text', [-2.0, 6.8, 'y = f(x)'], {
+            fontSize: 13, color: COL_SOL, useKatex: true, fixed: true, highlight: false
+        });
+
+        /* Starting point */
+        board.create('point', [0, 2], {
+            name: '', size: 4, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        /* Dynamic label for (0,2) that repositions based on dx sign */
+        var startLabel = board.create('text', [0, 0, '(0,\\, 2)'], {
+            fontSize: 12, color: '#222222', useKatex: true, fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'bottom'
+        });
+
+        function updateStartLabel() {
+            if (dx >= 0) {
+                /* Place upper-left: shifted left to avoid y-tick "2" and clear of rightward chain */
+                startLabel.setPosition(JXG.COORDS_BY_USER, [-0.65, 2.55]);
+                startLabel.setAttribute({ anchorX: 'left' });
+            } else {
+                /* Place to the RIGHT of the point, slightly BELOW the curve – clear of curve, chain and y-axis ticks */
+                startLabel.setPosition(JXG.COORDS_BY_USER, [0.12, 1.55]);
+                startLabel.setAttribute({ anchorX: 'left' });
+            }
+            board.update();
+        }
+
+        /* ── Tooltip ────────────────────────────────────────── */
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function formatNum(v) {
+            var s = v.toFixed(4);
+            /* trim trailing zeros after decimal */
+            s = s.replace(/(\.\d*?)0+$/, '$1');
+            s = s.replace(/\.$/, '');
+            /* Unicode minus for negatives */
+            s = s.replace(/^-/, '\u2212');
+            return s;
+        }
+
+        function formatDx(v) {
+            /* Trimmed display: no trailing zeros, Unicode minus */
+            var s = Math.abs(v).toFixed(2);
+            s = s.replace(/(\.\d*?)0+$/, '$1');
+            s = s.replace(/\.$/, '');
+            if (v < 0) s = '\u2212' + s;
+            return s;
+        }
+
+        function showTooltip(pt) {
+            var xc = pt.X();
+            var yc = pt.Y();
+            var latex = '\\color{' + COL_EULER + '}{\\left(' + formatNum(xc) + ',\\,' + formatNum(yc) + '\\right)}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xc, yc], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+        /* ── Euler chain state ──────────────────────────────── */
+        var dx = 0.5;
+        var nSteps = 2;
+        var eulerSegments = [];
+        var eulerPoints = [];
+
+        function computeEuler() {
+            var pts = [[0, 2]];
+            var xk = 0, yk = 2;
+            for (var k = 0; k < nSteps; k++) {
+                var slope = yk - xk; /* dy/dx = y - x */
+                var xnew = xk + dx;
+                var ynew = yk + slope * dx;
+                pts.push([xnew, ynew]);
+                xk = xnew;
+                yk = ynew;
+            }
+            return pts;
+        }
+
+        function clearEuler() {
+            var i;
+            for (i = 0; i < eulerSegments.length; i++) {
+                board.removeObject(eulerSegments[i]);
+            }
+            for (i = 0; i < eulerPoints.length; i++) {
+                board.removeObject(eulerPoints[i]);
+            }
+            eulerSegments = [];
+            eulerPoints = [];
+        }
+
+        function drawEuler() {
+            clearEuler();
+            var pts = computeEuler();
+
+            /* Determine dot sizes based on n */
+            var showIntermediate = (nSteps <= 16);
+            var intermSize = (nSteps <= 8) ? 3 : 2;
+
+            /* Segments */
+            for (var i = 0; i < pts.length - 1; i++) {
+                var seg = board.create('segment', [pts[i], pts[i + 1]], {
+                    strokeColor: COL_EULER, strokeWidth: 1.5, fixed: true, highlight: false
+                });
+                eulerSegments.push(seg);
+            }
+            /* Points (skip k=0 which is the starting point already drawn) */
+            for (var k = 1; k < pts.length; k++) {
+                var isFinal = (k === pts.length - 1);
+                var isIntermediate = !isFinal;
+
+                /* Skip intermediate dots when n > 16 */
+                if (isIntermediate && !showIntermediate) continue;
+
+                var sz = isFinal ? 4 : intermSize;
+                var pt = board.create('point', [pts[k][0], pts[k][1]], {
+                    name: '', size: sz, color: COL_EULER, fixed: true,
+                    showInfobox: false, highlight: true,
+                    highlightFillColor: COL_EULER, highlightStrokeColor: COL_EULER
+                });
+                (function(p) {
+                    p.on('over', function() { showTooltip(p); });
+                    p.on('out', function() { hideTooltip(); });
+                })(pt);
+                eulerPoints.push(pt);
+            }
+        }
+
+        /* ── Panel labels (KaTeX in slider names) ──────────── */
+        function renderSliderLabels() {
+            katex.render('\\Delta x', document.getElementById('dx-label'), { throwOnError: false });
+            katex.render('n', document.getElementById('n-label'), { throwOnError: false });
+        }
+
+        /* ── Panel readout ──────────────────────────────────── */
+        function updatePanel() {
+            var pts = computeEuler();
+            var last = pts[pts.length - 1];
+            var xn = last[0];
+            var yn = last[1];
+
+            document.getElementById('dx-val').textContent = formatDx(dx);
+            document.getElementById('n-val').textContent = nSteps;
+
+            katex.render('x_{' + nSteps + '} = ' + formatNum(xn), document.getElementById('readout-x'), { throwOnError: false });
+            katex.render('f(' + formatNum(xn) + ') \\approx ' + formatNum(yn), document.getElementById('readout-y'), { throwOnError: false });
+        }
+
+        /* ── Slider logic ───────────────────────────────────── */
+        var sliderDx = document.getElementById('slider-dx');
+        var sliderN = document.getElementById('slider-n');
+
+        function getDxFromSlider() {
+            var raw = parseInt(sliderDx.value); /* -50..50 in steps of 5, representing hundredths*100 */
+            var val = raw / 100;
+            /* Skip 0: nudge to 0.05 in direction of travel */
+            if (Math.abs(val) < 0.001) {
+                val = 0.05;
+                sliderDx.value = 5;
+            }
+            return val;
+        }
+
+        function computeNmax(dxVal) {
+            var absDx = Math.abs(dxVal);
+            if (absDx < 0.001) return 1;
+            return Math.floor(2 / absDx + 1e-9);
+        }
+
+        function syncN() {
+            var nmax = computeNmax(dx);
+            if (nmax < 1) nmax = 1;
+            sliderN.max = nmax;
+            if (nSteps > nmax) {
+                nSteps = nmax;
+                sliderN.value = nSteps;
+            }
+        }
+
+        sliderDx.addEventListener('input', function() {
+            dx = getDxFromSlider();
+            syncN();
+            drawEuler();
+            updatePanel();
+            updateStartLabel();
+        });
+
+        sliderN.addEventListener('input', function() {
+            nSteps = parseInt(sliderN.value);
+            drawEuler();
+            updatePanel();
+        });
+
+        /* ── Initial draw ───────────────────────────────────── */
+        dx = getDxFromSlider();
+        syncN();
+        renderSliderLabels();
+        drawEuler();
+        updatePanel();
+        updateStartLabel();
+    </script>
+</body>
+</html>
