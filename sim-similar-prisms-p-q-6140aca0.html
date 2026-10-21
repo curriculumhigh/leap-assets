@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Similar Prisms P and Q</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 9.5, 16.5, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: true
+        });
+
+        var COL_P = '#2563EB';
+        var COL_Q = '#059669';
+        var COL_EDGE = '#555555';
+        var COL_REF = '#DC2626';
+        var FILL_OP = 0.12;
+        var FILL_SIDE_OP = 0.06;
+
+        var DX = 1.2;
+        var DY = 0.8;
+
+        var pBase = 2.4;
+        var pHeight = 2.4;
+        var pDepth = 2.2;
+
+        var px0 = 1.5;
+        var py0 = 1.0;
+
+        var pA = [px0, py0];
+        var pB = [px0 + pBase, py0];
+        var pC = [px0 + pBase / 2, py0 + pHeight];
+
+        var pdx = DX * (pDepth / 2.2);
+        var pdy = DY * (pDepth / 2.2);
+        var pA2 = [pA[0] + pdx, pA[1] + pdy];
+        var pB2 = [pB[0] + pdx, pB[1] + pdy];
+        var pC2 = [pC[0] + pdx, pC[1] + pdy];
+
+        function makePoly(coords, fill, fillOp, strokeCol, strokeW, dashStyle, layerVal) {
+            var pts = [];
+            for (var i = 0; i < coords.length; i++) {
+                pts.push(board.create('point', coords[i], { visible: false, fixed: true, name: '' }));
+            }
+            var attrs = {
+                fillColor: fill, fillOpacity: fillOp,
+                borders: { strokeColor: strokeCol, strokeWidth: strokeW },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            };
+            if (dashStyle) {
+                attrs.borders = { strokeColor: strokeCol, strokeWidth: strokeW, dash: dashStyle };
+            }
+            if (layerVal !== undefined) {
+                attrs.layer = layerVal;
+            }
+            return board.create('polygon', pts, attrs);
+        }
+
+        function makeDashed(p1, p2, col, w) {
+            board.create('segment', [p1, p2], {
+                strokeColor: col, strokeWidth: w, dash: 2, fixed: true, highlight: false
+            });
+        }
+
+        function makeSolid(p1, p2, col, w) {
+            board.create('segment', [p1, p2], {
+                strokeColor: col, strokeWidth: w, fixed: true, highlight: false
+            });
+        }
+
+        makeDashed(pA2, pB2, COL_EDGE, 1.0);
+        makeDashed(pA2, pC2, COL_EDGE, 1.0);
+        makeDashed(pB2, pC2, COL_EDGE, 1.0);
+        makeDashed(pA, pA2, COL_EDGE, 1.0);
+
+        makePoly([pB, pB2, pC2, pC], COL_P, FILL_SIDE_OP, COL_EDGE, 1.5);
+        makePoly([pA, pB, pC], COL_P, FILL_OP, COL_EDGE, 1.5, 0, 5);
+
+        makeSolid(pB, pB2, COL_EDGE, 1.5);
+        makeSolid(pC, pC2, COL_EDGE, 1.5);
+
+        var scale = 2.0;
+        var qBase = pBase * scale;
+        var qHeight = pHeight * scale;
+        var qDepth = pDepth * scale;
+
+        var qx0 = 8.0;
+        var qy0 = py0;
+
+        var qA = [qx0, qy0];
+        var qB = [qx0 + qBase, qy0];
+        var qC = [qx0 + qBase / 2, qy0 + qHeight];
+
+        var qdx = DX * (qDepth / 2.2);
+        var qdy = DY * (qDepth / 2.2);
+        var qA2 = [qA[0] + qdx, qA[1] + qdy];
+        var qB2 = [qB[0] + qdx, qB[1] + qdy];
+        var qC2 = [qC[0] + qdx, qC[1] + qdy];
+
+        makeDashed(qA2, qB2, COL_EDGE, 1.0);
+        makeDashed(qA2, qC2, COL_EDGE, 1.0);
+        makeDashed(qB2, qC2, COL_EDGE, 1.0);
+        makeDashed(qA, qA2, COL_EDGE, 1.0);
+
+        makePoly([qB, qB2, qC2, qC], COL_Q, FILL_SIDE_OP, COL_EDGE, 1.5);
+        makePoly([qA, qB, qC], COL_Q, FILL_OP, COL_EDGE, 1.5, 0, 5);
+
+        makeSolid(qB, qB2, COL_EDGE, 1.5);
+        makeSolid(qC, qC2, COL_EDGE, 1.5);
+
+        var pDimX = px0 - 0.6;
+        board.create('segment', [[pDimX, py0], [pDimX, py0 + pHeight]], {
+            strokeColor: COL_REF, strokeWidth: 1.2, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 }, lastArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[pDimX - 0.15, py0], [pDimX + 0.15, py0]], {
+            strokeColor: COL_REF, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[pDimX - 0.15, py0 + pHeight], [pDimX + 0.15, py0 + pHeight]], {
+            strokeColor: COL_REF, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('text', [pDimX - 0.55, py0 + pHeight / 2, 'x'], {
+            useKatex: true, fontSize: 15, color: COL_REF, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var qDimX = qx0 - 0.7;
+        board.create('segment', [[qDimX, qy0], [qDimX, qy0 + qHeight]], {
+            strokeColor: COL_REF, strokeWidth: 1.2, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 }, lastArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[qDimX - 0.15, qy0], [qDimX + 0.15, qy0]], {
+            strokeColor: COL_REF, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[qDimX - 0.15, qy0 + qHeight], [qDimX + 0.15, qy0 + qHeight]], {
+            strokeColor: COL_REF, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('text', [qDimX - 0.7, qy0 + qHeight / 2, '5\\text{ cm}'], {
+            useKatex: true, fontSize: 15, color: COL_REF, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [px0 + pBase / 2 + pdx / 2, py0 + pHeight + pdy / 2 + 0.7, '\\textbf{P}'], {
+            useKatex: true, fontSize: 18, color: COL_P, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [qx0 + qBase / 2 + qdx / 2, qy0 + qHeight + qdy / 2 + 0.7, '\\textbf{Q}'], {
+            useKatex: true, fontSize: 18, color: COL_Q, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [px0 + pBase / 2, py0 - 0.8, 'V = 24\\text{ cm}^3'], {
+            useKatex: true, fontSize: 14, color: COL_P, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [qx0 + qBase / 2, qy0 - 0.8, 'V = 192\\text{ cm}^3'], {
+            useKatex: true, fontSize: 14, color: COL_Q, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
