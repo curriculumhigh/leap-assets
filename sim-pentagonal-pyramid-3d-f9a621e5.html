@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pentagonal Pyramid</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 5.5, 5, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var elevAngle = 25 * Math.PI / 180;
+        var rotAngle  = 35 * Math.PI / 180;
+
+        var cosE = Math.cos(elevAngle), sinE = Math.sin(elevAngle);
+        var cosR = Math.cos(rotAngle),  sinR = Math.sin(rotAngle);
+
+        function project(x3, y3, z3) {
+            var xr = x3 * cosR - y3 * sinR;
+            var yr = x3 * sinR + y3 * cosR;
+            return [xr, z3 * cosE - yr * sinE];
+        }
+
+        var baseR = 2.8;
+        var apexH = 4.2;
+
+        var pentaOffset = -Math.PI / 2 + Math.PI / 5;
+        var base3D = [];
+        var i;
+        for (i = 0; i < 5; i++) {
+            var angle = pentaOffset + i * 2 * Math.PI / 5;
+            base3D.push([baseR * Math.cos(angle), baseR * Math.sin(angle), 0]);
+        }
+        var apex3D = [0, 0, apexH];
+
+        var base2D = [];
+        for (i = 0; i < 5; i++) {
+            base2D.push(project(base3D[i][0], base3D[i][1], base3D[i][2]));
+        }
+        var apex2D = project(apex3D[0], apex3D[1], apex3D[2]);
+
+        var viewDir = [-Math.sin(rotAngle) * Math.cos(elevAngle),
+                       -Math.cos(rotAngle) * Math.cos(elevAngle),
+                        Math.sin(elevAngle)];
+
+        function cross(a, b) {
+            return [a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0]];
+        }
+        function sub(a, b) { return [a[0]-b[0], a[1]-b[1], a[2]-b[2]]; }
+        function dot(a, b) { return a[0]*b[0] + a[1]*b[1] + a[2]*b[2]; }
+
+        function lateralFaceNormal(bi, bni) {
+            var v1 = sub(base3D[bi], apex3D);
+            var v2 = sub(base3D[bni], apex3D);
+            var n = cross(v1, v2);
+            var mid = [(base3D[bi][0] + base3D[bni][0] + apex3D[0]) / 3,
+                       (base3D[bi][1] + base3D[bni][1] + apex3D[1]) / 3,
+                       (base3D[bi][2] + base3D[bni][2] + apex3D[2]) / 3];
+            if (dot(n, mid) < 0) { n = [-n[0], -n[1], -n[2]]; }
+            return n;
+        }
+
+        var baseNormal = [0, 0, -1];
+
+        function isFaceVisible(normal) {
+            return dot(normal, viewDir) < 0;
+        }
+
+        var lateralVisible = [];
+        for (i = 0; i < 5; i++) {
+            var next = (i + 1) % 5;
+            var n = lateralFaceNormal(i, next);
+            lateralVisible.push(isFaceVisible(n));
+        }
+        var baseVisible = isFaceVisible(baseNormal);
+
+        function isBaseEdgeHidden(ei) {
+            return !lateralVisible[ei] && !baseVisible;
+        }
+
+        function isLateralEdgeHidden(vi) {
+            var prev = (vi - 1 + 5) % 5;
+            return !lateralVisible[prev] && !lateralVisible[vi];
+        }
+
+        for (i = 0; i < 5; i++) {
+            var next = (i + 1) % 5;
+            if (lateralVisible[i]) {
+                var pA = board.create('point', apex2D, { visible: false, name: '', fixed: true });
+                var pB = board.create('point', base2D[i], { visible: false, name: '', fixed: true });
+                var pC = board.create('point', base2D[next], { visible: false, name: '', fixed: true });
+                board.create('polygon', [pA, pB, pC], {
+                    fillColor: '#B0BEC5', fillOpacity: 0.08,
+                    borders: { visible: false },
+                    vertices: { visible: false },
+                    hasInnerPoints: false, fixed: true, highlight: false
+                });
+            }
+        }
+
+        if (baseVisible) {
+            var basePts = [];
+            for (i = 0; i < 5; i++) {
+                basePts.push(board.create('point', base2D[i], { visible: false, name: '', fixed: true }));
+            }
+            board.create('polygon', basePts, {
+                fillColor: '#90A4AE', fillOpacity: 0.05,
+                borders: { visible: false },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        for (i = 0; i < 5; i++) {
+            var next = (i + 1) % 5;
+            if (isBaseEdgeHidden(i)) {
+                board.create('segment', [base2D[i], base2D[next]], {
+                    strokeColor: '#999999', strokeWidth: 1.0,
+                    dash: 2, strokeOpacity: 0.5,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+        for (i = 0; i < 5; i++) {
+            if (isLateralEdgeHidden(i)) {
+                board.create('segment', [base2D[i], apex2D], {
+                    strokeColor: '#999999', strokeWidth: 1.0,
+                    dash: 2, strokeOpacity: 0.5,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        for (i = 0; i < 5; i++) {
+            var next = (i + 1) % 5;
+            if (!isBaseEdgeHidden(i)) {
+                board.create('segment', [base2D[i], base2D[next]], {
+                    strokeColor: '#444444', strokeWidth: 2.2,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+        for (i = 0; i < 5; i++) {
+            if (!isLateralEdgeHidden(i)) {
+                board.create('segment', [base2D[i], apex2D], {
+                    strokeColor: '#444444', strokeWidth: 2.2,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+    </script>
+</body>
+</html>
