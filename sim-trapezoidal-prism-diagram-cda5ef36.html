@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trapezoidal Prism</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.8, 7.2, 9.2, -2.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* Front trapezoid vertices */
+        var fA = [0, 0];
+        var fB = [5, 0];
+        var fC = [4, 4];
+        var fD = [1, 4];
+
+        /* Depth offset */
+        var dx = 2.8;
+        var dy = 2.0;
+
+        /* Back trapezoid vertices */
+        var bA = [fA[0] + dx, fA[1] + dy];
+        var bB = [fB[0] + dx, fB[1] + dy];
+        var bC = [fC[0] + dx, fC[1] + dy];
+        var bD = [fD[0] + dx, fD[1] + dy];
+
+        function pt(coords) {
+            return board.create('point', coords, { visible: false, fixed: true, name: '' });
+        }
+
+        var pFA = pt(fA);
+        var pFB = pt(fB);
+        var pFC = pt(fC);
+        var pFD = pt(fD);
+
+        var pBA = pt(bA);
+        var pBB = pt(bB);
+        var pBC = pt(bC);
+        var pBD = pt(bD);
+
+        /* Hidden edges (dashed) */
+        board.create('segment', [pBA, pBB], {
+            strokeColor: '#999999', strokeWidth: 1.2, dash: 3, fixed: true, highlight: false
+        });
+        board.create('segment', [pBA, pBD], {
+            strokeColor: '#999999', strokeWidth: 1.2, dash: 3, fixed: true, highlight: false
+        });
+        board.create('segment', [pBA, pFA], {
+            strokeColor: '#999999', strokeWidth: 1.2, dash: 3, fixed: true, highlight: false
+        });
+
+        /* Face fills */
+        board.create('polygon', [pFA, pFB, pFC, pFD], {
+            fillColor: '#DBEAFE', fillOpacity: 0.35,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        board.create('polygon', [pFD, pFC, pBC, pBD], {
+            fillColor: '#E0F2FE', fillOpacity: 0.25,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        board.create('polygon', [pFB, pBB, pBC, pFC], {
+            fillColor: '#F0F9FF', fillOpacity: 0.2,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        /* Visible edges */
+        var edgeStyle = { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false };
+
+        board.create('segment', [pFA, pFB], edgeStyle);
+        board.create('segment', [pFB, pFC], edgeStyle);
+        board.create('segment', [pFC, pFD], edgeStyle);
+        board.create('segment', [pFD, pFA], edgeStyle);
+
+        board.create('segment', [pFD, pBD], edgeStyle);
+        board.create('segment', [pBD, pBC], edgeStyle);
+        board.create('segment', [pBC, pFC], edgeStyle);
+
+        board.create('segment', [pFB, pBB], edgeStyle);
+        board.create('segment', [pBB, pBC], edgeStyle);
+
+        /* Labels */
+
+        /* Bottom base: 5 in */
+        board.create('text', [2.5, -1.0, '5 \\text{ in}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        /* Top base: w */
+        board.create('text', [2.5, 4.55, 'w'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        /* Height dimension arrow */
+        var hx = -0.8;
+        board.create('segment', [[hx, 0], [hx, 4]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 }, lastArrow: { type: 2, size: 5 }
+        });
+        board.create('segment', [[hx - 0.25, 0], [hx + 0.25, 0]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[hx - 0.25, 4], [hx + 0.25, 4]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [-1.9, 2.0, '4 \\text{ in}'], {
+            useKatex: true, fontSize: 12, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        /* Depth: 6 in */
+        var depthMidX = (fB[0] + bB[0]) / 2;
+        var depthMidY = (fB[1] + bB[1]) / 2;
+        board.create('text', [depthMidX + 0.9, depthMidY - 0.6, '6 \\text{ in}'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        /* Right angle marker at bottom-left */
+        var sqSize = 0.4;
+        board.create('segment', [[0, sqSize], [sqSize, sqSize]], {
+            strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[sqSize, 0], [sqSize, sqSize]], {
+            strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
