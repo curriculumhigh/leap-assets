@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Similar Prisms</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 8.5, 14.5, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_OUTLINE = '#555555';
+        var COL_FRONT = '#DBEAFE';
+        var COL_TOP = '#BFDBFE';
+        var COL_SIDE = '#93C5FD';
+        var COL_EDGE_A = '#2563EB';
+        var COL_EDGE_B = '#059669';
+
+        function drawPrism(x0, y0, w, h, d, dx, dy, fillFront, fillTop, fillSide) {
+            var f0 = [x0, y0];
+            var f1 = [x0 + w, y0];
+            var f2 = [x0 + w, y0 + h];
+            var f3 = [x0, y0 + h];
+
+            var b0 = [x0 + d * dx, y0 + d * dy];
+            var b1 = [x0 + w + d * dx, y0 + d * dy];
+            var b2 = [x0 + w + d * dx, y0 + h + d * dy];
+            var b3 = [x0 + d * dx, y0 + h + d * dy];
+
+            var pTop = [];
+            var topCoords = [f3, f2, b2, b3];
+            for (var i = 0; i < 4; i++) {
+                pTop.push(board.create('point', topCoords[i], { visible: false, fixed: true, name: '' }));
+            }
+            board.create('polygon', pTop, {
+                fillColor: fillTop, fillOpacity: 0.85,
+                borders: { strokeColor: COL_OUTLINE, strokeWidth: 1.5 },
+                vertices: { visible: false }, hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            var pSide = [];
+            var sideCoords = [f1, f2, b2, b1];
+            for (var j = 0; j < 4; j++) {
+                pSide.push(board.create('point', sideCoords[j], { visible: false, fixed: true, name: '' }));
+            }
+            board.create('polygon', pSide, {
+                fillColor: fillSide, fillOpacity: 0.85,
+                borders: { strokeColor: COL_OUTLINE, strokeWidth: 1.5 },
+                vertices: { visible: false }, hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            var pFront = [];
+            var frontCoords = [f0, f1, f2, f3];
+            for (var k = 0; k < 4; k++) {
+                pFront.push(board.create('point', frontCoords[k], { visible: false, fixed: true, name: '' }));
+            }
+            board.create('polygon', pFront, {
+                fillColor: fillFront, fillOpacity: 0.85,
+                borders: { strokeColor: COL_OUTLINE, strokeWidth: 1.5 },
+                vertices: { visible: false }, hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            board.create('segment', [pFront[0], board.create('point', b0, { visible: false, fixed: true, name: '' })], {
+                strokeColor: COL_OUTLINE, strokeWidth: 0.8, dash: 2, fixed: true, highlight: false
+            });
+            board.create('segment', [
+                board.create('point', b0, { visible: false, fixed: true, name: '' }),
+                board.create('point', b1, { visible: false, fixed: true, name: '' })
+            ], {
+                strokeColor: COL_OUTLINE, strokeWidth: 0.8, dash: 2, fixed: true, highlight: false
+            });
+            board.create('segment', [
+                board.create('point', b0, { visible: false, fixed: true, name: '' }),
+                board.create('point', b3, { visible: false, fixed: true, name: '' })
+            ], {
+                strokeColor: COL_OUTLINE, strokeWidth: 0.8, dash: 2, fixed: true, highlight: false
+            });
+
+            return { front: frontCoords, back: [b0, b1, b2, b3] };
+        }
+
+        function drawDimensionLine(p1, p2, lineOffsetY, color, labelText) {
+            var op1 = [p1[0], p1[1] + lineOffsetY];
+            var op2 = [p2[0], p2[1] + lineOffsetY];
+            var mx = (op1[0] + op2[0]) / 2;
+
+            board.create('segment', [op1, op2], {
+                strokeColor: color, strokeWidth: 1.5, fixed: true, highlight: false,
+                firstArrow: { type: 1, size: 4 },
+                lastArrow: { type: 1, size: 4 }
+            });
+
+            var tickH = 0.25;
+            board.create('segment', [[op1[0], op1[1] - tickH], [op1[0], op1[1] + tickH]], {
+                strokeColor: color, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('segment', [[op2[0], op2[1] - tickH], [op2[0], op2[1] + tickH]], {
+                strokeColor: color, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+
+            board.create('text', [mx, op1[1] - 0.55, labelText], {
+                useKatex: true, fontSize: 13, color: color, fixed: true, highlight: false,
+                anchorX: 'middle', anchorY: 'top'
+            });
+        }
+
+        var axA = 1.0;
+        var ayA = 1.2;
+        var wA = 3.8;
+        var hA = 4.5;
+        var dA = 2.8;
+        var dxA = 0.55;
+        var dyA = 0.35;
+
+        drawPrism(axA, ayA, wA, hA, dA, dxA, dyA, COL_FRONT, COL_TOP, COL_SIDE);
+
+        board.create('text', [axA + wA / 2 + (dA * dxA) / 2, ayA + hA + dA * dyA + 0.55, '\\textbf{Prism A}'], {
+            useKatex: true, fontSize: 14, color: '#222222', fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        drawDimensionLine(
+            [axA, ayA], [axA + wA, ayA],
+            -0.4, COL_EDGE_A, '10\\text{ cm}'
+        );
+
+        board.create('text', [axA + wA / 2, ayA - 2.2, 'V_A = 1{,}250\\text{ cm}^3'], {
+            useKatex: true, fontSize: 13, color: '#222222', fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        var scale = 0.4;
+        var axB = 9.0;
+        var ayB = ayA + (hA - hA * scale) / 2;
+        var wB = wA * scale;
+        var hB = hA * scale;
+        var dB = dA * scale;
+
+        drawPrism(axB, ayB, wB, hB, dB, dxA, dyA, COL_FRONT, COL_TOP, COL_SIDE);
+
+        board.create('text', [axB + wB / 2 + (dB * dxA) / 2, ayB + hB + dB * dyA + 0.55, '\\textbf{Prism B}'], {
+            useKatex: true, fontSize: 14, color: '#222222', fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        drawDimensionLine(
+            [axB, ayB], [axB + wB, ayB],
+            -0.4, COL_EDGE_B, '4\\text{ cm}'
+        );
+
+        board.create('text', [axB + wB / 2, ayA - 2.2, 'V_B = \\text{ ?}'], {
+            useKatex: true, fontSize: 13, color: '#222222', fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+    </script>
+</body>
+</html>
