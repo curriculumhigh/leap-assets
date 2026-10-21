@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frustum of a Square Pyramid</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8, 12, 8, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var OBLIQUE_ANGLE = Math.PI / 6;
+        var OBLIQUE_SCALE = 0.45;
+
+        function proj(x3, y3, z3) {
+            var px = x3 + OBLIQUE_SCALE * y3 * Math.cos(OBLIQUE_ANGLE);
+            var py = z3 + OBLIQUE_SCALE * y3 * Math.sin(OBLIQUE_ANGLE);
+            return [px, py];
+        }
+
+        var bHalf = 4.5;
+        var tHalf = 2.5;
+        var H_frustum = 6;
+        var H_apex = 13.5;
+
+        var B0 = [-bHalf, -bHalf, 0];
+        var B1 = [ bHalf, -bHalf, 0];
+        var B2 = [ bHalf,  bHalf, 0];
+        var B3 = [-bHalf,  bHalf, 0];
+
+        var T0 = [-tHalf, -tHalf, H_frustum];
+        var T1 = [ tHalf, -tHalf, H_frustum];
+        var T2 = [ tHalf,  tHalf, H_frustum];
+        var T3 = [-tHalf,  tHalf, H_frustum];
+
+        var A = [0, 0, H_apex];
+
+        var b0 = proj(B0[0], B0[1], B0[2]);
+        var b1 = proj(B1[0], B1[1], B1[2]);
+        var b2 = proj(B2[0], B2[1], B2[2]);
+        var b3 = proj(B3[0], B3[1], B3[2]);
+
+        var t0 = proj(T0[0], T0[1], T0[2]);
+        var t1 = proj(T1[0], T1[1], T1[2]);
+        var t2 = proj(T2[0], T2[1], T2[2]);
+        var t3 = proj(T3[0], T3[1], T3[2]);
+
+        var apex = proj(A[0], A[1], A[2]);
+
+        var bCenter = proj(0, 0, 0);
+        var tCenter = proj(0, 0, H_frustum);
+
+        var COL_SOLID = '#555555';
+        var COL_HIDDEN = '#AAAAAA';
+        var COL_CONSTRUCTION = '#0EA5E9';
+        var COL_REFERENCE = '#DC2626';
+        var W_SOLID = 1.8;
+        var W_HIDDEN = 1.2;
+        var W_CONSTRUCTION = 1.0;
+
+        function solidSeg(p1, p2) {
+            board.create('segment', [p1, p2], {
+                strokeColor: COL_SOLID, strokeWidth: W_SOLID,
+                fixed: true, highlight: false
+            });
+        }
+
+        function dashedSeg(p1, p2, color, width) {
+            board.create('segment', [p1, p2], {
+                strokeColor: color || COL_HIDDEN, strokeWidth: width || W_HIDDEN,
+                dash: 2, fixed: true, highlight: false
+            });
+        }
+
+        dashedSeg(b2, b3, COL_HIDDEN, W_HIDDEN);
+        dashedSeg(b3, b0, COL_HIDDEN, W_HIDDEN);
+
+        dashedSeg(t2, t3, COL_HIDDEN, W_HIDDEN);
+        dashedSeg(t3, t0, COL_HIDDEN, W_HIDDEN);
+
+        dashedSeg(b3, t3, COL_HIDDEN, W_HIDDEN);
+
+        dashedSeg(bCenter, tCenter, COL_REFERENCE, W_CONSTRUCTION);
+
+        var raSize = 0.45;
+        var raP1 = [bCenter[0] + raSize, bCenter[1]];
+        var raP2 = [bCenter[0] + raSize, bCenter[1] + raSize];
+        var raP3 = [bCenter[0], bCenter[1] + raSize];
+        board.create('segment', [raP1, raP2], {
+            strokeColor: COL_REFERENCE, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [raP2, raP3], {
+            strokeColor: COL_REFERENCE, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        solidSeg(b0, b1);
+        solidSeg(b1, b2);
+
+        solidSeg(t0, t1);
+        solidSeg(t1, t2);
+
+        solidSeg(b0, t0);
+        solidSeg(b1, t1);
+        solidSeg(b2, t2);
+
+        dashedSeg(t0, apex, COL_CONSTRUCTION, W_CONSTRUCTION);
+        dashedSeg(t1, apex, COL_CONSTRUCTION, W_CONSTRUCTION);
+        dashedSeg(t2, apex, COL_CONSTRUCTION, W_CONSTRUCTION);
+        dashedSeg(t3, apex, COL_CONSTRUCTION, W_CONSTRUCTION);
+
+        board.create('point', apex, {
+            name: '', size: 2.5, color: '#222222', fixed: true,
+            highlight: false, showInfobox: false
+        });
+
+        var label9x = (b0[0] + b1[0]) / 2;
+        var label9y = (b0[1] + b1[1]) / 2 - 0.9;
+        board.create('text', [label9x, label9y, '9\\text{ cm}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        var label5x = (t0[0] + t1[0]) / 2;
+        var label5y = (t0[1] + t1[1]) / 2 + 0.6;
+        board.create('text', [label5x, label5y, '5\\text{ cm}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+
+        var label6x = (bCenter[0] + tCenter[0]) / 2 + 0.8;
+        var label6y = (bCenter[1] + tCenter[1]) / 2;
+        board.create('text', [label6x, label6y, '6\\text{ cm}'], {
+            useKatex: true, fontSize: 13, color: COL_REFERENCE,
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
