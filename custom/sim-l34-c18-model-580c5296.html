@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Components per Hour Model</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 520px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 99, 54, -11],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Grid ────────────────────────────────────────────────── */
+        // Vertical grid lines at x = 5, 10, ..., 50
+        var gi;
+        for (gi = 5; gi <= 50; gi += 5) {
+            board.create('line', [[gi, 0], [gi, 1]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                straightFirst: true, straightLast: true,
+                fixed: true, highlight: false
+            });
+        }
+        // Horizontal grid lines at y = 10, 20, ..., 90
+        for (gi = 10; gi <= 90; gi += 10) {
+            board.create('line', [[0, gi], [1, gi]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                straightFirst: true, straightLast: true,
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── Axes ────────────────────────────────────────────────── */
+        // x-axis
+        var xAxis = board.create('arrow', [[-6, 0], [54, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        // y-axis
+        var yAxis = board.create('arrow', [[0, -11], [0, 99]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        /* ── Tick marks & labels ─────────────────────────────────── */
+        var tickLen = 1.2; // half-length in y-units for x-axis ticks
+        var tickLenX = 0.6; // half-length in x-units for y-axis ticks
+        var ti, labelVal;
+
+        // x-axis ticks every 5, labels only at 10, 20, 30, 40, 50
+        for (ti = 5; ti <= 50; ti += 5) {
+            board.create('segment', [[ti, -tickLen], [ti, tickLen]], {
+                strokeColor: '#444444', strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            if (ti % 10 === 0) {
+                board.create('text', [ti, -4, String(ti)], {
+                    fontSize: 11, color: '#444444',
+                    anchorX: 'middle', anchorY: 'middle',
+                    fixed: true, highlight: false,
+                    cssStyle: 'background-color:#ffffff;padding:0 2px;'
+                });
+            }
+        }
+
+        // y-axis ticks every 10, labels at 10..90
+        for (ti = 10; ti <= 90; ti += 10) {
+            board.create('segment', [[-tickLenX, ti], [tickLenX, ti]], {
+                strokeColor: '#444444', strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            board.create('text', [-2.4, ti, String(ti)], {
+                fontSize: 11, color: '#444444',
+                anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false,
+                cssStyle: 'background-color:#ffffff;padding:0 2px;'
+            });
+        }
+
+        /* ── Axis titles ─────────────────────────────────────────── */
+        // x-axis title centered below tick labels
+        board.create('text', [24, -8.5, 'Days of training, <i>t</i>'], {
+            fontSize: 12, color: '#444444',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // y-axis title
+        board.create('text', [1, 95, 'Components per hour, <i>N</i>'], {
+            fontSize: 12, color: '#444444',
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        /* ── Horizontal asymptote N = 80 (dashed cyan, no label) ── */
+        board.create('line', [[0, 80], [1, 80]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0,
+            dash: 2,
+            straightFirst: true, straightLast: true,
+            fixed: true, highlight: false
+        });
+
+        /* ── Curve N = 80t / (t + 5), t in [0, 52] ──────────────── */
+        board.create('functiongraph', [
+            function(t) { return 80 * t / (t + 5); },
+            0, 52
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        /* ── Key point (5, 40) ───────────────────────────────────── */
+        board.create('point', [5, 40], {
+            name: '', size: 4, color: '#222222',
+            fixed: true, highlight: false,
+            showInfobox: false
+        });
+
+        // KaTeX label for key point
+        board.create('text', [5.8, 36, '(5,\\,40)'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'left', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
