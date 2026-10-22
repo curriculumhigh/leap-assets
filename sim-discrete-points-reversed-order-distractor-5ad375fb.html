@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discrete Points — Reversed Order Distractor</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 5.6, 5.6, -0.6],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Manual axes ─────────────────────────────────────────── */
+
+        /* x-axis */
+        var xAxis = board.create('axis', [[0, 0], [1, 0]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 4 },
+            highlight: false,
+            ticks: {
+                strokeColor: '#444444',
+                minorTicks: 0,
+                ticksDistance: 1,
+                label: { fontSize: 9, offset: [0, -12] },
+                drawZero: false,
+                insertTicks: false
+            }
+        });
+
+        /* y-axis */
+        var yAxis = board.create('axis', [[0, 0], [0, 1]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 4 },
+            highlight: false,
+            ticks: {
+                strokeColor: '#444444',
+                minorTicks: 0,
+                ticksDistance: 0.25,
+                label: { fontSize: 8, offset: [-20, 0] },
+                drawZero: false,
+                insertTicks: false
+            }
+        });
+
+        /* ── Grid (manual, matching tick distances) ──────────────── */
+        /* Vertical grid lines at x = 1, 2, 3, 4, 5 */
+        var gi;
+        for (gi = 1; gi <= 5; gi++) {
+            board.create('line', [[gi, 0], [gi, 1]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                straightFirst: true, straightLast: true,
+                fixed: true, highlight: false
+            });
+        }
+        /* Horizontal grid lines at y = 0.25, 0.5, … 5.0 */
+        for (gi = 1; gi <= 20; gi++) {
+            var yv = gi * 0.25;
+            board.create('line', [[0, yv], [1, yv]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                straightFirst: true, straightLast: true,
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── Axis labels ─────────────────────────────────────────── */
+        board.create('text', [5.2, -0.3, 'n'], {
+            fontSize: 10, fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [0.15, 5.3, 'a_n'], {
+            fontSize: 10, fixed: true, highlight: false, useKatex: true
+        });
+
+        /* ── Discrete points ─────────────────────────────────────── */
+        var pts = [[1, 4], [2, 2.75], [3, 1.5], [4, 0.25]];
+        for (var i = 0; i < pts.length; i++) {
+            board.create('point', pts[i], {
+                name: '',
+                size: 3,
+                color: '#222222',
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
