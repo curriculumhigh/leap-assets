@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Graph: y = 5/(x+4) + 3</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 480px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-10.6, 11.6, 10.6, -5.6],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Grid ─────────────────────────────────────────── */
+        /* Vertical grid lines */
+        var gx;
+        for (gx = -10; gx <= 10; gx++) {
+            board.create('line', [[gx, 0], [gx, 1]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                straightFirst: true, straightLast: true,
+                fixed: true, highlight: false
+            });
+        }
+        /* Horizontal grid lines */
+        var gy;
+        for (gy = -5; gy <= 11; gy++) {
+            board.create('line', [[0, gy], [1, gy]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                straightFirst: true, straightLast: true,
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── Axes ─────────────────────────────────────────── */
+        var xAxis = board.create('arrow', [[-10.6, 0], [10.6, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        var yAxis = board.create('arrow', [[0, -5.6], [0, 11.6]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        /* ── Tick marks and labels ── */
+        var TICK_LEN = 0.18;
+        var i;
+
+        /* X-axis ticks */
+        for (i = -10; i <= 10; i++) {
+            if (i === 0) continue;
+            board.create('segment', [[i, -TICK_LEN], [i, TICK_LEN]], {
+                strokeColor: '#444444', strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            /* Labels at even values, but skip 10 to avoid collision with axis name */
+            if (i % 2 === 0 && i !== 10) {
+                board.create('text', [i, -0.55, String(i)], {
+                    anchorX: 'middle', anchorY: 'top',
+                    fontSize: 11, color: '#444444',
+                    fixed: true, highlight: false,
+                    cssStyle: 'background-color:#ffffff;padding:0 2px;'
+                });
+            }
+        }
+
+        /* Y-axis ticks */
+        for (i = -5; i <= 11; i++) {
+            if (i === 0) continue;
+            board.create('segment', [[-TICK_LEN, i], [TICK_LEN, i]], {
+                strokeColor: '#444444', strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            if (i % 2 === 0) {
+                board.create('text', [-0.35, i, String(i)], {
+                    anchorX: 'right', anchorY: 'middle',
+                    fontSize: 11, color: '#444444',
+                    fixed: true, highlight: false,
+                    cssStyle: 'background-color:#ffffff;padding:0 2px;'
+                });
+            }
+        }
+
+        /* ── Axis labels (KaTeX italic) ───────────────────── */
+        board.create('text', [10.5, 0.4, 'x'], {
+            useKatex: true, fontSize: 14, color: '#444444',
+            anchorX: 'right', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+        board.create('text', [0.35, 11.15, 'y'], {
+            useKatex: true, fontSize: 14, color: '#444444',
+            fixed: true, highlight: false
+        });
+
+        /* ── Asymptotes (dashed cyan) ───────────────────────── */
+        /* Vertical: x = -4 */
+        board.create('segment', [[-4, -5.6], [-4, 11.6]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+        /* Horizontal: y = 3 */
+        board.create('segment', [[-10.6, 3], [10.6, 3]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        /* ── Asymptote labels (cyan KaTeX 13px) ──────────── */
+        board.create('text', [-4.25, 11.2, 'x = -4'], {
+            useKatex: true, fontSize: 13, color: '#0EA5E9',
+            anchorX: 'right', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+        board.create('text', [10.2, 2.7, 'y = 3'], {
+            useKatex: true, fontSize: 13, color: '#0EA5E9',
+            anchorX: 'right', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        /* ── Curve: y = 5/(x + 4) + 3, split at x = -4 ──── */
+        var GAP = 0.12;
+
+        /* Left branch: x from -10.6 to -4 - GAP */
+        board.create('functiongraph', [
+            function(x) { return 5 / (x + 4) + 3; },
+            -10.6, -4 - GAP
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        /* Right branch: x from -4 + GAP to 10.6 */
+        board.create('functiongraph', [
+            function(x) { return 5 / (x + 4) + 3; },
+            -4 + GAP, 10.6
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
