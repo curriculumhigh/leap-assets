@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seesaw Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 520px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-13, 10, 13, -5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Layout constants ────────────────────────────────────────
+        var plankY = 3.0;
+        var plankHalf = 10.5;
+        var plankThick = 0.35;
+        var fulcrumBase = 2.2;
+        var fulcrumH = 2.0;
+
+        // Child positions — visually about equal distance from center (not to scale)
+        var leftChildX = -5.5;
+        var rightChildX = 5.5;
+
+        // ── Fulcrum (triangle) ──────────────────────────────────────
+        var fA = board.create('point', [-fulcrumBase / 2, plankY - plankThick / 2 - fulcrumH], { visible: false, fixed: true, name: '' });
+        var fB = board.create('point', [fulcrumBase / 2, plankY - plankThick / 2 - fulcrumH], { visible: false, fixed: true, name: '' });
+        var fC = board.create('point', [0, plankY - plankThick / 2], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [fA, fB, fC], {
+            fillColor: '#F3F4F6', fillOpacity: 1,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Plank (filled rectangle) ────────────────────────────────
+        var pA = board.create('point', [-plankHalf, plankY + plankThick / 2], { visible: false, fixed: true, name: '' });
+        var pB = board.create('point', [plankHalf, plankY + plankThick / 2], { visible: false, fixed: true, name: '' });
+        var pC = board.create('point', [plankHalf, plankY - plankThick / 2], { visible: false, fixed: true, name: '' });
+        var pD = board.create('point', [-plankHalf, plankY - plankThick / 2], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [pA, pB, pC, pD], {
+            fillColor: '#555555', fillOpacity: 1,
+            borders: { strokeColor: '#555555', strokeWidth: 0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Child figure helper ─────────────────────────────────────
+        function drawChild(cx, baseY) {
+            // Body: rounded rectangle approximated as an ellipse
+            var bodyH = 2.6;
+            var bodyW = 1.4;
+            var bodyCY = baseY + bodyH / 2 + 0.1;
+
+            // Body ellipse
+            board.create('ellipse', [
+                [cx - 0.01, bodyCY - bodyH * 0.32],
+                [cx + 0.01, bodyCY + bodyH * 0.32],
+                [cx + bodyW / 2, bodyCY]
+            ], {
+                strokeColor: '#555555', strokeWidth: 1.5,
+                fillColor: '#F3F4F6', fillOpacity: 1,
+                fixed: true, highlight: false
+            });
+
+            // Head: circle
+            var headR = 0.75;
+            var headCY = baseY + bodyH + 0.1 + headR + 0.15;
+            var headCenter = board.create('point', [cx, headCY], { visible: false, fixed: true, name: '' });
+            board.create('circle', [headCenter, headR], {
+                strokeColor: '#555555', strokeWidth: 1.5,
+                fillColor: '#F3F4F6', fillOpacity: 1,
+                fixed: true, highlight: false
+            });
+
+            return headCY + headR; // top of head y
+        }
+
+        // ── Draw children ───────────────────────────────────────────
+        var leftTop = drawChild(leftChildX, plankY + plankThick / 2);
+        var rightTop = drawChild(rightChildX, plankY + plankThick / 2);
+
+        // ── Weight labels (above figures) ───────────────────────────
+        board.create('text', [leftChildX, leftTop + 0.7, '48\\text{ lb}'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [rightChildX, rightTop + 0.7, '40\\text{ lb}'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+
+        // ── Dimension markers (#3B82F6) ─────────────────────────────
+        var dimY = plankY - plankThick / 2 - fulcrumH - 1.2;
+        var dimCol = '#3B82F6';
+        var tickH = 0.45;
+
+        // Left dimension: fulcrum center (0) to left child (leftChildX)
+        board.create('segment', [[leftChildX, dimY], [0, dimY]], {
+            strokeColor: dimCol, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        // Left end tick
+        board.create('segment', [[leftChildX, dimY - tickH], [leftChildX, dimY + tickH]], {
+            strokeColor: dimCol, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        // Center tick (left side)
+        board.create('segment', [[0, dimY - tickH], [0, dimY + tickH]], {
+            strokeColor: dimCol, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        // Right dimension: fulcrum center (0) to right child (rightChildX)
+        board.create('segment', [[0, dimY], [rightChildX, dimY]], {
+            strokeColor: dimCol, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        // Right end tick
+        board.create('segment', [[rightChildX, dimY - tickH], [rightChildX, dimY + tickH]], {
+            strokeColor: dimCol, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        // Dimension labels
+        board.create('text', [leftChildX / 2, dimY - 0.9, '5\\text{ ft}'], {
+            useKatex: true, fontSize: 13, color: dimCol,
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [rightChildX / 2, dimY - 0.9, 'd\\text{ ft}'], {
+            useKatex: true, fontSize: 13, color: dimCol,
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // ── "Not drawn to scale" note ───────────────────────────────
+        board.create('text', [12.5, -4.2, 'Not drawn to scale'], {
+            fontSize: 11, color: '#9CA3AF',
+            anchorX: 'right', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
