@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distractor: f(n) = 7n</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 8px; height: calc(100% - 16px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.4, 34, 5.6, -6],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var GRID_COL = '#D1D5DB';
+        var GRID_W = 0.4;
+        var BB = [-1.4, 34, 5.6, -6];
+
+        // Major gridlines: vertical at x = 1,2,3,4
+        var xTicks = [1, 2, 3, 4];
+        for (var i = 0; i < xTicks.length; i++) {
+            board.create('segment', [[xTicks[i], BB[3]], [xTicks[i], BB[1]]], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W,
+                fixed: true, highlight: false, dash: 0
+            });
+        }
+
+        // Major gridlines: horizontal at y = 7,14,21,28
+        var yTicks = [7, 14, 21, 28];
+        for (var j = 0; j < yTicks.length; j++) {
+            board.create('segment', [[BB[0], yTicks[j]], [BB[2], yTicks[j]]], {
+                strokeColor: GRID_COL, strokeWidth: GRID_W,
+                fixed: true, highlight: false, dash: 0
+            });
+        }
+
+        // X-axis arrow
+        board.create('arrow', [[-1.0, 0], [5.3, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        // Y-axis arrow
+        board.create('arrow', [[0, -4], [0, 33]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        // X-axis tick marks and labels: 1, 2, 3, 4
+        for (var i = 0; i < xTicks.length; i++) {
+            board.create('segment', [[xTicks[i], -0.6], [xTicks[i], 0.6]], {
+                strokeColor: '#444444', strokeWidth: 1, fixed: true, highlight: false
+            });
+            board.create('text', [xTicks[i], -2.2, String(xTicks[i])], {
+                fontSize: 10, anchorX: 'middle', anchorY: 'middle',
+                color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        // Y-axis tick marks and labels: 7, 14, 21, 28
+        for (var j = 0; j < yTicks.length; j++) {
+            board.create('segment', [[-0.18, yTicks[j]], [0.18, yTicks[j]]], {
+                strokeColor: '#444444', strokeWidth: 1, fixed: true, highlight: false
+            });
+            board.create('text', [-0.6, yTicks[j], String(yTicks[j])], {
+                fontSize: 10, anchorX: 'right', anchorY: 'middle',
+                color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        // Axis labels
+        board.create('text', [4.9, -2.8, 'n'], {
+            fontSize: 11, fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [0.35, 32, 'a_n'], {
+            fontSize: 11, fixed: true, highlight: false, useKatex: true
+        });
+
+        // Discrete points: (1,7), (2,14), (3,21), (4,28)
+        var pts = [[1, 7], [2, 14], [3, 21], [4, 28]];
+        for (var k = 0; k < pts.length; k++) {
+            board.create('point', pts[k], {
+                name: '',
+                size: 3,
+                color: '#222222',
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
