@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hanging Mobile Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 520px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        /* ── Layout constants ─────────────────────────────────── */
+        var PIVOT_X = 0;
+        var PIVOT_Y = 3.5;
+        var BAR_HALF = 4.2;
+        var TOP_STRING_Y = 5.8;
+        var STRING_LEN = 4.2;
+        var ORN_R = 0.9;
+        var DIM_Y = PIVOT_Y - 0.75;
+        var TICK_HALF = 0.3;
+
+        var LEFT_X = PIVOT_X - BAR_HALF;
+        var RIGHT_X = PIVOT_X + BAR_HALF;
+
+        var leftOrnCenterY = PIVOT_Y - STRING_LEN - ORN_R;
+        var rightOrnCenterY = PIVOT_Y - STRING_LEN - ORN_R;
+
+        /* Bounding box: tight around content with modest margin */
+        var bbLeft = LEFT_X - ORN_R - 0.8;
+        var bbRight = RIGHT_X + ORN_R + 0.8;
+        var bbTop = TOP_STRING_Y + 0.6;
+        var bbBottom = leftOrnCenterY - ORN_R - 1.1;
+
+        var COL_STRUCT = '#555555';
+        var COL_DARK = '#222222';
+        var COL_MEAS = '#3B82F6';
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [bbLeft, bbTop, bbRight, bbBottom],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Top string ───────────────────────────────────────── */
+        board.create('segment', [[PIVOT_X, TOP_STRING_Y], [PIVOT_X, PIVOT_Y]], {
+            strokeColor: COL_STRUCT, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        /* ── Horizontal bar ───────────────────────────────────── */
+        board.create('segment', [[LEFT_X, PIVOT_Y], [RIGHT_X, PIVOT_Y]], {
+            strokeColor: COL_STRUCT, strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        /* ── Pivot dot (small filled circle) ──────────────────── */
+        board.create('point', [PIVOT_X, PIVOT_Y], {
+            size: 4, color: COL_DARK, strokeColor: COL_DARK,
+            fixed: true, highlight: false, name: '', showInfobox: false
+        });
+
+        /* ── Left hanging string ──────────────────────────────── */
+        board.create('segment', [[LEFT_X, PIVOT_Y], [LEFT_X, PIVOT_Y - STRING_LEN]], {
+            strokeColor: COL_STRUCT, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        /* ── Left ornament (filled circle) ────────────────────── */
+        board.create('circle', [[LEFT_X, leftOrnCenterY], ORN_R], {
+            strokeColor: COL_STRUCT, strokeWidth: 1.8,
+            fillColor: '#E5E7EB', fillOpacity: 1.0,
+            fixed: true, highlight: false
+        });
+
+        /* ── Left ornament label: 120 g ───────────────────────── */
+        board.create('text', [LEFT_X, leftOrnCenterY, '120\\text{ g}'], {
+            useKatex: true, fontSize: 13, color: COL_DARK,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        /* ── Right hanging string ─────────────────────────────── */
+        board.create('segment', [[RIGHT_X, PIVOT_Y], [RIGHT_X, PIVOT_Y - STRING_LEN]], {
+            strokeColor: COL_STRUCT, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        /* ── Right ornament (filled circle) ───────────────────── */
+        board.create('circle', [[RIGHT_X, rightOrnCenterY], ORN_R], {
+            strokeColor: COL_STRUCT, strokeWidth: 1.8,
+            fillColor: '#E5E7EB', fillOpacity: 1.0,
+            fixed: true, highlight: false
+        });
+
+        /* ── Right ornament label: 200 g ──────────────────────── */
+        board.create('text', [RIGHT_X, rightOrnCenterY, '200\\text{ g}'], {
+            useKatex: true, fontSize: 13, color: COL_DARK,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        /* ── Dimension markers (measurement blue) ─────────────── */
+
+        /* -- Left dimension: 15 cm -- */
+        board.create('segment', [[LEFT_X, DIM_Y], [PIVOT_X, DIM_Y]], {
+            strokeColor: COL_MEAS, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[LEFT_X, DIM_Y - TICK_HALF], [LEFT_X, DIM_Y + TICK_HALF]], {
+            strokeColor: COL_MEAS, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[PIVOT_X, DIM_Y - TICK_HALF], [PIVOT_X, DIM_Y + TICK_HALF]], {
+            strokeColor: COL_MEAS, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [(LEFT_X + PIVOT_X) / 2, DIM_Y - 0.55, '15\\text{ cm}'], {
+            useKatex: true, fontSize: 12, color: COL_MEAS,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        /* -- Right dimension: d cm -- */
+        board.create('segment', [[PIVOT_X, DIM_Y], [RIGHT_X, DIM_Y]], {
+            strokeColor: COL_MEAS, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[RIGHT_X, DIM_Y - TICK_HALF], [RIGHT_X, DIM_Y + TICK_HALF]], {
+            strokeColor: COL_MEAS, strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('text', [(PIVOT_X + RIGHT_X) / 2, DIM_Y - 0.55, 'd\\text{ cm}'], {
+            useKatex: true, fontSize: 12, color: COL_MEAS,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        /* ── "Not drawn to scale" note ────────────────────────── */
+        board.create('text', [bbRight - 0.3, bbBottom + 0.3, 'Not drawn to scale'], {
+            fontSize: 11, color: '#9CA3AF',
+            anchorX: 'right', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
