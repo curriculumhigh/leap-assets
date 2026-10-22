@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discrete Points Option Card</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.6, 5.6, 5.8, -0.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Axes ────────────────────────────────────────────── */
+
+        var xAxis = board.create('arrow', [[0, 0], [5.5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        var yAxis = board.create('arrow', [[0, 0], [0, 5.3]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        /* ── Grid lines ──────────────────────────────────────── */
+
+        var i;
+        for (i = 1; i <= 5; i++) {
+            board.create('segment', [[i, 0], [i, 5]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+
+        var j;
+        for (j = 1; j <= 20; j++) {
+            var yVal = j * 0.25;
+            board.create('segment', [[0, yVal], [5, yVal]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── Tick marks on axes ──────────────────────────────── */
+
+        var tickLen = 0.12;
+
+        for (i = 1; i <= 5; i++) {
+            board.create('segment', [[i, -tickLen], [i, tickLen]], {
+                strokeColor: '#444444', strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            board.create('text', [i, -0.35, String(i)], {
+                fontSize: 9, anchorX: 'middle', anchorY: 'middle',
+                color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        for (j = 1; j <= 20; j++) {
+            var yv = j * 0.25;
+            board.create('segment', [[-tickLen, yv], [tickLen, yv]], {
+                strokeColor: '#444444', strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            if (yv === Math.round(yv)) {
+                board.create('text', [-0.3, yv, String(Math.round(yv))], {
+                    fontSize: 9, anchorX: 'middle', anchorY: 'middle',
+                    color: '#444444', fixed: true, highlight: false
+                });
+            }
+        }
+
+        /* ── Axis labels (KaTeX) ─────────────────────────────── */
+
+        board.create('text', [5.35, -0.35, 'n'], {
+            fontSize: 11, useKatex: true, color: '#444444',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [0.25, 5.3, 'a_n'], {
+            fontSize: 11, useKatex: true, color: '#444444',
+            fixed: true, highlight: false
+        });
+
+        /* ── Discrete points ─────────────────────────────────── */
+
+        var pts = [[1, 0.25], [2, 1.5], [3, 2.75], [4, 4]];
+
+        for (i = 0; i < pts.length; i++) {
+            board.create('point', [pts[i][0], pts[i][1]], {
+                name: '', size: 4, color: '#222222',
+                fixed: true, highlight: false, showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
