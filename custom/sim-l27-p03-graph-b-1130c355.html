@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Option</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden;
+            height: 100%; background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            width: 320px; height: 240px;
+            padding: 0; margin: 0;
+        }
+        .board-wrapper {
+            background: white; border-radius: 8px;
+            padding: 6px; width: calc(100% - 12px); height: calc(100% - 12px);
+        }
+        #board { width: 100%; height: 100%; }
+        .JXGinfobox { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.2, 10.9, 10.9, -1.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        /* ── Grid ────────────────────────────────────────── */
+        var i;
+        /* Vertical grid lines x = 0..10 */
+        for (i = 0; i <= 10; i++) {
+            board.create('segment', [[i, 0], [i, 10]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+        /* Horizontal grid lines y = 0..10 */
+        for (i = 0; i <= 10; i++) {
+            board.create('segment', [[0, i], [10, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── Axes ────────────────────────────────────────── */
+        /* x-axis */
+        board.create('arrow', [[0, 0], [10.5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+        /* y-axis */
+        board.create('arrow', [[0, 0], [0, 10.5]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        /* ── Tick marks & labels ─────────────────────────── */
+        var tickLen = 0.15;
+        var showTicks = [2, 4, 6, 8, 10];
+
+        /* x-axis ticks every 1 */
+        for (i = 1; i <= 10; i++) {
+            board.create('segment', [[i, -tickLen], [i, tickLen]], {
+                strokeColor: '#444444', strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+        }
+        /* x-axis tick values: only 2,4,6,8,10 */
+        for (i = 0; i < showTicks.length; i++) {
+            board.create('text', [showTicks[i], -0.55, String(showTicks[i])], {
+                fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+                color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        /* y-axis ticks every 1 */
+        for (i = 1; i <= 10; i++) {
+            board.create('segment', [[-tickLen, i], [tickLen, i]], {
+                strokeColor: '#444444', strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+        }
+        /* y-axis tick values: only 2,4,6,8,10 */
+        for (i = 0; i < showTicks.length; i++) {
+            board.create('text', [-0.55, showTicks[i], String(showTicks[i])], {
+                fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+                color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        /* ── Axis-name labels (KaTeX italic, 14px) ──────── */
+        board.create('text', [10.35, 0.4, 'x'], {
+            fontSize: 14, useKatex: true, color: '#444444',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [0.45, 10.4, 'y'], {
+            fontSize: 14, useKatex: true, color: '#444444',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        /* ── Curve: y = 8/x for x in [0.8, 10] ────────── */
+        board.create('functiongraph', [
+            function(x) { return 8 / x; }, 0.8, 10
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        /* ── Key points with coordinate labels ──────────── */
+        var pts = [
+            { x: 1, y: 8 },
+            { x: 2, y: 4 },
+            { x: 4, y: 2 },
+            { x: 8, y: 1 }
+        ];
+
+        /* Label positions: all in the empty region above-right of the curve */
+        var labelPositions = [
+            { lx: 1.3, ly: 8.4 },
+            { lx: 2.3, ly: 4.4 },
+            { lx: 4.3, ly: 2.4 },
+            { lx: 7.4, ly: 1.45 }
+        ];
+
+        for (i = 0; i < pts.length; i++) {
+            board.create('point', [pts[i].x, pts[i].y], {
+                name: '', size: 4, color: '#222222',
+                fixed: true, highlight: false, showInfobox: false
+            });
+
+            board.create('text', [
+                labelPositions[i].lx,
+                labelPositions[i].ly,
+                '(' + pts[i].x + ',\\,' + pts[i].y + ')'
+            ], {
+                fontSize: 12, useKatex: true, color: '#222222',
+                anchorX: 'left',
+                anchorY: 'bottom',
+                fixed: true, highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
