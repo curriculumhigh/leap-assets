@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan Tier Monthly Cost Bar Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.8, 68, 6.2, -10],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var tiers = [1, 2, 3, 4];
+        var costs = [12, 27, 42, 57];
+        var barColor = '#2563EB';
+        var barWidth = 0.7;
+
+        var axisColor = '#444444';
+        var gridColor = '#D1D5DB';
+
+        var yTicks = [0, 10, 20, 30, 40, 50, 60];
+        for (var i = 0; i < yTicks.length; i++) {
+            var yVal = yTicks[i];
+            board.create('segment', [[0.2, yVal], [5.3, yVal]], {
+                strokeColor: gridColor, strokeWidth: 0.4, fixed: true, highlight: false
+            });
+            board.create('segment', [[0.1, yVal], [0.2, yVal]], {
+                strokeColor: axisColor, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [-0.15, yVal, String(yVal)], {
+                fontSize: 11, color: axisColor, anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        board.create('segment', [[0.2, 0], [0.2, 63]], {
+            strokeColor: axisColor, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[0.2, 0], [5.3, 0]], {
+            strokeColor: axisColor, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        for (var b = 0; b < tiers.length; b++) {
+            var cx = tiers[b];
+            var h = costs[b];
+            var x1 = cx - barWidth / 2;
+            var x2 = cx + barWidth / 2;
+
+            var p1 = board.create('point', [x1, 0], { visible: false, name: '' });
+            var p2 = board.create('point', [x2, 0], { visible: false, name: '' });
+            var p3 = board.create('point', [x2, h], { visible: false, name: '' });
+            var p4 = board.create('point', [x1, h], { visible: false, name: '' });
+
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: barColor, fillOpacity: 0.75,
+                borders: { strokeColor: barColor, strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            board.create('text', [cx, h + 2.5, String(costs[b])], {
+                fontSize: 12, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false,
+                cssStyle: 'font-weight: 600;'
+            });
+        }
+
+        for (var t = 0; t < tiers.length; t++) {
+            board.create('segment', [[tiers[t], 0], [tiers[t], -1]], {
+                strokeColor: axisColor, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [tiers[t], -3, String(tiers[t])], {
+                fontSize: 12, color: axisColor, anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        board.create('text', [2.75, -7, 'Plan tier'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight: 600;'
+        });
+
+        board.create('text', [-1.5, 30, 'Monthly cost (dollars)'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight: 600; transform: rotate(-90deg); white-space: nowrap;'
+        });
+    </script>
+</body>
+</html>
