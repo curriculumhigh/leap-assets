@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Student Ages — Pie Chart</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 6.5, 7, -6.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var data = [
+            { label: '19', pct: 40, color: '#2563EB' },
+            { label: '20', pct: 28, color: '#059669' },
+            { label: '21', pct: 18, color: '#D97706' },
+            { label: '22', pct: 12, color: '#7C3AED' },
+            { label: '38', pct: 2,  color: '#DC2626' }
+        ];
+
+        var R = 3.0;
+        var cx = 0;
+        var cy = -0.5;
+
+        // Title
+        board.create('text', [cx, cy + R + 2.6, '\\textbf{College Student Ages}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 16, color: '#222222',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        function makeArcPoints(cxv, cyv, radius, aStart, aEnd, steps) {
+            var pts = [];
+            var i, a;
+            for (i = 0; i <= steps; i++) {
+                a = aStart + (aEnd - aStart) * i / steps;
+                pts.push([cxv + radius * Math.cos(a), cyv + radius * Math.sin(a)]);
+            }
+            return pts;
+        }
+
+        var curAngle = Math.PI / 2;
+
+        for (var d = 0; d < data.length; d++) {
+            var item = data[d];
+            var sweep = (item.pct / 100) * 2 * Math.PI;
+            var endAngle = curAngle - sweep;
+
+            var arcPts = makeArcPoints(cx, cy, R, curAngle, endAngle, 80);
+            var allCoords = [[cx, cy]];
+            var k;
+            for (k = 0; k < arcPts.length; k++) {
+                allCoords.push(arcPts[k]);
+            }
+
+            var polyPts = [];
+            for (k = 0; k < allCoords.length; k++) {
+                polyPts.push(
+                    board.create('point', allCoords[k], { visible: false, fixed: true, name: '' })
+                );
+            }
+
+            board.create('polygon', polyPts, {
+                fillColor: item.color,
+                fillOpacity: 0.55,
+                borders: { strokeColor: '#ffffff', strokeWidth: 2 },
+                vertices: { visible: false },
+                hasInnerPoints: false,
+                fixed: true,
+                highlight: false
+            });
+
+            var midAngle = curAngle - sweep / 2;
+            var lx, ly;
+
+            if (item.pct <= 5) {
+                lx = cx + (R + 0.9) * Math.cos(midAngle);
+                ly = cy + (R + 0.9) * Math.sin(midAngle) - 0.15;
+            } else {
+                lx = cx + (R + 1.3) * Math.cos(midAngle);
+                ly = cy + (R + 1.3) * Math.sin(midAngle);
+            }
+
+            var anchorX = 'middle';
+            if (Math.cos(midAngle) > 0.3) anchorX = 'left';
+            if (Math.cos(midAngle) < -0.3) anchorX = 'right';
+
+            var katexStr = item.label + '\\text{ yr: }' + item.pct + '\\%';
+
+            board.create('text', [lx, ly, katexStr], {
+                anchorX: anchorX, anchorY: 'middle',
+                fontSize: 13, color: item.color,
+                useKatex: true, fixed: true, highlight: false,
+                cssStyle: 'font-weight: 600;'
+            });
+
+            if (item.pct <= 5) {
+                var lineStartX = cx + (R + 0.12) * Math.cos(midAngle);
+                var lineStartY = cy + (R + 0.12) * Math.sin(midAngle);
+                var lineEndX = cx + (R + 0.55) * Math.cos(midAngle);
+                var lineEndY = cy + (R + 0.55) * Math.sin(midAngle) - 0.05;
+                board.create('segment', [[lineStartX, lineStartY], [lineEndX, lineEndY]], {
+                    strokeColor: item.color, strokeWidth: 1.0,
+                    fixed: true, highlight: false
+                });
+            }
+
+            curAngle = endAngle;
+        }
+    </script>
+</body>
+</html>
