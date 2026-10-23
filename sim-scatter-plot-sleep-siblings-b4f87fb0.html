@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scatter Plot — Hours of Sleep vs Number of Siblings</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0; padding: 6px; height: calc(100% - 12px); position: relative; }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); position: relative; }
+        #board { width: 100%; height: 100%; }
+        .y-axis-label {
+            position: absolute;
+            left: 2px;
+            top: 50%;
+            transform: translateX(-50%) translateY(-50%) rotate(-90deg);
+            font-size: 14px;
+            color: #222222;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div class="y-axis-label">Number of Siblings</div>
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [3.0, 6.2, 11.8, -1.4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Minor vertical grid lines at every 0.5 on x-axis (skip integers)
+        var xMinor;
+        for (xMinor = 4.5; xMinor <= 10.5; xMinor += 1) {
+            board.create('segment', [[xMinor, 0], [xMinor, 5]], {
+                strokeColor: '#E5E7EB', strokeWidth: 0.3, fixed: true, highlight: false
+            });
+        }
+
+        // Major vertical grid lines at every 1 on x-axis
+        var xMaj;
+        for (xMaj = 4; xMaj <= 11; xMaj++) {
+            board.create('segment', [[xMaj, 0], [xMaj, 5]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // Major horizontal grid lines at every 1 on y-axis
+        var yMaj;
+        for (yMaj = 0; yMaj <= 5; yMaj++) {
+            board.create('segment', [[4, yMaj], [11, yMaj]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // X-axis with arrows on both ends
+        board.create('arrow', [[3.5, 0], [11.5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 },
+            firstArrow: { type: 2, size: 6 }
+        });
+
+        // Y-axis with arrows on both ends
+        board.create('arrow', [[4, -0.7], [4, 5.7]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 },
+            firstArrow: { type: 2, size: 6 }
+        });
+
+        // Major ticks on x-axis with labels
+        var xi;
+        for (xi = 4; xi <= 11; xi++) {
+            board.create('segment', [[xi, -0.12], [xi, 0.12]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [xi, -0.45, String(xi)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Minor ticks on x-axis (every 0.5, skip integers)
+        var xm;
+        for (xm = 4.5; xm <= 10.5; xm += 1) {
+            board.create('segment', [[xm, -0.08], [xm, 0.08]], {
+                strokeColor: '#444444', strokeWidth: 0.8, fixed: true, highlight: false
+            });
+        }
+
+        // Ticks on y-axis with labels
+        var yi;
+        for (yi = 0; yi <= 5; yi++) {
+            board.create('segment', [[3.92, yi], [4.08, yi]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            if (yi > 0) {
+                board.create('text', [3.7, yi, String(yi)], {
+                    fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // X-axis label
+        board.create('text', [7.5, -1.0, 'Hours of Sleep'], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Data points
+        var data = [
+            [5, 3], [6, 0], [6.5, 4], [7, 1],
+            [7.5, 2], [8, 3], [9, 1], [10, 2]
+        ];
+
+        var i;
+        for (i = 0; i < data.length; i++) {
+            board.create('point', [data[i][0], data[i][1]], {
+                name: '', size: 4, color: '#222222', fixed: true,
+                showInfobox: false, highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
