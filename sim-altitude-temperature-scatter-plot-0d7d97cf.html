@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Altitude vs Temperature Scatter Plot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); position: relative; }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #222222;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+            <div class="coord-tooltip" id="tooltip"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 78, 28.5, -10],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Draw axes manually for full control ─────────────────────────
+
+        // X-axis
+        board.create('arrow', [[0, 0], [27.5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Y-axis
+        board.create('arrow', [[0, 0], [0, 75]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // ── Grid lines ──────────────────────────────────────────────────
+
+        var xi, yi;
+        for (xi = 2; xi <= 26; xi += 2) {
+            board.create('segment', [[xi, 0], [xi, 70]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        for (yi = 10; yi <= 70; yi += 10) {
+            board.create('segment', [[0, yi], [26, yi]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Tick marks and labels on X-axis ─────────────────────────────
+
+        for (xi = 2; xi <= 26; xi += 2) {
+            board.create('segment', [[xi, -0.8], [xi, 0.8]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [xi, -3.2, String(xi)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Tick marks and labels on Y-axis ─────────────────────────────
+
+        for (yi = 10; yi <= 70; yi += 10) {
+            board.create('segment', [[-0.4, yi], [0.4, yi]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [-1.6, yi, String(yi)], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Origin label
+        board.create('text', [-1.2, -3.2, '0'], {
+            fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Axis name labels ────────────────────────────────────────────
+
+        board.create('text', [13, -7.5, 'Altitude (thousands of feet)'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-style: italic;'
+        });
+
+        board.create('text', [-2.8, 38, 'Outside air temperature (\u00B0F)'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-style: italic; writing-mode: vertical-rl; transform: rotate(180deg);'
+        });
+
+        // ── Tooltip setup ───────────────────────────────────────────────
+
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function showTooltip(pt) {
+            var xCoord = Math.round(pt.X());
+            var yCoord = Math.round(pt.Y());
+            var latex = '(' + xCoord + ',\\,' + yCoord + ')';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.display = 'block';
+
+            // Position relative to the board-wrapper (tooltip parent)
+            var rect = boardContainer.getBoundingClientRect();
+            var wrapperRect = boardContainer.parentElement.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [pt.X(), pt.Y()], board);
+            var sx = coords.scrCoords[1] + rect.left - wrapperRect.left;
+            var sy = coords.scrCoords[2] + rect.top - wrapperRect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+        }
+
+        // ── Data points with hover tooltips ─────────────────────────────
+
+        var data = [
+            [2, 58], [5, 52], [8, 45], [11, 38],
+            [14, 30], [17, 22], [20, 15], [23, 8]
+        ];
+
+        for (var i = 0; i < data.length; i++) {
+            (function(d) {
+                var pt = board.create('point', [d[0], d[1]], {
+                    name: '', size: 5, color: '#222222',
+                    strokeColor: '#222222', strokeWidth: 1,
+                    fixed: true, showInfobox: false,
+                    highlight: true,
+                    highlightFillColor: '#555555',
+                    highlightStrokeColor: '#555555',
+                    highlightSize: 7,
+                    attractorDistance: 20,
+                    snatchDistance: 20
+                });
+                pt.on('over', function() { showTooltip(pt); });
+                pt.on('out', function() { hideTooltip(); });
+            })(data[i]);
+        }
+    </script>
+</body>
+</html>
