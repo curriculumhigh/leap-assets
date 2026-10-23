@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scatter Plot — Days of Summer Heat vs Water Level</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.8, 32, 9.8, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var i;
+
+        // ── Grid lines ──────────────────────────────────────────────────
+        // Vertical grid lines at x = 1..8
+        for (i = 1; i <= 8; i++) {
+            board.create('segment', [[i, 0], [i, 28]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+        // Horizontal grid lines at y = 2, 4, ..., 28
+        for (i = 2; i <= 28; i += 2) {
+            board.create('segment', [[0, i], [8, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Axes ────────────────────────────────────────────────────────
+        // X-axis
+        board.create('arrow', [[0, 0], [9.2, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        // Y-axis
+        board.create('arrow', [[0, 0], [0, 30.5]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // ── X-axis ticks and labels (1–8) ───────────────────────────────
+        for (i = 1; i <= 8; i++) {
+            board.create('segment', [[i, -0.4], [i, 0.4]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [i, -1.4, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Y-axis ticks every 1, labels every 2 ──────────────────────
+        for (i = 1; i <= 28; i++) {
+            // Tick mark every 1 — major (longer) at even, minor (shorter) at odd
+            var isEven = (i % 2 === 0);
+            var tickHalf = isEven ? 0.15 : 0.10;
+            board.create('segment', [[-tickHalf, i], [tickHalf, i]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            // Label only at even values
+            if (isEven) {
+                board.create('text', [-0.5, i, String(i)], {
+                    fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── Origin label ────────────────────────────────────────────────
+        board.create('text', [-0.35, -1.4, '0'], {
+            fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Axis name labels ────────────────────────────────────────────
+        board.create('text', [4.5, -3, 'Days of summer heat'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-style: italic;'
+        });
+        board.create('text', [-1.4, 16, 'Water level (inches)'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-style: italic; writing-mode: vertical-rl; transform: rotate(180deg);'
+        });
+
+        // ── Data points ─────────────────────────────────────────────────
+        var data = [[1,24],[2,21],[3,19],[4,16],[5,13],[6,10],[7,7]];
+        for (i = 0; i < data.length; i++) {
+            board.create('point', data[i], {
+                name: '', size: 4, color: '#222222', fixed: true, highlight: false,
+                showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
