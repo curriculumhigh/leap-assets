@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Race Wins by Month</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.2, 14.2, 13.5, -2.4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_2025 = '#2563EB';
+        var COL_2026 = '#059669';
+        var COL_AXIS = '#444444';
+        var COL_GRID = '#D1D5DB';
+        var COL_BORDER = '#222222';
+
+        // ── Data ────────────────────────────────────────────────────────
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+        var data2025 = [3, 7, 5, 10, 4, 7];
+        var data2026 = [5, 9, 6, 7, 11, 8];
+
+        // ── Layout constants ────────────────────────────────────────────
+        var groupSpacing = 2.0;
+        var barWidth = 0.7;
+        var barGap = 0.12;
+        var xStart = 1.5;
+        var yMax = 12;
+
+        // ── Draw horizontal grid lines ──────────────────────────────────
+        var i, y;
+        for (i = 2; i <= yMax; i += 2) {
+            board.create('segment', [[-0.3, i], [xStart + (months.length - 1) * groupSpacing + 1.2, i]], {
+                strokeColor: COL_GRID, strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Draw axes (no arrows) ──────────────────────────────────────
+        board.create('segment', [[0, 0], [0, yMax + 1]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[-0.3, 0], [xStart + (months.length - 1) * groupSpacing + 1.2, 0]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Y-axis tick labels ──────────────────────────────────────────
+        for (i = 0; i <= yMax; i += 2) {
+            board.create('segment', [[-0.15, i], [0, i]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [-0.45, i, String(i)], {
+                fontSize: 11, color: COL_AXIS, anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Helper: draw a filled bar ───────────────────────────────────
+        function drawBar(xCenter, height, fillColor) {
+            var x1 = xCenter - barWidth / 2;
+            var x2 = xCenter + barWidth / 2;
+            var p1 = board.create('point', [x1, 0], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [x2, 0], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [x2, height], { visible: false, fixed: true, name: '' });
+            var p4 = board.create('point', [x1, height], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: fillColor, fillOpacity: 0.85,
+                borders: { strokeColor: COL_BORDER, strokeWidth: 0.8 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        // ── Draw bars and month labels ──────────────────────────────────
+        for (i = 0; i < months.length; i++) {
+            var groupX = xStart + i * groupSpacing;
+            var leftBarX = groupX - (barGap / 2) - (barWidth / 2);
+            var rightBarX = groupX + (barGap / 2) + (barWidth / 2);
+
+            drawBar(leftBarX, data2025[i], COL_2025);
+            drawBar(rightBarX, data2026[i], COL_2026);
+
+            board.create('text', [groupX, -0.7, months[i]], {
+                fontSize: 12, color: '#333333', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Title ───────────────────────────────────────────────────────
+        var titleX = xStart + (months.length - 1) * groupSpacing / 2;
+        board.create('text', [titleX, 13.4, '\\textbf{Race Wins by Month}'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Y-axis label (vertical text) ────────────────────────────────
+        board.create('text', [-1.7, 6, '<span style="writing-mode:vertical-rl; transform:rotate(180deg); font-size:13px; color:#333; font-style:italic;">Number of race wins</span>'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useMathJax: false
+        });
+
+        // ── Legend ──────────────────────────────────────────────────────
+        var legX = 8.5;
+        var legY = 12.5;
+
+        (function() {
+            var s1 = board.create('point', [legX, legY], { visible: false, fixed: true, name: '' });
+            var s2 = board.create('point', [legX + 0.55, legY], { visible: false, fixed: true, name: '' });
+            var s3 = board.create('point', [legX + 0.55, legY + 0.55], { visible: false, fixed: true, name: '' });
+            var s4 = board.create('point', [legX, legY + 0.55], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [s1, s2, s3, s4], {
+                fillColor: COL_2025, fillOpacity: 0.85,
+                borders: { strokeColor: COL_BORDER, strokeWidth: 0.6 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        })();
+        board.create('text', [legX + 0.85, legY + 0.28, '2025'], {
+            fontSize: 12, color: '#333333', anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var leg2Y = legY - 0.9;
+        (function() {
+            var s1 = board.create('point', [legX, leg2Y], { visible: false, fixed: true, name: '' });
+            var s2 = board.create('point', [legX + 0.55, leg2Y], { visible: false, fixed: true, name: '' });
+            var s3 = board.create('point', [legX + 0.55, leg2Y + 0.55], { visible: false, fixed: true, name: '' });
+            var s4 = board.create('point', [legX, leg2Y + 0.55], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [s1, s2, s3, s4], {
+                fillColor: COL_2026, fillOpacity: 0.85,
+                borders: { strokeColor: COL_BORDER, strokeWidth: 0.6 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        })();
+        board.create('text', [legX + 0.85, leg2Y + 0.28, '2026'], {
+            fontSize: 12, color: '#333333', anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
