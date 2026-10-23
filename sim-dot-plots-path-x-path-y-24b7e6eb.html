@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dot Plots — Path X and Path Y</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        // --- Data ---
+        var pathX = [42, 43, 43, 44, 44, 44, 44, 45, 45, 46];
+        var pathY = [28, 31, 35, 38, 40, 40, 42, 45, 49, 52];
+
+        // --- Layout constants ---
+        var ROW_X_BASE = 5.0;
+        var ROW_Y_BASE = 2.0;
+        var DOT_SPACING = 0.55;
+
+        var COL_X = '#2563EB';
+        var COL_Y = '#059669';
+
+        // --- Board ---
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [24, 7.5, 56, -1.0],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // --- Vertical gridlines at every integer, width 0.8 ---
+        var i;
+        for (i = 25; i <= 55; i++) {
+            board.create('segment', [[i, -1.0], [i, 7.5]], {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.8,
+                fixed: true,
+                highlight: false,
+                dash: 0
+            });
+        }
+
+        // --- Horizontal axis line ---
+        board.create('arrow', [[24.5, 0.5], [55.5, 0.5]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true,
+            highlight: false
+        });
+
+        // --- Tick marks and labels on axis (every 2, from 26 to 54) ---
+        for (i = 26; i <= 54; i += 2) {
+            // Tick mark
+            board.create('segment', [[i, 0.3], [i, 0.7]], {
+                strokeColor: '#444444',
+                strokeWidth: 1.2,
+                fixed: true,
+                highlight: false
+            });
+            // Tick label — skip 54 to avoid overlap with "minutes" label
+            if (i !== 54) {
+                board.create('text', [i, -0.05, String(i)], {
+                    fontSize: 11,
+                    anchorX: 'middle',
+                    anchorY: 'top',
+                    color: '#444444',
+                    fixed: true,
+                    highlight: false
+                });
+            }
+        }
+
+        // --- Horizontal separator between the two dot plot rows ---
+        board.create('segment', [[24.5, 3.5], [55.5, 3.5]], {
+            strokeColor: '#D1D5DB',
+            strokeWidth: 0.6,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        // --- Helper: count occurrences and place stacked dots ---
+        function placeDots(data, baseY, color) {
+            var freq = {};
+            var j;
+            for (j = 0; j < data.length; j++) {
+                var v = data[j];
+                if (!freq[v]) freq[v] = 0;
+                freq[v]++;
+            }
+            var val;
+            for (val in freq) {
+                if (freq.hasOwnProperty(val)) {
+                    var x = parseFloat(val);
+                    var count = freq[val];
+                    for (j = 0; j < count; j++) {
+                        var y = baseY + j * DOT_SPACING;
+                        board.create('point', [x, y], {
+                            name: '',
+                            size: 3,
+                            color: color,
+                            fillColor: color,
+                            strokeColor: color,
+                            fixed: true,
+                            highlight: false,
+                            showInfobox: false
+                        });
+                    }
+                }
+            }
+        }
+
+        // --- Place dots ---
+        placeDots(pathX, ROW_X_BASE, COL_X);
+        placeDots(pathY, ROW_Y_BASE, COL_Y);
+
+        // --- Row labels (KaTeX) ---
+        board.create('text', [25.2, ROW_X_BASE + 1.2, '\\text{Path X}'], {
+            useKatex: true,
+            fontSize: 14,
+            color: COL_X,
+            fixed: true,
+            highlight: false,
+            anchorX: 'left'
+        });
+
+        board.create('text', [25.2, ROW_Y_BASE + 1.2, '\\text{Path Y}'], {
+            useKatex: true,
+            fontSize: 14,
+            color: COL_Y,
+            fixed: true,
+            highlight: false,
+            anchorX: 'left'
+        });
+
+        // --- Axis label (minutes) at (54, -0.2) ---
+        board.create('text', [54, -0.2, '\\text{minutes}'], {
+            useKatex: true,
+            fontSize: 12,
+            color: '#444444',
+            fixed: true,
+            highlight: false,
+            anchorX: 'middle',
+            anchorY: 'top'
+        });
+
+    </script>
+</body>
+</html>
