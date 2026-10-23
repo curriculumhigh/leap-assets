@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Study Hours Histogram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); position: relative; }
+        #board { width: 100%; height: 100%; }
+        .y-axis-label {
+            position: absolute;
+            left: 6px;
+            top: 50%;
+            transform: translate(-50%, -50%) rotate(-90deg);
+            font-size: 13px;
+            font-style: italic;
+            color: #222222;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div class="y-axis-label">Number of Students</div>
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.8, 20.5, 23, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Manual axes
+        board.create('arrow', [[0, 0], [21.5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false
+        });
+        board.create('arrow', [[0, 0], [0, 19.5]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false
+        });
+
+        // Grid lines
+        var i;
+        for (i = 2; i <= 20; i += 2) {
+            board.create('segment', [[i, 0], [i, 18]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+        for (i = 2; i <= 18; i += 2) {
+            board.create('segment', [[0, i], [20, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // Tick marks and labels
+        for (i = 0; i <= 20; i += 2) {
+            board.create('segment', [[i, -0.3], [i, 0.3]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [i, -1.2, String(i)], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 11, color: '#444444', fixed: true, highlight: false
+            });
+        }
+        for (i = 2; i <= 18; i += 2) {
+            board.create('segment', [[-0.3, i], [0.3, i]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [-0.8, i, String(i)], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 11, color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        // x-axis label
+        board.create('text', [10, -2.8, '\\textit{Weekly Study Hours}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        // Histogram bars
+        var intervals = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18];
+        var heights =   [3, 10, 16, 14, 6, 3, 1, 0, 1, 1];
+
+        function makeBar(x1, x2, h) {
+            if (h === 0) return;
+            var p1 = board.create('point', [x1, 0], { visible: false, name: '' });
+            var p2 = board.create('point', [x2, 0], { visible: false, name: '' });
+            var p3 = board.create('point', [x2, h], { visible: false, name: '' });
+            var p4 = board.create('point', [x1, h], { visible: false, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: '#222222', fillOpacity: 0.55,
+                borders: { strokeColor: '#222222', strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        for (i = 0; i < intervals.length; i++) {
+            makeBar(intervals[i], intervals[i] + 2, heights[i]);
+        }
+
+        // Bar height labels
+        for (i = 0; i < intervals.length; i++) {
+            if (heights[i] === 0) continue;
+            var midX = intervals[i] + 1;
+            board.create('text', [midX, heights[i] + 0.7, String(heights[i])], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 11, color: '#222222', fixed: true, highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
