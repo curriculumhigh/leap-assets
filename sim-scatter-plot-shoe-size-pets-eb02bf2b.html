@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scatter Plot — Shoe Size vs Number of Pets</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 500px; margin: 0; padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white; border-radius: 8px; padding: 10px;
+            height: calc(100% - 20px);
+        }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        /* ── Data ────────────────────────────────────────────────────── */
+        var data = [
+            [7, 3], [9, 1], [6, 2], [10, 3],
+            [8, 0], [11, 1], [7.5, 4], [9.5, 2]
+        ];
+
+        var X_MIN = 5, X_MAX = 12;
+        var Y_MIN = 0, Y_MAX = 5;
+
+        /* ── Board ───────────────────────────────────────────────────── */
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [4.0, 6.4, 13.0, -1.6],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        /* ── Grid lines ──────────────────────────────────────────────── */
+        var ix, iy;
+        // Major grid — every integer
+        for (ix = X_MIN; ix <= X_MAX; ix++) {
+            board.create('segment', [[ix, Y_MIN], [ix, Y_MAX]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+        for (iy = Y_MIN; iy <= Y_MAX; iy++) {
+            board.create('segment', [[X_MIN, iy], [X_MAX, iy]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+        // Minor grid — half-unit on x-axis (for 7.5, 9.5)
+        for (ix = X_MIN; ix < X_MAX; ix++) {
+            board.create('segment', [[ix + 0.5, Y_MIN], [ix + 0.5, Y_MAX]], {
+                strokeColor: '#E5E7EB', strokeWidth: 0.3, dash: 1, fixed: true, highlight: false
+            });
+        }
+
+        /* ── Axes ────────────────────────────────────────────────────── */
+        // X-axis
+        board.create('arrow', [[X_MIN - 0.3, 0], [X_MAX + 0.6, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        // Y-axis
+        board.create('arrow', [[X_MIN, Y_MIN - 0.25], [X_MIN, Y_MAX + 0.6]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        /* ── Tick marks and labels ───────────────────────────────────── */
+        // X-axis major ticks + labels
+        for (ix = X_MIN; ix <= X_MAX; ix++) {
+            board.create('segment', [[ix, -0.1], [ix, 0.1]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [ix, -0.45, String(ix)], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 11, color: '#444444', fixed: true, highlight: false
+            });
+        }
+        // X-axis minor ticks (half-units, smaller, no label)
+        for (ix = X_MIN; ix < X_MAX; ix++) {
+            board.create('segment', [[ix + 0.5, -0.06], [ix + 0.5, 0.06]], {
+                strokeColor: '#444444', strokeWidth: 0.8, fixed: true, highlight: false
+            });
+        }
+        // Y-axis ticks + labels
+        for (iy = Y_MIN; iy <= Y_MAX; iy++) {
+            board.create('segment', [[X_MIN - 0.1, iy], [X_MIN + 0.1, iy]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [X_MIN - 0.4, iy, String(iy)], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 11, color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        /* ── Axis name labels ────────────────────────────────────────── */
+        board.create('text', [8.5, -1.2, '\\text{Shoe Size}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+        // Vertical label for y-axis — use rotated HTML
+        board.create('text', [4.2, 2.5, '<span style="writing-mode: vertical-rl; transform: rotate(180deg); display: inline-block; font-size: 14px; color: #222222;">Number of Pets</span>'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, fixed: true, highlight: false, parse: false
+        });
+
+        /* ── Plot the 8 data points ──────────────────────────────────── */
+        for (var i = 0; i < data.length; i++) {
+            board.create('point', [data[i][0], data[i][1]], {
+                name: '', size: 4, fixed: true,
+                color: '#2563EB', strokeColor: '#2563EB', fillColor: '#2563EB',
+                highlight: false, showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
