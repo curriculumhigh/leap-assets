@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scatter Plot — Temperature vs Hot Chocolates Sold</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden;
+            height: 100%; background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 500px; margin: 0; padding: 6px;
+            height: calc(100% - 12px);
+            position: relative;
+        }
+        .board-wrapper {
+            background: white; border-radius: 8px; padding: 10px;
+            height: calc(100% - 20px);
+            position: relative;
+        }
+        #board { width: 100%; height: 100%; }
+
+        /* Vertical y-axis label using CSS rotation */
+        .y-axis-label {
+            position: absolute;
+            left: 6px;
+            top: 50%;
+            transform: translateX(-50%) translateY(-50%) rotate(-90deg);
+            font-size: 13px;
+            color: #333;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Custom KaTeX tooltip */
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #2563EB;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div class="y-axis-label" id="y-label"></div>
+            <div id="board"></div>
+        </div>
+        <div class="coord-tooltip" id="tooltip"></div>
+    </div>
+    <script>
+        // Render y-axis label with KaTeX
+        katex.render('\\text{Hot chocolates sold}', document.getElementById('y-label'), { throwOnError: false });
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 112, 88, -18],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Grid (data region 0–80 × 0–100) ────────────────────────────
+        var gridColor = '#D1D5DB';
+        var gridWidth = 0.4;
+        var i;
+
+        for (i = 0; i <= 80; i += 10) {
+            board.create('segment', [[i, 0], [i, 100]], {
+                strokeColor: gridColor, strokeWidth: gridWidth,
+                fixed: true, highlight: false
+            });
+        }
+        for (i = 0; i <= 100; i += 10) {
+            board.create('segment', [[0, i], [80, i]], {
+                strokeColor: gridColor, strokeWidth: gridWidth,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Axes ────────────────────────────────────────────────────────
+        var axisColor = '#444444';
+        var axisWidth = 1.2;
+        var arrowCfg = { type: 2, size: 6 };
+
+        board.create('arrow', [[-3, 0], [85, 0]], {
+            strokeColor: axisColor, strokeWidth: axisWidth,
+            lastArrow: arrowCfg, fixed: true, highlight: false
+        });
+        board.create('arrow', [[0, -8], [0, 108]], {
+            strokeColor: axisColor, strokeWidth: axisWidth,
+            lastArrow: arrowCfg, fixed: true, highlight: false
+        });
+
+        // ── Tick marks and labels ───────────────────────────────────────
+        var tickLen = 1.2;
+
+        for (i = 10; i <= 80; i += 10) {
+            board.create('segment', [[i, -tickLen], [i, tickLen]], {
+                strokeColor: axisColor, strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            board.create('text', [i, -4.5, String(i)], {
+                fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+                color: '#333', fixed: true, highlight: false
+            });
+        }
+
+        for (i = 10; i <= 100; i += 10) {
+            board.create('segment', [[-tickLen, i], [tickLen, i]], {
+                strokeColor: axisColor, strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            board.create('text', [-3.5, i, String(i)], {
+                fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+                color: '#333', fixed: true, highlight: false
+            });
+        }
+
+        board.create('text', [-3, -4.5, '0'], {
+            fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+            color: '#333', fixed: true, highlight: false
+        });
+
+        // ── X-axis label (KaTeX, on board) ──────────────────────────────
+        board.create('text', [40, -13, '\\text{Average daily temperature (°F)}'], {
+            fontSize: 13, anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, color: '#333', fixed: true, highlight: false
+        });
+
+        // ── Tooltip setup ───────────────────────────────────────────────
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+        var ptColor = '#2563EB';
+
+        function showTooltip(pt) {
+            var xVal = Math.round(pt.X());
+            var yVal = Math.round(pt.Y());
+            var latex = '\\color{' + ptColor + '}{(' + xVal + ',\\,' + yVal + ')}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.display = 'block';
+
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [pt.X(), pt.Y()], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+        }
+
+        // ── Data points with hover tooltips ─────────────────────────────
+        var data = [
+            [20, 84], [28, 71], [35, 63], [42, 55],
+            [50, 40], [58, 32], [65, 18], [72, 10]
+        ];
+
+        for (i = 0; i < data.length; i++) {
+            (function(idx) {
+                var pt = board.create('point', data[idx], {
+                    name: '', size: 4,
+                    color: ptColor, strokeColor: ptColor, fillColor: ptColor,
+                    fixed: true, showInfobox: false,
+                    highlight: true,
+                    highlightFillColor: ptColor,
+                    highlightStrokeColor: ptColor,
+                    highlightSize: 6
+                });
+                pt.on('over', function() { showTooltip(pt); });
+                pt.on('out', function() { hideTooltip(); });
+            })(i);
+        }
+    </script>
+</body>
+</html>
