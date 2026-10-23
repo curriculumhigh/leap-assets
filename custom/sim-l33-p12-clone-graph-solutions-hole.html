@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphical Solutions and a Hole</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 10, 7, -9],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2, highlight: false,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444', label: { fontSize: 11 },
+                        minorTicks: 0, ticksDistance: 1, insertTicks: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2, highlight: false,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444', label: { fontSize: 11 },
+                        minorTicks: 0, ticksDistance: 1, insertTicks: false,
+                        drawLabels: false
+                    }
+                }
+            },
+            grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+        });
+
+        // y tick labels (even values only), placed on the side of the y-axis that
+        // the curve does not occupy: positives to the left, negatives to the right
+        var yLabs = [8, 6, 4, 2, -2, -4, -6, -8];
+        for (var i = 0; i < yLabs.length; i++) {
+            var v = yLabs[i];
+            board.create('text', [v > 0 ? -0.12 : 0.12, v, v < 0 ? '−' + Math.abs(v) : String(v)], {
+                fontSize: 11, color: '#000000', anchorX: v > 0 ? 'right' : 'left', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        var COL_LINE = '#222222';
+        var COL_CURVE = '#2563EB';
+
+        // Axis labels
+        board.create('text', [6.6, -0.6, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [-0.5, 9.5, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Primary: y = 5(x-1)/(x-1)  ->  y = 5 with a hole at x = 1
+        board.create('functiongraph', [function(x) { return 5; }, -6, 7], {
+            strokeColor: COL_LINE, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Second: y = (x^2 + 4)/x, both branches
+        function g(x) { return (x * x + 4) / x; }
+        board.create('functiongraph', [function(x) { return g(x); }, -6, -0.02], {
+            strokeColor: COL_CURVE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('functiongraph', [function(x) { return g(x); }, 0.02, 7], {
+            strokeColor: COL_CURVE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Open circle (discontinuity) at (1, 5), layered on top
+        board.create('point', [1, 5], {
+            name: '', size: 5, fillColor: '#ffffff', strokeColor: COL_LINE, strokeWidth: 1.5,
+            fixed: true, highlight: false, showInfobox: false, layer: 9
+        });
+
+        // Function labels (KaTeX, curve color)
+        board.create('text', [-5.5, 6.5, 'y=\\dfrac{5(x-1)}{x-1}'], {
+            useKatex: true, fontSize: 13, color: COL_LINE, anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [2.3, 8.5, 'y=\\dfrac{x^2+4}{x}'], {
+            useKatex: true, fontSize: 13, color: COL_CURVE, anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
