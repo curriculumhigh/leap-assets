@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scatter Plot — Positive Correlation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.2, 21.8, 21.8, -2.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Grid lines at every 1 unit ─────────────────────────────────
+        var GRID_COLOR = '#D1D5DB';
+        var GRID_WIDTH = 0.4;
+        var AXIS_COLOR = '#444444';
+        var i;
+
+        // Vertical grid lines
+        for (i = 1; i <= 20; i++) {
+            board.create('segment', [[i, 0], [i, 20]], {
+                strokeColor: GRID_COLOR, strokeWidth: GRID_WIDTH,
+                fixed: true, highlight: false
+            });
+        }
+        // Horizontal grid lines
+        for (i = 1; i <= 20; i++) {
+            board.create('segment', [[0, i], [20, i]], {
+                strokeColor: GRID_COLOR, strokeWidth: GRID_WIDTH,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Axes ────────────────────────────────────────────────────────
+        // x-axis
+        board.create('arrow', [[0, 0], [21.2, 0]], {
+            strokeColor: AXIS_COLOR, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        // y-axis
+        board.create('arrow', [[0, 0], [0, 21.2]], {
+            strokeColor: AXIS_COLOR, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // ── Tick marks and labels ───────────────────────────────────────
+        var TICK_LEN = 0.3;
+
+        for (i = 1; i <= 20; i++) {
+            // x-axis ticks
+            board.create('segment', [[i, -TICK_LEN], [i, TICK_LEN]], {
+                strokeColor: AXIS_COLOR, strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+
+            // y-axis ticks
+            board.create('segment', [[-TICK_LEN, i], [TICK_LEN, i]], {
+                strokeColor: AXIS_COLOR, strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Tick labels at every 2 units
+        for (i = 2; i <= 20; i += 2) {
+            // x-axis tick labels
+            board.create('text', [i, -1.0, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+            // y-axis tick labels
+            board.create('text', [-1.0, i, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Origin label
+        board.create('text', [-0.8, -0.9, '0'], {
+            fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Axis name labels
+        board.create('text', [20.8, -1.1, '<i>x</i>'], {
+            fontSize: 14, color: '#444444', fixed: true, highlight: false
+        });
+        board.create('text', [0.4, 21.0, '<i>y</i>'], {
+            fontSize: 14, color: '#444444', fixed: true, highlight: false
+        });
+
+        // ── Data points ─────────────────────────────────────────────────
+        var DATA = [
+            [2, 4], [4, 6], [5, 3], [7, 8], [8, 11],
+            [10, 9], [13, 14], [15, 12], [17, 16], [19, 18]
+        ];
+
+        var PT_COLOR = '#2563EB';
+
+        for (i = 0; i < DATA.length; i++) {
+            board.create('point', DATA[i], {
+                name: '', size: 3.5, color: PT_COLOR,
+                strokeColor: PT_COLOR, fillColor: PT_COLOR,
+                fixed: true, highlight: false, showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
