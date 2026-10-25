@@ -2888,8 +2888,14 @@ LearnosityAmd.define(["jquery-v1.10.2"], function ($) {
             // Unlock the section itself
             $secEl.removeClass("req-section-locked");
 
-            if (sec.type === "text") {
-                // Text sections auto-complete
+            // Text sections — and box-free text-with-input sub-steps (the studio's in-step
+            // "Prose" sub-step: inputs [], not SC/MC) — auto-complete, mirroring
+            // unlockSection's isTWINoInputs. Without this, a saved response that lacks the
+            // box-free sub-step stops the cascade on a sub-step with no Check button and the
+            // student is stuck for good on reopen (item 3868 W01, 2026-10-25).
+            var isBoxFreeTWI = sec.type === "text-with-input" && (!sec.inputs || sec.inputs.length === 0) &&
+                sec.subtype !== "sc" && sec.subtype !== "mc";
+            if (sec.type === "text" || isBoxFreeTWI) {
                 self.completedSections[sec.id] = true;
                 continue;
             }
