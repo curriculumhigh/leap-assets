@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candy Selection Histogram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.3, 0.48, 6.4, -0.12],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Constants
+        var BAR_COLOR = '#2563EB';
+        var AXIS_COLOR = '#444444';
+        var GRID_COLOR = '#D1D5DB';
+        var TICK_COLOR = '#444444';
+
+        // Bar data: [label, height]
+        var bars = [
+            ['Cherry',  1/3],
+            ['Lemon',   1/5],
+            ['Grape',   1/15],
+            ['Mint',    1/5],
+            ['Orange',  1/5]
+        ];
+
+        // Bar geometry
+        var barWidth = 0.9;
+        var barStart = 0.5;
+        var xAxisRight = barStart + bars.length * barWidth;
+
+        // Y-axis ticks: all in fifteenths
+        var yTickLabels = [
+            [1/15,  '\\tfrac{1}{15}'],
+            [2/15,  '\\tfrac{2}{15}'],
+            [3/15,  '\\tfrac{3}{15}'],
+            [4/15,  '\\tfrac{4}{15}'],
+            [5/15,  '\\tfrac{5}{15}']
+        ];
+
+        // Horizontal grid lines
+        for (var g = 0; g < yTickLabels.length; g++) {
+            board.create('segment', [[barStart, yTickLabels[g][0]], [xAxisRight, yTickLabels[g][0]]], {
+                strokeColor: GRID_COLOR, strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // Bars (polygons)
+        for (var i = 0; i < bars.length; i++) {
+            var x1 = barStart + i * barWidth;
+            var x2 = x1 + barWidth;
+            var h = bars[i][1];
+
+            var p1 = board.create('point', [x1, 0], { visible: false, name: '' });
+            var p2 = board.create('point', [x2, 0], { visible: false, name: '' });
+            var p3 = board.create('point', [x2, h], { visible: false, name: '' });
+            var p4 = board.create('point', [x1, h], { visible: false, name: '' });
+
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: BAR_COLOR, fillOpacity: 0.75,
+                borders: { strokeColor: BAR_COLOR, strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        // Y-axis (vertical line with upward arrow)
+        board.create('segment', [[barStart, 0], [barStart, 0.44]], {
+            strokeColor: AXIS_COLOR, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // X-axis baseline
+        board.create('segment', [[barStart, 0], [xAxisRight, 0]], {
+            strokeColor: AXIS_COLOR, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Y-axis tick marks and fraction labels
+        var tickLen = 0.08;
+        for (var t = 0; t < yTickLabels.length; t++) {
+            var yv = yTickLabels[t][0];
+            var label = yTickLabels[t][1];
+
+            // Tick mark
+            board.create('segment', [[barStart - tickLen, yv], [barStart, yv]], {
+                strokeColor: TICK_COLOR, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+
+            // Fraction label
+            board.create('text', [barStart - 0.15, yv, label], {
+                useKatex: true, fontSize: 11, color: '#222222',
+                anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // "0" label at origin
+        board.create('text', [barStart - 0.15, 0, '0'], {
+            fontSize: 11, color: '#222222',
+            anchorX: 'right', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Y-axis label ("Probability") — rotated
+        board.create('text', [-0.8, 0.19, '\\textit{Probability}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            rotate: 90,
+            fixed: true, highlight: false
+        });
+
+        // X-axis category labels
+        var categories = ['Cherry', 'Lemon', 'Grape', 'Mint', 'Orange'];
+        for (var c = 0; c < categories.length; c++) {
+            var cx = barStart + c * barWidth + barWidth / 2;
+            board.create('text', [cx, -0.025, categories[c]], {
+                fontSize: 12, color: '#222222',
+                anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // X-axis label ("Flavor")
+        var xMid = barStart + (bars.length * barWidth) / 2;
+        board.create('text', [xMid, -0.075, '\\textit{Flavor}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // Title
+        board.create('text', [xMid, 0.44, '\\textbf{Candy Selection}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
