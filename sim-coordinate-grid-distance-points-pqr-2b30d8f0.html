@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coordinate Grid — Distance Points</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 16, 26, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Grid lines ──────────────────────────────────────────────────
+        var i;
+        for (i = 0; i <= 24; i += 2) {
+            board.create('segment', [[i, 0], [i, 14]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+        for (i = 0; i <= 14; i += 2) {
+            board.create('segment', [[0, i], [24, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Axes ────────────────────────────────────────────────────────
+        board.create('arrow', [[0, 0], [25.2, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        board.create('arrow', [[0, 0], [0, 15.2]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // ── Tick marks and labels on x-axis ─────────────────────────────
+        for (i = 0; i <= 24; i += 2) {
+            board.create('segment', [[i, -0.25], [i, 0.25]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [i, -1.0, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Tick marks and labels on y-axis ─────────────────────────────
+        for (i = 2; i <= 14; i += 2) {
+            board.create('segment', [[-0.25, i], [0.25, i]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [-1.0, i, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Axis name labels ("Distance (m)" along each axis) ──────────
+        board.create('text', [12, -2.0, '\\text{Distance (m)}'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [-2.0, 7, '\\text{Distance (m)}'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false,
+            cssStyle: 'transform: rotate(-90deg); transform-origin: center center;'
+        });
+
+        // ── x and y labels at arrow tips ────────────────────────────────
+        board.create('text', [25.2, -0.8, 'x'], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false,
+            cssStyle: 'font-style: italic;'
+        });
+        board.create('text', [0.6, 15.4, 'y'], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false,
+            cssStyle: 'font-style: italic;'
+        });
+
+        // ── Points ──────────────────────────────────────────────────────
+        var COL_P = '#222222';
+        var COL_Q = '#2563EB';
+        var COL_R = '#059669';
+
+        board.create('point', [2, 5], {
+            name: '', size: 3, color: COL_P, fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [10, 11], {
+            name: '', size: 3, color: COL_Q, fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [22, 3], {
+            name: '', size: 3, color: COL_R, fixed: true, highlight: false, showInfobox: false
+        });
+
+        // ── Point labels (KaTeX) ────────────────────────────────────────
+        board.create('text', [0.3, 6.0, 'P(2,\\,5)'], {
+            fontSize: 13, color: COL_P, useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [8.3, 12.0, 'Q(10,\\,11)'], {
+            fontSize: 13, color: COL_Q, useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [18.5, 4.0, 'R(22,\\,3)'], {
+            fontSize: 13, color: COL_R, useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
