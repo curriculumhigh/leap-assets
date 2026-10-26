@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Segment Bisector JK with Line ℓ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 3.4, 14.5, -3.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Layout constants ────────────────────────────────────────
+        var JX = 1, KX = 13, SY = 0;
+        var MX = (JX + KX) / 2;
+        var TICK_H = 0.35;
+
+        // ── Main segment J—K ────────────────────────────────────────
+        board.create('segment', [[JX, SY], [KX, SY]], {
+            strokeColor: '#222222', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // ── Points J, M, K ─────────────────────────────────────────
+        board.create('point', [JX, SY], {
+            name: 'J', size: 2, color: '#222222', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-6, -16] }
+        });
+        board.create('point', [KX, SY], {
+            name: 'K', size: 2, color: '#222222', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [4, -16] }
+        });
+        board.create('point', [MX, SY], {
+            name: 'M', size: 2, color: '#222222', fixed: true, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [6, -16] }
+        });
+
+        // ── Congruence tick marks on JM and MK ───────────────────
+        var midJM = (JX + MX) / 2;
+        var midMK = (MX + KX) / 2;
+
+        board.create('segment', [[midJM, SY - TICK_H], [midJM, SY + TICK_H]], {
+            strokeColor: '#DC2626', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[midMK, SY - TICK_H], [midMK, SY + TICK_H]], {
+            strokeColor: '#DC2626', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Line ℓ through M (shortened) ───────────────────────
+        var lineAngle = 62 * Math.PI / 180;
+        var lineLen = 2.5;
+        var lx1 = MX - lineLen * Math.cos(lineAngle);
+        var ly1 = SY - lineLen * Math.sin(lineAngle);
+        var lx2 = MX + lineLen * Math.cos(lineAngle);
+        var ly2 = SY + lineLen * Math.sin(lineAngle);
+
+        board.create('arrow', [[lx1, ly1], [lx2, ly2]], {
+            strokeColor: '#444444', strokeWidth: 2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 },
+            firstArrow: { type: 2, size: 6 }
+        });
+
+        // ── Line label ℓ (near upper-right end) ────────────────────
+        board.create('text', [lx2 + 0.4, ly2 + 0.1, '\\ell'], {
+            useKatex: true, fontSize: 14, color: '#444444',
+            fixed: true, highlight: false
+        });
+
+        // ── Algebraic labels above each half ────────────────────────
+        var labelY = SY + 0.85;
+
+        board.create('text', [midJM, labelY, '9x - 3'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [midMK, labelY, '6x + 9'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
