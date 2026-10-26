@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Residual Plot — Bakery Cake Sales</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px);
+        }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        /* ── Board — no built-in axes or grid (we draw everything manually) ── */
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.9, 3.7, 7.9, -3.7],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var XMIN = -0.9, XMAX = 7.9, YMIN = -3.7, YMAX = 3.7;
+        var GRID_COL = '#D1D5DB', AXIS_COL = '#444444';
+
+        /* ── Manual grid lines at every 0.5 ─────────────────────────────── */
+        var ix, iy;
+        // Vertical grid lines (x = 0.5, 1, 1.5, … 7.5)
+        for (ix = 0.5; ix <= 7.5; ix += 0.5) {
+            board.create('line', [[ix, 0], [ix, 1]], {
+                strokeColor: GRID_COL, strokeWidth: 0.4,
+                straightFirst: true, straightLast: true,
+                fixed: true, highlight: false
+            });
+        }
+        // Horizontal grid lines (y = -3.5, -3, -2.5, … 3.5) — skip y=0, drawn as reference
+        for (iy = -3.5; iy <= 3.5; iy += 0.5) {
+            if (Math.abs(iy) < 0.01) continue;
+            board.create('line', [[0, iy], [1, iy]], {
+                strokeColor: GRID_COL, strokeWidth: 0.4,
+                straightFirst: true, straightLast: true,
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── Manual axes ─────────────────────────────────────────────────── */
+        // x-axis
+        var xAxis = board.create('arrow', [[XMIN, 0], [XMAX, 0]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        // y-axis
+        var yAxis = board.create('arrow', [[0, YMIN], [0, YMAX]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        /* ── Manual tick marks + labels at every 0.5 ────────────────────── */
+        var TICK_LEN = 0.08;
+
+        // X-axis ticks: 0.5, 1, 1.5, … 7
+        for (ix = 0.5; ix <= 7.5; ix += 0.5) {
+            // Tick mark
+            board.create('segment', [[ix, -TICK_LEN], [ix, TICK_LEN]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            // Label
+            var xLabel;
+            if (Math.abs(ix - Math.round(ix)) < 0.01) {
+                xLabel = String(Math.round(ix));
+            } else {
+                xLabel = ix.toFixed(1);
+            }
+            board.create('text', [ix, -0.3, xLabel], {
+                fontSize: 10, color: AXIS_COL,
+                anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Y-axis ticks: -3, -2.5, -2, … -0.5, 0.5, 1, … 3
+        for (iy = -3; iy <= 3; iy += 0.5) {
+            if (Math.abs(iy) < 0.01) continue; // skip origin
+            // Tick mark
+            board.create('segment', [[-TICK_LEN, iy], [TICK_LEN, iy]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            // Label
+            var yLabel;
+            if (Math.abs(iy - Math.round(iy)) < 0.01) {
+                yLabel = String(Math.round(iy));
+            } else {
+                yLabel = iy.toFixed(1);
+            }
+            board.create('text', [-0.15, iy, yLabel], {
+                fontSize: 10, color: AXIS_COL,
+                anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── Axis name labels ────────────────────────────────────────────── */
+        board.create('text', [7.4, -0.4, 'x'], {
+            fontSize: 14, fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [0.25, 3.4, 'r'], {
+            fontSize: 14, fixed: true, highlight: false, useKatex: true
+        });
+
+        /* ── Horizontal reference line at r = 0 (overlays x-axis in red) ── */
+        board.create('line', [[0, 0], [1, 0]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0,
+            straightFirst: true, straightLast: true,
+            fixed: true, highlight: false, dash: 0
+        });
+
+        /* ── Data points with dashed segments and coordinate labels ──────── */
+        var data = [
+            { x: 1, y: -0.5, ox: 10,  oy: -14 },
+            { x: 2, y: 1,    ox: 10,  oy: 10 },
+            { x: 3, y: 1.5,  ox: -70, oy: 10 },
+            { x: 4, y: -2,   ox: 10,  oy: -14 },
+            { x: 5, y: 1.5,  ox: 10,  oy: 10 },
+            { x: 6, y: -1,   ox: 10,  oy: -14 }
+        ];
+
+        for (var i = 0; i < data.length; i++) {
+            var d = data[i];
+
+            // Dashed vertical segment from point to r = 0
+            if (Math.abs(d.y) > 0.001) {
+                board.create('segment', [[d.x, d.y], [d.x, 0]], {
+                    strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+                    fixed: true, highlight: false
+                });
+            }
+
+            // Point marker
+            board.create('point', [d.x, d.y], {
+                name: '', size: 5, color: '#222222',
+                fixed: true, highlight: false, showInfobox: false
+            });
+
+            // Coordinate label
+            var yStr;
+            if (d.y === -0.5) yStr = '-0.5';
+            else if (d.y === 1.5) yStr = '1.5';
+            else if (d.y === -2) yStr = '-2';
+            else if (d.y === -1) yStr = '-1';
+            else yStr = String(d.y);
+
+            board.create('text', [d.x, d.y, '(' + d.x + ',\\,' + yStr + ')'], {
+                fontSize: 12, color: '#222222',
+                useKatex: true, fixed: true, highlight: false,
+                anchorX: 'left', anchorY: 'middle',
+                offset: [d.ox, d.oy]
+            });
+        }
+    </script>
+</body>
+</html>
