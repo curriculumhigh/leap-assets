@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raffle Results Histogram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); position: relative; }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px 10px 10px 28px; height: calc(100% - 20px); position: relative; }
+        #board { width: 100%; height: 100%; }
+        .y-axis-label {
+            position: absolute;
+            left: 2px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-size: 13px;
+            color: #444444;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div class="y-axis-label">Probability</div>
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.2, 0.44, 6.5, -0.09],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_BAR = '#2563EB';
+        var COL_AXIS = '#444444';
+        var COL_GRID = '#D1D5DB';
+
+        var barData = [
+            { x: 1, h: 1/6 },
+            { x: 2, h: 1/3 },
+            { x: 3, h: 1/12 },
+            { x: 4, h: 1/4 },
+            { x: 5, h: 1/6 }
+        ];
+
+        var yTicks = [1/12, 1/6, 1/4, 1/3];
+        var i;
+        for (i = 0; i < yTicks.length; i++) {
+            board.create('segment', [[-1.2, yTicks[i]], [6.5, yTicks[i]]], {
+                strokeColor: COL_GRID, strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+        for (i = 1; i <= 5; i++) {
+            board.create('segment', [[i, -0.09], [i, 0.44]], {
+                strokeColor: COL_GRID, strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        board.create('arrow', [[0, 0], [6.3, 0]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        board.create('arrow', [[0, 0], [0, 0.42]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        board.create('text', [-0.25, -0.018, '0'], {
+            fontSize: 11, color: COL_AXIS, fixed: true, highlight: false, anchorX: 'middle'
+        });
+
+        for (i = 1; i <= 5; i++) {
+            board.create('segment', [[i, -0.005], [i, 0.005]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [i, -0.022, String(i)], {
+                fontSize: 11, color: COL_AXIS, fixed: true, highlight: false, anchorX: 'middle'
+            });
+        }
+
+        var yTickLabels = ['\\tfrac{1}{12}', '\\tfrac{1}{6}', '\\tfrac{1}{4}', '\\tfrac{1}{3}'];
+        for (i = 0; i < yTicks.length; i++) {
+            board.create('segment', [[-0.08, yTicks[i]], [0.08, yTicks[i]]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [-0.22, yTicks[i], yTickLabels[i]], {
+                fontSize: 11, color: COL_AXIS, fixed: true, highlight: false,
+                anchorX: 'right', anchorY: 'middle', useKatex: true
+            });
+        }
+
+        board.create('text', [3.5, -0.065, '\\text{Ticket number}'], {
+            fontSize: 13, color: COL_AXIS, fixed: true, highlight: false,
+            anchorX: 'middle', useKatex: true
+        });
+
+        board.create('text', [3, 0.41, '\\textbf{Raffle Results}'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', useKatex: true
+        });
+
+        for (i = 0; i < barData.length; i++) {
+            var d = barData[i];
+            var x0 = d.x - 0.5;
+            var x1 = d.x + 0.5;
+            var y0 = 0;
+            var y1 = d.h;
+
+            var p1 = board.create('point', [x0, y0], { visible: false, name: '' });
+            var p2 = board.create('point', [x1, y0], { visible: false, name: '' });
+            var p3 = board.create('point', [x1, y1], { visible: false, name: '' });
+            var p4 = board.create('point', [x0, y1], { visible: false, name: '' });
+
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: COL_BAR, fillOpacity: 0.55,
+                borders: { strokeColor: COL_BAR, strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
