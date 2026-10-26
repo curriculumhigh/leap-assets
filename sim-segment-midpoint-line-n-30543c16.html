@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Segment AB with Midpoint C and Line n</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 3.2, 11.5, -3.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Points A, C, B ─────────────────────────────────────────────
+        var A = board.create('point', [0, 0], {
+            name: 'A', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-4, -18] }
+        });
+        var C = board.create('point', [5, 0], {
+            name: 'C', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-4, -18] }
+        });
+        var B = board.create('point', [10, 0], {
+            name: 'B', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-4, -18] }
+        });
+
+        // ── Segment AB ─────────────────────────────────────────────────
+        board.create('segment', [A, B], {
+            strokeColor: '#222222', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // ── Label "31" above CB ─────────────────────────────────────────
+        board.create('text', [7.5, 0.85, '31'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Line n through C at an angle ────────────────────────────────
+        var lineAngle = 65 * Math.PI / 180;
+        var lineLen = 2.8;
+
+        var nP1 = board.create('point', [
+            5 - lineLen * Math.cos(lineAngle),
+            0 - lineLen * Math.sin(lineAngle)
+        ], { visible: false, fixed: true, name: '' });
+
+        var nP2 = board.create('point', [
+            5 + lineLen * Math.cos(lineAngle),
+            0 + lineLen * Math.sin(lineAngle)
+        ], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [nP1, nP2], {
+            strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        // ── Label "n" near the upper portion of the line ────────────────
+        var lblNx = 5 + 2.0 * Math.cos(lineAngle) + 0.45;
+        var lblNy = 0 + 2.0 * Math.sin(lineAngle) + 0.15;
+        board.create('text', [lblNx, lblNy, '<i>n</i>'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
