@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph C</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; }
+        .container { width: 320px; height: 240px; margin: 0; padding: 0; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="board"></div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8.6, 10.6, 10.6, -10.6],
+            keepAspectRatio: false,
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            renderer: 'svg'
+        });
+
+        /* ── Grid ─────────────────────────────────────────── */
+        var i;
+        for (i = -8; i <= 10; i++) {
+            board.create('line', [[i, -10.6], [i, 10.6]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true,
+                highlight: false, straightFirst: false, straightLast: false
+            });
+        }
+        for (i = -10; i <= 10; i++) {
+            board.create('line', [[-8.6, i], [10.6, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true,
+                highlight: false, straightFirst: false, straightLast: false
+            });
+        }
+
+        /* ── Asymptotes (dashed cyan, below curve) ────────── */
+        // Vertical asymptote x = 1
+        board.create('segment', [[1, -10.6], [1, 10.6]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false, layer: 4
+        });
+        // Horizontal asymptote y = -3
+        board.create('segment', [[-8.6, -3], [10.6, -3]], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false, layer: 4
+        });
+
+        /* ── Curve: y = -4/(x - 1) - 3 ────────────────────── */
+        var GAP = 0.12;
+        // Left branch: x < 1 - GAP
+        board.create('functiongraph', [
+            function(x) { return -4 / (x - 1) - 3; },
+            -8.6, 1 - GAP
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true,
+            highlight: false, layer: 5
+        });
+        // Right branch: x > 1 + GAP
+        board.create('functiongraph', [
+            function(x) { return -4 / (x - 1) - 3; },
+            1 + GAP, 10.6
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true,
+            highlight: false, layer: 5
+        });
+
+        /* ── Axes ─────────────────────────────────────────── */
+        // x-axis
+        board.create('arrow', [[-8.6, 0], [10.6, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true,
+            highlight: false, lastArrow: { type: 2, size: 6 }, layer: 7
+        });
+        // y-axis
+        board.create('arrow', [[0, -10.6], [0, 10.6]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true,
+            highlight: false, lastArrow: { type: 2, size: 6 }, layer: 7
+        });
+
+        /* ── Tick marks on axes ───────────────────────────── */
+        var tickLen = 0.25;
+        // x-axis ticks
+        for (i = -8; i <= 10; i++) {
+            if (i === 0) continue;
+            board.create('segment', [[i, -tickLen], [i, tickLen]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true,
+                highlight: false, layer: 7
+            });
+        }
+        // y-axis ticks
+        for (i = -10; i <= 10; i++) {
+            if (i === 0) continue;
+            board.create('segment', [[-tickLen, i], [tickLen, i]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true,
+                highlight: false, layer: 7
+            });
+        }
+
+        /* ── Tick value labels (selected values only) ─────── */
+        var xTickVals = [-6, -4, -2, 4, 6, 8];
+        var yTickVals = [-8, -6, -4, -2, 2, 4, 6, 8];
+        var tickStyle = {
+            fontSize: 11, color: '#444444', fixed: true, highlight: false,
+            layer: 9, cssStyle: 'background-color:#ffffff;padding:0 2px;'
+        };
+
+        for (i = 0; i < xTickVals.length; i++) {
+            board.create('text', [xTickVals[i], -0.7, String(xTickVals[i])], JXG.merge(tickStyle, {
+                anchorX: 'middle', anchorY: 'top'
+            }));
+        }
+        for (i = 0; i < yTickVals.length; i++) {
+            board.create('text', [-0.5, yTickVals[i], String(yTickVals[i])], JXG.merge(tickStyle, {
+                anchorX: 'right', anchorY: 'middle'
+            }));
+        }
+
+        /* ── Axis name labels ───────────────────────────── */
+        board.create('text', [10.5, 0.35, 'x'], {
+            useKatex: true, fontSize: 12, color: '#444444', fixed: true,
+            highlight: false, anchorX: 'right', anchorY: 'bottom', layer: 9
+        });
+        board.create('text', [-0.3, 10.0, 'y'], {
+            useKatex: true, fontSize: 12, color: '#444444', fixed: true,
+            highlight: false, anchorX: 'right', anchorY: 'middle', layer: 9
+        });
+
+    </script>
+</body>
+</html>
