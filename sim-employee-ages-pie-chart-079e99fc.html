@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Ages at Orientation — Pie Chart</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8, 7.5, 8, -7],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Data ────────────────────────────────────────────────────────
+        var data = [
+            { label: '23 yr: 35%', pct: 0.35, color: '#2563EB' },
+            { label: '24 yr: 30%', pct: 0.30, color: '#059669' },
+            { label: '25 yr: 20%', pct: 0.20, color: '#D97706' },
+            { label: '26 yr: 10%', pct: 0.10, color: '#7C3AED' },
+            { label: '42 yr: 5%',  pct: 0.05, color: '#DC2626' }
+        ];
+
+        var CX = 0, CY = -0.5;
+        var R = 3.5;
+
+        // ── Title ───────────────────────────────────────────────────────
+        board.create('text', [CX, CY + R + 2.6, 'Employee Ages at Orientation'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 16, color: '#222222',
+            cssStyle: 'font-weight:700',
+            fixed: true, highlight: false
+        });
+
+        // ── Build sectors ───────────────────────────────────────────────
+        var startAngle = Math.PI / 2;
+
+        for (var i = 0; i < data.length; i++) {
+            (function(idx) {
+                var d = data[idx];
+                var sweep = d.pct * 2 * Math.PI;
+                var endAngle = startAngle - sweep;
+
+                var STEPS = 80;
+                var verts = [[CX, CY]];
+                for (var s = 0; s <= STEPS; s++) {
+                    var a = startAngle - (sweep * s / STEPS);
+                    verts.push([CX + R * Math.cos(a), CY + R * Math.sin(a)]);
+                }
+
+                var pts = [];
+                for (var p = 0; p < verts.length; p++) {
+                    pts.push(board.create('point', verts[p], { visible: false, fixed: true, name: '' }));
+                }
+                board.create('polygon', pts, {
+                    fillColor: d.color, fillOpacity: 0.85,
+                    borders: { strokeColor: '#ffffff', strokeWidth: 2 },
+                    vertices: { visible: false },
+                    hasInnerPoints: false, fixed: true, highlight: false
+                });
+
+                // ── Label placement ─────────────────────────────────────
+                var midAngle = startAngle - sweep / 2;
+                var LABEL_OFFSET = 1.35;
+                var labelR = R + LABEL_OFFSET;
+                var isSmall = d.pct < 0.08;
+
+                var lx = CX + labelR * Math.cos(midAngle);
+                var ly = CY + labelR * Math.sin(midAngle);
+
+                if (isSmall) {
+                    // Leader line: R + 0.45
+                    var leaderEndR = R + 0.45;
+                    var rimX = CX + R * Math.cos(midAngle);
+                    var rimY = CY + R * Math.sin(midAngle);
+                    var leaderEndX = CX + leaderEndR * Math.cos(midAngle);
+                    var leaderEndY = CY + leaderEndR * Math.sin(midAngle);
+
+                    board.create('segment', [[rimX, rimY], [leaderEndX, leaderEndY]], {
+                        strokeColor: '#888888', strokeWidth: 1.0,
+                        fixed: true, highlight: false
+                    });
+
+                    // Label ABOVE the leader line tip
+                    lx = leaderEndX;
+                    ly = leaderEndY + 0.45;
+                }
+
+                var anchorX = 'middle';
+                if (Math.cos(midAngle) > 0.3) anchorX = 'left';
+                else if (Math.cos(midAngle) < -0.3) anchorX = 'right';
+
+                board.create('text', [lx, ly, d.label], {
+                    anchorX: anchorX, anchorY: 'middle',
+                    fontSize: 13, color: d.color,
+                    cssStyle: 'font-weight:600',
+                    fixed: true, highlight: false
+                });
+
+                startAngle = endAngle;
+            })(i);
+        }
+    </script>
+</body>
+</html>
