@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Residual Plot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.4, 4.8, 7.5, -2.5],
+            axis: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            grid: false
+        });
+
+        // ── Manual axes ──────────────────────────────────────────────────
+
+        // X-axis
+        var xAxis = board.create('line', [[0, 0], [1, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 },
+            straightFirst: true, straightLast: true
+        });
+
+        // Y-axis
+        var yAxis = board.create('line', [[0, 0], [0, 1]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 },
+            straightFirst: true, straightLast: true
+        });
+
+        // ── Grid and ticks ───────────────────────────────────────────────
+        var bb = board.getBoundingBox();
+        var xMin = bb[0], yMax = bb[1], xMax = bb[2], yMin = bb[3];
+
+        // X-axis ticks + labels (every 1 unit)
+        for (var tx = 1; tx <= 7; tx++) {
+            // Tick mark
+            board.create('segment', [[tx, -0.08], [tx, 0.08]], {
+                strokeColor: '#444444', strokeWidth: 1, fixed: true, highlight: false
+            });
+            // Tick label
+            board.create('text', [tx, -0.3, String(tx)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+            // Vertical grid line
+            board.create('segment', [[tx, yMin], [tx, yMax]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // Y-axis ticks + labels (every 0.5 units)
+        var yTicks = [-2, -1.5, -1, -0.5, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5];
+        for (var i = 0; i < yTicks.length; i++) {
+            var ty = yTicks[i];
+            // Tick mark
+            board.create('segment', [[-0.08, ty], [0.08, ty]], {
+                strokeColor: '#444444', strokeWidth: 1, fixed: true, highlight: false
+            });
+            // Tick label
+            var yLabelStr = '';
+            if (ty === Math.floor(ty)) {
+                yLabelStr = String(Math.round(ty));
+            } else {
+                yLabelStr = ty.toFixed(1);
+            }
+            board.create('text', [-0.15, ty, yLabelStr], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+            // Horizontal grid line
+            board.create('segment', [[xMin, ty], [xMax, ty]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // Axis name labels
+        board.create('text', [7.1, -0.35, '\\textit{x}'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+        board.create('text', [0.2, 4.4, '\\textit{r}'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+
+        // ── Reference line at r = 0 ──────────────────────────────────────
+        board.create('line', [[0, 0], [1, 0]], {
+            strokeColor: '#DC2626',
+            strokeWidth: 1.0,
+            fixed: true,
+            highlight: false,
+            straightFirst: true,
+            straightLast: true
+        });
+
+        // ── Residual data ────────────────────────────────────────────────
+        var data = [
+            [1, -0.5],
+            [2, -1],
+            [3, 3.5],
+            [4, 0],
+            [5, 0.5],
+            [6, -1]
+        ];
+
+        // Label offsets — hand-tuned to avoid overlap
+        var labelPos = [
+            [0.2, -0.3, 'left', 'top'],        // (1, -0.5)
+            [0.2, -0.3, 'left', 'top'],         // (2, -1)
+            [0.2, 0.2, 'left', 'bottom'],       // (3, 3.5)
+            [0.2, 0.3, 'left', 'bottom'],       // (4, 0)
+            [0.2, 0.2, 'left', 'bottom'],       // (5, 0.5)
+            [-0.2, -0.3, 'right', 'top']        // (6, -1)
+        ];
+
+        for (var j = 0; j < data.length; j++) {
+            var px = data[j][0];
+            var py = data[j][1];
+
+            // Vertical drop segment from point to r = 0 line
+            if (py !== 0) {
+                board.create('segment', [[px, 0], [px, py]], {
+                    strokeColor: '#DC2626',
+                    strokeWidth: 1.0,
+                    dash: 2,
+                    fixed: true,
+                    highlight: false
+                });
+            }
+
+            // Residual point
+            board.create('point', [px, py], {
+                name: '',
+                size: 4,
+                color: '#222222',
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+
+            // Coordinate label
+            var lbl = labelPos[j];
+            var yStr = '';
+            if (py === 0) { yStr = '0'; }
+            else if (py === -0.5) { yStr = '-0.5'; }
+            else if (py === -1) { yStr = '-1'; }
+            else if (py === 3.5) { yStr = '3.5'; }
+            else if (py === 0.5) { yStr = '0.5'; }
+            else { yStr = String(py); }
+
+            board.create('text', [px + lbl[0], py + lbl[1], '(' + px + ',\\,' + yStr + ')'], {
+                fontSize: 12,
+                color: '#222222',
+                fixed: true,
+                highlight: false,
+                useKatex: true,
+                anchorX: lbl[2],
+                anchorY: lbl[3]
+            });
+        }
+    </script>
+</body>
+</html>
