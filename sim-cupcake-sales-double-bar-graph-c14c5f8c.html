@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cupcake Sales by Month (Jul – Dec)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.8, 18.5, 7.5, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Data ──────────────────────────────────────────────────────────
+        var months = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var data2023 = [8, 14, 6, 11, 5, 9];
+        var data2024 = [7, 10, 12, 6, 13, 9];
+
+        // ── Colors ────────────────────────────────────────────────────────
+        var COL_2023_FILL = '#93C5FD';
+        var COL_2023_STROKE = '#60A5FA';
+        var COL_2024_FILL = '#2563EB';
+        var COL_2024_STROKE = '#1D4ED8';
+        var COL_AXIS = '#444444';
+        var COL_GRID = '#9CA3AF';
+        var COL_GRID_LIGHT = '#D1D5DB';
+
+        // ── Layout constants ──────────────────────────────────────────────
+        var groupSpacing = 1.0;
+        var barWidth = 0.34;
+        var barGap = 0.06;
+        var xStart = 0.8;
+
+        // ── Horizontal grid lines ─────────────────────────────────────────
+        // 1–14: gray, strokeWidth 0.8
+        // 15–16: light gray, strokeWidth 0.4 (to avoid clashing with legend)
+        var i, y;
+        for (i = 1; i <= 14; i++) {
+            board.create('segment', [[-0.6, i], [7.0, i]], {
+                strokeColor: COL_GRID, strokeWidth: 0.8, fixed: true, highlight: false
+            });
+        }
+        for (i = 15; i <= 16; i++) {
+            board.create('segment', [[-0.6, i], [7.0, i]], {
+                strokeColor: COL_GRID_LIGHT, strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Axes (manual) ─────────────────────────────────────────────────
+        // Y-axis
+        board.create('arrow', [[-0.6, 0], [-0.6, 17.2]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        // X-axis (baseline)
+        board.create('segment', [[-0.6, 0], [7.0, 0]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Y-axis ticks and labels (at even integers 0–16)
+        for (i = 0; i <= 8; i++) {
+            y = i * 2;
+            board.create('segment', [[-0.72, y], [-0.6, y]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [-0.85, y, String(y)], {
+                fontSize: 11, color: COL_AXIS, anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Y-axis label (rotated via CSS)
+        board.create('text', [-1.55, 8, '<span style="display:inline-block; transform:rotate(-90deg); white-space:nowrap; font-size:12px; font-style:italic;">Number of cupcakes sold (in hundreds)</span>'], {
+            fontSize: 12, color: COL_AXIS, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Helper: draw one bar ──────────────────────────────────────────
+        function drawBar(xCenter, height, fillColor, strokeColor) {
+            var x1 = xCenter - barWidth / 2;
+            var x2 = xCenter + barWidth / 2;
+            var p1 = board.create('point', [x1, 0], { visible: false, name: '' });
+            var p2 = board.create('point', [x2, 0], { visible: false, name: '' });
+            var p3 = board.create('point', [x2, height], { visible: false, name: '' });
+            var p4 = board.create('point', [x1, height], { visible: false, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: fillColor, fillOpacity: 0.85,
+                borders: { strokeColor: strokeColor, strokeWidth: 1 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        // ── Draw bars ─────────────────────────────────────────────────────
+        var g, xGroup, x2023, x2024;
+        for (g = 0; g < months.length; g++) {
+            xGroup = xStart + g * groupSpacing;
+            x2023 = xGroup - (barWidth / 2 + barGap / 2);
+            x2024 = xGroup + (barWidth / 2 + barGap / 2);
+
+            drawBar(x2023, data2023[g], COL_2023_FILL, COL_2023_STROKE);
+            drawBar(x2024, data2024[g], COL_2024_FILL, COL_2024_STROKE);
+
+            board.create('segment', [[xGroup, 0], [xGroup, -0.2]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+
+            board.create('text', [xGroup, -0.7, months[g]], {
+                fontSize: 12, color: COL_AXIS, anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── X-axis label ──────────────────────────────────────────────────
+        board.create('text', [3.3, -2.0, '<i>Month</i>'], {
+            fontSize: 13, color: COL_AXIS, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Title ─────────────────────────────────────────────────────────
+        board.create('text', [3.3, 17.5, '<b>Cupcake Sales by Month (Jul \u2013 Dec)</b>'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Legend (upper-right) ──────────────────────────────────────────
+        var legX = 5.6;
+        var legY = 16.2;
+        var legBoxW = 0.35;
+        var legBoxH = 0.6;
+        var legRowGap = 1.1;
+
+        // Legend background
+        (function() {
+            var lp1 = board.create('point', [legX - 0.25, legY + 0.9], { visible: false, name: '' });
+            var lp2 = board.create('point', [legX + 1.65, legY + 0.9], { visible: false, name: '' });
+            var lp3 = board.create('point', [legX + 1.65, legY - legRowGap - 0.3], { visible: false, name: '' });
+            var lp4 = board.create('point', [legX - 0.25, legY - legRowGap - 0.3], { visible: false, name: '' });
+            board.create('polygon', [lp1, lp2, lp3, lp4], {
+                fillColor: '#ffffff', fillOpacity: 0.9,
+                borders: { strokeColor: '#d1d5db', strokeWidth: 0.8 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        })();
+
+        // 2023 legend swatch
+        (function() {
+            var sp1 = board.create('point', [legX, legY + legBoxH / 2], { visible: false, name: '' });
+            var sp2 = board.create('point', [legX + legBoxW, legY + legBoxH / 2], { visible: false, name: '' });
+            var sp3 = board.create('point', [legX + legBoxW, legY - legBoxH / 2], { visible: false, name: '' });
+            var sp4 = board.create('point', [legX, legY - legBoxH / 2], { visible: false, name: '' });
+            board.create('polygon', [sp1, sp2, sp3, sp4], {
+                fillColor: COL_2023_FILL, fillOpacity: 0.85,
+                borders: { strokeColor: COL_2023_STROKE, strokeWidth: 1 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        })();
+        board.create('text', [legX + legBoxW + 0.15, legY, '2023'], {
+            fontSize: 12, color: '#333', anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // 2024 legend swatch
+        var legY2 = legY - legRowGap;
+        (function() {
+            var sp1 = board.create('point', [legX, legY2 + legBoxH / 2], { visible: false, name: '' });
+            var sp2 = board.create('point', [legX + legBoxW, legY2 + legBoxH / 2], { visible: false, name: '' });
+            var sp3 = board.create('point', [legX + legBoxW, legY2 - legBoxH / 2], { visible: false, name: '' });
+            var sp4 = board.create('point', [legX, legY2 - legBoxH / 2], { visible: false, name: '' });
+            board.create('polygon', [sp1, sp2, sp3, sp4], {
+                fillColor: COL_2024_FILL, fillOpacity: 0.85,
+                borders: { strokeColor: COL_2024_STROKE, strokeWidth: 1 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        })();
+        board.create('text', [legX + legBoxW + 0.15, legY2, '2024'], {
+            fontSize: 12, color: '#333', anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
