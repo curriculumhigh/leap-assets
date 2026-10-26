@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dot Plots — Route A vs Route B</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [14.5, 8.8, 47, -1.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_A = '#2563EB';
+        var COL_B = '#059669';
+        var COL_AXIS = '#444444';
+        var COL_GRID = '#D1D5DB';
+        var DOT_SIZE = 3;
+
+        // ── Layout constants ────────────────────────────────────────────
+        var AXIS_Y = 0;
+        var ROUTE_B_Y = 2.0;
+        var SEP_Y = 3.7;
+        var ROUTE_A_Y = 4.8;
+        var DOT_STACK = 0.6;
+
+        var X_MIN = 18;
+        var X_MAX = 44;
+
+        // ── Vertical gridlines at every integer from 18 to 44 ───────────
+        var i;
+        for (i = X_MIN; i <= X_MAX; i++) {
+            board.create('segment', [[i, AXIS_Y - 0.15], [i, 8.2]], {
+                strokeColor: COL_GRID, strokeWidth: 0.8, fixed: true, highlight: false
+            });
+        }
+
+        // ── Horizontal axis line with arrow ─────────────────────────────
+        board.create('segment', [[X_MIN - 0.5, AXIS_Y], [X_MAX + 1.2, AXIS_Y]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // ── Tick marks and labels every 2 minutes ───────────────────────
+        for (i = X_MIN; i <= X_MAX; i += 2) {
+            board.create('segment', [[i, -0.25], [i, 0.25]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [i, -0.75, String(i)], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 11, color: COL_AXIS, fixed: true, highlight: false
+            });
+        }
+
+        // ── Axis label "minutes" ────────────────────────────────────────
+        board.create('text', [X_MAX + 0.5, 0.5, 'minutes'], {
+            anchorX: 'middle', anchorY: 'bottom',
+            fontSize: 12, color: COL_AXIS, fixed: true, highlight: false,
+            cssStyle: 'font-style: italic;'
+        });
+
+        // ── Dashed separator ────────────────────────────────────────────
+        board.create('segment', [[X_MIN - 0.5, SEP_Y], [X_MAX + 1.2, SEP_Y]], {
+            strokeColor: '#999999', strokeWidth: 1, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Route labels ────────────────────────────────────────────────
+        board.create('text', [16.2, ROUTE_A_Y + 0.8, 'Route A'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: COL_A, fixed: true, highlight: false,
+            cssStyle: 'font-weight: 600;'
+        });
+
+        board.create('text', [16.2, ROUTE_B_Y, 'Route B'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: COL_B, fixed: true, highlight: false,
+            cssStyle: 'font-weight: 600;'
+        });
+
+        // ── Route A dots ────────────────────────────────────────────────
+        var routeA = [
+            { value: 33, count: 1 },
+            { value: 34, count: 2 },
+            { value: 35, count: 3 },
+            { value: 36, count: 4 }
+        ];
+
+        var j;
+        for (i = 0; i < routeA.length; i++) {
+            var entry = routeA[i];
+            for (j = 0; j < entry.count; j++) {
+                board.create('point', [entry.value, ROUTE_A_Y + j * DOT_STACK], {
+                    name: '', size: DOT_SIZE, color: COL_A,
+                    fixed: true, highlight: false, showInfobox: false
+                });
+            }
+        }
+
+        // ── Route B dots ────────────────────────────────────────────────
+        var routeB = [20, 23, 27, 30, 32, 33, 35, 37, 41, 42];
+
+        for (i = 0; i < routeB.length; i++) {
+            board.create('point', [routeB[i], ROUTE_B_Y], {
+                name: '', size: DOT_SIZE, color: COL_B,
+                fixed: true, highlight: false, showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
