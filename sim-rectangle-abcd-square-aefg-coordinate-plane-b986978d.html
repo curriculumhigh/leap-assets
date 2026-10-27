@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangle ABCD with Interior Square AEFG</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 14.5, 13.5, -2],
+            axis: true,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 1,
+                        ticksDistance: 2,
+                        minorHeight: 8,
+                        drawLabels: true
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 1,
+                        ticksDistance: 2,
+                        minorHeight: 8,
+                        drawLabels: true
+                    }
+                }
+            },
+            grid: false
+        });
+
+        // ── Manual 1×1 grid ────────────────────────────────────────────
+        var bbx1 = -1.5, bby1 = 14.5, bbx2 = 13.5, bby2 = -2;
+        var gridAttrs = { strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false, dash: 0 };
+
+        for (var gx = Math.ceil(bbx1); gx <= Math.floor(bbx2); gx++) {
+            board.create('segment', [[gx, bby2], [gx, bby1]], gridAttrs);
+        }
+        for (var gy = Math.ceil(bby2); gy <= Math.floor(bby1); gy++) {
+            board.create('segment', [[bbx1, gy], [bbx2, gy]], gridAttrs);
+        }
+
+        // Axis labels
+        board.create('text', [13.1, -0.5, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 14.1, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // ── Points ──────────────────────────────────────────────────────
+        var ptStyle = { size: 3, color: '#222222', fixed: true, highlight: false, showInfobox: false };
+
+        var A = board.create('point', [2, 2], JXG.merge(ptStyle, {
+            name: '', label: { visible: false }
+        }));
+        var B = board.create('point', [10, 2], JXG.merge(ptStyle, {
+            name: '', label: { visible: false }
+        }));
+        var C = board.create('point', [10, 12], JXG.merge(ptStyle, {
+            name: '', label: { visible: false }
+        }));
+        var D = board.create('point', [2, 12], JXG.merge(ptStyle, {
+            name: '', label: { visible: false }
+        }));
+        var E = board.create('point', [2, 6], JXG.merge(ptStyle, {
+            name: '', label: { visible: false }
+        }));
+        var F = board.create('point', [6, 6], JXG.merge(ptStyle, {
+            name: '', label: { visible: false }
+        }));
+        var G = board.create('point', [6, 2], JXG.merge(ptStyle, {
+            name: '', label: { visible: false }
+        }));
+
+        // ── Rectangle ABCD ─────────────────────────────────────────────
+        board.create('polygon', [A, B, C, D], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Square AEFG ────────────────────────────────────────────────
+        board.create('polygon', [A, E, F, G], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#2563EB', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── KaTeX Labels (name + coordinates) ──────────────────────────
+        board.create('text', [1.1, 1.2, 'A(2,\\,2)'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+        board.create('text', [10.3, 1.2, 'B(10,\\,2)'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+        board.create('text', [10.3, 12.4, 'C(10,\\,12)'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+        board.create('text', [0.4, 12.4, 'D(2,\\,12)'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+        board.create('text', [2.4, 6.4, 'E(2,\\,6)'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+        board.create('text', [6.3, 6.5, 'F(6,\\,6)'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+        board.create('text', [5.7, 1.2, 'G(6,\\,2)'], {
+            useKatex: true, fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Scale indicator: "1 ft" ────────────────────────────────────
+        board.create('segment', [[0, -1.0], [1, -1.0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[0, -0.7], [0, -1.3]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[1, -0.7], [1, -1.3]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('text', [0.5, -1.6, '1\\text{ ft}'], {
+            useKatex: true, fontSize: 11, color: '#444444',
+            anchorX: 'middle', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
