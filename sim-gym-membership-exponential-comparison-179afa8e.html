@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Membership</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0; padding: 6px; height: calc(100% - 12px); position: relative; }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); position: relative; }
+        #board { width: 100%; height: 100%; }
+        .y-axis-label {
+            position: absolute;
+            left: 4px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-size: 13px;
+            color: #333;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div class="y-axis-label" id="y-label"></div>
+            <div id="board"></div>
+        </div>
+        <div class="coord-tooltip" id="tooltip"></div>
+    </div>
+    <script>
+        // Render y-axis label with KaTeX
+        katex.render('\\text{Number of members}', document.getElementById('y-label'), { throwOnError: false });
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.4, 4600, 11.2, -500],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_A = '#2563EB';
+        var COL_B = '#059669';
+        var COL_AXIS = '#444444';
+        var COL_GRID = '#D1D5DB';
+
+        // ── Grid lines ──────────────────────────────────────────────────
+        var i;
+        for (i = 0; i <= 10; i++) {
+            board.create('segment', [[i, 0], [i, 4000]], {
+                strokeColor: COL_GRID, strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+        for (i = 0; i <= 4000; i += 500) {
+            board.create('segment', [[0, i], [10, i]], {
+                strokeColor: COL_GRID, strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Axes ────────────────────────────────────────────────────────
+        board.create('arrow', [[0, 0], [10.8, 0]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        board.create('arrow', [[0, 0], [0, 4400]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // ── Tick marks & labels — x-axis ────────────────────────────────
+        for (i = 1; i <= 10; i++) {
+            board.create('segment', [[i, -60], [i, 60]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [i, -180, String(i)], {
+                fontSize: 11, color: '#333', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Tick marks & labels — y-axis ────────────────────────────────
+        for (i = 500; i <= 4000; i += 500) {
+            board.create('segment', [[-0.15, i], [0.15, i]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [-0.35, i, i.toLocaleString()], {
+                fontSize: 11, color: '#333', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+        // Origin
+        board.create('text', [-0.35, -180, '0'], {
+            fontSize: 11, color: '#333', anchorX: 'right', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Axis name labels ────────────────────────────────────────────
+        board.create('text', [5, -400, '\\text{Years since 2018}'], {
+            fontSize: 13, color: '#333', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Title ───────────────────────────────────────────────────────
+        board.create('text', [5, 4350, '\\textbf{Gym Membership}'], {
+            fontSize: 16, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Functions ───────────────────────────────────────────────────
+        function gymA(x) { return 500 * Math.pow(1.18, x); }
+        function gymB(x) { return 3000 * Math.pow(0.84, x); }
+
+        board.create('functiongraph', [gymA, 0, 10], {
+            strokeColor: COL_A, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('functiongraph', [gymB, 0, 10], {
+            strokeColor: COL_B, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Starting points ─────────────────────────────────────────────
+        board.create('point', [0, 500], {
+            name: '', size: 3, color: COL_A, fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('point', [0, 3000], {
+            name: '', size: 3, color: COL_B, fixed: true, highlight: false, showInfobox: false
+        });
+
+        // ── Intersection point with hover tooltip ───────────────────────
+        var xInt = Math.log(6) / Math.log(1.18 / 0.84);
+        var yInt = gymA(xInt);
+
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function showTooltip(pt, color) {
+            var xVal = pt.X();
+            var yVal = pt.Y();
+            var latex = '\\left(' + xVal.toFixed(2) + ',\\,' + Math.round(yVal).toLocaleString() + '\\right)';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xVal, yVal], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+        var intPt = board.create('point', [xInt, yInt], {
+            name: '', size: 4, color: '#222222', fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: '#222222', highlightStrokeColor: '#222222',
+            highlightSize: 5
+        });
+        intPt.on('over', function() { showTooltip(intPt, '#222222'); });
+        intPt.on('out', function() { hideTooltip(); });
+
+        // ── Legend (top-right) ──────────────────────────────────────────
+        var lgX = 6.8, lgY = 4050, lgW = 3.6, lgH = 700;
+        board.create('polygon', [
+            [lgX, lgY], [lgX + lgW, lgY], [lgX + lgW, lgY - lgH], [lgX, lgY - lgH]
+        ], {
+            fillColor: '#ffffff', fillOpacity: 0.92,
+            borders: { strokeColor: '#d0d0d0', strokeWidth: 0.8 },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        board.create('segment', [[lgX + 0.25, lgY - 200], [lgX + 0.85, lgY - 200]], {
+            strokeColor: COL_A, strokeWidth: 2.2, fixed: true, highlight: false
+        });
+        board.create('text', [lgX + 1.1, lgY - 200, '\\color{#2563EB}{\\text{Gym A: } y = 500(1.18)^x}'], {
+            fontSize: 11, anchorX: 'left', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[lgX + 0.25, lgY - 500], [lgX + 0.85, lgY - 500]], {
+            strokeColor: COL_B, strokeWidth: 2.2, fixed: true, highlight: false
+        });
+        board.create('text', [lgX + 1.1, lgY - 500, '\\color{#059669}{\\text{Gym B: } y = 3000(0.84)^x}'], {
+            fontSize: 11, anchorX: 'left', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
