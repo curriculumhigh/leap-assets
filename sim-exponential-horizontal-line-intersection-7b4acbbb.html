@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph A — Exponential and Horizontal Line</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); position: relative; }
+        .board-wrapper { background: white; border-radius: 6px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 3px 6px;
+            font-size: 12px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+        <div class="coord-tooltip" id="tooltip"></div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 30, 2, -3],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 5
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [1.7, -1.5, 'x'], { useKatex: true, fontSize: 11, fixed: true, highlight: false });
+        board.create('text', [0.2, 28.5, 'y'], { useKatex: true, fontSize: 11, fixed: true, highlight: false });
+
+        // "Graph A" label — top-left
+        board.create('text', [-2.7, 27, '\\textbf{Graph A}'], {
+            useKatex: true, fontSize: 11, color: '#222222', fixed: true, highlight: false
+        });
+
+        // Primary curve: y = 3^(2x+3)
+        board.create('functiongraph', [
+            function(x) { return Math.pow(3, 2 * x + 3); }
+        ], { strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Secondary line: y = 7
+        board.create('functiongraph', [
+            function(x) { return 7; }
+        ], { strokeColor: '#2563EB', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // Label for y = 7
+        board.create('text', [1.2, 9, 'y = 7'], {
+            useKatex: true, fontSize: 10, color: '#2563EB', fixed: true, highlight: false
+        });
+
+        // Intersection point: 3^(2x+3) = 7 -> x = (log_3(7) - 3) / 2
+        var xInt = (Math.log(7) / Math.log(3) - 3) / 2;
+
+        // Tooltip setup
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function formatValKatex(v) {
+            var absV = Math.abs(v);
+            var sign = v < 0 ? '-' : '';
+            if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+            return v.toFixed(2);
+        }
+
+        function showTooltip(pt, color) {
+            var xCoord = pt.X();
+            var yCoord = pt.Y();
+            var latex = '\\color{' + color + '}{\\left(' + formatValKatex(xCoord) + ',\\,' + formatValKatex(yCoord) + '\\right)}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xCoord, yCoord], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            var containerRect = document.querySelector('.container').getBoundingClientRect();
+            tooltip.style.left = (sx - containerRect.left + 10) + 'px';
+            tooltip.style.top = (sy - containerRect.top - 24) + 'px';
+        }
+
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+        var intPt = board.create('point', [xInt, 7], {
+            name: '', size: 3, color: '#222222', fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: '#222222', highlightStrokeColor: '#222222',
+            highlightSize: 4
+        });
+        intPt.on('over', function() { showTooltip(intPt, '#222222'); });
+        intPt.on('out', function() { hideTooltip(); });
+    </script>
+</body>
+</html>
