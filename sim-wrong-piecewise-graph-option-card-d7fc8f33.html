@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wrong Piecewise Graph — Option Card</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 9.5, 9.5, -4.5],
+            axis: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // ── Manual x-axis with ticksDistance 2 ──
+        var xAxis = board.create('axis', [[0, 0], [1, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 5 },
+            ticks: { drawZero: false, visible: false }
+        });
+
+        board.create('ticks', [xAxis, 2], {
+            strokeColor: '#444444',
+            minorTicks: 0,
+            drawZero: false,
+            label: { fontSize: 9, offset: [0, -12] }
+        });
+
+        // ── Manual y-axis with ticksDistance 1, manually labeled ──
+        var yAxis = board.create('axis', [[0, 0], [0, 1]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 5 },
+            ticks: { drawZero: false, visible: false }
+        });
+
+        // Tick marks at every 1 unit (no auto-labels — we add them manually)
+        board.create('ticks', [yAxis, 1], {
+            strokeColor: '#444444',
+            minorTicks: 0,
+            drawZero: false,
+            drawLabels: false
+        });
+
+        // Manual y-axis tick labels
+        var yMin = -4;
+        var yMax = 9;
+        for (var v = yMin; v <= yMax; v++) {
+            if (v === 0) continue; // skip origin
+            board.create('text', [-0.7, v, String(v)], {
+                fontSize: 9, color: '#444444', fixed: true, highlight: false,
+                anchorX: 'right', anchorY: 'middle'
+            });
+        }
+
+        var COL = '#222222';
+
+        // Axis labels
+        board.create('text', [9.0, -0.5, '<i>x</i>'], { fontSize: 11, fixed: true, highlight: false });
+        board.create('text', [0.3, 9.0, '<i>y</i>'], { fontSize: 11, fixed: true, highlight: false });
+
+        // ── Piece 1: Ray going left, slope -2, approaching (-2, -1) open circle ──
+        // y = -2x - 5
+        board.create('functiongraph', [
+            function(x) { return -2 * x - 5; },
+            -7, -2
+        ], { strokeColor: COL, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Open circle at (-2, -1)
+        board.create('point', [-2, -1], {
+            name: '', size: 4, fixed: true, highlight: false,
+            fillColor: '#ffffff', strokeColor: COL, strokeWidth: 1.5
+        });
+
+        // ── Piece 2: Segment from (-2, -1) to (4, 5), slope 1, both closed ──
+        // y = x + 1
+        board.create('functiongraph', [
+            function(x) { return x + 1; },
+            -2, 4
+        ], { strokeColor: COL, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Closed circle at (-2, -1)
+        board.create('point', [-2, -1], {
+            name: '', size: 4, color: COL, fixed: true, highlight: false
+        });
+
+        // Closed circle at (4, 5)
+        board.create('point', [4, 5], {
+            name: '', size: 4, color: COL, fixed: true, highlight: false
+        });
+
+        // ── Piece 3: Ray from (4, 5) open circle, slope +1 right, through (6, 7) ──
+        // y = x + 1 (wrong slope: +1 instead of -1)
+        board.create('functiongraph', [
+            function(x) { return x + 1; },
+            4, 10
+        ], { strokeColor: COL, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Open circle at (4, 5)
+        board.create('point', [4, 5], {
+            name: '', size: 4, fixed: true, highlight: false,
+            fillColor: '#ffffff', strokeColor: COL, strokeWidth: 1.5
+        });
+
+        // ── Small f(x) label ──
+        board.create('text', [6.5, 8.2, 'f(x)'], {
+            fontSize: 10, color: COL, useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
