@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Angle on the Unit Circle</title>
+<style>
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: transparent; }
+.wrap { height: 100%; display: flex; align-items: center; justify-content: center; }
+svg { width: 100%; height: 100%; max-width: 100%; max-height: 100%; display: block; background: #ffffff; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<svg viewBox="-160 -160 320 320" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Angle theta in standard position with terminal side meeting the unit circle at P">
+  <!-- unit circle -->
+  <circle cx="0" cy="0" r="110" fill="none" stroke="#7B8FB0" stroke-width="1.4"/>
+  <!-- axes -->
+  <line x1="-146" y1="0" x2="140" y2="0" stroke="#444444" stroke-width="1.5"/>
+  <polygon points="150,0 138,-5 138,5" fill="#444444"/>
+  <line x1="0" y1="146" x2="0" y2="-140" stroke="#444444" stroke-width="1.5"/>
+  <polygon points="0,-150 -5,-138 5,-138" fill="#444444"/>
+  <text x="146" y="20" font-family="'Times New Roman', Times, serif" font-style="italic" font-size="18" fill="#222222" text-anchor="middle">x</text>
+  <text x="14" y="-140" font-family="'Times New Roman', Times, serif" font-style="italic" font-size="18" fill="#222222" text-anchor="middle">y</text>
+  <!-- ticks -->
+  <line x1="110" y1="-4" x2="110" y2="4" stroke="#444444" stroke-width="1.2"/>
+  <line x1="-110" y1="-4" x2="-110" y2="4" stroke="#444444" stroke-width="1.2"/>
+  <line x1="-4" y1="-110" x2="4" y2="-110" stroke="#444444" stroke-width="1.2"/>
+  <line x1="-4" y1="110" x2="4" y2="110" stroke="#444444" stroke-width="1.2"/>
+  <text x="115" y="17" font-family="'Times New Roman', Times, serif" font-size="15" fill="#222222" text-anchor="start">1</text>
+  <text x="-114" y="17" font-family="'Times New Roman', Times, serif" font-size="15" fill="#222222" text-anchor="end">−1</text>
+  <text x="-8" y="-115" font-family="'Times New Roman', Times, serif" font-size="15" fill="#222222" text-anchor="end">1</text>
+  <text x="-8" y="127" font-family="'Times New Roman', Times, serif" font-size="15" fill="#222222" text-anchor="end">−1</text>
+  <!-- rotation arc (counterclockwise) -->
+  <path d="M 36.00 0.00 A 36 36 0 1 0 12.90 33.61" fill="none" stroke="#DC2626" stroke-width="2.2" stroke-linecap="round"/>
+  <polygon points="20.13,29.85 14.69,38.28 11.11,28.94" fill="#DC2626"/>
+  <text x="-34" y="-30" font-family="'Times New Roman', Times, serif" font-style="italic" font-size="20" fill="#DC2626" text-anchor="middle">θ</text>
+  <!-- initial side -->
+  <line x1="0" y1="0" x2="110" y2="0" stroke="#1E40AF" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- terminal side -->
+  <line x1="0" y1="0" x2="63.09" y2="90.11" stroke="#1E40AF" stroke-width="3.5" stroke-linecap="round"/>
+  <circle cx="0" cy="0" r="3.2" fill="#222222"/>
+  <circle cx="63.09" cy="90.11" r="4.5" fill="#1E40AF"/>
+  <text x="72.09" y="110.11" font-family="'Times New Roman', Times, serif" font-size="17" fill="#222222" text-anchor="start"><tspan font-style="italic">P</tspan>(<tspan font-style="italic">x</tspan>, <tspan font-style="italic">y</tspan>)</text>
+</svg>
+</div>
+</body>
+</html>
