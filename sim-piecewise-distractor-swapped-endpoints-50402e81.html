@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piecewise Distractor – Swapped Endpoints</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.4, 11.5, 15.5, -7],
+            axis: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Manual axes
+        var xAxis = board.create('arrow', [[-1.4, 0], [15.2, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+        var yAxis = board.create('arrow', [[0, -7], [0, 11.2]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        // X-axis ticks every 2
+        var xTickVals = [2, 4, 6, 8, 10, 12, 14];
+        for (var i = 0; i < xTickVals.length; i++) {
+            var xv = xTickVals[i];
+            board.create('segment', [[xv, -0.2], [xv, 0.2]], {
+                strokeColor: '#444444', strokeWidth: 1, fixed: true, highlight: false
+            });
+            board.create('text', [xv, -0.8, String(xv)], {
+                fontSize: 9, anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false, color: '#444444'
+            });
+        }
+
+        // Y-axis ticks every 1
+        for (var j = -6; j <= 10; j++) {
+            if (j === 0) continue;
+            board.create('segment', [[-0.2, j], [0.2, j]], {
+                strokeColor: '#444444', strokeWidth: 1, fixed: true, highlight: false
+            });
+            board.create('text', [-0.6, j, String(j)], {
+                fontSize: 9, anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false, color: '#444444'
+            });
+        }
+
+        // Axis labels
+        board.create('text', [14.8, -0.6, '<i>x</i>'], { fontSize: 11, fixed: true, highlight: false });
+        board.create('text', [0.3, 11, '<i>y</i>'], { fontSize: 11, fixed: true, highlight: false });
+
+        var COL = '#222222';
+        var SW = 1.8;
+
+        // Helper: closed dot
+        function closedDot(x, y) {
+            board.create('point', [x, y], {
+                name: '', fixed: true, size: 3,
+                fillColor: COL, strokeColor: COL, strokeWidth: 0,
+                highlight: false
+            });
+        }
+
+        // Helper: open dot
+        function openDot(x, y) {
+            board.create('point', [x, y], {
+                name: '', fixed: true, size: 3,
+                fillColor: '#ffffff', strokeColor: COL, strokeWidth: 1.5,
+                highlight: false
+            });
+        }
+
+        // Segment 1: y = 8 — DISTRACTOR: open at 2, closed at 5
+        board.create('segment', [[2, 8], [5, 8]], {
+            strokeColor: COL, strokeWidth: SW, fixed: true, highlight: false
+        });
+        openDot(2, 8);
+        closedDot(5, 8);
+
+        // Segment 2: y = 3 — DISTRACTOR: open at 5, closed at 7
+        board.create('segment', [[5, 3], [7, 3]], {
+            strokeColor: COL, strokeWidth: SW, fixed: true, highlight: false
+        });
+        openDot(5, 3);
+        closedDot(7, 3);
+
+        // Segment 3: y = -1 — DISTRACTOR: open at 7, open at 10
+        board.create('segment', [[7, -1], [10, -1]], {
+            strokeColor: COL, strokeWidth: SW, fixed: true, highlight: false
+        });
+        openDot(7, -1);
+        openDot(10, -1);
+
+        // Segment 4: y = -4 — DISTRACTOR: closed at 10, open at 13
+        board.create('segment', [[10, -4], [13, -4]], {
+            strokeColor: COL, strokeWidth: SW, fixed: true, highlight: false
+        });
+        closedDot(10, -4);
+        openDot(13, -4);
+
+        // Function label — name only
+        board.create('text', [12.5, 9.5, 'g(x)'], {
+            useKatex: true, fontSize: 11, color: COL, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
