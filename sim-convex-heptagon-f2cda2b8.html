@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convex Heptagon</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 4.5, 5, -4.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var cx = 0, cy = 0, r = 3.2;
+        var angles = [0, 55, 105, 155, 210, 260, 320];
+
+        var vertices = [];
+        for (var i = 0; i < angles.length; i++) {
+            var rad = angles[i] * Math.PI / 180;
+            var ri = r + [0.15, -0.25, 0.3, -0.1, 0.2, -0.3, 0.1][i];
+            var vx = cx + ri * Math.cos(rad);
+            var vy = cy + ri * Math.sin(rad);
+            vertices.push(
+                board.create('point', [vx, vy], {
+                    visible: false, fixed: true, name: ''
+                })
+            );
+        }
+
+        board.create('polygon', vertices, {
+            fillColor: 'none',
+            fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
