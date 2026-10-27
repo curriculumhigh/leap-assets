@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadrilateral PQRS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 14.5, 11.5, -5.5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 10 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 10 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [11.0, -0.6, '\\textit{x}'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+        board.create('text', [0.3, 14.0, '\\textit{y}'], { fontSize: 14, fixed: true, highlight: false, useKatex: true });
+
+        // Vertices
+        var P = board.create('point', [0, 0], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        var Q = board.create('point', [5, 12], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        var R = board.create('point', [9, 9], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+        var S = board.create('point', [4, -3], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Edges — solid segments
+        board.create('segment', [P, Q], { strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('segment', [Q, R], { strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('segment', [R, S], { strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false });
+        board.create('segment', [S, P], { strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Single-line vertex labels: Name(x, y)
+        board.create('text', [-1.8, -0.8, 'P(0,\\,0)'], {
+            fontSize: 12, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [3.4, 12.6, 'Q(5,\\,12)'], {
+            fontSize: 12, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [9.5, 9.4, 'R(9,\\,9)'], {
+            fontSize: 12, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [4.5, -3.9, 'S(4,\\,-3)'], {
+            fontSize: 12, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+    </script>
+</body>
+</html>
