@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drone and Tower Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 650px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 15.5, 23, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        var groundY = 0;
+        var droneAlt = 8;
+        var towerBaseX = 18;
+        var towerTopY = 11;
+        var droneX = 3;
+
+        var Ax = droneX + 1.2;
+        var Ay = droneAlt;
+        var Bx = towerBaseX;
+        var By = droneAlt;
+        var Cx = towerBaseX;
+        var Cy = towerTopY;
+
+        board.create('segment', [[-2.5, groundY], [22, groundY]], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var i;
+        for (i = -2.0; i <= 21.5; i += 0.8) {
+            board.create('segment', [[i, groundY], [i - 0.4, groundY - 0.6]], {
+                strokeColor: '#888888', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+
+        var towerW = 1.0;
+        var towerLeft = towerBaseX - towerW / 2;
+        var towerRight = towerBaseX + towerW / 2;
+
+        board.create('segment', [[towerLeft, groundY], [towerLeft, Cy - 0.3]], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [[towerRight, groundY], [towerRight, Cy - 0.3]], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        var braceStep = 1.8;
+        var numBraces = Math.floor((Cy - 0.3 - groundY) / braceStep);
+        for (i = 0; i < numBraces; i++) {
+            var by1 = groundY + i * braceStep;
+            var by2 = groundY + (i + 1) * braceStep;
+            if (by2 > Cy - 0.3) by2 = Cy - 0.3;
+            board.create('segment', [[towerLeft, by1], [towerRight, by2]], {
+                strokeColor: '#888888', strokeWidth: 0.8, fixed: true, highlight: false
+            });
+            board.create('segment', [[towerRight, by1], [towerLeft, by2]], {
+                strokeColor: '#888888', strokeWidth: 0.8, fixed: true, highlight: false
+            });
+        }
+
+        for (i = 0; i <= numBraces; i++) {
+            var ry = groundY + i * braceStep;
+            if (ry > Cy - 0.3) break;
+            board.create('segment', [[towerLeft, ry], [towerRight, ry]], {
+                strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+        board.create('segment', [[towerLeft, Cy - 0.3], [towerRight, Cy - 0.3]], {
+            strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        var antennaBaseY = Cy - 0.3;
+        var antennaTipY = Cy + 0.8;
+        board.create('segment', [[towerLeft + 0.1, antennaBaseY], [towerBaseX, antennaTipY]], {
+            strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[towerRight - 0.1, antennaBaseY], [towerBaseX, antennaTipY]], {
+            strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('point', [towerBaseX, antennaTipY + 0.2], {
+            name: '', size: 2, color: '#DC2626', fixed: true, highlight: false
+        });
+
+        board.create('text', [towerBaseX, -1.5, 'Communications tower'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 11, color: '#555555',
+            fixed: true, highlight: false
+        });
+
+        var dBody = 0.5;
+        var dCx = droneX;
+        var dCy = droneAlt;
+
+        board.create('segment', [[dCx - dBody, dCy - 0.15], [dCx + dBody, dCy - 0.15]], {
+            strokeColor: '#555555', strokeWidth: 3, fixed: true, highlight: false
+        });
+        board.create('segment', [[dCx - dBody, dCy - 0.15], [dCx - dBody - 0.6, dCy + 0.25]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[dCx + dBody, dCy - 0.15], [dCx + dBody + 0.6, dCy + 0.25]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[dCx - dBody - 1.0, dCy + 0.25], [dCx - dBody - 0.2, dCy + 0.25]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[dCx + dBody + 0.2, dCy + 0.25], [dCx + dBody + 1.0, dCy + 0.25]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[dCx - 0.3, dCy - 0.15], [dCx - 0.35, dCy - 0.55]], {
+            strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[dCx + 0.3, dCy - 0.15], [dCx + 0.35, dCy - 0.55]], {
+            strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[dCx - 0.6, dCy - 0.55], [dCx + 0.6, dCy - 0.55]], {
+            strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        board.create('text', [dCx, dCy + 1.2, 'Drone'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 11, color: '#555555',
+            fixed: true, highlight: false
+        });
+
+        board.create('point', [Ax, Ay], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('point', [Bx, By], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('point', [Cx, Cy], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+
+        board.create('text', [Ax - 0.3, Ay - 0.7, 'A'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600; font-style:italic;'
+        });
+        board.create('text', [Bx + 0.4, By - 0.7, 'B'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600; font-style:italic;'
+        });
+        board.create('text', [Cx + 0.4, Cy + 0.3, 'C'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600; font-style:italic;'
+        });
+
+        board.create('segment', [[Ax, Ay], [Bx, By]], {
+            strokeColor: '#555555', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        board.create('segment', [[Bx, By], [Cx, Cy]], {
+            strokeColor: '#DC2626', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [Bx + 1.2, (By + Cy) / 2, 'h\\text{ ft}'], {
+            anchorX: 'left', anchorY: 'middle', fontSize: 14, color: '#DC2626',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[Ax, Ay], [Cx, Cy]], {
+            strokeColor: '#2563EB', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        var midHypX = (Ax + Cx) / 2;
+        var midHypY = (Ay + Cy) / 2;
+        board.create('text', [midHypX - 1.5, midHypY + 1.0, '25{,}000\\text{ ft}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14, color: '#2563EB',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        var sqSize = 0.5;
+        board.create('segment', [[Bx - sqSize, By], [Bx - sqSize, By + sqSize]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[Bx - sqSize, By + sqSize], [Bx, By + sqSize]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        var angleRad = Math.atan2(Cy - Ay, Cx - Ax);
+        var arcRadius = 3.0;
+
+        board.create('curve', [
+            function(t) { return Ax + arcRadius * Math.cos(t); },
+            function(t) { return Ay + arcRadius * Math.sin(t); },
+            0,
+            angleRad
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        var labelAngle = angleRad / 2;
+        var labelR = arcRadius + 0.8;
+        board.create('text', [Ax + labelR * Math.cos(labelAngle), Ay + labelR * Math.sin(labelAngle), '3^\\circ'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14, color: '#222222',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        var arrowX = -1.5;
+
+        board.create('segment', [[arrowX, groundY], [arrowX, droneAlt]], {
+            strokeColor: '#555555', strokeWidth: 1.2, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        board.create('segment', [[arrowX, droneAlt], [arrowX - 0.25, droneAlt - 0.5]], {
+            strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[arrowX, droneAlt], [arrowX + 0.25, droneAlt - 0.5]], {
+            strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[arrowX, groundY], [arrowX - 0.25, groundY + 0.5]], {
+            strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[arrowX, groundY], [arrowX + 0.25, groundY + 0.5]], {
+            strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[arrowX - 0.35, groundY], [arrowX + 0.35, groundY]], {
+            strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[arrowX - 0.35, droneAlt], [arrowX + 0.35, droneAlt]], {
+            strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        board.create('text', [arrowX + 0.6, droneAlt / 2, '8{,}000\\text{ ft}'], {
+            anchorX: 'left', anchorY: 'middle', fontSize: 13, color: '#555555',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[arrowX + 0.35, droneAlt], [dCx - dBody - 1.0, droneAlt]], {
+            strokeColor: '#AAAAAA', strokeWidth: 0.6, dash: 3,
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
