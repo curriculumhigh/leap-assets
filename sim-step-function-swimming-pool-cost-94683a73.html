@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step Function — Swimming Pool Cost</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 52, 23, -7],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 5
+                    }
+                },
+                y: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 10
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [20.5, -3.5, 'Number of swimmers'], {
+            fontSize: 12, fixed: true, highlight: false,
+            cssStyle: 'font-style: italic; color: #444444;'
+        });
+        board.create('text', [-2.8, 49, 'Total cost'], {
+            fontSize: 12, fixed: true, highlight: false,
+            cssStyle: 'font-style: italic; color: #444444;'
+        });
+        board.create('text', [-2.8, 46, '(dollars)'], {
+            fontSize: 12, fixed: true, highlight: false,
+            cssStyle: 'font-style: italic; color: #444444;'
+        });
+
+        // Step data: [x_left, x_right, y_value]
+        var steps = [
+            [0, 5, 10],
+            [5, 10, 20],
+            [10, 15, 30],
+            [15, 20, 40]
+        ];
+
+        var COL_CURVE = '#222222';
+
+        for (var i = 0; i < steps.length; i++) {
+            var xL = steps[i][0];
+            var xR = steps[i][1];
+            var yV = steps[i][2];
+
+            // Horizontal line segment
+            board.create('segment', [[xL, yV], [xR, yV]], {
+                strokeColor: COL_CURVE,
+                strokeWidth: 1.8,
+                fixed: true,
+                highlight: false
+            });
+
+            // Open circle at left endpoint
+            board.create('point', [xL, yV], {
+                name: '',
+                size: 4,
+                fillColor: '#ffffff',
+                strokeColor: COL_CURVE,
+                strokeWidth: 1.5,
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+
+            // Closed circle at right endpoint
+            board.create('point', [xR, yV], {
+                name: '',
+                size: 4,
+                fillColor: COL_CURVE,
+                strokeColor: COL_CURVE,
+                strokeWidth: 1.5,
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
