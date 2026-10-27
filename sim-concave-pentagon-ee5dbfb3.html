@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concave Pentagon</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 4.5, 6, -2.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var v1 = board.create('point', [0, 2], { visible: false, fixed: true, name: '' });
+        var v2 = board.create('point', [3, 3.5], { visible: false, fixed: true, name: '' });
+        var v3 = board.create('point', [5, 1], { visible: false, fixed: true, name: '' });
+        var v4 = board.create('point', [2, 0.8], { visible: false, fixed: true, name: '' });
+        var v5 = board.create('point', [1, -1.5], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [v1, v2, v3, v4, v5], {
+            fillColor: '#DBEAFE',
+            fillOpacity: 0.35,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
