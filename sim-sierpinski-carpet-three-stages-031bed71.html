@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sierpinski Carpet — Three Stages</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            width: 700px; margin: 0 auto; padding: 10px 0;
+        }
+        .stages-row {
+            display: flex; gap: 16px; justify-content: center;
+        }
+        .stage-col {
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .board-wrap {
+            background: white; border-radius: 8px; padding: 6px;
+            width: 202px; height: 202px;
+        }
+        .board-div {
+            width: 190px; height: 190px;
+        }
+        .stage-label {
+            font-size: 14px; color: #444444; font-weight: 600;
+            margin-top: 6px; text-align: center;
+        }
+        .jxgbox { outline: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="stages-row">
+            <div class="stage-col">
+                <div class="board-wrap"><div id="board1" class="board-div"></div></div>
+                <div class="stage-label">Stage 1</div>
+            </div>
+            <div class="stage-col">
+                <div class="board-wrap"><div id="board2" class="board-div"></div></div>
+                <div class="stage-label">Stage 2</div>
+            </div>
+            <div class="stage-col">
+                <div class="board-wrap"><div id="board3" class="board-div"></div></div>
+                <div class="stage-label">Stage 3</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function isRemoved(row, col, n) {
+            var r = row, c = col;
+            for (var k = 0; k < n; k++) {
+                if (r % 3 === 1 && c % 3 === 1) return true;
+                r = Math.floor(r / 3);
+                c = Math.floor(c / 3);
+            }
+            return false;
+        }
+
+        function drawStage(boardId, stage) {
+            var N = Math.pow(3, stage);
+            var pad = 0.4;
+            var bb = [-pad, N + pad, N + pad, -pad];
+
+            var board = JXG.JSXGraph.initBoard(boardId, {
+                boundingbox: bb,
+                axis: false, grid: false,
+                showNavigation: false, showCopyright: false,
+                pan: { enabled: false }, zoom: { enabled: false },
+                resize: { enabled: false }
+            });
+
+            var FILL_COLOR = '#DBEAFE';
+            var FILL_BORDER = '#555555';
+            var GRID_COLOR = '#D1D5DB';
+
+            var borderW = stage === 3 ? 0.3 : (stage === 2 ? 0.6 : 1.0);
+
+            for (var r = 0; r < N; r++) {
+                for (var c = 0; c < N; c++) {
+                    if (!isRemoved(r, c, stage)) {
+                        var x0 = c;
+                        var y0 = N - 1 - r;
+                        var p1 = board.create('point', [x0, y0], { visible: false, name: '' });
+                        var p2 = board.create('point', [x0 + 1, y0], { visible: false, name: '' });
+                        var p3 = board.create('point', [x0 + 1, y0 + 1], { visible: false, name: '' });
+                        var p4 = board.create('point', [x0, y0 + 1], { visible: false, name: '' });
+                        board.create('polygon', [p1, p2, p3, p4], {
+                            fillColor: FILL_COLOR, fillOpacity: 1,
+                            borders: { strokeColor: FILL_BORDER, strokeWidth: borderW },
+                            vertices: { visible: false },
+                            hasInnerPoints: false, fixed: true, highlight: false
+                        });
+                    }
+                }
+            }
+
+            var gridW = stage === 3 ? 0.15 : 0.4;
+            for (var i = 0; i <= N; i++) {
+                board.create('segment', [[0, i], [N, i]], {
+                    strokeColor: GRID_COLOR, strokeWidth: gridW,
+                    fixed: true, highlight: false
+                });
+                board.create('segment', [[i, 0], [i, N]], {
+                    strokeColor: GRID_COLOR, strokeWidth: gridW,
+                    fixed: true, highlight: false
+                });
+            }
+
+            if (stage >= 2) {
+                var step3 = Math.pow(3, stage - 1);
+                var heavyW = stage === 3 ? 0.6 : 1.0;
+                for (var j = 0; j <= N; j += step3) {
+                    board.create('segment', [[0, j], [N, j]], {
+                        strokeColor: FILL_BORDER, strokeWidth: heavyW,
+                        fixed: true, highlight: false
+                    });
+                    board.create('segment', [[j, 0], [j, N]], {
+                        strokeColor: FILL_BORDER, strokeWidth: heavyW,
+                        fixed: true, highlight: false
+                    });
+                }
+            }
+
+            if (stage >= 3) {
+                var step9 = Math.pow(3, stage - 2);
+                for (var j2 = 0; j2 <= N; j2 += step9) {
+                    board.create('segment', [[0, j2], [N, j2]], {
+                        strokeColor: FILL_BORDER, strokeWidth: 0.4,
+                        fixed: true, highlight: false
+                    });
+                    board.create('segment', [[j2, 0], [j2, N]], {
+                        strokeColor: FILL_BORDER, strokeWidth: 0.4,
+                        fixed: true, highlight: false
+                    });
+                }
+            }
+
+            var outerW = stage === 3 ? 1.2 : 1.5;
+            board.create('segment', [[0, 0], [N, 0]], { strokeColor: FILL_BORDER, strokeWidth: outerW, fixed: true, highlight: false });
+            board.create('segment', [[N, 0], [N, N]], { strokeColor: FILL_BORDER, strokeWidth: outerW, fixed: true, highlight: false });
+            board.create('segment', [[N, N], [0, N]], { strokeColor: FILL_BORDER, strokeWidth: outerW, fixed: true, highlight: false });
+            board.create('segment', [[0, N], [0, 0]], { strokeColor: FILL_BORDER, strokeWidth: outerW, fixed: true, highlight: false });
+        }
+
+        drawStage('board1', 1);
+        drawStage('board2', 2);
+        drawStage('board3', 3);
+    </script>
+</body>
+</html>
