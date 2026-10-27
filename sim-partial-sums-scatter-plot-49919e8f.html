@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partial Sums Scatter Plot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 2.4, 9.5, -0.25],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Axes (manual for full control) ──────────────────────────────
+
+        // x-axis
+        var xAxis = board.create('arrow', [[-0.5, 0], [9.3, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // y-axis
+        var yAxis = board.create('arrow', [[0, -0.15], [0, 2.3]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // ── Grid lines ──────────────────────────────────────────────────
+
+        // Minor horizontal gridlines every 0.1 from 0.1 to 2.3
+        var yi;
+        for (yi = 0.1; yi <= 2.21; yi += 0.1) {
+            // Skip major gridlines (will draw them separately)
+            var isMajor = (Math.abs(yi - Math.round(yi * 2) / 2) < 0.001);
+            if (!isMajor) {
+                board.create('segment', [[-0.5, yi], [9.3, yi]], {
+                    strokeColor: '#E5E7EB', strokeWidth: 0.25,
+                    fixed: true, highlight: false, dash: 0
+                });
+            }
+        }
+
+        // Major horizontal gridlines at 0.5, 1.0, 1.5, 2.0
+        var majorYs = [0.5, 1.0, 1.5, 2.0];
+        var mi;
+        for (mi = 0; mi < majorYs.length; mi++) {
+            board.create('segment', [[-0.5, majorYs[mi]], [9.3, majorYs[mi]]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Vertical gridlines at integer x = 1..8
+        var xi;
+        for (xi = 1; xi <= 8; xi++) {
+            board.create('segment', [[xi, -0.15], [xi, 2.3]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Tick marks and labels on x-axis ─────────────────────────────
+        for (xi = 1; xi <= 8; xi++) {
+            // Tick mark
+            board.create('segment', [[xi, -0.03], [xi, 0.03]], {
+                strokeColor: '#444444', strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            // Label
+            board.create('text', [xi, -0.1, String(xi)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Tick marks and labels on y-axis ─────────────────────────────
+        var yTicks = [0, 0.5, 1.0, 1.5, 2.0];
+        var ti;
+        for (ti = 0; ti < yTicks.length; ti++) {
+            var yv = yTicks[ti];
+            // Tick mark
+            board.create('segment', [[-0.06, yv], [0.06, yv]], {
+                strokeColor: '#444444', strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            // Label
+            var labelText = (yv === 0) ? '0' : yv.toFixed(1);
+            board.create('text', [-0.15, yv, labelText], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Axis labels (KaTeX) ─────────────────────────────────────────
+        board.create('text', [9.1, -0.12, 'n'], {
+            fontSize: 14, color: '#222222', useKatex: true,
+            fixed: true, highlight: false
+        });
+        board.create('text', [0.25, 2.25, 'S_n'], {
+            fontSize: 14, color: '#222222', useKatex: true,
+            fixed: true, highlight: false
+        });
+
+        // ── Dashed horizontal line at y = 2.0 ──────────────────────────
+        board.create('segment', [[-0.5, 2.0], [9.3, 2.0]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── Data points ─────────────────────────────────────────────────
+        var data = [
+            [1, 1.0], [2, 1.5], [3, 1.75], [4, 1.875],
+            [5, 1.9375], [6, 1.96875], [7, 1.984375], [8, 1.9921875]
+        ];
+
+        var di;
+        for (di = 0; di < data.length; di++) {
+            board.create('point', [data[di][0], data[di][1]], {
+                name: '', size: 4, color: '#222222',
+                fixed: true, highlight: false, showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
