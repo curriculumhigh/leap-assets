@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadrilateral ABCD Decomposition</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7.5, 8, 8, -5.5],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [7.6, -0.45, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 7.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var ptStyle = { size: 3, color: '#222222', fixed: true, highlight: false, showInfobox: false, name: '', label: { visible: false } };
+
+        var A = board.create('point', [-4, 5], ptStyle);
+        var B = board.create('point', [3, 3], ptStyle);
+        var C = board.create('point', [3, -3], ptStyle);
+        var D = board.create('point', [-4, -1], ptStyle);
+        var E = board.create('point', [-4, 3], ptStyle);
+        var F = board.create('point', [3, -1], ptStyle);
+
+        // ── Solid segments (quadrilateral ABCD) ─────────────────────────
+        var solidStyle = { strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false };
+
+        board.create('segment', [A, B], solidStyle);
+        board.create('segment', [B, C], solidStyle);
+        board.create('segment', [C, D], solidStyle);
+        board.create('segment', [D, A], solidStyle);
+
+        // ── Dashed construction segments (decomposition lines) ──────────
+        var dashedStyle = { strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false };
+
+        board.create('segment', [E, B], dashedStyle);
+        board.create('segment', [D, F], dashedStyle);
+
+        // ── KaTeX labels (name + coordinates) ───────────────────────────
+        // A(-4, 5) — upper-left
+        board.create('text', [-4.3, 5.55, 'A(-4,\\,5)'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'right', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+
+        // B(3, 3) — upper-right
+        board.create('text', [3.3, 3.45, 'B(3,\\,3)'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'left', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+
+        // C(3, -3) — lower-right
+        board.create('text', [3.3, -3.15, 'C(3,\\,-3)'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'left', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // D(-4, -1) — lower-left
+        board.create('text', [-4.3, -1.55, 'D(-4,\\,-1)'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'right', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // E(-4, 3) — left, shifted down slightly to avoid overlap with dashed line
+        board.create('text', [-4.3, 2.5, 'E(-4,\\,3)'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'right', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // F(3, -1) — right
+        board.create('text', [3.3, -1.0, 'F(3,\\,-1)'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
