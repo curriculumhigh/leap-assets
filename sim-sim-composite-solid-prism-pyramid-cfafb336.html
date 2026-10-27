@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Composite Solid — Rectangular Prism + Pyramid</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4.5, 13.5, 18, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        // Oblique projection parameters
+        var depthScale = 0.4;
+        var depthAngle = 35 * Math.PI / 180;
+        var dxu = depthScale * Math.cos(depthAngle);
+        var dyu = depthScale * Math.sin(depthAngle);
+
+        // Real dimensions
+        var W = 15;
+        var D = 8;
+        var Hp = 6;
+        var Ht = 10;
+
+        // Scale & origin
+        var sc = 0.72;
+        var ox = 1.8;
+        var oy = 0.5;
+
+        function P(fx, depth, h) {
+            return [ox + sc * (fx + depth * dxu), oy + sc * (h + depth * dyu)];
+        }
+
+        // Vertices — prism base
+        var A  = P(0, 0, 0);
+        var B  = P(W, 0, 0);
+        var C  = P(W, D, 0);
+        var Dv = P(0, D, 0);
+        // Prism top
+        var E  = P(0, 0, Hp);
+        var F  = P(W, 0, Hp);
+        var G  = P(W, D, Hp);
+        var Hv = P(0, D, Hp);
+        // Pyramid apex
+        var apex = P(W / 2, D / 2, Ht);
+
+        // Drawing helpers
+        function seg(p1, p2, col, w, dashed, layer) {
+            board.create('segment', [p1, p2], {
+                strokeColor: col, strokeWidth: w,
+                dash: dashed ? 2 : 0,
+                fixed: true, highlight: false,
+                point1: { visible: false, name: '' },
+                point2: { visible: false, name: '' },
+                layer: layer || 5
+            });
+        }
+
+        function face(pts, fill, fillOp) {
+            var points = [];
+            for (var i = 0; i < pts.length; i++) {
+                points.push(board.create('point', pts[i], { visible: false, fixed: true, name: '' }));
+            }
+            board.create('polygon', points, {
+                fillColor: fill, fillOpacity: fillOp,
+                borders: { strokeWidth: 0 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false,
+                layer: 3
+            });
+        }
+
+        var EDGE = '#555555';
+        var EDGE_W = 1.5;
+
+        // Hidden edges (dashed)
+        seg(A, Dv, '#999999', 1.0, true, 2);
+        seg(Dv, C, '#999999', 1.0, true, 2);
+        seg(Dv, Hv, '#999999', 1.0, true, 2);
+
+        // Prism faces (back to front for layering)
+        face([A, Dv, Hv, E], '#DBEAFE', 0.18);
+        face([E, F, G, Hv], '#DBEAFE', 0.22);
+        face([B, C, G, F], '#DBEAFE', 0.15);
+        face([A, B, F, E], '#DBEAFE', 0.35);
+
+        // Prism visible edges
+        seg(A, B, EDGE, EDGE_W, false, 6);
+        seg(B, F, EDGE, EDGE_W, false, 6);
+        seg(F, E, EDGE, EDGE_W, false, 6);
+        seg(E, A, EDGE, EDGE_W, false, 6);
+        seg(B, C, EDGE, EDGE_W, false, 6);
+        seg(C, G, EDGE, EDGE_W, false, 6);
+        seg(G, F, EDGE, EDGE_W, false, 6);
+        seg(E, Hv, EDGE, EDGE_W, false, 6);
+        seg(Hv, G, EDGE, EDGE_W, false, 6);
+
+        // Pyramid faces
+        face([E, Hv, apex], '#FEF3C7', 0.12);
+        face([Hv, G, apex], '#FEF3C7', 0.18);
+        face([G, F, apex], '#FEF3C7', 0.28);
+        face([E, F, apex], '#FEF3C7', 0.38);
+
+        // Pyramid visible edges
+        seg(E, apex, EDGE, EDGE_W, false, 7);
+        seg(F, apex, EDGE, EDGE_W, false, 7);
+        seg(G, apex, EDGE, EDGE_W, false, 7);
+        seg(Hv, apex, EDGE, EDGE_W, false, 7);
+
+        // ── Dimension lines & labels ────────────────────────────────────
+        var DIM = '#DC2626';
+        var DIM_W = 0.8;
+        var TK = 0.25;
+
+        function dimTick(center, perpX, perpY) {
+            var ta = [center[0] + perpX * TK, center[1] + perpY * TK];
+            var tb = [center[0] - perpX * TK, center[1] - perpY * TK];
+            seg(ta, tb, DIM, DIM_W, false, 9);
+        }
+
+        function extLine(from, to) {
+            seg(from, to, DIM, 0.5, false, 9);
+        }
+
+        // 15 cm — front base edge (below)
+        var baseGap = 1.6;
+        var baseY = A[1] - baseGap;
+        var bL = [A[0], baseY];
+        var bR = [B[0], baseY];
+        seg(bL, bR, DIM, DIM_W, false, 9);
+        dimTick(bL, 0, 1);
+        dimTick(bR, 0, 1);
+        extLine([A[0], A[1] - 0.3], [A[0], baseY + TK]);
+        extLine([B[0], B[1] - 0.3], [B[0], baseY + TK]);
+        board.create('text', [(bL[0] + bR[0]) / 2, baseY - 0.65, '15\\text{ cm}'], {
+            useKatex: true, fontSize: 11, color: DIM,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, layer: 9
+        });
+
+        // 8 cm — depth along B→C direction
+        var depthOff = 1.4;
+        var bcDx = C[0] - B[0];
+        var bcDy = C[1] - B[1];
+        var bcLen = Math.sqrt(bcDx * bcDx + bcDy * bcDy);
+        var bcNx = bcDy / bcLen;
+        var bcNy = -bcDx / bcLen;
+        var d1 = [B[0] + bcNx * depthOff, B[1] + bcNy * depthOff];
+        var d2 = [C[0] + bcNx * depthOff, C[1] + bcNy * depthOff];
+        seg(d1, d2, DIM, DIM_W, false, 9);
+        dimTick(d1, -bcNx, -bcNy);
+        dimTick(d2, -bcNx, -bcNy);
+        extLine([B[0] + bcNx * 0.3, B[1] + bcNy * 0.3], [d1[0] - bcNx * 0.1, d1[1] - bcNy * 0.1]);
+        extLine([C[0] + bcNx * 0.3, C[1] + bcNy * 0.3], [d2[0] - bcNx * 0.1, d2[1] - bcNy * 0.1]);
+        var dMid = [(d1[0] + d2[0]) / 2 + bcNx * 0.8, (d1[1] + d2[1]) / 2 + bcNy * 0.8];
+        board.create('text', [dMid[0], dMid[1], '8\\text{ cm}'], {
+            useKatex: true, fontSize: 11, color: DIM,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, layer: 9
+        });
+
+        // 6 cm — prism height (left side)
+        var hLeftGap = 1.8;
+        var hlX = A[0] - hLeftGap;
+        var hl1 = [hlX, A[1]];
+        var hl2 = [hlX, E[1]];
+        seg(hl1, hl2, DIM, DIM_W, false, 9);
+        dimTick(hl1, 1, 0);
+        dimTick(hl2, 1, 0);
+        extLine([A[0] - 0.3, A[1]], [hlX + TK, A[1]]);
+        extLine([E[0] - 0.3, E[1]], [hlX + TK, E[1]]);
+        board.create('text', [hlX - 0.85, (A[1] + E[1]) / 2, '6\\text{ cm}'], {
+            useKatex: true, fontSize: 11, color: DIM,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, layer: 9
+        });
+
+        // 10 cm — total height (right side)
+        var hRightGap = 2.0;
+        var hrX = B[0] + hRightGap;
+        var hr1 = [hrX, B[1]];
+        var hr2 = [hrX, apex[1]];
+        seg(hr1, hr2, DIM, DIM_W, false, 9);
+        dimTick(hr1, 1, 0);
+        dimTick(hr2, 1, 0);
+        extLine([B[0] + 0.3, B[1]], [hrX - TK, B[1]]);
+        extLine([apex[0] + 0.3, apex[1]], [hrX - TK, apex[1]]);
+        board.create('text', [hrX + 1.0, (B[1] + apex[1]) / 2, '10\\text{ cm}'], {
+            useKatex: true, fontSize: 11, color: DIM,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, layer: 9
+        });
+
+    </script>
+</body>
+</html>
