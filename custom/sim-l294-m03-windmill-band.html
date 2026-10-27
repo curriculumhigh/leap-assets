@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Windmill Sail Band</title>
+<style>
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: transparent; }
+.wrap { height: 100%; display: flex; align-items: center; justify-content: center; }
+svg { width: 100%; height: 100%; max-width: 100%; max-height: 100%; display: block; background: #ffffff; }
+text { font-family: Arial, Helvetica, sans-serif; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<svg viewBox="0 0 420 280" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Windmill sail arm turning through 80 degrees; the canvas sweeps a band between two arcs">
+  <!-- region swept by the canvas (band) -->
+  <path d="M 347.56,84.07 A 214 214 0 0 0 72.44,84.07 L 168.73,198.82 A 64.20 64.20 0 0 1 251.27,198.82 Z" fill="#2563EB" fill-opacity="0.18" stroke="none"/>
+  <path d="M 251.27,198.82 L 347.56,84.07 A 214 214 0 0 0 72.44,84.07 L 168.73,198.82" fill="none" stroke="#1E40AF" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M 168.73,198.82 A 64.20 64.20 0 0 1 251.27,198.82" fill="none" stroke="#1E40AF" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="210.00" y="108.90" font-size="14" fill="#1E3A8A" text-anchor="middle" dominant-baseline="middle">canvas</text>
+  <!-- arm positions -->
+  <line x1="210" y1="248" x2="347.56" y2="84.07" stroke="#222222" stroke-width="1.5"/>
+  <line x1="210" y1="248" x2="72.44" y2="84.07" stroke="#222222" stroke-width="1.5"/>
+  <!-- canvas (outer 21 ft) on right arm -->
+  <line x1="251.27" y1="198.82" x2="347.56" y2="84.07" stroke="#222222" stroke-width="5" stroke-linecap="round"/>
+  <!-- angle marker -->
+  <path d="M 228.00,226.55 A 28 28 0 0 0 192.00,226.55" fill="none" stroke="#DC2626" stroke-width="1.5"/>
+  <text x="210.00" y="206.00" font-size="14" fill="#222222" text-anchor="middle" dominant-baseline="middle">80°</text>
+  <!-- dimensions -->
+  <line x1="240.54" y1="189.82" x2="336.83" y2="75.07" stroke="#444444" stroke-width="1"/>
+  <line x1="236.71" y1="186.61" x2="244.37" y2="193.03" stroke="#444444" stroke-width="1"/>
+  <line x1="333.00" y1="71.85" x2="340.66" y2="78.28" stroke="#444444" stroke-width="1"/>
+  <polygon points="240.54,189.82 247.98,185.62 243.39,181.76" fill="#444444"/>
+  <polygon points="336.83,75.07 333.99,83.12 329.39,79.27" fill="#444444"/>
+  <text x="277.96" y="123.45" font-size="14" fill="#222222" text-anchor="middle" dominant-baseline="middle">21 ft</text>
+  <line x1="220.72" y1="257.00" x2="358.28" y2="93.07" stroke="#444444" stroke-width="1"/>
+  <line x1="216.89" y1="253.79" x2="224.55" y2="260.21" stroke="#444444" stroke-width="1"/>
+  <line x1="354.45" y1="89.85" x2="362.11" y2="96.28" stroke="#444444" stroke-width="1"/>
+  <polygon points="220.72,257.00 228.17,252.80 223.57,248.94" fill="#444444"/>
+  <polygon points="358.28,93.07 355.44,101.12 350.84,97.27" fill="#444444"/>
+  <text x="306.36" y="189.17" font-size="14" fill="#222222" text-anchor="middle" dominant-baseline="middle">30 ft</text>
+  <!-- pivot -->
+  <circle cx="210" cy="248" r="3.5" fill="#222222"/>
+  <text x="200" y="268" font-size="14" fill="#222222" text-anchor="end">hub</text>
+</svg>
+</div>
+</body>
+</html>
