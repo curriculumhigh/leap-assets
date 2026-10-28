@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hexagon Figure Sequence</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 8.5, 22, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: true
+        });
+
+        var HEX_FILL = '#DBEAFE';
+        var HEX_FILL_OPACITY = 0.55;
+        var HEX_STROKE = '#555555';
+        var HEX_STROKE_WIDTH = 1.5;
+        var LABEL_COLOR = '#333333';
+
+        var hexR = 0.52;
+        var hexDx = hexR * Math.sqrt(3);
+        var hexDy = hexR * 1.5;
+
+        function drawHex(cx, cy) {
+            var verts = [];
+            for (var i = 0; i < 6; i++) {
+                var angle = Math.PI / 6 + i * Math.PI / 3;
+                var px = cx + hexR * Math.cos(angle);
+                var py = cy + hexR * Math.sin(angle);
+                verts.push(board.create('point', [px, py], { visible: false, fixed: true, name: '' }));
+            }
+            board.create('polygon', verts, {
+                fillColor: HEX_FILL,
+                fillOpacity: HEX_FILL_OPACITY,
+                borders: { strokeColor: HEX_STROKE, strokeWidth: HEX_STROKE_WIDTH },
+                vertices: { visible: false },
+                hasInnerPoints: false,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        function drawHexGroup(originX, originY, positions) {
+            for (var i = 0; i < positions.length; i++) {
+                var col = positions[i][0];
+                var row = positions[i][1];
+                var cx = originX + col * hexDx + (row % 2 === 1 ? hexDx / 2 : 0);
+                var cy = originY - row * hexDy;
+                drawHex(cx, cy);
+            }
+        }
+
+        // Figure 1: 2 hexagons
+        var fig1X = 1.5;
+        var fig1Y = 5.5;
+        drawHexGroup(fig1X, fig1Y, [
+            [0, 0], [1, 0]
+        ]);
+
+        board.create('text', [fig1X + hexDx * 0.5, fig1Y - 1.8, 'Figure 1'], {
+            fontSize: 14, color: LABEL_COLOR, anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+        board.create('text', [fig1X + hexDx * 0.5, fig1Y - 2.6, '2 hexagons'], {
+            fontSize: 12, color: '#888888', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // Figure 2: 6 hexagons
+        var fig2X = 6.2;
+        var fig2Y = 5.8;
+        drawHexGroup(fig2X, fig2Y, [
+            [0, 0], [1, 0], [2, 0],
+            [0, 1], [1, 1], [2, 1]
+        ]);
+
+        var fig2CenterX = fig2X + hexDx * 1.0;
+        board.create('text', [fig2CenterX, fig2Y - 2.6, 'Figure 2'], {
+            fontSize: 14, color: LABEL_COLOR, anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+        board.create('text', [fig2CenterX, fig2Y - 3.4, '6 hexagons'], {
+            fontSize: 12, color: '#888888', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // Figure 3: 18 hexagons
+        var fig3X = 11.5;
+        var fig3Y = 6.2;
+        drawHexGroup(fig3X, fig3Y, [
+            [0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0],
+            [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1],
+            [0, 2], [1, 2], [2, 2], [3, 2], [4, 2], [5, 2]
+        ]);
+
+        var fig3CenterX = fig3X + hexDx * 2.5;
+        board.create('text', [fig3CenterX, fig3Y - 3.8, 'Figure 3'], {
+            fontSize: 14, color: LABEL_COLOR, anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+        board.create('text', [fig3CenterX, fig3Y - 4.6, '18 hexagons'], {
+            fontSize: 12, color: '#888888', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // Multiplier arrows
+        var arrowColor = '#DC2626';
+        var arrowY = 7.2;
+
+        var a1x1 = fig1X + hexDx * 0.5 + 0.8;
+        var a1x2 = fig2X + hexDx * 0.5 - 0.8;
+        board.create('arrow', [[a1x1, arrowY], [a1x2, arrowY]], {
+            strokeColor: arrowColor, strokeWidth: 1.5, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+        board.create('text', [(a1x1 + a1x2) / 2, arrowY + 0.5, '\u00D73'], {
+            fontSize: 13, color: arrowColor, anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false, cssStyle: 'font-weight:700'
+        });
+
+        var a2x1 = fig2X + hexDx * 2.0 + 0.8;
+        var a2x2 = fig3X - 0.4;
+        board.create('arrow', [[a2x1, arrowY], [a2x2, arrowY]], {
+            strokeColor: arrowColor, strokeWidth: 1.5, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+        board.create('text', [(a2x1 + a2x2) / 2, arrowY + 0.5, '\u00D73'], {
+            fontSize: 13, color: arrowColor, anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false, cssStyle: 'font-weight:700'
+        });
+    </script>
+</body>
+</html>
