@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Periodic Zigzag Graph</title>
+<style>
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: transparent; }
+.wrap { height: 100%; display: flex; align-items: center; justify-content: center; }
+svg { width: 100%; height: 100%; max-width: 100%; max-height: 100%; display: block; background: #ffffff; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<svg viewBox="0 0 520 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Graph of a periodic function f made of straight segments from (0,1) to (2,5) to (6,1) to (8,5) to (12,1)">
+  <!-- grid -->
+  <line x1="34.00" y1="268.00" x2="34.00" y2="26.00" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="71.50" y1="268.00" x2="71.50" y2="26.00" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="109.00" y1="268.00" x2="109.00" y2="26.00" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="146.50" y1="268.00" x2="146.50" y2="26.00" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="184.00" y1="268.00" x2="184.00" y2="26.00" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="221.50" y1="268.00" x2="221.50" y2="26.00" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="259.00" y1="268.00" x2="259.00" y2="26.00" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="296.50" y1="268.00" x2="296.50" y2="26.00" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="334.00" y1="268.00" x2="334.00" y2="26.00" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="371.50" y1="268.00" x2="371.50" y2="26.00" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="409.00" y1="268.00" x2="409.00" y2="26.00" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="446.50" y1="268.00" x2="446.50" y2="26.00" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="484.00" y1="268.00" x2="484.00" y2="26.00" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="34.00" y1="268.00" x2="484.00" y2="268.00" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="34.00" y1="227.67" x2="484.00" y2="227.67" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="34.00" y1="187.33" x2="484.00" y2="187.33" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="34.00" y1="147.00" x2="484.00" y2="147.00" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="34.00" y1="106.67" x2="484.00" y2="106.67" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="34.00" y1="66.33" x2="484.00" y2="66.33" stroke="#E5E7EB" stroke-width="1"/>
+  <line x1="34.00" y1="26.00" x2="484.00" y2="26.00" stroke="#E5E7EB" stroke-width="1"/>
+  <!-- axes -->
+  <line x1="34.00" y1="268.00" x2="490.00" y2="268.00" stroke="#444444" stroke-width="1.5"/>
+  <polygon points="500.00,268.00 488.00,263.00 488.00,273.00" fill="#444444"/>
+  <line x1="34.00" y1="268.00" x2="34.00" y2="20.00" stroke="#444444" stroke-width="1.5"/>
+  <polygon points="34.00,10.00 29.00,22.00 39.00,22.00" fill="#444444"/>
+  <text x="502.00" y="288.00" font-family="'Times New Roman', Times, serif" font-style="italic" font-size="18" fill="#222222" text-anchor="middle">x</text>
+  <text x="50.00" y="18.00" font-family="'Times New Roman', Times, serif" font-style="italic" font-size="18" fill="#222222" text-anchor="middle">y</text>
+  <line x1="71.50" y1="264.00" x2="71.50" y2="272.00" stroke="#444444" stroke-width="1.2"/>
+  <text x="71.50" y="287.00" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="middle">1</text>
+  <line x1="109.00" y1="264.00" x2="109.00" y2="272.00" stroke="#444444" stroke-width="1.2"/>
+  <text x="109.00" y="287.00" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="middle">2</text>
+  <line x1="146.50" y1="264.00" x2="146.50" y2="272.00" stroke="#444444" stroke-width="1.2"/>
+  <text x="146.50" y="287.00" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="middle">3</text>
+  <line x1="184.00" y1="264.00" x2="184.00" y2="272.00" stroke="#444444" stroke-width="1.2"/>
+  <text x="184.00" y="287.00" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="middle">4</text>
+  <line x1="221.50" y1="264.00" x2="221.50" y2="272.00" stroke="#444444" stroke-width="1.2"/>
+  <text x="221.50" y="287.00" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="middle">5</text>
+  <line x1="259.00" y1="264.00" x2="259.00" y2="272.00" stroke="#444444" stroke-width="1.2"/>
+  <text x="259.00" y="287.00" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="middle">6</text>
+  <line x1="296.50" y1="264.00" x2="296.50" y2="272.00" stroke="#444444" stroke-width="1.2"/>
+  <text x="296.50" y="287.00" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="middle">7</text>
+  <line x1="334.00" y1="264.00" x2="334.00" y2="272.00" stroke="#444444" stroke-width="1.2"/>
+  <text x="334.00" y="287.00" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="middle">8</text>
+  <line x1="371.50" y1="264.00" x2="371.50" y2="272.00" stroke="#444444" stroke-width="1.2"/>
+  <text x="371.50" y="287.00" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="middle">9</text>
+  <line x1="409.00" y1="264.00" x2="409.00" y2="272.00" stroke="#444444" stroke-width="1.2"/>
+  <text x="409.00" y="287.00" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="middle">10</text>
+  <line x1="446.50" y1="264.00" x2="446.50" y2="272.00" stroke="#444444" stroke-width="1.2"/>
+  <text x="446.50" y="287.00" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="middle">11</text>
+  <line x1="484.00" y1="264.00" x2="484.00" y2="272.00" stroke="#444444" stroke-width="1.2"/>
+  <text x="484.00" y="287.00" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="middle">12</text>
+  <text x="27.00" y="285.00" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="end">0</text>
+  <line x1="30.00" y1="227.67" x2="38.00" y2="227.67" stroke="#444444" stroke-width="1.2"/>
+  <text x="26.00" y="232.67" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="end">1</text>
+  <line x1="30.00" y1="187.33" x2="38.00" y2="187.33" stroke="#444444" stroke-width="1.2"/>
+  <text x="26.00" y="192.33" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="end">2</text>
+  <line x1="30.00" y1="147.00" x2="38.00" y2="147.00" stroke="#444444" stroke-width="1.2"/>
+  <text x="26.00" y="152.00" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="end">3</text>
+  <line x1="30.00" y1="106.67" x2="38.00" y2="106.67" stroke="#444444" stroke-width="1.2"/>
+  <text x="26.00" y="111.67" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="end">4</text>
+  <line x1="30.00" y1="66.33" x2="38.00" y2="66.33" stroke="#444444" stroke-width="1.2"/>
+  <text x="26.00" y="71.33" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="end">5</text>
+  <line x1="30.00" y1="26.00" x2="38.00" y2="26.00" stroke="#444444" stroke-width="1.2"/>
+  <text x="26.00" y="31.00" font-family="'Times New Roman', Times, serif" font-size="14" fill="#222222" text-anchor="end">6</text>
+  <!-- curve -->
+  <path d="M 34.00 227.67 L 109.00 66.33 L 259.00 227.67 L 334.00 66.33 L 484.00 227.67" fill="none" stroke="#1E40AF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="148.38" y="82.47" font-family="'Times New Roman', Times, serif" font-style="italic" font-size="20" fill="#1E40AF" text-anchor="start">f</text>
+</svg>
+</div>
+</body>
+</html>
