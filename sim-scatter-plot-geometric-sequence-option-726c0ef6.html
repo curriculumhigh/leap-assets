@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scatter Plot — Geometric Sequence</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+        .JXGinfobox { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 13, 5.5, -19],
+            axis: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* --- Custom axes --- */
+
+        var xAxis = board.create('axis', [[0, 0], [1, 0]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 5 },
+            ticks: {
+                strokeColor: '#444444',
+                insertTicks: false,
+                ticksDistance: 1,
+                minorTicks: 0,
+                label: { fontSize: 9, offset: [0, -10] },
+                drawZero: false
+            }
+        });
+
+        var yAxis = board.create('axis', [[0, 0], [0, 1]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 5 },
+            ticks: {
+                strokeColor: '#444444',
+                insertTicks: false,
+                ticksDistance: 2,
+                minorTicks: 0,
+                label: { fontSize: 9, offset: [-15, 0] },
+                drawZero: false
+            }
+        });
+
+        /* --- Grid lines --- */
+        var gi;
+        for (gi = 1; gi <= 5; gi++) {
+            board.create('line', [[gi, 0], [gi, 1]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+        for (gi = -18; gi <= 12; gi += 2) {
+            if (gi === 0) continue;
+            board.create('line', [[0, gi], [1, gi]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+
+        /* --- Axis labels --- */
+        board.create('text', [5.1, -1.2, '\\textit{n}'], {
+            fontSize: 9, fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [0.25, 12.2, '\\textit{a}_n'], {
+            fontSize: 9, fixed: true, highlight: false, useKatex: true
+        });
+
+        /* --- Data points (no coordinate labels) --- */
+        var pts = [[1, 2], [2, -4], [3, 8], [4, -16]];
+
+        for (var i = 0; i < pts.length; i++) {
+            board.create('point', pts[i], {
+                name: '',
+                size: 3,
+                color: '#222222',
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
