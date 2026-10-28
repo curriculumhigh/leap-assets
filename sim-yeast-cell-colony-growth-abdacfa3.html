@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yeast Cell Colony Growth</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 17.5, 28, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var CELL_FILL = '#BFDBFE';
+        var CELL_STROKE = '#2563EB';
+        var ARROW_COL = '#555555';
+        var LABEL_COL = '#222222';
+        var COUNT_COL = '#2563EB';
+
+        var CELL_R = 0.38;
+
+        function cell(cx, cy) {
+            board.create('circle', [[cx, cy], CELL_R], {
+                strokeColor: CELL_STROKE, strokeWidth: 1.4,
+                fillColor: CELL_FILL, fillOpacity: 1,
+                fixed: true, highlight: false
+            });
+        }
+
+        function arrow(x1, y1, x2, y2) {
+            board.create('arrow', [[x1, y1], [x2, y2]], {
+                strokeColor: ARROW_COL, strokeWidth: 1.0,
+                lastArrow: { type: 2, size: 4 },
+                fixed: true, highlight: false
+            });
+        }
+
+        var SX1 = 2;
+        var SX2 = 8.5;
+        var SX3 = 16;
+        var SX4 = 23.5;
+
+        var h1_ys = [14.5, 11.5, 8.5, 5.5, 2.5];
+        var h1_cells = [];
+        for (var i = 0; i < 5; i++) {
+            cell(SX1, h1_ys[i]);
+            h1_cells.push([SX1, h1_ys[i]]);
+        }
+
+        var h2_groups = [];
+        var inGroupSpacing = 0.95;
+
+        for (var g = 0; g < 5; g++) {
+            var parentY = h1_ys[g];
+            var group = [];
+            for (var j = -1; j <= 1; j++) {
+                var cy = parentY + j * inGroupSpacing;
+                cell(SX2, cy);
+                group.push([SX2, cy]);
+                arrow(SX1 + CELL_R + 0.08, parentY, SX2 - CELL_R - 0.08, cy);
+            }
+            h2_groups.push(group);
+        }
+
+        var h3_topCells = [];
+        var topParent = h2_groups[0];
+        for (var p = 0; p < 3; p++) {
+            var py = topParent[p][1];
+            for (var j = -1; j <= 1; j++) {
+                var cy3 = py + j * 0.55;
+                cell(SX3, cy3);
+                h3_topCells.push([SX3, cy3]);
+                arrow(SX2 + CELL_R + 0.08, py, SX3 - CELL_R - 0.08, cy3);
+            }
+        }
+
+        for (var g2 = 1; g2 < 5; g2++) {
+            var parentGroup = h2_groups[g2];
+            var clusterCenterY = parentGroup[1][1];
+            var offsets = [-0.55, 0, 0.55];
+            for (var k = 0; k < 3; k++) {
+                cell(SX3, clusterCenterY + offsets[k]);
+            }
+            board.create('text', [SX3, clusterCenterY + 1.15, '\\vdots'], {
+                anchorX: 'middle', anchorY: 'middle', fontSize: 10,
+                color: '#888', fixed: true, highlight: false, useKatex: true
+            });
+            board.create('text', [SX3, clusterCenterY - 1.15, '\\vdots'], {
+                anchorX: 'middle', anchorY: 'middle', fontSize: 10,
+                color: '#888', fixed: true, highlight: false, useKatex: true
+            });
+            for (var p2 = 0; p2 < 3; p2++) {
+                var py2 = parentGroup[p2][1];
+                arrow(SX2 + CELL_R + 0.08, py2, SX3 - CELL_R - 0.25, clusterCenterY + offsets[p2]);
+            }
+        }
+
+        var h4_topCells = [];
+        for (var p3 = 0; p3 < 3; p3++) {
+            var py3 = h3_topCells[p3][1];
+            for (var j3 = -1; j3 <= 1; j3++) {
+                var cy4 = py3 + j3 * 0.38;
+                cell(SX4, cy4);
+                h4_topCells.push([SX4, cy4]);
+                arrow(SX3 + CELL_R + 0.08, py3, SX4 - CELL_R - 0.08, cy4);
+            }
+        }
+
+        for (var p4 = 3; p4 < h3_topCells.length; p4++) {
+            var py4 = h3_topCells[p4][1];
+            cell(SX4, py4);
+            board.create('text', [SX4 + 0.05, py4 + 0.7, '\\vdots'], {
+                anchorX: 'middle', anchorY: 'middle', fontSize: 8,
+                color: '#888', fixed: true, highlight: false, useKatex: true
+            });
+            arrow(SX3 + CELL_R + 0.08, py4, SX4 - CELL_R - 0.08, py4);
+        }
+
+        for (var g4 = 1; g4 < 5; g4++) {
+            var refY = h2_groups[g4][1][1];
+            var clOff = [-0.38, 0, 0.38];
+            for (var kk = 0; kk < 3; kk++) {
+                cell(SX4, refY + clOff[kk]);
+            }
+            board.create('text', [SX4, refY + 0.95, '\\vdots'], {
+                anchorX: 'middle', anchorY: 'middle', fontSize: 10,
+                color: '#888', fixed: true, highlight: false, useKatex: true
+            });
+            board.create('text', [SX4, refY - 0.95, '\\vdots'], {
+                anchorX: 'middle', anchorY: 'middle', fontSize: 10,
+                color: '#888', fixed: true, highlight: false, useKatex: true
+            });
+            arrow(SX3 + CELL_R + 0.25, refY, SX4 - CELL_R - 0.25, refY);
+        }
+
+        var timeY = 16.5;
+        board.create('text', [SX1, timeY, '1\\text{ hour}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14,
+            color: LABEL_COL, fixed: true, highlight: false, useKatex: true,
+            cssStyle: 'font-weight:bold'
+        });
+        board.create('text', [SX2, timeY, '2\\text{ hours}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14,
+            color: LABEL_COL, fixed: true, highlight: false, useKatex: true,
+            cssStyle: 'font-weight:bold'
+        });
+        board.create('text', [SX3, timeY, '3\\text{ hours}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14,
+            color: LABEL_COL, fixed: true, highlight: false, useKatex: true,
+            cssStyle: 'font-weight:bold'
+        });
+        board.create('text', [SX4, timeY, '4\\text{ hours}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14,
+            color: LABEL_COL, fixed: true, highlight: false, useKatex: true,
+            cssStyle: 'font-weight:bold'
+        });
+
+        var countY = -0.8;
+        board.create('text', [SX1, countY, '5\\text{ cells}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13,
+            color: COUNT_COL, fixed: true, highlight: false, useKatex: true,
+            cssStyle: 'font-weight:600'
+        });
+        board.create('text', [SX2, countY, '15\\text{ cells}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13,
+            color: COUNT_COL, fixed: true, highlight: false, useKatex: true,
+            cssStyle: 'font-weight:600'
+        });
+        board.create('text', [SX3, countY, '45\\text{ cells}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13,
+            color: COUNT_COL, fixed: true, highlight: false, useKatex: true,
+            cssStyle: 'font-weight:600'
+        });
+        board.create('text', [SX4, countY, '135\\text{ cells}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13,
+            color: COUNT_COL, fixed: true, highlight: false, useKatex: true,
+            cssStyle: 'font-weight:600'
+        });
+
+    </script>
+</body>
+</html>
