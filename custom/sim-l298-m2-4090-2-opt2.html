@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph of a sinusoidal function</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 320px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; border: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board" role="img" aria-label="Graph of a sinusoidal function"></div>
+        </div>
+    </div>
+    <script>
+        var PI = Math.PI;
+        // Plot window (x in multiples of pi)
+        var XMIN = -2 * PI, XMAX = 2 * PI, YMIN = -2, YMAX = 2;
+        var BB = [XMIN - 0.2 * PI, YMAX + 0.56, XMAX + 0.34 * PI, YMIN - 0.28];
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: BB,
+            axis: false,
+            grid: false,
+            keepAspectRatio: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false, wheel: false },
+            showInfobox: false
+        });
+
+        var FONT = 10;
+        var COL_AXIS = '#444444', COL_GRID = '#D1D5DB', COL_GRID_MINOR = '#E5E7EB', COL_CURVE = '#222222';
+        var STATIC = { fixed: true, highlight: false, withLabel: false, name: '' };
+
+        function seg(p, q, color, width, layer) {
+            return board.create('segment', [p, q], {
+                strokeColor: color, strokeWidth: width, fixed: true, highlight: false,
+                withLabel: false, name: '', layer: layer,
+                point1: { visible: false }, point2: { visible: false }
+            });
+        }
+        function px2x(p) { return p / board.unitX; }
+        function px2y(p) { return p / board.unitY; }
+
+        // ---- Grid (exact positions) ----
+        var XGRID = [-2, -1.83333333333, -1.66666666667, -1.5, -1.33333333333, -1.16666666667, -1, -0.833333333333, -0.666666666667, -0.5, -0.333333333333, -0.166666666667, 0, 0.166666666667, 0.333333333333, 0.5, 0.666666666667, 0.833333333333, 1, 1.16666666667, 1.33333333333, 1.5, 1.66666666667, 1.83333333333, 2];
+        var YGRID = [-2, -1.83333333333, -1.66666666667, -1.5, -1.33333333333, -1.16666666667, -1, -0.833333333333, -0.666666666667, -0.5, -0.333333333333, -0.166666666667, 0, 0.166666666667, 0.333333333333, 0.5, 0.666666666667, 0.833333333333, 1, 1.16666666667, 1.33333333333, 1.5, 1.66666666667, 1.83333333333, 2];
+        var YMAJOR = [-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2];
+        var i;
+        var gridCol = YMAJOR.length ? COL_GRID_MINOR : COL_GRID;
+        for (i = 0; i < YGRID.length; i++) {
+            seg([XMIN, YGRID[i]], [XMAX, YGRID[i]], gridCol, 0.4, 1);
+        }
+        for (i = 0; i < XGRID.length; i++) {
+            seg([XGRID[i] * PI, YMIN], [XGRID[i] * PI, YMAX], COL_GRID, 0.4, 1);
+        }
+        for (i = 0; i < YMAJOR.length; i++) {
+            seg([XMIN, YMAJOR[i]], [XMAX, YMAJOR[i]], '#BFC5CE', 0.7, 1);
+        }
+
+        // ---- Axes ----
+        var xTip = BB[2] - px2x(4), yTip = BB[1] - px2y(4);
+        board.create('arrow', [[BB[0], 0], [xTip, 0]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false, layer: 3,
+            lastArrow: { type: 2, size: 5 },
+            point1: { visible: false }, point2: { visible: false }
+        });
+        board.create('arrow', [[0, BB[3]], [0, yTip]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false, layer: 3,
+            lastArrow: { type: 2, size: 5 },
+            point1: { visible: false }, point2: { visible: false }
+        });
+
+        // ---- Tick marks ----
+        var XTICKS = [-2, -1, 0, 1, 2];
+        var YTICKS = [-2, -1.5, -1, -0.5, 0.5, 1, 1.5, 2];
+        var th = 4;
+        for (i = 0; i < XTICKS.length; i++) {
+            if (Math.abs(XTICKS[i]) < 1e-9) continue;
+            seg([XTICKS[i] * PI, -px2y(th)], [XTICKS[i] * PI, px2y(th)], COL_AXIS, 1.0, 3);
+        }
+        for (i = 0; i < YTICKS.length; i++) {
+            seg([-px2x(th), YTICKS[i]], [px2x(th), YTICKS[i]], COL_AXIS, 1.0, 3);
+        }
+
+        // ---- Curve (rule kept out of all visible text) ----
+        board.create('functiongraph', [function (x) { return Math.sin(1.5*x); }, XMIN, XMAX], {
+            strokeColor: COL_CURVE, strokeWidth: 1.8, fixed: true, highlight: false, layer: 6,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        // ---- Tick labels (plain text, exact multiples of pi) ----
+        var XLABELS = [[-2, "−2π"], [-1, "−π"], [1, "π"], [2, "2π"]];
+        var YLABELS = [[-2, "−2"], [-1.5, "−1.5"], [-1, "−1"], [-0.5, "−0.5"], [0.5, "0.5"], [1, "1"], [1.5, "1.5"], [2, "2"]];
+        var lblOpts = { fontSize: FONT, fixed: true, highlight: false, color: '#222222', highlightStrokeColor: '#222222', display: 'internal', layer: 4 };
+        for (i = 0; i < XLABELS.length; i++) {
+            board.create('text', [XLABELS[i][0] * PI, -px2y(th + 2), XLABELS[i][1]],
+                JXG.merge({ anchorX: 'middle', anchorY: 'top' }, lblOpts));
+        }
+        for (i = 0; i < YLABELS.length; i++) {
+            board.create('text', [-px2x(th + 3), YLABELS[i][0], YLABELS[i][1]],
+                JXG.merge({ anchorX: 'right', anchorY: 'middle' }, lblOpts));
+        }
+        board.create('text', [-px2x(3), -px2y(3), '0'], JXG.merge({ anchorX: 'right', anchorY: 'top' }, lblOpts));
+
+        // ---- Axis names ----
+        board.create('text', [xTip, -px2y(5), '<i>x</i>'], {
+            fontSize: FONT + 3, fixed: true, highlight: false, anchorX: 'right', anchorY: 'top', color: '#222222'
+        });
+        board.create('text', [px2x(7), yTip, '<i>y</i>'], {
+            fontSize: FONT + 3, fixed: true, highlight: false, anchorX: 'left', anchorY: 'top', color: '#222222'
+        });
+    </script>
+</body>
+</html>
