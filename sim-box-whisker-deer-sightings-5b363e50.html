@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Box-and-Whisker Plot — Deer Sightings</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 3.5, 32, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Five-number summary ────────────────────────────────────── */
+        var MIN = 3, Q1 = 7, MED = 10, Q3 = 12, MAX = 28;
+        var Y = 1.25;
+        var HALF_H = 0.28;
+        var CAP_H = 0.15;
+
+        /* ── Horizontal axis ────────────────────────────────────────── */
+        board.create('segment', [[-1, 0], [31, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        /* Major tick marks and labels at every 5 */
+        for (var t = 0; t <= 30; t += 5) {
+            board.create('segment', [[t, -0.15], [t, 0.15]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [t, -0.5, String(t)], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 11, color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        /* Axis label */
+        board.create('text', [15, -1.05, '\\textit{Deer sightings}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+
+        /* ── Dashed vertical reference lines from axis to box plot ──── */
+        var keyVals = [MIN, Q1, MED, Q3, MAX];
+        var keyLabels = ['3', '7', '10', '12', '28'];
+
+        for (var i = 0; i < keyVals.length; i++) {
+            var topY = (keyVals[i] === MIN || keyVals[i] === MAX) ? Y - CAP_H : Y - HALF_H;
+            board.create('segment', [[keyVals[i], 0.1], [keyVals[i], topY]], {
+                strokeColor: '#999999', strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+
+            board.create('text', [keyVals[i], -0.5, keyLabels[i]], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 12, color: '#222222', fixed: true, highlight: false
+            });
+        }
+
+        /* ── Left whisker: min → Q1 ─────────────────────────────────── */
+        board.create('segment', [[MIN, Y], [Q1, Y]], {
+            strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        /* ── Right whisker: Q3 → max ────────────────────────────────── */
+        board.create('segment', [[Q3, Y], [MAX, Y]], {
+            strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        /* ── Whisker caps ───────────────────────────────────────────── */
+        board.create('segment', [[MIN, Y - CAP_H], [MIN, Y + CAP_H]], {
+            strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[MAX, Y - CAP_H], [MAX, Y + CAP_H]], {
+            strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        /* ── Box: Q1 → Q3 (no fill, outline only) ──────────────────── */
+        var boxPts = [
+            board.create('point', [Q1, Y - HALF_H], { visible: false, fixed: true, name: '' }),
+            board.create('point', [Q3, Y - HALF_H], { visible: false, fixed: true, name: '' }),
+            board.create('point', [Q3, Y + HALF_H], { visible: false, fixed: true, name: '' }),
+            board.create('point', [Q1, Y + HALF_H], { visible: false, fixed: true, name: '' })
+        ];
+        board.create('polygon', boxPts, {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#222222', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        /* ── Median line ────────────────────────────────────────────── */
+        board.create('segment', [[MED, Y - HALF_H], [MED, Y + HALF_H]], {
+            strokeColor: '#222222', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        /* ── Key points (size 2) ────────────────────────────────────── */
+        for (var k = 0; k < keyVals.length; k++) {
+            board.create('point', [keyVals[k], Y], {
+                name: '', size: 2, color: '#222222', fixed: true, highlight: false,
+                showInfobox: false
+            });
+        }
+    </script>
+</body>
+</html>
