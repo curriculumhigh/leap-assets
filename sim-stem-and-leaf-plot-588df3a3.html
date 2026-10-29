@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stem-and-Leaf Plot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 6px;
+            height: calc(100% - 12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 32px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        table {
+            border-collapse: collapse;
+            font-size: 16px;
+            color: #222222;
+        }
+        th {
+            font-size: 16px;
+            font-weight: bold;
+            color: #222222;
+            padding: 8px 18px 10px 18px;
+            text-align: center;
+        }
+        th.stem-header {
+            text-align: right;
+            padding-right: 16px;
+            border-right: 2px solid #444444;
+        }
+        th.leaf-header {
+            text-align: left;
+            padding-left: 16px;
+        }
+        td {
+            font-size: 16px;
+            font-weight: normal;
+            color: #222222;
+            padding: 7px 18px;
+            vertical-align: middle;
+        }
+        td.stem-cell {
+            text-align: right;
+            padding-right: 16px;
+            border-right: 2px solid #444444;
+        }
+        td.leaf-cell {
+            text-align: left;
+            padding-left: 16px;
+            letter-spacing: 0.35em;
+        }
+        .key-line {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #222222;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="stem-header">Stem</th>
+                        <th class="leaf-header">Leaf</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="stem-cell">1</td>
+                        <td class="leaf-cell">2 5 8</td>
+                    </tr>
+                    <tr>
+                        <td class="stem-cell">2</td>
+                        <td class="leaf-cell">0 3 3 6 9</td>
+                    </tr>
+                    <tr>
+                        <td class="stem-cell">3</td>
+                        <td class="leaf-cell">1 4 4 7</td>
+                    </tr>
+                    <tr>
+                        <td class="stem-cell">4</td>
+                        <td class="leaf-cell">2 5</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="key-line" id="key-line"></div>
+        </div>
+    </div>
+    <script>
+        katex.render('\\text{Key: } 1 \\mid 2 = 12 \\text{ cm}', document.getElementById('key-line'), { throwOnError: false });
+    </script>
+</body>
+</html>
