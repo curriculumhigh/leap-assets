@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangular Pool with Uniform Border</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 20, 26, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Dimensions ──────────────────────────────────────────────────
+        var poolW = 18;
+        var poolH = 12;
+        var bw = 2.8; // visual border width (representative)
+
+        // ── Outer rectangle (border region) ─────────────────────────────
+        var ox1 = 0, oy1 = 0;
+        var ox2 = poolW + 2 * bw, oy2 = poolH + 2 * bw;
+
+        var oP1 = board.create('point', [ox1, oy1], { visible: false, name: '' });
+        var oP2 = board.create('point', [ox2, oy1], { visible: false, name: '' });
+        var oP3 = board.create('point', [ox2, oy2], { visible: false, name: '' });
+        var oP4 = board.create('point', [ox1, oy2], { visible: false, name: '' });
+
+        board.create('polygon', [oP1, oP2, oP3, oP4], {
+            fillColor: '#9CA3AF', fillOpacity: 0.3,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Inner rectangle (pool) ──────────────────────────────────────
+        var ix1 = bw, iy1 = bw;
+        var ix2 = bw + poolW, iy2 = bw + poolH;
+
+        var iP1 = board.create('point', [ix1, iy1], { visible: false, name: '' });
+        var iP2 = board.create('point', [ix2, iy1], { visible: false, name: '' });
+        var iP3 = board.create('point', [ix2, iy2], { visible: false, name: '' });
+        var iP4 = board.create('point', [ix1, iy2], { visible: false, name: '' });
+
+        board.create('polygon', [iP1, iP2, iP3, iP4], {
+            fillColor: '#93C5FD', fillOpacity: 0.5,
+            borders: { strokeColor: '#2563EB', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Pool dimension labels (inside the pool) ─────────────────────
+        // "18 ft" near the top edge of the pool, centered horizontally
+        board.create('text', [(ix1 + ix2) / 2, iy2 - 1.2, '18 \\text{ ft}'], {
+            useKatex: true, fontSize: 15, color: '#2563EB',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // "12 ft" near the right edge of the pool, centered vertically
+        board.create('text', [ix2 - 1.8, (iy1 + iy2) / 2, '12 \\text{ ft}'], {
+            useKatex: true, fontSize: 15, color: '#2563EB',
+            anchorX: 'middle', anchorY: 'middle',
+            rotate: 90,
+            fixed: true, highlight: false
+        });
+
+        // ── Border width "x" labels (centered in each border strip) ─────
+        // Top border
+        board.create('text', [(ix1 + ix2) / 2, (iy2 + oy2) / 2, 'x'], {
+            useKatex: true, fontSize: 14, color: '#555555',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Bottom border
+        board.create('text', [(ix1 + ix2) / 2, (oy1 + iy1) / 2, 'x'], {
+            useKatex: true, fontSize: 14, color: '#555555',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Left border
+        board.create('text', [(ox1 + ix1) / 2, (iy1 + iy2) / 2, 'x'], {
+            useKatex: true, fontSize: 14, color: '#555555',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Right border
+        board.create('text', [(ix2 + ox2) / 2, (iy1 + iy2) / 2, 'x'], {
+            useKatex: true, fontSize: 14, color: '#555555',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
