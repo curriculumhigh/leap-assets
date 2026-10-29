@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Box-and-Whisker Plot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 5, 19.5, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Five-number summary ─────────────────────────────────────────
+        var MIN = 2, Q1 = 5, MED = 9, Q3 = 12, MAX = 17;
+        var Y = 2;
+        var CAP_H = 0.6;
+        var BOX_H = 0.9;
+
+        var COL_WHISKER = '#222222';
+        var COL_BOX     = '#2563EB';
+        var COL_MEDIAN  = '#DC2626';
+        var COL_LABEL   = '#222222';
+
+        // ── Number line (x-axis) ────────────────────────────────────────
+        board.create('arrow', [[-0.8, 0], [19, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        var i;
+        for (i = 0; i <= 18; i++) {
+            board.create('segment', [[i, -0.22], [i, 0.22]], {
+                strokeColor: '#444444', strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            if (i % 2 === 0) {
+                board.create('text', [i, -0.75, String(i)], {
+                    anchorX: 'middle', anchorY: 'middle',
+                    fontSize: 11, color: '#444444',
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── Whiskers ────────────────────────────────────────────────────
+        board.create('segment', [[MIN, Y], [Q1, Y]], {
+            strokeColor: COL_WHISKER, strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[Q3, Y], [MAX, Y]], {
+            strokeColor: COL_WHISKER, strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        // Caps
+        board.create('segment', [[MIN, Y - CAP_H], [MIN, Y + CAP_H]], {
+            strokeColor: COL_WHISKER, strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[MAX, Y - CAP_H], [MAX, Y + CAP_H]], {
+            strokeColor: COL_WHISKER, strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        // ── Box (Q1 to Q3) ─────────────────────────────────────────────
+        var boxPts = [
+            board.create('point', [Q1, Y - BOX_H], { visible: false, fixed: true, name: '' }),
+            board.create('point', [Q3, Y - BOX_H], { visible: false, fixed: true, name: '' }),
+            board.create('point', [Q3, Y + BOX_H], { visible: false, fixed: true, name: '' }),
+            board.create('point', [Q1, Y + BOX_H], { visible: false, fixed: true, name: '' })
+        ];
+        board.create('polygon', boxPts, {
+            fillColor: COL_BOX, fillOpacity: 0.15,
+            borders: { strokeColor: COL_BOX, strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Median line ─────────────────────────────────────────────────
+        board.create('segment', [[MED, Y - BOX_H], [MED, Y + BOX_H]], {
+            strokeColor: COL_MEDIAN, strokeWidth: 2.0,
+            fixed: true, highlight: false
+        });
+
+        // ── Value labels (all same color, close above plot) ─────────────
+        var labelY = Y + BOX_H + 0.35;
+        var vals = [MIN, Q1, MED, Q3, MAX];
+        for (i = 0; i < vals.length; i++) {
+            board.create('text', [vals[i], labelY, String(vals[i])], {
+                anchorX: 'middle', anchorY: 'bottom',
+                fontSize: 12, color: COL_LABEL,
+                useKatex: true, fixed: true, highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
