@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Box-and-Whisker Plot — Screen Time</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.4, 4.2, 10.4, -1.6],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_X = '#2563EB';
+        var COL_Y = '#059669';
+        var COL_MED = '#DC2626';
+        var COL_AXIS = '#444444';
+        var COL_GRID = '#C0C5CC';
+
+        // ── Data ────────────────────────────────────────────────────────
+        var schoolX = { min: 2, q1: 3, med: 5, q3: 7, max: 8 };
+        var schoolY = { min: 1, q1: 2, med: 4, q3: 5, max: 9 };
+
+        // ── Vertical positions ──────────────────────────────────────────
+        var yX = 2.8;
+        var yY = 1.3;
+        var boxH = 0.3;
+        var capH = 0.2;
+
+        // ── Vertical dashed grid lines at integers 1–9 ─────────────────
+        var i;
+        for (i = 1; i <= 9; i++) {
+            board.create('segment', [[i, -0.15], [i, yX + boxH + 0.4]], {
+                strokeColor: COL_GRID, strokeWidth: 0.6, dash: 2,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Horizontal axis ────────────────────────────────────────────
+        board.create('segment', [[0.3, 0], [9.8, 0]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // Tick marks and labels at integers 1–9
+        for (i = 1; i <= 9; i++) {
+            board.create('segment', [[i, -0.12], [i, 0.12]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [i, -0.42, String(i)], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 12, color: COL_AXIS, fixed: true, highlight: false
+            });
+        }
+
+        // Axis label
+        board.create('text', [5, -1.05, '\\text{Screen time (hours)}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: COL_AXIS, useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Helper: draw one box-and-whisker plot ───────────────────────
+        function drawBoxPlot(data, yCenter, col) {
+            var yTop = yCenter + boxH;
+            var yBot = yCenter - boxH;
+
+            // Whisker: min to Q1
+            board.create('segment', [[data.min, yCenter], [data.q1, yCenter]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            // Whisker: Q3 to max
+            board.create('segment', [[data.q3, yCenter], [data.max, yCenter]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // Min cap
+            board.create('segment', [[data.min, yCenter - capH], [data.min, yCenter + capH]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            // Max cap
+            board.create('segment', [[data.max, yCenter - capH], [data.max, yCenter + capH]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // Box (Q1 to Q3)
+            var p1 = board.create('point', [data.q1, yTop], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [data.q3, yTop], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [data.q3, yBot], { visible: false, fixed: true, name: '' });
+            var p4 = board.create('point', [data.q1, yBot], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: col, fillOpacity: 0.15,
+                borders: { strokeColor: col, strokeWidth: 1.8 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            // Median line (red, prominent)
+            board.create('segment', [[data.med, yTop], [data.med, yBot]], {
+                strokeColor: COL_MED, strokeWidth: 2.2, fixed: true, highlight: false
+            });
+        }
+
+        // ── Draw both plots ─────────────────────────────────────────────
+        drawBoxPlot(schoolX, yX, COL_X);
+        drawBoxPlot(schoolY, yY, COL_Y);
+
+        // ── Plot labels (left side) ─────────────────────────────────────
+        board.create('text', [-1.2, yX, '\\textbf{\\color{' + COL_X + '}{School\\;X}}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [-1.2, yY, '\\textbf{\\color{' + COL_Y + '}{School\\;Y}}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
