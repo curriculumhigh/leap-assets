@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Box-and-Whisker Plots — Sunrise vs Twilight</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [6, 10.5, 68, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Data ────────────────────────────────────────────────────────
+        var S_MIN = 20, S_Q1 = 30, S_Q2 = 40, S_Q3 = 50, S_MAX = 60;
+        var T_MIN = 15, T_Q1 = 22, T_Q2 = 30, T_Q3 = 48, T_MAX = 55;
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_S = '#2563EB';
+        var COL_S_FILL = '#DBEAFE';
+        var COL_T = '#059669';
+        var COL_T_FILL = '#D1FAE5';
+
+        // ── Layout constants ────────────────────────────────────────────
+        var NL_Y = 0;
+        var S_BOX_Y = 6.6;
+        var T_BOX_Y = 2.8;
+        var BOX_H = 0.55;
+        var CAP_H = 0.55;
+
+        // ── Vertical grid lines every 2 units (10–64) ──────────────────
+        for (var g = 10; g <= 64; g += 2) {
+            board.create('segment', [[g, -0.8], [g, 9.8]], {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // ── Number line ─────────────────────────────────────────────────
+        board.create('segment', [[8, NL_Y], [66, NL_Y]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Tick marks every 2 units (10–64) ────────────────────────────
+        var tickH = 0.35;
+        var tickLabelY = NL_Y - tickH - 0.35;
+        for (var t = 10; t <= 64; t += 2) {
+            board.create('segment', [[t, NL_Y - tickH], [t, NL_Y + tickH]], {
+                strokeColor: '#222222',
+                strokeWidth: 1.2,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // ── Numeric labels only at 10 and 60 ───────────────────────────
+        var labelVals = [10, 60];
+        for (var li = 0; li < labelVals.length; li++) {
+            board.create('text', [labelVals[li], tickLabelY, String(labelVals[li])], {
+                fontSize: 11,
+                color: '#444444',
+                anchorX: 'middle',
+                anchorY: 'top',
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // ── Axis label ─────────────────────────────────────────────────
+        board.create('text', [37, tickLabelY - 1.0, '\\textit{Daily step count (hundreds)}'], {
+            fontSize: 13,
+            color: '#222222',
+            anchorX: 'middle',
+            anchorY: 'top',
+            useKatex: true,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Helper: draw one box-and-whisker plot ───────────────────────
+        function drawBoxPlot(min, q1, q2, q3, max, centerY, fillCol, strokeCol, label) {
+            // Box (Q1 to Q3)
+            var boxPts = [
+                board.create('point', [q1, centerY - BOX_H], { visible: false, fixed: true, name: '' }),
+                board.create('point', [q3, centerY - BOX_H], { visible: false, fixed: true, name: '' }),
+                board.create('point', [q3, centerY + BOX_H], { visible: false, fixed: true, name: '' }),
+                board.create('point', [q1, centerY + BOX_H], { visible: false, fixed: true, name: '' })
+            ];
+            board.create('polygon', boxPts, {
+                fillColor: fillCol,
+                fillOpacity: 0.45,
+                borders: { strokeColor: strokeCol, strokeWidth: 1.8 },
+                vertices: { visible: false },
+                hasInnerPoints: false,
+                fixed: true,
+                highlight: false
+            });
+
+            // Median line
+            board.create('segment', [[q2, centerY - BOX_H], [q2, centerY + BOX_H]], {
+                strokeColor: strokeCol,
+                strokeWidth: 2.5,
+                fixed: true,
+                highlight: false
+            });
+
+            // Whiskers
+            board.create('segment', [[min, centerY], [q1, centerY]], {
+                strokeColor: strokeCol,
+                strokeWidth: 1.5,
+                fixed: true,
+                highlight: false
+            });
+            board.create('segment', [[q3, centerY], [max, centerY]], {
+                strokeColor: strokeCol,
+                strokeWidth: 1.5,
+                fixed: true,
+                highlight: false
+            });
+
+            // Whisker caps
+            board.create('segment', [[min, centerY - CAP_H], [min, centerY + CAP_H]], {
+                strokeColor: strokeCol,
+                strokeWidth: 1.5,
+                fixed: true,
+                highlight: false
+            });
+            board.create('segment', [[max, centerY - CAP_H], [max, centerY + CAP_H]], {
+                strokeColor: strokeCol,
+                strokeWidth: 1.5,
+                fixed: true,
+                highlight: false
+            });
+
+            // Five-number dots
+            var fiveNums = [min, q1, q2, q3, max];
+            for (var j = 0; j < fiveNums.length; j++) {
+                board.create('point', [fiveNums[j], centerY], {
+                    name: '',
+                    size: 2,
+                    color: strokeCol,
+                    fixed: true,
+                    highlight: false,
+                    showInfobox: false
+                });
+            }
+
+            // Value labels close above each key point
+            var valLabelY = centerY + BOX_H + 0.45;
+            for (var k = 0; k < fiveNums.length; k++) {
+                board.create('text', [fiveNums[k], valLabelY, String(fiveNums[k])], {
+                    fontSize: 11,
+                    color: '#444444',
+                    anchorX: 'middle',
+                    anchorY: 'bottom',
+                    fixed: true,
+                    highlight: false
+                });
+            }
+
+            // Plot name label above the value labels
+            var nameLabelY = valLabelY + 1.0;
+            board.create('text', [min, nameLabelY, label], {
+                fontSize: 13,
+                color: strokeCol,
+                anchorX: 'left',
+                anchorY: 'bottom',
+                fixed: true,
+                highlight: false,
+                cssStyle: 'font-weight:600'
+            });
+        }
+
+        // ── Draw both plots ─────────────────────────────────────────────
+        drawBoxPlot(S_MIN, S_Q1, S_Q2, S_Q3, S_MAX, S_BOX_Y, COL_S_FILL, COL_S, 'Sunrise');
+        drawBoxPlot(T_MIN, T_Q1, T_Q2, T_Q3, T_MAX, T_BOX_Y, COL_T_FILL, COL_T, 'Twilight');
+    </script>
+</body>
+</html>
