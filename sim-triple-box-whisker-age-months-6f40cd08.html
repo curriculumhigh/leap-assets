@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triple Box-and-Whisker Plot — Age (months)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-18, 13.5, 128, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_A = '#222222';
+        var COL_B = '#2563EB';
+        var COL_C = '#059669';
+        var COL_AXIS = '#444444';
+        var COL_GRID = '#D1D5DB';
+
+        // ── Horizontal axis ─────────────────────────────────────────────
+        board.create('arrow', [[0, 0], [124, 0]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Ticks, tick labels, vertical grid lines every 12
+        var tickVals = [0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120];
+        for (var i = 0; i < tickVals.length; i++) {
+            var tv = tickVals[i];
+            board.create('segment', [[tv, -0.3], [tv, 0.3]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [tv, -0.7, String(tv)], {
+                fontSize: 11, color: COL_AXIS, anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+            board.create('segment', [[tv, 0.3], [tv, 12.5]], {
+                strokeColor: COL_GRID, strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // Axis label — pushed up closer to tick labels
+        board.create('text', [60, -1.5, '\\textit{Age (months)}'], {
+            useKatex: true, fontSize: 13, color: COL_AXIS,
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // ── Box-and-whisker plot data ───────────────────────────────────
+        var plots = [
+            { label: 'Location A', color: COL_A, y: 9.5, min: 3, q1: 12, med: 24, q3: 48, max: 108 },
+            { label: 'Location B', color: COL_B, y: 6.0, min: 20, q1: 30, med: 54, q3: 72, max: 90 },
+            { label: 'Location C', color: COL_C, y: 2.2, min: 2, q1: 8, med: 18, q3: 36, max: 60 }
+        ];
+
+        var BOX_HALF = 0.45;
+        var WHISK_HALF = 0.25;
+
+        // Label placement: +1 = above, -1 = below
+        var labelDir = [
+            { min: -1, q1: 1, med: -1, q3: 1, max: -1 },
+            { min: -1, q1: 1, med: -1, q3: 1, max: -1 },
+            { min: -1, q1: 1, med: -1, q3: 1, max: -1 }
+        ];
+
+        function drawBoxPlot(p, dirs) {
+            var y = p.y;
+            var col = p.color;
+
+            // ── Whisker: min to Q1 ──────────────────────────────────────
+            board.create('segment', [[p.min, y], [p.q1, y]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            // ── Whisker: Q3 to max ──────────────────────────────────────
+            board.create('segment', [[p.q3, y], [p.max, y]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            // ── Whisker end caps ────────────────────────────────────────
+            board.create('segment', [[p.min, y - WHISK_HALF], [p.min, y + WHISK_HALF]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            board.create('segment', [[p.max, y - WHISK_HALF], [p.max, y + WHISK_HALF]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // ── Box: Q1 to Q3 ───────────────────────────────────────────
+            var bx1 = p.q1, bx2 = p.q3;
+            var by1 = y + BOX_HALF, by2 = y - BOX_HALF;
+            var bp1 = board.create('point', [bx1, by1], { visible: false, fixed: true, name: '' });
+            var bp2 = board.create('point', [bx2, by1], { visible: false, fixed: true, name: '' });
+            var bp3 = board.create('point', [bx2, by2], { visible: false, fixed: true, name: '' });
+            var bp4 = board.create('point', [bx1, by2], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [bp1, bp2, bp3, bp4], {
+                fillColor: col, fillOpacity: 0.12,
+                borders: { strokeColor: col, strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            // ── Median line ─────────────────────────────────────────────
+            board.create('segment', [[p.med, y - BOX_HALF], [p.med, y + BOX_HALF]], {
+                strokeColor: col, strokeWidth: 2.5, fixed: true, highlight: false
+            });
+
+            // ── Key-point value labels ──────────────────────────────────
+            var boxAboveOff = BOX_HALF + 0.35;
+            var boxBelowOff = -(BOX_HALF + 0.35);
+            var whiskOff = BOX_HALF + 0.35;
+
+            // min
+            var minYOff = dirs.min === 1 ? whiskOff : -whiskOff;
+            board.create('text', [p.min, y + minYOff, String(p.min)], {
+                fontSize: 10, color: col, anchorX: 'middle',
+                anchorY: dirs.min === 1 ? 'bottom' : 'top',
+                fixed: true, highlight: false
+            });
+
+            // Q1
+            var q1YOff = dirs.q1 === 1 ? boxAboveOff : boxBelowOff;
+            board.create('text', [p.q1, y + q1YOff, String(p.q1)], {
+                fontSize: 10, color: col, anchorX: 'middle',
+                anchorY: dirs.q1 === 1 ? 'bottom' : 'top',
+                fixed: true, highlight: false
+            });
+
+            // Median
+            var medYOff = dirs.med === 1 ? boxAboveOff : boxBelowOff;
+            board.create('text', [p.med, y + medYOff, String(p.med)], {
+                fontSize: 10, color: col, anchorX: 'middle',
+                anchorY: dirs.med === 1 ? 'bottom' : 'top',
+                fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+            });
+
+            // Q3
+            var q3YOff = dirs.q3 === 1 ? boxAboveOff : boxBelowOff;
+            board.create('text', [p.q3, y + q3YOff, String(p.q3)], {
+                fontSize: 10, color: col, anchorX: 'middle',
+                anchorY: dirs.q3 === 1 ? 'bottom' : 'top',
+                fixed: true, highlight: false
+            });
+
+            // max
+            var maxYOff = dirs.max === 1 ? whiskOff : -whiskOff;
+            board.create('text', [p.max, y + maxYOff, String(p.max)], {
+                fontSize: 10, color: col, anchorX: 'middle',
+                anchorY: dirs.max === 1 ? 'bottom' : 'top',
+                fixed: true, highlight: false
+            });
+
+            // ── Row label — centered horizontally ───────────────────────
+            board.create('text', [60, y + BOX_HALF + 1.2, p.label], {
+                fontSize: 12, color: col, anchorX: 'middle', anchorY: 'bottom',
+                fixed: true, highlight: false, cssStyle: 'font-weight:600'
+            });
+        }
+
+        // Draw all three box plots
+        for (var j = 0; j < plots.length; j++) {
+            drawBoxPlot(plots[j], labelDir[j]);
+        }
+    </script>
+</body>
+</html>
