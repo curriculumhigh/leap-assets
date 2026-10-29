@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Box-and-Whisker Plot — Non-Uniform Axis</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 4.5, 45, -5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Real five-number summary values ─────────────────────────────
+        var realValues = [3, 9, 17, 28, 37];
+
+        // ── Equally-spaced screen positions (the trick) ─────────────────
+        var screenPos = [5, 13, 21, 29, 37];
+
+        var S_MIN = screenPos[0];
+        var S_Q1  = screenPos[1];
+        var S_Q2  = screenPos[2];
+        var S_Q3  = screenPos[3];
+        var S_MAX = screenPos[4];
+
+        // ── Layout constants ────────────────────────────────────────────
+        var NL_Y  = -1.5;
+        var BOX_Y =  0.5;
+        var BOX_H =  0.5;
+        var CAP_H =  0.5;
+
+        // ── Number line ─────────────────────────────────────────────────
+        board.create('segment', [[S_MIN - 3, NL_Y], [S_MAX + 3, NL_Y]], {
+            strokeColor: '#222222',
+            strokeWidth: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Major tick marks (at the 5 data positions) ──────────────────
+        var tickH = 0.35;
+        for (var i = 0; i < screenPos.length; i++) {
+            board.create('segment', [[screenPos[i], NL_Y - tickH], [screenPos[i], NL_Y + tickH]], {
+                strokeColor: '#222222',
+                strokeWidth: 1.5,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // ── Minor tick marks (midpoint between each pair) ───────────────
+        var minorTickH = 0.22;
+        for (var k = 0; k < screenPos.length - 1; k++) {
+            var mid = (screenPos[k] + screenPos[k + 1]) / 2;
+            board.create('segment', [[mid, NL_Y - minorTickH], [mid, NL_Y + minorTickH]], {
+                strokeColor: '#222222',
+                strokeWidth: 1,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // ── Box (Q1 to Q3) ─────────────────────────────────────────────
+        var boxPts = [
+            board.create('point', [S_Q1, BOX_Y - BOX_H], { visible: false, fixed: true, name: '' }),
+            board.create('point', [S_Q3, BOX_Y - BOX_H], { visible: false, fixed: true, name: '' }),
+            board.create('point', [S_Q3, BOX_Y + BOX_H], { visible: false, fixed: true, name: '' }),
+            board.create('point', [S_Q1, BOX_Y + BOX_H], { visible: false, fixed: true, name: '' })
+        ];
+        board.create('polygon', boxPts, {
+            fillColor: '#E5E7EB',
+            fillOpacity: 0.4,
+            borders: { strokeColor: '#222222', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Median line (red — reference/attention) ─────────────────────
+        board.create('segment', [[S_Q2, BOX_Y - BOX_H], [S_Q2, BOX_Y + BOX_H]], {
+            strokeColor: '#DC2626',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Whiskers ────────────────────────────────────────────────────
+        board.create('segment', [[S_MIN, BOX_Y], [S_Q1, BOX_Y]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+        board.create('segment', [[S_Q3, BOX_Y], [S_MAX, BOX_Y]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Whisker caps ────────────────────────────────────────────────
+        board.create('segment', [[S_MIN, BOX_Y - CAP_H], [S_MIN, BOX_Y + CAP_H]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+        board.create('segment', [[S_MAX, BOX_Y - CAP_H], [S_MAX, BOX_Y + CAP_H]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Value labels above box ──────────────────────────────────────
+        var labelY = BOX_Y + BOX_H + 0.25;
+        for (var j = 0; j < screenPos.length; j++) {
+            board.create('text', [screenPos[j], labelY, String(realValues[j])], {
+                fontSize: 9,
+                color: '#222222',
+                cssStyle: 'font-weight:bold',
+                anchorX: 'middle',
+                anchorY: 'bottom',
+                fixed: true,
+                highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
