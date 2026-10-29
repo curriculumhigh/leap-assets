@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stem-and-Leaf Plot</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .table-wrapper {
+            background: white;
+            border-radius: 8px;
+            padding: 28px 36px 22px 36px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+        }
+        table.stem-leaf {
+            border-collapse: collapse;
+            font-size: 18px;
+            font-variant-numeric: tabular-nums;
+        }
+        table.stem-leaf thead th {
+            background: #F3F4F6;
+            font-weight: 700;
+            font-size: 16px;
+            color: #333;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        table.stem-leaf thead th:first-child {
+            border-radius: 6px 0 0 0;
+            border-right: 3px solid #444444;
+        }
+        table.stem-leaf thead th:last-child {
+            border-radius: 0 6px 0 0;
+            text-align: left;
+            padding-left: 24px;
+        }
+        table.stem-leaf tbody td {
+            padding: 11px 20px;
+            color: #222222;
+            font-size: 18px;
+            border-top: 1px solid #E5E7EB;
+        }
+        table.stem-leaf tbody td.stem-col {
+            text-align: center;
+            font-weight: 600;
+            border-right: 3px solid #444444;
+            padding-right: 20px;
+            width: 60px;
+        }
+        table.stem-leaf tbody td.leaf-col {
+            text-align: left;
+            padding-left: 24px;
+            letter-spacing: 0.12em;
+            font-weight: 400;
+        }
+        table.stem-leaf tbody tr:last-child td:first-child {
+            border-radius: 0 0 0 6px;
+        }
+        table.stem-leaf tbody tr:last-child td:last-child {
+            border-radius: 0 0 6px 0;
+        }
+        table.stem-leaf {
+            border: 1px solid #D1D5DB;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .key-line {
+            margin-top: 16px;
+            font-size: 15px;
+            color: #555;
+            text-align: center;
+        }
+        .key-label {
+            font-weight: 600;
+            color: #333;
+        }
+        .key-divider {
+            display: inline-block;
+            width: 1.5px;
+            height: 1em;
+            background: #444;
+            margin: 0 3px;
+            vertical-align: -0.1em;
+        }
+        .leaf-digit {
+            display: inline-block;
+            width: 1.1em;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="table-wrapper">
+            <table class="stem-leaf">
+                <thead>
+                    <tr>
+                        <th>Stem</th>
+                        <th>Leaf</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="stem-col">5</td>
+                        <td class="leaf-col">
+                            <span class="leaf-digit">2</span>
+                            <span class="leaf-digit">5</span>
+                            <span class="leaf-digit">8</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="stem-col">6</td>
+                        <td class="leaf-col">
+                            <span class="leaf-digit">1</span>
+                            <span class="leaf-digit">4</span>
+                            <span class="leaf-digit">4</span>
+                            <span class="leaf-digit">7</span>
+                            <span class="leaf-digit">9</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="stem-col">7</td>
+                        <td class="leaf-col">
+                            <span class="leaf-digit">0</span>
+                            <span class="leaf-digit">3</span>
+                            <span class="leaf-digit">6</span>
+                            <span class="leaf-digit">6</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="stem-col">8</td>
+                        <td class="leaf-col">
+                            <span class="leaf-digit">4</span>
+                            <span class="leaf-digit">8</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="key-line">
+                <span class="key-label">Key:</span>&ensp;5<span class="key-divider"></span>2 = 52 cm
+            </div>
+        </div>
+    </div>
+</body>
+</html>
