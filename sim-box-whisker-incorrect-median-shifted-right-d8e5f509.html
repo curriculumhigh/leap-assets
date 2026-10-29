@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Box-and-Whisker Plot (Incorrect)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 4.5, 45, -5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Five-number summary (INCORRECT — Q2 shifted right) ──────────
+        var MIN = 3, Q1 = 9, Q2 = 18.1, Q3 = 28, MAX = 37;
+
+        // ── Layout constants ────────────────────────────────────────────
+        var NL_Y = -1.5;      // number line vertical position
+        var BOX_Y = 0.5;      // box center vertical position
+        var BOX_H = 0.5;      // box half-height
+        var CAP_H = 0.5;      // whisker cap half-height
+
+        // ── Number line ─────────────────────────────────────────────────
+        board.create('segment', [[-1, NL_Y], [41, NL_Y]], {
+            strokeColor: '#222222',
+            strokeWidth: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        var tickH = 0.35;
+        for (var t = 0; t <= 40; t += 5) {
+            board.create('segment', [[t, NL_Y - tickH], [t, NL_Y + tickH]], {
+                strokeColor: '#222222',
+                strokeWidth: 1.5,
+                fixed: true,
+                highlight: false
+            });
+            board.create('text', [t, NL_Y - tickH - 0.5, String(t)], {
+                fontSize: 9,
+                color: '#444444',
+                anchorX: 'middle',
+                anchorY: 'top',
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // ── Box (Q1 to Q3) ─────────────────────────────────────────────
+        var boxPts = [
+            board.create('point', [Q1, BOX_Y - BOX_H], { visible: false, fixed: true, name: '' }),
+            board.create('point', [Q3, BOX_Y - BOX_H], { visible: false, fixed: true, name: '' }),
+            board.create('point', [Q3, BOX_Y + BOX_H], { visible: false, fixed: true, name: '' }),
+            board.create('point', [Q1, BOX_Y + BOX_H], { visible: false, fixed: true, name: '' })
+        ];
+        board.create('polygon', boxPts, {
+            fillColor: '#E5E7EB',
+            fillOpacity: 0.4,
+            borders: { strokeColor: '#222222', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Median line (red — reference/attention) ─────────────────────
+        board.create('segment', [[Q2, BOX_Y - BOX_H], [Q2, BOX_Y + BOX_H]], {
+            strokeColor: '#DC2626',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Whiskers ────────────────────────────────────────────────────
+        board.create('segment', [[MIN, BOX_Y], [Q1, BOX_Y]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+        board.create('segment', [[Q3, BOX_Y], [MAX, BOX_Y]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Whisker caps ────────────────────────────────────────────────
+        board.create('segment', [[MIN, BOX_Y - CAP_H], [MIN, BOX_Y + CAP_H]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+        board.create('segment', [[MAX, BOX_Y - CAP_H], [MAX, BOX_Y + CAP_H]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Value labels above box ──────────────────────────────────────
+        var labelY = BOX_Y + BOX_H + 0.25;
+        var keyPoints = [
+            [MIN, '3'],
+            [Q1, '9'],
+            [Q2, '18.1'],
+            [Q3, '28'],
+            [MAX, '37']
+        ];
+        for (var j = 0; j < keyPoints.length; j++) {
+            board.create('text', [keyPoints[j][0], labelY, keyPoints[j][1]], {
+                fontSize: 9,
+                color: '#222222',
+                cssStyle: 'font-weight:bold',
+                anchorX: 'middle',
+                anchorY: 'bottom',
+                fixed: true,
+                highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
