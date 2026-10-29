@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Box-and-Whisker Plot — Commute Times</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [3, 8.5, 59, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_A = '#222222';
+        var COL_B = '#2563EB';
+        var COL_AXIS = '#444444';
+        var COL_GRID = '#9CA3AF';
+        var COL_MEDIAN = '#DC2626';
+
+        // ── Data ────────────────────────────────────────────────────────
+        var A = { min: 8, q1: 15, med: 25, q3: 35, max: 50 };
+        var B = { min: 10, q1: 20, med: 30, q3: 38, max: 52 };
+
+        // ── Vertical positions ──────────────────────────────────────────
+        var yA = 6.0;
+        var yB = 2.0;
+        var boxH = 0.55;
+        var capH = 0.3;
+
+        // ── Horizontal axis ─────────────────────────────────────────────
+        var axisY = 0;
+        board.create('arrow', [[4, axisY], [57, axisY]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // Major ticks every 5 from 5 to 55
+        var majorTicks = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+        var i;
+        for (i = 0; i < majorTicks.length; i++) {
+            var tx = majorTicks[i];
+            board.create('segment', [[tx, axisY - 0.25], [tx, axisY + 0.25]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [tx, axisY - 0.7, String(tx)], {
+                fontSize: 11, color: COL_AXIS, anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Key-value grid lines & extra labels ─────────────────────────
+        var keyValues = [8, 10, 15, 20, 25, 30, 35, 38, 50, 52];
+        var onMajor = { 10: true, 15: true, 20: true, 25: true, 30: true, 35: true, 50: true };
+
+        for (i = 0; i < keyValues.length; i++) {
+            var kv = keyValues[i];
+            board.create('segment', [[kv, axisY + 0.05], [kv, 7.5]], {
+                strokeColor: COL_GRID, strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+            if (!onMajor[kv]) {
+                board.create('segment', [[kv, axisY - 0.18], [kv, axisY + 0.18]], {
+                    strokeColor: COL_AXIS, strokeWidth: 0.9, fixed: true, highlight: false
+                });
+                board.create('text', [kv, axisY - 0.7, String(kv)], {
+                    fontSize: 10, color: '#888888', anchorX: 'middle', anchorY: 'middle',
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── Axis title ──────────────────────────────────────────────────
+        board.create('text', [30, -1.2, 'Commute time (minutes)'], {
+            fontSize: 13, color: COL_AXIS, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Box-and-whisker drawing function ────────────────────────────
+        function drawBoxPlot(data, yCenter, col) {
+            var yTop = yCenter + boxH;
+            var yBot = yCenter - boxH;
+
+            // Box fill
+            board.create('polygon', [
+                [data.q1, yTop], [data.q3, yTop],
+                [data.q3, yBot], [data.q1, yBot]
+            ], {
+                fillColor: col, fillOpacity: 0.12,
+                borders: { visible: false },
+                vertices: { visible: false },
+                fixed: true, highlight: false
+            });
+
+            // Box outline — top
+            board.create('segment', [[data.q1, yTop], [data.q3, yTop]], {
+                strokeColor: col, strokeWidth: 1.8, fixed: true, highlight: false
+            });
+            // Box outline — bottom
+            board.create('segment', [[data.q1, yBot], [data.q3, yBot]], {
+                strokeColor: col, strokeWidth: 1.8, fixed: true, highlight: false
+            });
+            // Box outline — left (Q1)
+            board.create('segment', [[data.q1, yTop], [data.q1, yBot]], {
+                strokeColor: col, strokeWidth: 1.8, fixed: true, highlight: false
+            });
+            // Box outline — right (Q3)
+            board.create('segment', [[data.q3, yTop], [data.q3, yBot]], {
+                strokeColor: col, strokeWidth: 1.8, fixed: true, highlight: false
+            });
+
+            // Median line
+            board.create('segment', [[data.med, yTop], [data.med, yBot]], {
+                strokeColor: COL_MEDIAN, strokeWidth: 2.2, fixed: true, highlight: false
+            });
+
+            // Left whisker
+            board.create('segment', [[data.min, yCenter], [data.q1, yCenter]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            // Right whisker
+            board.create('segment', [[data.q3, yCenter], [data.max, yCenter]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // End-cap at min
+            board.create('segment', [[data.min, yCenter - capH], [data.min, yCenter + capH]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            // End-cap at max
+            board.create('segment', [[data.max, yCenter - capH], [data.max, yCenter + capH]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+        }
+
+        // ── Draw both plots ─────────────────────────────────────────────
+        drawBoxPlot(A, yA, COL_A);
+        drawBoxPlot(B, yB, COL_B);
+
+        // ── Plot labels ─────────────────────────────────────────────────
+        board.create('text', [25, yA + 1.2, '\\text{Office A}'], {
+            fontSize: 13, color: COL_A, anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [30, yB + 1.1, '\\text{Office B}'], {
+            fontSize: 13, color: COL_B, anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
