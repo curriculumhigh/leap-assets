@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Box-and-Whisker Plot — Delivery Times</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [7, 7.5, 53, -3.0],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        // ── Constants ───────────────────────────────────────────────────
+        var COL_A = '#2563EB';
+        var COL_B = '#059669';
+        var COL_GRID = '#D1D5DB';
+        var COL_AXIS = '#444444';
+
+        // Y positions — pushed down
+        var Y_A = 5.0;
+        var Y_B = 1.8;
+        var BOX_HALF = 0.45;
+        var CAP_HALF = 0.25;
+
+        // Axis y position — between Kitchen B and bottom
+        var AXIS_Y = -0.5;
+
+        // Five-number summaries
+        var A = { min: 12, q1: 18, med: 22, q3: 28, max: 38 };
+        var B = { min: 10, q1: 20, med: 30, q3: 36, max: 48 };
+
+        // ── Horizontal axis (number line) ───────────────────────────────
+        board.create('segment', [[9, AXIS_Y], [51, AXIS_Y]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2,
+            fixed: true, highlight: false
+        });
+
+        // Tick marks and labels every 2 units from 10 to 50
+        var i;
+        for (i = 10; i <= 50; i += 2) {
+            // Tick mark
+            board.create('segment', [[i, AXIS_Y - 0.18], [i, AXIS_Y + 0.18]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            // Tick label — tight below tick
+            board.create('text', [i, AXIS_Y - 0.3, String(i)], {
+                fontSize: 11, color: COL_AXIS,
+                anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Axis title — pushed up right below the integer labels
+        board.create('text', [30, AXIS_Y - 1.15, '\\textit{Delivery time (minutes)}'], {
+            fontSize: 13, anchorX: 'middle', anchorY: 'top',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Vertical dashed grid lines ──────────────────────────────────
+        for (i = 10; i <= 50; i += 2) {
+            board.create('segment', [[i, AXIS_Y + 0.3], [i, 6.8]], {
+                strokeColor: COL_GRID, strokeWidth: 0.6, dash: 2,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Helper: draw one box-and-whisker plot ───────────────────────
+        function drawBoxPlot(data, yCenter, color) {
+            var yTop = yCenter + BOX_HALF;
+            var yBot = yCenter - BOX_HALF;
+            var capTop = yCenter + CAP_HALF;
+            var capBot = yCenter - CAP_HALF;
+
+            // Left whisker (min to Q1)
+            board.create('segment', [[data.min, yCenter], [data.q1, yCenter]], {
+                strokeColor: color, strokeWidth: 1.8, fixed: true, highlight: false
+            });
+            // Right whisker (Q3 to max)
+            board.create('segment', [[data.q3, yCenter], [data.max, yCenter]], {
+                strokeColor: color, strokeWidth: 1.8, fixed: true, highlight: false
+            });
+
+            // Min end-cap
+            board.create('segment', [[data.min, capTop], [data.min, capBot]], {
+                strokeColor: color, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            // Max end-cap
+            board.create('segment', [[data.max, capTop], [data.max, capBot]], {
+                strokeColor: color, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // Box (Q1 to Q3)
+            var p1 = board.create('point', [data.q1, yTop], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [data.q3, yTop], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [data.q3, yBot], { visible: false, fixed: true, name: '' });
+            var p4 = board.create('point', [data.q1, yBot], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: color, fillOpacity: 0.15,
+                borders: { strokeColor: color, strokeWidth: 1.8 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            // Median line (slightly heavier)
+            board.create('segment', [[data.med, yTop], [data.med, yBot]], {
+                strokeColor: color, strokeWidth: 2.2, fixed: true, highlight: false
+            });
+        }
+
+        // ── Draw both box plots ─────────────────────────────────────────
+        drawBoxPlot(A, Y_A, COL_A);
+        drawBoxPlot(B, Y_B, COL_B);
+
+        // ── Group labels — centered on each plot, below the box ─────────
+        // Kitchen A: centered between min(12) and max(38) = 25
+        board.create('text', [25, Y_A - BOX_HALF - 0.45, '\\textbf{Kitchen A}'], {
+            fontSize: 14, color: COL_A,
+            anchorX: 'middle', anchorY: 'top',
+            useKatex: true, fixed: true, highlight: false
+        });
+        // Kitchen B: centered between min(10) and max(48) = 29
+        board.create('text', [29, Y_B - BOX_HALF - 0.45, '\\textbf{Kitchen B}'], {
+            fontSize: 14, color: COL_B,
+            anchorX: 'middle', anchorY: 'top',
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
