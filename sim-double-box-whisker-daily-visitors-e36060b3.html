@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Box-and-Whisker Plot — Daily Visitors</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [7, 8, 53, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Horizontal axis (number line)
+        board.create('arrow', [[9, 0], [51.5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Tick marks at every even integer from 10 to 50
+        var TICK_HALF = 0.2;
+        for (var t = 10; t <= 50; t += 2) {
+            board.create('segment', [[t, -TICK_HALF], [t, TICK_HALF]], {
+                strokeColor: '#444444', strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Numeric labels only at 10 and 50
+        board.create('text', [10, -0.7, '10'], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 11, color: '#444444',
+            fixed: true, highlight: false
+        });
+        board.create('text', [50, -0.7, '50'], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 11, color: '#444444',
+            fixed: true, highlight: false
+        });
+
+        // Light vertical grid lines at every even integer
+        for (var g = 10; g <= 50; g += 2) {
+            board.create('segment', [[g, 0.3], [g, 7]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+
+        // Axis label centered below
+        board.create('text', [30, -1.6, '\\textit{Daily visitors}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#444444',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // Box-and-whisker plot helper
+        function drawBoxPlot(min, q1, med, q3, max, yc, hh, col) {
+            board.create('segment', [[min, yc], [q1, yc]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            board.create('segment', [[q3, yc], [max, yc]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            board.create('segment', [[min, yc - hh * 0.5], [min, yc + hh * 0.5]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            board.create('segment', [[max, yc - hh * 0.5], [max, yc + hh * 0.5]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            var bPts = [
+                board.create('point', [q1, yc - hh], { visible: false, fixed: true, name: '' }),
+                board.create('point', [q3, yc - hh], { visible: false, fixed: true, name: '' }),
+                board.create('point', [q3, yc + hh], { visible: false, fixed: true, name: '' }),
+                board.create('point', [q1, yc + hh], { visible: false, fixed: true, name: '' })
+            ];
+            board.create('polygon', bPts, {
+                fillColor: col, fillOpacity: 0.15,
+                borders: { strokeColor: col, strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+            board.create('segment', [[med, yc - hh], [med, yc + hh]], {
+                strokeColor: col, strokeWidth: 2.2, fixed: true, highlight: false
+            });
+        }
+
+        var HH = 0.5;
+
+        // Downtown (top)
+        var COL_DT = '#2563EB';
+        var Y_DT = 4.5;
+        drawBoxPlot(15, 22, 30, 38, 45, Y_DT, HH, COL_DT);
+
+        board.create('text', [10, Y_DT + 1.2, '\\textbf{Downtown}'], {
+            anchorX: 'left', anchorY: 'middle',
+            fontSize: 13, color: COL_DT,
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // Eastside (bottom)
+        var COL_ES = '#059669';
+        var Y_ES = 2.2;
+        drawBoxPlot(10, 18, 22, 40, 48, Y_ES, HH, COL_ES);
+
+        board.create('text', [10, Y_ES + 1.2, '\\textbf{Eastside}'], {
+            anchorX: 'left', anchorY: 'middle',
+            fontSize: 13, color: COL_ES,
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
