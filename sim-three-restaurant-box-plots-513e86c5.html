@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Box Plots — Customer Orders per Day</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 10.5, 29.5, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_A = '#222222';
+        var COL_B = '#2563EB';
+        var COL_C = '#059669';
+        var COL_AXIS = '#444444';
+
+        // ── Data ────────────────────────────────────────────────────────
+        var data = [
+            { name: 'Restaurant A', color: COL_A, y: 8, min: 2, q1: 6, med: 8, q3: 14, max: 18 },
+            { name: 'Restaurant B', color: COL_B, y: 5, min: 5, q1: 10, med: 15, q3: 20, max: 25 },
+            { name: 'Restaurant C', color: COL_C, y: 2, min: 8, q1: 16, med: 20, q3: 22, max: 26 }
+        ];
+
+        var BOX_HALF = 0.7;
+
+        // ── Horizontal axis ─────────────────────────────────────────────
+        board.create('segment', [[0, 0], [28, 0]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2,
+            fixed: true, highlight: false,
+            lastArrow: false
+        });
+
+        // Tick marks and labels
+        for (var t = 0; t <= 28; t += 2) {
+            board.create('segment', [[t, -0.25], [t, 0.25]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            board.create('text', [t, -0.7, String(t)], {
+                fontSize: 11, color: COL_AXIS, anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Axis label — centered below tick labels
+        board.create('text', [14, -1.45, '\\textit{Customer Orders per Day}'], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Draw box plots ──────────────────────────────────────────────
+        function drawBoxPlot(d) {
+            var y = d.y;
+            var col = d.color;
+
+            // Whisker: min to Q1
+            board.create('segment', [[d.min, y], [d.q1, y]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // Whisker: Q3 to max
+            board.create('segment', [[d.q3, y], [d.max, y]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // Min cap
+            board.create('segment', [[d.min, y - BOX_HALF * 0.5], [d.min, y + BOX_HALF * 0.5]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // Max cap
+            board.create('segment', [[d.max, y - BOX_HALF * 0.5], [d.max, y + BOX_HALF * 0.5]], {
+                strokeColor: col, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // Box (Q1 to Q3)
+            var p1 = board.create('point', [d.q1, y - BOX_HALF], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [d.q3, y - BOX_HALF], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [d.q3, y + BOX_HALF], { visible: false, fixed: true, name: '' });
+            var p4 = board.create('point', [d.q1, y + BOX_HALF], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: col, fillOpacity: 0.12,
+                borders: { strokeColor: col, strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            // Median line (bold)
+            board.create('segment', [[d.med, y - BOX_HALF], [d.med, y + BOX_HALF]], {
+                strokeColor: col, strokeWidth: 2.5, fixed: true, highlight: false
+            });
+
+            // ── Value labels (close to the plots) ───────────────────────
+            var labelY = y + BOX_HALF + 0.2;
+            var vals = [
+                { x: d.min, v: d.min },
+                { x: d.q1, v: d.q1 },
+                { x: d.med, v: d.med },
+                { x: d.q3, v: d.q3 },
+                { x: d.max, v: d.max }
+            ];
+            for (var i = 0; i < vals.length; i++) {
+                board.create('text', [vals[i].x, labelY, String(vals[i].v)], {
+                    fontSize: 10, color: col, anchorX: 'middle', anchorY: 'bottom',
+                    fixed: true, highlight: false
+                });
+            }
+
+            // ── Restaurant label (right-aligned at x = 0) ──────────────
+            board.create('text', [0, y, d.name], {
+                fontSize: 12, color: col, anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false, cssStyle: 'font-weight:600'
+            });
+        }
+
+        for (var i = 0; i < data.length; i++) {
+            drawBoxPlot(data[i]);
+        }
+    </script>
+</body>
+</html>
