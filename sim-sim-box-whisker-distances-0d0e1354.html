@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Box-and-Whisker Plot — Distances</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [7, 5.5, 51, -4.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Five-number summary ─────────────────────────────────────────
+        var MIN = 12, Q1 = 20, Q2 = 28, Q3 = 38, MAX = 46;
+
+        // ── Layout constants ────────────────────────────────────────────
+        var NL_Y = 0;         // number line vertical position
+        var BOX_Y = 2.2;      // box center vertical position
+        var BOX_H = 0.375;    // box half-height (total height 0.75)
+        var CAP_H = 0.375;    // whisker cap half-height (matches box)
+
+        // ── Number line ─────────────────────────────────────────────────
+        board.create('segment', [[9, NL_Y], [49, NL_Y]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        // ── Tick marks every 2 units (10, 12, …, 48) with labels ───────
+        var tickH = 0.35;
+        for (var t = 10; t <= 48; t += 2) {
+            board.create('segment', [[t, NL_Y - tickH], [t, NL_Y + tickH]], {
+                strokeColor: '#222222',
+                strokeWidth: 1.2,
+                fixed: true,
+                highlight: false
+            });
+            board.create('text', [t, NL_Y - tickH - 0.35, String(t)], {
+                fontSize: 11,
+                color: '#444444',
+                anchorX: 'middle',
+                anchorY: 'top',
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // ── Axis label ──────────────────────────────────────────────────
+        board.create('text', [29, NL_Y - 2.2, '\\textit{Distances (in km)}'], {
+            fontSize: 13,
+            color: '#222222',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            useKatex: true,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Box (Q1 to Q3) ──────────────────────────────────────────────
+        var boxPts = [
+            board.create('point', [Q1, BOX_Y - BOX_H], { visible: false, fixed: true, name: '' }),
+            board.create('point', [Q3, BOX_Y - BOX_H], { visible: false, fixed: true, name: '' }),
+            board.create('point', [Q3, BOX_Y + BOX_H], { visible: false, fixed: true, name: '' }),
+            board.create('point', [Q1, BOX_Y + BOX_H], { visible: false, fixed: true, name: '' })
+        ];
+        board.create('polygon', boxPts, {
+            fillColor: '#E5E7EB',
+            fillOpacity: 0.4,
+            borders: { strokeColor: '#222222', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Median line (red — reference/attention) ─────────────────────
+        board.create('segment', [[Q2, BOX_Y - BOX_H], [Q2, BOX_Y + BOX_H]], {
+            strokeColor: '#DC2626',
+            strokeWidth: 2.0,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Whiskers ────────────────────────────────────────────────────
+        board.create('segment', [[MIN, BOX_Y], [Q1, BOX_Y]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+        board.create('segment', [[Q3, BOX_Y], [MAX, BOX_Y]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Whisker caps ────────────────────────────────────────────────
+        board.create('segment', [[MIN, BOX_Y - CAP_H], [MIN, BOX_Y + CAP_H]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+        board.create('segment', [[MAX, BOX_Y - CAP_H], [MAX, BOX_Y + CAP_H]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Five-number dots ────────────────────────────────────────────
+        var fiveNums = [MIN, Q1, Q2, Q3, MAX];
+        for (var i = 0; i < fiveNums.length; i++) {
+            board.create('point', [fiveNums[i], BOX_Y], {
+                name: '',
+                size: 3,
+                color: '#222222',
+                fixed: true,
+                highlight: false,
+                showInfobox: false
+            });
+        }
+
+        // ── Point labels A–E above the plot (KaTeX, bold) ──────────────
+        var labelNames = ['\\textbf{A}', '\\textbf{B}', '\\textbf{C}', '\\textbf{D}', '\\textbf{E}'];
+        var labelY = BOX_Y + BOX_H + 0.55;
+        for (var k = 0; k < fiveNums.length; k++) {
+            board.create('text', [fiveNums[k], labelY, labelNames[k]], {
+                fontSize: 13,
+                color: '#222222',
+                anchorX: 'middle',
+                anchorY: 'bottom',
+                useKatex: true,
+                fixed: true,
+                highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
