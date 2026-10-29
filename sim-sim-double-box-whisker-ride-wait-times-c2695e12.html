@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Box-and-Whisker Plot — Ride Wait Times</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 7.2, 54, -2.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_P = '#2563EB';
+        var COL_Q = '#059669';
+        var COL_AXIS = '#444444';
+        var COL_GRID = '#D1D5DB';
+
+        // ── Data (corrected Q3 and max for Ride P) ──────────────────────
+        var P = { min: 10, q1: 14, med: 17, q3: 22, max: 32 };
+        var Q = { min: 5, q1: 8, med: 12, q3: 28, max: 45 };
+
+        // ── Vertical positions ──────────────────────────────────────────
+        var P_Y = 4.2;
+        var Q_Y = 1.6;
+        var BOX_H = 0.45;
+        var CAP_H = 0.3;
+
+        // ── Vertical dashed grid lines every 5 units ────────────────────
+        var i;
+        for (i = 0; i <= 50; i += 5) {
+            board.create('segment', [[i, -0.3], [i, 6.2]], {
+                strokeColor: COL_GRID, strokeWidth: 0.4, dash: 2,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Horizontal axis line ────────────────────────────────────────
+        board.create('segment', [[0, 0], [51, 0]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2,
+            fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // Tick marks and labels every 5
+        for (i = 0; i <= 50; i += 5) {
+            board.create('segment', [[i, -0.15], [i, 0.15]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            board.create('text', [i, -0.45, String(i)], {
+                fontSize: 11, color: COL_AXIS, anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Axis title
+        board.create('text', [25, -1.05, 'Wait time (minutes)'], {
+            fontSize: 13, color: COL_AXIS, anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false,
+            cssStyle: 'font-style: italic;'
+        });
+
+        // ── Helper: draw one box-and-whisker plot ───────────────────────
+        function drawBoxPlot(data, yCenter, color, nameLabel) {
+            var yTop = yCenter + BOX_H;
+            var yBot = yCenter - BOX_H;
+            var capTop = yCenter + CAP_H;
+            var capBot = yCenter - CAP_H;
+
+            // Left whisker: min → Q1
+            board.create('segment', [[data.min, yCenter], [data.q1, yCenter]], {
+                strokeColor: color, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            // Right whisker: Q3 → max
+            board.create('segment', [[data.q3, yCenter], [data.max, yCenter]], {
+                strokeColor: color, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // End-cap at min
+            board.create('segment', [[data.min, capTop], [data.min, capBot]], {
+                strokeColor: color, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            // End-cap at max
+            board.create('segment', [[data.max, capTop], [data.max, capBot]], {
+                strokeColor: color, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // Box (Q1 → Q3)
+            var p1 = board.create('point', [data.q1, yTop], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [data.q3, yTop], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [data.q3, yBot], { visible: false, fixed: true, name: '' });
+            var p4 = board.create('point', [data.q1, yBot], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: color, fillOpacity: 0.12,
+                borders: { strokeColor: color, strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            // Median line (heavier)
+            board.create('segment', [[data.med, yTop], [data.med, yBot]], {
+                strokeColor: color, strokeWidth: 2.5, fixed: true, highlight: false
+            });
+
+            // ── Key-point numeric labels above the box plot ─────────────
+            var numLabelY = yTop + 0.3;
+            var vals = [data.min, data.q1, data.med, data.q3, data.max];
+            for (var v = 0; v < vals.length; v++) {
+                board.create('text', [vals[v], numLabelY, String(vals[v])], {
+                    fontSize: 10, color: color, anchorX: 'middle', anchorY: 'bottom',
+                    fixed: true, highlight: false,
+                    cssStyle: 'font-weight: 600;'
+                });
+            }
+
+            // ── Plot name label above numeric labels ────────────────────
+            var nameLabelY = yTop + 0.75;
+            var nameLabelX = (data.q1 + data.q3) / 2;
+            board.create('text', [nameLabelX, nameLabelY, '\\textbf{' + nameLabel + '}'], {
+                fontSize: 13, color: color, anchorX: 'middle', anchorY: 'bottom',
+                useKatex: true, fixed: true, highlight: false
+            });
+        }
+
+        // ── Draw both box plots ─────────────────────────────────────────
+        drawBoxPlot(P, P_Y, COL_P, 'Ride P');
+        drawBoxPlot(Q, Q_Y, COL_Q, 'Ride Q');
+    </script>
+</body>
+</html>
