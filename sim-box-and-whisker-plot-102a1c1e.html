@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Box-and-Whisker Plot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 3.2, 64, -3.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Constants ──────────────────────────────────────────── */
+        var MIN = 3, Q1 = 10, Q2 = 20, Q3 = 40, MAX = 55;
+        var BOX_H = 0.6;
+        var Y_CENTER = 0.4;
+        var Y_TOP = Y_CENTER + BOX_H;
+        var Y_BOT = Y_CENTER - BOX_H;
+
+        var COL_LINE = '#222222';
+        var COL_MED  = '#DC2626';
+        var COL_FILL = '#D1D5DB';
+        var COL_GRID = '#D1D5DB';
+        var COL_AXIS = '#444444';
+
+        /* ── Vertical grid lines every 5 units ──────────────────── */
+        var i;
+        for (i = 0; i <= 60; i += 5) {
+            board.create('segment', [[i, -1.8], [i, 1.8]], {
+                strokeColor: COL_GRID, strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── Horizontal number line ─────────────────────────────── */
+        var AXIS_Y = -1.2;
+        board.create('segment', [[0, AXIS_Y], [60, AXIS_Y]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2,
+            fixed: true, highlight: false
+        });
+
+        /* Tick marks and numeric labels every 5 */
+        for (i = 0; i <= 60; i += 5) {
+            var tickHalf = (i % 10 === 0) ? 0.32 : 0.25;
+            var tickW = (i % 10 === 0) ? 1.4 : 1.2;
+            board.create('segment', [[i, AXIS_Y - tickHalf], [i, AXIS_Y + tickHalf]], {
+                strokeColor: COL_AXIS, strokeWidth: tickW,
+                fixed: true, highlight: false
+            });
+            board.create('text', [i, AXIS_Y - 0.75, String(i)], {
+                fontSize: 9, color: COL_AXIS,
+                anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── Box: left half (Q1 to Q2) ──────────────────────────── */
+        var bL1 = board.create('point', [Q1, Y_TOP], { visible: false, fixed: true, name: '' });
+        var bL2 = board.create('point', [Q2, Y_TOP], { visible: false, fixed: true, name: '' });
+        var bL3 = board.create('point', [Q2, Y_BOT], { visible: false, fixed: true, name: '' });
+        var bL4 = board.create('point', [Q1, Y_BOT], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [bL1, bL2, bL3, bL4], {
+            fillColor: COL_FILL, fillOpacity: 0.18,
+            borders: { strokeColor: COL_LINE, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        /* ── Box: right half (Q2 to Q3) ─────────────────────────── */
+        var bR1 = board.create('point', [Q2, Y_TOP], { visible: false, fixed: true, name: '' });
+        var bR2 = board.create('point', [Q3, Y_TOP], { visible: false, fixed: true, name: '' });
+        var bR3 = board.create('point', [Q3, Y_BOT], { visible: false, fixed: true, name: '' });
+        var bR4 = board.create('point', [Q2, Y_BOT], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [bR1, bR2, bR3, bR4], {
+            fillColor: COL_FILL, fillOpacity: 0.28,
+            borders: { strokeColor: COL_LINE, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        /* ── Median line ────────────────────────────────────────── */
+        board.create('segment', [[Q2, Y_TOP], [Q2, Y_BOT]], {
+            strokeColor: COL_MED, strokeWidth: 2,
+            fixed: true, highlight: false
+        });
+
+        /* ── Left whisker ───────────────────────────────────────── */
+        board.create('segment', [[MIN, Y_CENTER], [Q1, Y_CENTER]], {
+            strokeColor: COL_LINE, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[MIN, Y_TOP], [MIN, Y_BOT]], {
+            strokeColor: COL_LINE, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        /* ── Right whisker ──────────────────────────────────────── */
+        board.create('segment', [[Q3, Y_CENTER], [MAX, Y_CENTER]], {
+            strokeColor: COL_LINE, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[MAX, Y_TOP], [MAX, Y_BOT]], {
+            strokeColor: COL_LINE, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        /* ── Key-point numeric labels (above box) ──────────────── */
+        var LBL_Y = Y_TOP + 0.65;
+
+        board.create('text', [MIN, LBL_Y, '3'], {
+            fontSize: 9, color: COL_LINE, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Q1, LBL_Y, '10'], {
+            fontSize: 9, color: COL_LINE, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Q2, LBL_Y, '20'], {
+            fontSize: 9, color: COL_LINE, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [Q3, LBL_Y, '40'], {
+            fontSize: 9, color: COL_LINE, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [MAX, LBL_Y, '55'], {
+            fontSize: 9, color: COL_LINE, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
