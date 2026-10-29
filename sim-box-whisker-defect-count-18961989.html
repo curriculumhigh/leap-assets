@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Box-and-Whisker Plots — Defect Count per Batch</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 11.2, 47, -2.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL1 = '#222222';
+        var COL2 = '#2563EB';
+        var COL3 = '#059669';
+        var COL_AXIS = '#444444';
+        var COL_GRID = '#D1D5DB';
+
+        // ── Data ────────────────────────────────────────────────────────
+        var plots = [
+            { label: 'Line 1', color: COL1, fill: '#CCCCCC', y: 8.2, min: 6,  q1: 12, med: 18, q3: 24, max: 30 },
+            { label: 'Line 2', color: COL2, fill: '#BFDBFE', y: 5.2, min: 2,  q1: 8,  med: 14, q3: 20, max: 36 },
+            { label: 'Line 3', color: COL3, fill: '#A7F3D0', y: 2.2, min: 10, q1: 16, med: 26, q3: 38, max: 42 }
+        ];
+
+        var BOX_HALF = 0.4;
+        var CAP_HALF = 0.25;
+        var AXIS_Y = 0;
+        var GRID_TOP = 10.0;
+        var GRID_BOT = 0.5;
+
+        // ── Vertical grid lines every 2 units (0–44) ───────────────────
+        var g;
+        for (g = 0; g <= 44; g += 2) {
+            board.create('segment', [[g, GRID_BOT], [g, GRID_TOP]], {
+                strokeColor: COL_GRID, strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Horizontal axis line ────────────────────────────────────────
+        board.create('segment', [[-1, AXIS_Y], [45, AXIS_Y]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // ── Major ticks (every 10) with labels ─────────────────────────
+        var majors = [0, 10, 20, 30, 40];
+        var t;
+        for (t = 0; t < majors.length; t++) {
+            // Major tick mark
+            board.create('segment', [[majors[t], AXIS_Y - 0.25], [majors[t], AXIS_Y + 0.25]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            // Major tick label
+            board.create('text', [majors[t], AXIS_Y - 0.65, String(majors[t])], {
+                anchorX: 'middle', anchorY: 'top', fontSize: 11, color: COL_AXIS,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Minor ticks (every 2, skip majors) ─────────────────────────
+        for (t = 0; t <= 44; t += 2) {
+            if (t % 10 === 0) continue;
+            board.create('segment', [[t, AXIS_Y - 0.15], [t, AXIS_Y + 0.15]], {
+                strokeColor: COL_AXIS, strokeWidth: 0.8, fixed: true, highlight: false
+            });
+        }
+
+        // ── Axis title — just below tick labels ─────────────────────────
+        board.create('text', [22, -1.6, '\\text{Defect Count per Batch}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13, color: '#222222',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Draw each box-and-whisker plot ──────────────────────────────
+        function drawBoxPlot(d) {
+            var y = d.y;
+            var yTop = y + BOX_HALF;
+            var yBot = y - BOX_HALF;
+
+            // ── Whisker: min → Q1 ───────────────────────────────────────
+            board.create('segment', [[d.min, y], [d.q1, y]], {
+                strokeColor: d.color, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            // ── Whisker: Q3 → max ───────────────────────────────────────
+            board.create('segment', [[d.q3, y], [d.max, y]], {
+                strokeColor: d.color, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // ── End-cap at min ──────────────────────────────────────────
+            board.create('segment', [[d.min, y - CAP_HALF], [d.min, y + CAP_HALF]], {
+                strokeColor: d.color, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            // ── End-cap at max ──────────────────────────────────────────
+            board.create('segment', [[d.max, y - CAP_HALF], [d.max, y + CAP_HALF]], {
+                strokeColor: d.color, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // ── IQR Box (Q1 → Q3) ──────────────────────────────────────
+            var p1 = board.create('point', [d.q1, yTop], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [d.q3, yTop], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [d.q3, yBot], { visible: false, fixed: true, name: '' });
+            var p4 = board.create('point', [d.q1, yBot], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: d.fill, fillOpacity: 0.22,
+                borders: { strokeColor: d.color, strokeWidth: 1.8 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            // ── Median line ─────────────────────────────────────────────
+            board.create('segment', [[d.med, yBot], [d.med, yTop]], {
+                strokeColor: d.color, strokeWidth: 2.0, fixed: true, highlight: false
+            });
+
+            // ── Category label centered above box ───────────────────────
+            var boxMidX = (d.q1 + d.q3) / 2;
+            board.create('text', [boxMidX, yTop + 0.55, '\\textbf{' + d.label + '}'], {
+                anchorX: 'middle', anchorY: 'middle', fontSize: 13, color: d.color,
+                useKatex: true, fixed: true, highlight: false
+            });
+
+            // ── Numeric value labels just below the box ─────────────────
+            var vals = [d.min, d.q1, d.med, d.q3, d.max];
+            var labelY = yBot - 0.5;
+            var v;
+            for (v = 0; v < vals.length; v++) {
+                board.create('text', [vals[v], labelY, String(vals[v])], {
+                    anchorX: 'middle', anchorY: 'top', fontSize: 11, color: d.color,
+                    useKatex: true, fixed: true, highlight: false
+                });
+            }
+        }
+
+        var i;
+        for (i = 0; i < plots.length; i++) {
+            drawBoxPlot(plots[i]);
+        }
+    </script>
+</body>
+</html>
