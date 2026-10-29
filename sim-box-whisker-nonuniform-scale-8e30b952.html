@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Box-and-Whisker Plot (Non-Uniform Scale)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.2, 3.2, 11.8, -1.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Screen positions (equally spaced, gap = 2) for the five data values
+        // Data values: 3, 10, 20, 40, 55
+        var screenX = [1, 3, 5, 7, 9];
+        var dataLabels = ['3', '10', '20', '40', '55'];
+
+        // Vertical center for the box plot
+        var boxY = 1.0;
+        var boxHalf = 0.4;
+        var bTop = boxY + boxHalf;
+        var bBot = boxY - boxHalf;
+
+        // ── Horizontal axis line ────────────────────────────────────────
+        board.create('segment', [[-0.2, 0], [10.2, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            fixed: true, highlight: false
+        });
+
+        // ── All ticks: labeled positions + in-between + ends ────────────
+        var tickH = 0.15;
+        var allTicks = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+        for (var i = 0; i < allTicks.length; i++) {
+            board.create('segment', [[allTicks[i], -tickH], [allTicks[i], tickH]], {
+                strokeColor: '#444444', strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Numeric labels above the box at key positions ───────────────
+        for (var k = 0; k < screenX.length; k++) {
+            board.create('text', [screenX[k], bTop + 0.5, dataLabels[k]], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 9, color: '#222222',
+                useKatex: true, fixed: true, highlight: false
+            });
+        }
+
+        // ── Whiskers ────────────────────────────────────────────────────
+        board.create('segment', [[screenX[0], boxY], [screenX[1], boxY]], {
+            strokeColor: '#222222', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[screenX[3], boxY], [screenX[4], boxY]], {
+            strokeColor: '#222222', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        // Whisker end caps
+        board.create('segment', [[screenX[0], boxY - boxHalf * 0.6], [screenX[0], boxY + boxHalf * 0.6]], {
+            strokeColor: '#222222', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[screenX[4], boxY - boxHalf * 0.6], [screenX[4], boxY + boxHalf * 0.6]], {
+            strokeColor: '#222222', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        // ── Box (Q1 to Q3) ──────────────────────────────────────────────
+        var q1x = screenX[1];
+        var q3x = screenX[3];
+
+        var bp1 = board.create('point', [q1x, bTop], { visible: false, fixed: true, name: '' });
+        var bp2 = board.create('point', [q3x, bTop], { visible: false, fixed: true, name: '' });
+        var bp3 = board.create('point', [q3x, bBot], { visible: false, fixed: true, name: '' });
+        var bp4 = board.create('point', [q1x, bBot], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [bp1, bp2, bp3, bp4], {
+            fillColor: '#2563EB', fillOpacity: 0.12,
+            borders: { strokeColor: '#2563EB', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Median line (red) ───────────────────────────────────────────
+        board.create('segment', [[screenX[2], bBot], [screenX[2], bTop]], {
+            strokeColor: '#DC2626', strokeWidth: 2,
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
