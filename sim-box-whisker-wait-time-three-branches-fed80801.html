@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Box-and-Whisker Plots — Wait Time</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-12, 11.5, 108, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Constants ───────────────────────────────────────────────────
+        var COL_X = '#222222';
+        var COL_Y = '#2563EB';
+        var COL_Z = '#059669';
+
+        var Y_X = 9.0;
+        var Y_Y = 5.8;
+        var Y_Z = 2.6;
+
+        var BOX_HALF = 0.45;
+        var CAP_HALF = 0.30;
+
+        var DATA = [
+            { name: 'Branch X', color: COL_X, y: Y_X, min: 2, q1: 14, med: 28, q3: 48, max: 98 },
+            { name: 'Branch Y', color: COL_Y, y: Y_Y, min: 16, q1: 24, med: 52, q3: 70, max: 86 },
+            { name: 'Branch Z', color: COL_Z, y: Y_Z, min: 3, q1: 10, med: 18, q3: 34, max: 56 }
+        ];
+
+        // ── Horizontal axis ────────────────────────────────────────────
+        board.create('arrow', [[-2, 0.6], [105, 0.6]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        var i;
+        for (i = 0; i <= 100; i += 10) {
+            board.create('segment', [[i, 0.35], [i, 0.85]], {
+                strokeColor: '#444444', strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            board.create('text', [i, 0.05, String(i)], {
+                anchorX: 'middle', anchorY: 'top',
+                fontSize: 11, color: '#444444',
+                fixed: true, highlight: false
+            });
+            if (i > 0) {
+                board.create('segment', [[i, 0.85], [i, 10.5]], {
+                    strokeColor: '#D1D5DB', strokeWidth: 0.4, dash: 2,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        board.create('text', [50, -0.65, '\\textit{Wait Time (minutes)}'], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 13, color: '#444444',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Draw each box-and-whisker plot ──────────────────────────────
+        function drawBoxPlot(d) {
+            var y = d.y;
+            var col = d.color;
+
+            // Whiskers
+            board.create('segment', [[d.min, y], [d.q1, y]], {
+                strokeColor: col, strokeWidth: 1.8,
+                fixed: true, highlight: false
+            });
+            board.create('segment', [[d.q3, y], [d.max, y]], {
+                strokeColor: col, strokeWidth: 1.8,
+                fixed: true, highlight: false
+            });
+
+            // End-caps
+            board.create('segment', [[d.min, y - CAP_HALF], [d.min, y + CAP_HALF]], {
+                strokeColor: col, strokeWidth: 1.8,
+                fixed: true, highlight: false
+            });
+            board.create('segment', [[d.max, y - CAP_HALF], [d.max, y + CAP_HALF]], {
+                strokeColor: col, strokeWidth: 1.8,
+                fixed: true, highlight: false
+            });
+
+            // Box (Q1 to Q3)
+            var by1 = y + BOX_HALF, by2 = y - BOX_HALF;
+            var p1 = board.create('point', [d.q1, by1], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [d.q3, by1], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [d.q3, by2], { visible: false, fixed: true, name: '' });
+            var p4 = board.create('point', [d.q1, by2], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: col, fillOpacity: 0.15,
+                borders: { strokeColor: col, strokeWidth: 1.8 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            // Median line
+            board.create('segment', [[d.med, y - BOX_HALF], [d.med, y + BOX_HALF]], {
+                strokeColor: col, strokeWidth: 2.5,
+                fixed: true, highlight: false
+            });
+
+            // Category label (above the plot)
+            board.create('text', [(d.q1 + d.q3) / 2, y + BOX_HALF + 0.55, '\\textbf{' + d.name + '}'], {
+                anchorX: 'middle', anchorY: 'bottom',
+                fontSize: 13, color: col,
+                useKatex: true, fixed: true, highlight: false
+            });
+
+            // All five numeric labels on a single line below the plot
+            var lblY = y - BOX_HALF - 0.45;
+
+            board.create('text', [d.min, lblY, String(d.min)], {
+                anchorX: 'middle', anchorY: 'top',
+                fontSize: 10, color: col,
+                fixed: true, highlight: false
+            });
+            board.create('text', [d.q1, lblY, String(d.q1)], {
+                anchorX: 'middle', anchorY: 'top',
+                fontSize: 10, color: col,
+                fixed: true, highlight: false
+            });
+            board.create('text', [d.med, lblY, String(d.med)], {
+                anchorX: 'middle', anchorY: 'top',
+                fontSize: 10, color: col,
+                fixed: true, highlight: false
+            });
+            board.create('text', [d.q3, lblY, String(d.q3)], {
+                anchorX: 'middle', anchorY: 'top',
+                fontSize: 10, color: col,
+                fixed: true, highlight: false
+            });
+            board.create('text', [d.max, lblY, String(d.max)], {
+                anchorX: 'middle', anchorY: 'top',
+                fontSize: 10, color: col,
+                fixed: true, highlight: false
+            });
+        }
+
+        for (i = 0; i < DATA.length; i++) {
+            drawBoxPlot(DATA[i]);
+        }
+    </script>
+</body>
+</html>
