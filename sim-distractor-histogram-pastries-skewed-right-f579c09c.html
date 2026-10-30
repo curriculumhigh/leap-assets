@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distractor Histogram — Pastries Sold Per Day</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); position: relative; }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px 10px 6px 22px; height: calc(100% - 12px); position: relative; }
+        #board { width: 100%; height: 100%; }
+        .y-axis-title {
+            position: absolute;
+            left: 2px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-size: 9px;
+            font-style: italic;
+            color: #333333;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        .jxgbox .JXGtext { user-select: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div class="y-axis-title">Frequency</div>
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var intervals = ['0\u20139','10\u201319','20\u201329','30\u201339','40\u201349','50\u201359','60\u201369'];
+        var heights = [28, 35, 24, 15, 9, 5, 2];
+        var barWidth = 10;
+        var numBars = 7;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-9, 46, 76, -10],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        var chartLeft = 0, chartRight = 70, chartBottom = 0, chartTop = 40;
+
+        // --- Horizontal grid lines ---
+        var yTicks = [5, 10, 15, 20, 25, 30, 35, 40];
+        for (var gi = 0; gi < yTicks.length; gi++) {
+            board.create('segment', [[chartLeft, yTicks[gi]], [chartRight, yTicks[gi]]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.5, fixed: true, highlight: false
+            });
+        }
+
+        // --- Bars ---
+        var barFill = '#2563EB';
+        var barStroke = '#1E50C0';
+        for (var i = 0; i < numBars; i++) {
+            var x0 = i * barWidth;
+            var x1 = (i + 1) * barWidth;
+            var h = heights[i];
+            board.create('polygon', [
+                [x0, 0], [x1, 0], [x1, h], [x0, h]
+            ], {
+                fillColor: barFill, fillOpacity: 0.85,
+                borders: { strokeColor: barStroke, strokeWidth: 1 },
+                vertices: { visible: false },
+                fixed: true, highlight: false, hasInnerPoints: false
+            });
+        }
+
+        // --- Axes (plain lines, no arrows) ---
+        board.create('segment', [[chartLeft, chartBottom], [chartRight, chartBottom]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[chartLeft, chartBottom], [chartLeft, chartTop]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // --- Y-axis tick marks and labels ---
+        var allYTicks = [0, 5, 10, 15, 20, 25, 30, 35, 40];
+        for (var yi = 0; yi < allYTicks.length; yi++) {
+            var yv = allYTicks[yi];
+            board.create('segment', [[-1, yv], [0, yv]], {
+                strokeColor: '#444444', strokeWidth: 1, fixed: true, highlight: false
+            });
+            board.create('text', [-2, yv, String(yv)], {
+                fontSize: 9, color: '#333333', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // --- X-axis interval labels ---
+        for (var xi = 0; xi < numBars; xi++) {
+            var cx = xi * barWidth + barWidth / 2;
+            board.create('text', [cx, -3, intervals[xi]], {
+                fontSize: 8, color: '#333333', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // --- X-axis title ---
+        board.create('text', [35, -7.5, 'Pastries sold per day'], {
+            fontSize: 9, color: '#333333', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-style: italic;'
+        });
+    </script>
+</body>
+</html>
