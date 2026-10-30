@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minutes Spent Reading — Histogram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 600px; margin: 0; padding: 6px;
+            height: calc(100% - 12px);
+            position: relative;
+        }
+        .board-wrapper {
+            background: white; border-radius: 8px; padding: 10px;
+            height: calc(100% - 20px);
+            position: relative;
+        }
+        #board { width: 100%; height: 100%; }
+        .y-axis-label {
+            position: absolute;
+            left: 4px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-style: italic;
+            font-size: 13px;
+            color: #222222;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        .jxgbox text { user-select: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div class="y-axis-label">Frequency</div>
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 16.2, 32, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var BIN_BOUNDARIES = [0, 4, 8, 12, 16, 20, 24, 28];
+        var BAR_HEIGHTS = [13, 10, 9, 6, 4, 2, 1];
+        var BAR_FILL = '#2563EB';
+        var BAR_BORDER = '#FFFFFF';
+        var AXIS_COL = '#444444';
+        var GRID_COL = '#D1D5DB';
+        var Y_TICKS = [0, 2, 4, 6, 8, 10, 12, 14];
+
+        var i;
+
+        // Horizontal grid lines at y = 2, 4, 6, 8, 10, 12, 14
+        for (i = 0; i < Y_TICKS.length; i++) {
+            if (Y_TICKS[i] === 0) continue;
+            board.create('segment', [[0, Y_TICKS[i]], [28, Y_TICKS[i]]], {
+                strokeColor: GRID_COL, strokeWidth: 0.4,
+                fixed: true, highlight: false
+            });
+        }
+
+        // X-axis arrow
+        board.create('arrow', [[0, 0], [30.5, 0]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Y-axis arrow
+        board.create('arrow', [[0, 0], [0, 15.5]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // X-axis tick marks and labels
+        for (i = 0; i < BIN_BOUNDARIES.length; i++) {
+            var bx = BIN_BOUNDARIES[i];
+            board.create('segment', [[bx, -0.3], [bx, 0.3]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            board.create('text', [bx, -1.1, String(bx)], {
+                fontSize: 11, color: AXIS_COL, anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Y-axis tick marks and labels (0–14 step 2)
+        for (i = 0; i < Y_TICKS.length; i++) {
+            var yv = Y_TICKS[i];
+            board.create('segment', [[-0.5, yv], [0, yv]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            board.create('text', [-1.3, yv, String(yv)], {
+                fontSize: 11, color: AXIS_COL, anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Bars
+        for (i = 0; i < BAR_HEIGHTS.length; i++) {
+            var x1 = BIN_BOUNDARIES[i];
+            var x2 = BIN_BOUNDARIES[i + 1];
+            var h = BAR_HEIGHTS[i];
+
+            var p1 = board.create('point', [x1, 0], { visible: false, name: '' });
+            var p2 = board.create('point', [x2, 0], { visible: false, name: '' });
+            var p3 = board.create('point', [x2, h], { visible: false, name: '' });
+            var p4 = board.create('point', [x1, h], { visible: false, name: '' });
+
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: BAR_FILL, fillOpacity: 1.0,
+                borders: { strokeColor: BAR_BORDER, strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        // Chart title
+        board.create('text', [14, 15.3, '\\text{Minutes Spent Reading (45 students)}'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // X-axis label
+        board.create('text', [14, -2.6, '\\textit{Minutes spent reading}'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
