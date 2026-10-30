@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distractor Histogram — Pastries Sold</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); position: relative; }
+        #board { width: 100%; height: 100%; }
+        .y-axis-label {
+            position: absolute;
+            left: 2px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-size: 9px;
+            color: #444444;
+            font-style: italic;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div class="y-axis-label">Frequency</div>
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var BAR_FILL = '#2563EB';
+        var BAR_STROKE = '#ffffff';
+        var AXIS_COL = '#444444';
+        var GRID_COL = '#D1D5DB';
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-10, 44, 78, -8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Grid lines ─────────────────────────────────────────────── */
+        var yGridVals = [5, 10, 15, 20, 25, 30, 35, 40];
+        for (var g = 0; g < yGridVals.length; g++) {
+            board.create('line', [[0, yGridVals[g]], [70, yGridVals[g]]], {
+                strokeColor: GRID_COL, strokeWidth: 0.4,
+                straightFirst: false, straightLast: false,
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── Axes ───────────────────────────────────────────────────── */
+        board.create('arrow', [[0, 0], [74, 0]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 4 },
+            fixed: true, highlight: false
+        });
+        board.create('arrow', [[0, 0], [0, 43]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 4 },
+            fixed: true, highlight: false
+        });
+
+        /* ── Y-axis ticks and labels ────────────────────────────────── */
+        var yTicks = [0, 5, 10, 15, 20, 25, 30, 35, 40];
+        for (var i = 0; i < yTicks.length; i++) {
+            board.create('segment', [[-1, yTicks[i]], [0, yTicks[i]]], {
+                strokeColor: AXIS_COL, strokeWidth: 1,
+                fixed: true, highlight: false
+            });
+            board.create('text', [-2.5, yTicks[i], String(yTicks[i])], {
+                fontSize: 8, anchorX: 'right', anchorY: 'middle',
+                color: AXIS_COL, fixed: true, highlight: false
+            });
+        }
+
+        /* ── X-axis tick labels at bar boundaries ───────────────────── */
+        var xBounds = [0, 10, 20, 30, 40, 50, 60, 70];
+        for (var j = 0; j < xBounds.length; j++) {
+            board.create('segment', [[xBounds[j], 0], [xBounds[j], -1]], {
+                strokeColor: AXIS_COL, strokeWidth: 1,
+                fixed: true, highlight: false
+            });
+            board.create('text', [xBounds[j], -2.8, String(xBounds[j])], {
+                fontSize: 8, anchorX: 'middle', anchorY: 'middle',
+                color: AXIS_COL, fixed: true, highlight: false
+            });
+        }
+
+        /* ── X-axis label ───────────────────────────────────────────── */
+        board.create('text', [35, -6.2, '\\text{Pastries sold per day}'], {
+            fontSize: 9, anchorX: 'middle', anchorY: 'middle',
+            color: AXIS_COL, fixed: true, highlight: false, useKatex: true
+        });
+
+        /* ── Histogram bars ─────────────────────────────────────────── */
+        var intervals = [0, 10, 20, 30, 40, 50, 60, 70];
+        var heights = [2, 5, 9, 35, 24, 15, 28];
+
+        for (var b = 0; b < heights.length; b++) {
+            var x1 = intervals[b];
+            var x2 = intervals[b + 1];
+            var h = heights[b];
+
+            var p1 = board.create('point', [x1, 0], { visible: false, name: '' });
+            var p2 = board.create('point', [x2, 0], { visible: false, name: '' });
+            var p3 = board.create('point', [x2, h], { visible: false, name: '' });
+            var p4 = board.create('point', [x1, h], { visible: false, name: '' });
+
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: BAR_FILL, fillOpacity: 0.9,
+                borders: { strokeColor: BAR_STROKE, strokeWidth: 0.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
