@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histogram — Typing Speeds</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden;
+            height: 100%; background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 600px; margin: 0; padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white; border-radius: 8px; padding: 10px;
+            height: calc(100% - 20px);
+            position: relative;
+        }
+        #board { width: 100%; height: 100%; }
+        .y-axis-title {
+            position: absolute;
+            left: 6px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-size: 13px;
+            color: #444444;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div class="y-axis-title" id="y-title"></div>
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        // Render y-axis title with KaTeX
+        katex.render('\\text{Frequency}', document.getElementById('y-title'), { throwOnError: false });
+
+        var BAR_FILL = '#2563EB';
+        var BAR_STROKE = '#ffffff';
+        var AXIS_COL = '#444444';
+        var GRID_COL = '#D1D5DB';
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [10, 18, 100, -5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Horizontal grid lines (y = 0, 2, 4, …, 16) ────────────────
+        var yGridVals = [0, 2, 4, 6, 8, 10, 12, 14, 16];
+        for (var g = 0; g < yGridVals.length; g++) {
+            board.create('line', [[10, yGridVals[g]], [100, yGridVals[g]]], {
+                strokeColor: GRID_COL, strokeWidth: 0.4,
+                fixed: true, highlight: false,
+                straightFirst: false, straightLast: false
+            });
+        }
+
+        // ── Axes ────────────────────────────────────────────────────────
+        // X-axis: from ~12 to 98 (with arrow)
+        board.create('arrow', [[12, 0], [98, 0]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Y-axis: starts at 0, goes up to 17.5 (with arrow) — no extension below zero
+        board.create('arrow', [[20, 0], [20, 17.5]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // ── X-axis ticks and labels (20, 30, …, 90) ────────────────────
+        var xTickVals = [20, 30, 40, 50, 60, 70, 80, 90];
+        for (var i = 0; i < xTickVals.length; i++) {
+            var xv = xTickVals[i];
+            // Tick mark
+            board.create('segment', [[xv, -0.4], [xv, 0.4]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            // Label
+            board.create('text', [xv, -1.6, String(xv)], {
+                fontSize: 11, color: AXIS_COL, anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Y-axis ticks and labels (0, 2, 4, …, 16) ───────────────────
+        var yTickVals = [0, 2, 4, 6, 8, 10, 12, 14, 16];
+        for (var j = 0; j < yTickVals.length; j++) {
+            var yv = yTickVals[j];
+            // Tick mark
+            board.create('segment', [[19.4, yv], [20.6, yv]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            // Label (skip 0 to avoid clutter at origin)
+            if (yv > 0) {
+                board.create('text', [17.5, yv, String(yv)], {
+                    fontSize: 11, color: AXIS_COL, anchorX: 'middle', anchorY: 'middle',
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── X-axis title (centered below) ───────────────────────────────
+        board.create('text', [55, -3.8, '\\text{Typing speed (words per minute)}'], {
+            fontSize: 13, color: AXIS_COL, anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Histogram bars ──────────────────────────────────────────────
+        var bins = [
+            { lo: 20, hi: 30, freq: 2 },
+            { lo: 30, hi: 40, freq: 4 },
+            { lo: 40, hi: 50, freq: 5 },
+            { lo: 50, hi: 60, freq: 8 },
+            { lo: 60, hi: 70, freq: 13 },
+            { lo: 70, hi: 80, freq: 15 },
+            { lo: 80, hi: 90, freq: 8 }
+        ];
+
+        for (var b = 0; b < bins.length; b++) {
+            var bin = bins[b];
+            var p1 = board.create('point', [bin.lo, 0], { visible: false, name: '' });
+            var p2 = board.create('point', [bin.hi, 0], { visible: false, name: '' });
+            var p3 = board.create('point', [bin.hi, bin.freq], { visible: false, name: '' });
+            var p4 = board.create('point', [bin.lo, bin.freq], { visible: false, name: '' });
+
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: BAR_FILL, fillOpacity: 0.9,
+                borders: { strokeColor: BAR_STROKE, strokeWidth: 0.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
