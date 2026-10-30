@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorite Sport — Grouped Bar Chart</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 58, 11.5, -6],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_BOYS = '#2563EB';
+        var COL_GIRLS = '#D97706';
+        var COL_AXIS = '#444444';
+        var COL_GRID = '#444444';
+
+        // ── Data ────────────────────────────────────────────────────────
+        var sports = ['Basketball', 'Soccer', 'Swimming'];
+        var boysData = [45, 30, 15];
+        var girlsData = [25, 40, 25];
+
+        // ── Layout constants ────────────────────────────────────────────
+        var groupCenters = [2, 5.5, 9];
+        var barWidth = 1.2;
+        var barGap = 0.2;
+
+        // ── Draw horizontal dashed gridlines ────────────────────────────
+        var i, y;
+        for (i = 1; i <= 10; i++) {
+            y = i * 5;
+            board.create('segment', [[0, y], [10.8, y]], {
+                strokeColor: COL_GRID, strokeWidth: 0.8, dash: 2,
+                fixed: true, highlight: false, layer: 0
+            });
+        }
+
+        // ── Draw axes (no arrowheads) ───────────────────────────────────
+        board.create('segment', [[0, 0], [0, 52]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[0, 0], [10.8, 0]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2,
+            fixed: true, highlight: false
+        });
+
+        // ── Y-axis tick labels ──────────────────────────────────────────
+        for (i = 0; i <= 10; i++) {
+            y = i * 5;
+            board.create('segment', [[-0.2, y], [0, y]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            board.create('text', [-0.5, y, String(y)], {
+                fontSize: 11, color: COL_AXIS, anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Helper: draw a bar (filled polygon) ────────────────────────
+        function drawBar(x1, height, color) {
+            var x2 = x1 + barWidth;
+            var p1 = board.create('point', [x1, 0], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [x2, 0], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [x2, height], { visible: false, fixed: true, name: '' });
+            var p4 = board.create('point', [x1, height], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: color, fillOpacity: 0.85,
+                borders: { strokeColor: '#333333', strokeWidth: 1 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        // ── Draw bars and sport labels ──────────────────────────────────
+        var g, cx, bx1, gx1;
+        for (g = 0; g < 3; g++) {
+            cx = groupCenters[g];
+            bx1 = cx - barWidth - barGap / 2;
+            gx1 = cx + barGap / 2;
+
+            drawBar(bx1, boysData[g], COL_BOYS);
+            drawBar(gx1, girlsData[g], COL_GIRLS);
+
+            // Sport name below x-axis
+            board.create('text', [cx, -2.2, sports[g]], {
+                fontSize: 12, color: '#222222', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false, cssStyle: 'font-weight:500'
+            });
+        }
+
+        // ── Title ───────────────────────────────────────────────────────
+        board.create('text', [5.4, 56, 'Favorite Sport'], {
+            fontSize: 16, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:700'
+        });
+
+        // ── Y-axis label (rotated) ─────────────────────────────────────
+        board.create('text', [-2.0, 25, 'Number of Students'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight:500; writing-mode: vertical-rl; transform: rotate(180deg);'
+        });
+
+        // ── Legend (top-right) ──────────────────────────────────────────
+        var lx = 8.4, ly = 53.5;
+        var lp1 = board.create('point', [lx, ly], { visible: false, fixed: true, name: '' });
+        var lp2 = board.create('point', [lx + 0.6, ly], { visible: false, fixed: true, name: '' });
+        var lp3 = board.create('point', [lx + 0.6, ly + 1.2], { visible: false, fixed: true, name: '' });
+        var lp4 = board.create('point', [lx, ly + 1.2], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [lp1, lp2, lp3, lp4], {
+            fillColor: COL_BOYS, fillOpacity: 0.85,
+            borders: { strokeColor: '#333333', strokeWidth: 0.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        board.create('text', [lx + 0.9, ly + 0.6, 'Boys'], {
+            fontSize: 11, color: '#222222', anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:500'
+        });
+
+        var ly2 = ly - 2.0;
+        var gp1 = board.create('point', [lx, ly2], { visible: false, fixed: true, name: '' });
+        var gp2 = board.create('point', [lx + 0.6, ly2], { visible: false, fixed: true, name: '' });
+        var gp3 = board.create('point', [lx + 0.6, ly2 + 1.2], { visible: false, fixed: true, name: '' });
+        var gp4 = board.create('point', [lx, ly2 + 1.2], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [gp1, gp2, gp3, gp4], {
+            fillColor: COL_GIRLS, fillOpacity: 0.85,
+            borders: { strokeColor: '#333333', strokeWidth: 0.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        board.create('text', [lx + 0.9, ly2 + 0.6, 'Girls'], {
+            fontSize: 11, color: '#222222', anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:500'
+        });
+    </script>
+</body>
+</html>
