@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factory A vs Factory B — Histograms</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden;
+            height: 100%; background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 600px; margin: 0; padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white; border-radius: 8px; padding: 10px;
+            height: calc(100% - 20px); position: relative;
+        }
+        .hist-area {
+            display: flex; gap: 0; height: calc(100% - 52px);
+        }
+        .hist-panel {
+            flex: 1; position: relative;
+        }
+        .hist-board {
+            width: 100%; height: 100%;
+        }
+        .hist-title {
+            text-align: center; font-size: 15px; font-weight: 700;
+            margin-bottom: 2px; letter-spacing: 0.3px;
+        }
+        .y-label {
+            position: absolute; left: -12px; top: 50%;
+            transform: rotate(-90deg) translateX(-50%);
+            transform-origin: 0 0;
+            font-size: 13px; font-style: italic; color: #444444;
+            white-space: nowrap;
+        }
+        .shared-x-label {
+            text-align: center; font-size: 13px; font-style: italic;
+            color: #444444; margin-top: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div class="hist-area">
+                <!-- Factory A -->
+                <div class="hist-panel">
+                    <div class="hist-title" style="color: #2563EB;">Factory A</div>
+                    <div class="y-label">Frequency</div>
+                    <div class="hist-board" id="boardA"></div>
+                </div>
+                <!-- Factory B -->
+                <div class="hist-panel">
+                    <div class="hist-title" style="color: #059669;">Factory B</div>
+                    <div class="hist-board" id="boardB"></div>
+                </div>
+            </div>
+            <div class="shared-x-label">Widgets per Shift</div>
+        </div>
+    </div>
+
+    <script>
+        var AXIS_COL   = '#444444';
+        var GRID_COL   = '#D1D5DB';
+        var BAR_STROKE = '#ffffff';
+
+        var intervals = [40, 45, 50, 55, 60, 65];
+        var factoryA  = [1, 5, 13, 5, 1];
+        var factoryB  = [2, 3, 4, 7, 9];
+
+        var xMin = 38, xMax = 67;
+        var yMin = -1.5, yMax = 15.5;
+
+        function buildHistogram(containerId, data, barFill) {
+            var board = JXG.JSXGraph.initBoard(containerId, {
+                boundingbox: [xMin, yMax, xMax, yMin],
+                axis: false,
+                grid: false,
+                showNavigation: false,
+                showCopyright: false,
+                pan: { enabled: false },
+                zoom: { enabled: false },
+                keepAspectRatio: false
+            });
+
+            var g;
+            for (g = 0; g <= 14; g += 2) {
+                board.create('line', [[xMin, g], [xMax, g]], {
+                    strokeColor: GRID_COL, strokeWidth: 0.4,
+                    straightFirst: false, straightLast: false,
+                    fixed: true, highlight: false,
+                    point1: { visible: false }, point2: { visible: false }
+                });
+            }
+
+            board.create('segment', [[xMin + 1, 0], [xMax - 0.5, 0]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+            board.create('segment', [[40, yMin + 0.8], [40, yMax - 0.5]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+
+            var i;
+            for (i = 0; i < intervals.length; i++) {
+                var xv = intervals[i];
+                board.create('segment', [[xv, -0.3], [xv, 0.3]], {
+                    strokeColor: AXIS_COL, strokeWidth: 1.0,
+                    fixed: true, highlight: false
+                });
+                board.create('text', [xv, -1.1, String(xv)], {
+                    fontSize: 11, color: AXIS_COL, anchorX: 'middle', anchorY: 'middle',
+                    fixed: true, highlight: false
+                });
+            }
+
+            for (g = 0; g <= 14; g += 2) {
+                board.create('segment', [[39.7, g], [40.3, g]], {
+                    strokeColor: AXIS_COL, strokeWidth: 1.0,
+                    fixed: true, highlight: false
+                });
+                board.create('text', [39.0, g, String(g)], {
+                    fontSize: 11, color: AXIS_COL, anchorX: 'middle', anchorY: 'middle',
+                    fixed: true, highlight: false
+                });
+            }
+
+            for (i = 0; i < data.length; i++) {
+                var x1 = intervals[i];
+                var x2 = intervals[i + 1];
+                var h  = data[i];
+
+                var p1 = board.create('point', [x1, 0], { visible: false, name: '' });
+                var p2 = board.create('point', [x2, 0], { visible: false, name: '' });
+                var p3 = board.create('point', [x2, h], { visible: false, name: '' });
+                var p4 = board.create('point', [x1, h], { visible: false, name: '' });
+
+                board.create('polygon', [p1, p2, p3, p4], {
+                    fillColor: barFill, fillOpacity: 0.9,
+                    vertices: { visible: false },
+                    borders: { strokeColor: BAR_STROKE, strokeWidth: 0.5 },
+                    hasInnerPoints: false, fixed: true, highlight: false
+                });
+            }
+
+            return board;
+        }
+
+        var boardA = buildHistogram('boardA', factoryA, '#2563EB');
+        var boardB = buildHistogram('boardB', factoryB, '#059669');
+    </script>
+</body>
+</html>
