@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Side-by-Side Histograms — Warehouse A & B</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 600px; margin: 0; padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .boards-row {
+            display: flex; gap: 10px; height: calc(100% - 4px);
+        }
+        .board-col {
+            flex: 1; display: flex; flex-direction: column; min-width: 0;
+        }
+        .board-title {
+            text-align: center; font-size: 14px; font-weight: 700;
+            margin-bottom: 4px; padding-top: 2px;
+        }
+        .board-outer {
+            flex: 1; display: flex; min-height: 0;
+        }
+        .y-label {
+            writing-mode: vertical-lr;
+            transform: rotate(180deg);
+            font-size: 11px; color: #444444; font-style: italic;
+            display: flex; align-items: center; justify-content: center;
+            padding-right: 2px; letter-spacing: 0.5px;
+        }
+        .board-wrap {
+            flex: 1; background: white; border-radius: 8px; padding: 8px 6px 6px 6px;
+            min-height: 0;
+        }
+        .board-wrap > div { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="boards-row">
+            <!-- Warehouse A -->
+            <div class="board-col">
+                <div class="board-title" style="color: #2563EB;">Warehouse A</div>
+                <div class="board-outer">
+                    <div class="y-label">Frequency</div>
+                    <div class="board-wrap">
+                        <div id="boardA"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Warehouse B -->
+            <div class="board-col">
+                <div class="board-title" style="color: #059669;">Warehouse B</div>
+                <div class="board-outer">
+                    <div class="y-label">Frequency</div>
+                    <div class="board-wrap">
+                        <div id="boardB"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ================================================================
+         *  Helper: draw a histogram on a JSXGraph board
+         * ================================================================ */
+        function drawHistogram(boardId, bbx, intervals, freqs, barColor, xTickVals, xLabel) {
+            var board = JXG.JSXGraph.initBoard(boardId, {
+                boundingbox: bbx,
+                axis: false,
+                grid: false,
+                showNavigation: false,
+                showCopyright: false,
+                pan: { enabled: false },
+                zoom: { enabled: false },
+                keepAspectRatio: false
+            });
+
+            var axisXLeft = intervals[0];
+            var axisXRight = intervals[intervals.length - 1];
+
+            /* ── Horizontal gridlines (frequency 1–10) ─────────────── */
+            for (var g = 1; g <= 10; g++) {
+                board.create('segment', [[axisXLeft, g], [axisXRight, g]], {
+                    strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+                });
+            }
+
+            /* ── Axes ──────────────────────────────────────────────── */
+            // x-axis
+            board.create('arrow', [[axisXLeft - 5, 0], [axisXRight + 12, 0]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+                lastArrow: { type: 2, size: 5 }
+            });
+            // y-axis
+            board.create('arrow', [[axisXLeft, -0.3], [axisXLeft, 10.8]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+                lastArrow: { type: 2, size: 5 }
+            });
+
+            /* ── X-axis ticks & labels ─────────────────────────────── */
+            for (var t = 0; t < xTickVals.length; t++) {
+                var xv = xTickVals[t];
+                // tick mark
+                board.create('segment', [[xv, -0.25], [xv, 0.25]], {
+                    strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+                });
+                // label
+                board.create('text', [xv, -0.85, String(xv)], {
+                    anchorX: 'middle', anchorY: 'middle',
+                    fontSize: 10, color: '#444444', fixed: true, highlight: false
+                });
+            }
+
+            /* ── Y-axis ticks & labels ─────────────────────────────── */
+            for (var yi = 0; yi <= 10; yi++) {
+                // tick
+                board.create('segment', [[axisXLeft - 2, yi], [axisXLeft + 2, yi]], {
+                    strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+                });
+                // label
+                board.create('text', [axisXLeft - 8, yi, String(yi)], {
+                    anchorX: 'middle', anchorY: 'middle',
+                    fontSize: 10, color: '#444444', fixed: true, highlight: false
+                });
+            }
+
+            /* ── X-axis name label (centered below) ────────────────── */
+            var xCenter = (axisXLeft + axisXRight) / 2;
+            board.create('text', [xCenter, -1.8, xLabel], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 10, color: '#444444', fixed: true, highlight: false,
+                cssStyle: 'font-style: italic;'
+            });
+
+            /* ── Bars (polygons) ───────────────────────────────────── */
+            for (var i = 0; i < freqs.length; i++) {
+                var x1 = intervals[i];
+                var x2 = intervals[i + 1];
+                var h = freqs[i];
+                var p1 = board.create('point', [x1, 0], { visible: false, name: '' });
+                var p2 = board.create('point', [x2, 0], { visible: false, name: '' });
+                var p3 = board.create('point', [x2, h], { visible: false, name: '' });
+                var p4 = board.create('point', [x1, h], { visible: false, name: '' });
+                board.create('polygon', [p1, p2, p3, p4], {
+                    fillColor: barColor, fillOpacity: 0.70,
+                    borders: { strokeColor: barColor, strokeWidth: 1.5 },
+                    vertices: { visible: false },
+                    hasInnerPoints: false, fixed: true, highlight: false
+                });
+            }
+
+            return board;
+        }
+
+        /* ================================================================
+         *  Warehouse A
+         * ================================================================ */
+        var intervalsA = [200, 250, 300, 350, 400, 450];
+        var freqsA = [2, 3, 5, 7, 8];
+        var xTicksA = [200, 250, 300, 350, 400, 450];
+        drawHistogram('boardA',
+            [180, 11.2, 468, -2.5],
+            intervalsA, freqsA, '#2563EB', xTicksA,
+            'Daily Packages Processed'
+        );
+
+        /* ================================================================
+         *  Warehouse B
+         * ================================================================ */
+        var intervalsB = [150, 200, 250, 300, 350, 400];
+        var freqsB = [3, 5, 9, 5, 3];
+        var xTicksB = [150, 200, 250, 300, 350, 400];
+        drawHistogram('boardB',
+            [130, 11.2, 418, -2.5],
+            intervalsB, freqsB, '#059669', xTicksB,
+            'Daily Packages Processed'
+        );
+    </script>
+</body>
+</html>
