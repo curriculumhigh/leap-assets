@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histogram — Hours Spent Volunteering</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 4px; height: calc(100% - 8px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 13.5, 32, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var BAR_FILL = '#2563EB';
+        var BAR_STROKE = '#ffffff';
+        var AXIS_COL = '#444444';
+        var GRID_COL = '#D1D5DB';
+
+        var intervals = [0, 4, 8, 12, 16, 20, 24, 28];
+        var heights = [11, 9, 8, 5, 4, 2, 1];
+        var intervalLabels = ['0\u20133', '4\u20137', '8\u201311', '12\u201315', '16\u201319', '20\u201323', '24\u201327'];
+
+        // ── Horizontal grid lines at y = 2, 4, 6, 8, 10, 12 ────────────
+        for (var g = 2; g <= 12; g += 2) {
+            board.create('segment', [[0, g], [28, g]], {
+                strokeColor: GRID_COL, strokeWidth: 0.4, fixed: true, highlight: false, layer: 0
+            });
+        }
+
+        // ── Bars ────────────────────────────────────────────────────────
+        for (var i = 0; i < heights.length; i++) {
+            var x1 = intervals[i];
+            var x2 = intervals[i + 1];
+            var h = heights[i];
+
+            var p1 = board.create('point', [x1, 0], { visible: false, name: '' });
+            var p2 = board.create('point', [x2, 0], { visible: false, name: '' });
+            var p3 = board.create('point', [x2, h], { visible: false, name: '' });
+            var p4 = board.create('point', [x1, h], { visible: false, name: '' });
+
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: BAR_FILL, fillOpacity: 0.9,
+                borders: { strokeColor: BAR_STROKE, strokeWidth: 0.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false,
+                layer: 5
+            });
+        }
+
+        // ── Axes (plain segments, no arrows) ────────────────────────────
+        board.create('segment', [[0, 0], [29, 0]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false, layer: 7
+        });
+        board.create('segment', [[0, 0], [0, 12.5]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false, layer: 7
+        });
+
+        // ── x-axis interval labels (centered under each bar) ───────────
+        for (var i = 0; i < intervalLabels.length; i++) {
+            var midX = (intervals[i] + intervals[i + 1]) / 2;
+            board.create('text', [midX, -0.8, intervalLabels[i]], {
+                fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+                color: '#333333', fixed: true, highlight: false
+            });
+        }
+
+        // ── y-axis tick marks & labels at 0, 2, 4, 6, 8, 10, 12 ───────
+        for (var yv = 0; yv <= 12; yv += 2) {
+            board.create('segment', [[-0.35, yv], [0.35, yv]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.0, fixed: true, highlight: false, layer: 7
+            });
+            board.create('text', [-1, yv, String(yv)], {
+                fontSize: 11, anchorX: 'right', anchorY: 'middle',
+                color: '#333333', fixed: true, highlight: false
+            });
+        }
+
+        // ── Axis title: "Hours spent volunteering" ─────────────────────
+        board.create('text', [14, -1.8, '\\textit{Hours spent volunteering}'], {
+            fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+            color: '#333333', fixed: true, highlight: false, useKatex: true
+        });
+
+        // ── Axis title: "Frequency" (rotated) ──────────────────────────
+        board.create('text', [-4.5, 6, '\\textit{Frequency}'], {
+            fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+            color: '#333333', fixed: true, highlight: false, useKatex: true,
+            rotate: 90
+        });
+    </script>
+</body>
+</html>
