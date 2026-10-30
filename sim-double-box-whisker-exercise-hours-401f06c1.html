@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Box-and-Whisker Plot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 9.8, 22, -0.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Constants ───────────────────────────────────────────────────
+        var AXIS_Y = 1.2;
+        var MS_CENTER = 7.0;
+        var HS_CENTER = 3.8;
+        var BOX_HALF = 0.55;
+        var CAP_HALF = 0.35;
+        var LABEL_OFFSET = 0.55;
+
+        var COL_OUTLINE = '#222222';
+        var COL_MEDIAN = '#DC2626';
+        var COL_GRID = '#D1D5DB';
+        var COL_AXIS = '#444444';
+        var COL_MS_FILL = '#DBEAFE';
+        var COL_HS_FILL = '#D1FAE5';
+        var COL_LABEL = '#222222';
+        var COL_CAT = '#444444';
+
+        // ── Five-number summaries ───────────────────────────────────────
+        var MS = { min: 1, q1: 6, med: 10, q3: 14, max: 19 };
+        var HS = { min: 0, q1: 3, med: 5, q3: 9, max: 18 };
+
+        // ── Vertical gridlines (every 2 from 0 to 20) ──────────────────
+        var i;
+        for (i = 0; i <= 20; i += 2) {
+            board.create('segment', [[i, AXIS_Y], [i, 9.2]], {
+                strokeColor: COL_GRID, strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Horizontal number line (axis) ───────────────────────────────
+        board.create('segment', [[-0.5, AXIS_Y], [20.5, AXIS_Y]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Tick marks and labels every 2 from 0 to 20
+        for (i = 0; i <= 20; i += 2) {
+            board.create('segment', [[i, AXIS_Y - 0.18], [i, AXIS_Y + 0.18]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [i, AXIS_Y - 0.55, String(i)], {
+                fontSize: 11, color: COL_AXIS, anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Axis title
+        board.create('text', [10, 0.15, 'Weekly Exercise Hours'], {
+            fontSize: 13, color: COL_AXIS, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-style: italic;'
+        });
+
+        // ── Helper: draw one box-and-whisker plot ───────────────────────
+        function drawBoxPlot(data, centerY, fillColor, labelAbove) {
+            var top = centerY + BOX_HALF;
+            var bot = centerY - BOX_HALF;
+            var capTop = centerY + CAP_HALF;
+            var capBot = centerY - CAP_HALF;
+            var labelY = labelAbove ? top + LABEL_OFFSET : bot - LABEL_OFFSET;
+
+            // Box (Q1 to Q3)
+            var p1 = board.create('point', [data.q1, top], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [data.q3, top], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [data.q3, bot], { visible: false, fixed: true, name: '' });
+            var p4 = board.create('point', [data.q1, bot], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: fillColor, fillOpacity: 0.5,
+                borders: { strokeColor: COL_OUTLINE, strokeWidth: 1.8 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            // Median line (red)
+            board.create('segment', [[data.med, top], [data.med, bot]], {
+                strokeColor: COL_MEDIAN, strokeWidth: 2.0, fixed: true, highlight: false
+            });
+
+            // Left whisker (min to Q1)
+            board.create('segment', [[data.min, centerY], [data.q1, centerY]], {
+                strokeColor: COL_OUTLINE, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // Right whisker (Q3 to max)
+            board.create('segment', [[data.q3, centerY], [data.max, centerY]], {
+                strokeColor: COL_OUTLINE, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // Whisker cap at min
+            board.create('segment', [[data.min, capTop], [data.min, capBot]], {
+                strokeColor: COL_OUTLINE, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // Whisker cap at max
+            board.create('segment', [[data.max, capTop], [data.max, capBot]], {
+                strokeColor: COL_OUTLINE, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // Value labels at all five summary points
+            var values = [data.min, data.q1, data.med, data.q3, data.max];
+            for (var v = 0; v < values.length; v++) {
+                board.create('text', [values[v], labelY, String(values[v])], {
+                    fontSize: 12, color: COL_LABEL, anchorX: 'middle', anchorY: 'middle',
+                    fixed: true, highlight: false, cssStyle: 'font-weight: 600;'
+                });
+            }
+        }
+
+        // ── Draw both box plots ─────────────────────────────────────────
+        drawBoxPlot(MS, MS_CENTER, COL_MS_FILL, true);
+        drawBoxPlot(HS, HS_CENTER, COL_HS_FILL, false);
+
+        // ── Category labels (left side) ─────────────────────────────────
+        board.create('text', [-3.2, MS_CENTER, 'Middle'], {
+            fontSize: 13, color: COL_CAT, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight: 700;'
+        });
+        board.create('text', [-3.2, MS_CENTER - 0.55, 'Schoolers'], {
+            fontSize: 13, color: COL_CAT, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight: 700;'
+        });
+
+        board.create('text', [-3.2, HS_CENTER, 'High'], {
+            fontSize: 13, color: COL_CAT, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight: 700;'
+        });
+        board.create('text', [-3.2, HS_CENTER - 0.55, 'Schoolers'], {
+            fontSize: 13, color: COL_CAT, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight: 700;'
+        });
+    </script>
+</body>
+</html>
