@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piecewise Step Function — Distractor (Increasing)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var BB = [-1.5, 10.5, 14.5, -6.5];
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: BB,
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Major gridlines only (every 2 units) ────────────────────────
+        var xMax = Math.floor(BB[2]);
+        var yMin = Math.ceil(BB[3]);
+        var yMax = Math.floor(BB[1]);
+
+        // Vertical gridlines every 2 units
+        for (var gx = 2; gx <= xMax; gx += 2) {
+            board.create('segment', [[gx, BB[3]], [gx, BB[1]]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, strokeOpacity: 0.6,
+                fixed: true, highlight: false, layer: 0
+            });
+        }
+
+        // Horizontal gridlines every 2 units
+        for (var gy = yMin; gy <= yMax; gy += 2) {
+            if (gy === 0) continue;
+            board.create('segment', [[BB[0], gy], [BB[2], gy]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, strokeOpacity: 0.6,
+                fixed: true, highlight: false, layer: 0
+            });
+        }
+
+        // ── Manual x-axis ───────────────────────────────────────────────
+        var xAxis = board.create('line', [[0, 0], [1, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 4 },
+            fixed: true, highlight: false
+        });
+        board.create('ticks', [xAxis, 2], {
+            strokeColor: '#444444',
+            minorTicks: 0,
+            majorHeight: 8,
+            drawLabels: true,
+            label: { fontSize: 9, offset: [0, -12] },
+            insertTicks: false,
+            includeBoundaries: false
+        });
+
+        // ── Manual y-axis ───────────────────────────────────────────────
+        var yAxis = board.create('line', [[0, 0], [0, 1]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 4 },
+            fixed: true, highlight: false
+        });
+        board.create('ticks', [yAxis, 2], {
+            strokeColor: '#444444',
+            minorTicks: 0,
+            majorHeight: 8,
+            drawLabels: true,
+            label: { fontSize: 9, offset: [-12, 0] },
+            insertTicks: false,
+            includeBoundaries: false
+        });
+
+        // Axis labels
+        board.create('text', [13.9, -0.5, '<i>x</i>'], { fontSize: 11, fixed: true, highlight: false });
+        board.create('text', [0.3, 10.1, '<i>y</i>'], { fontSize: 11, fixed: true, highlight: false });
+
+        // ── Piecewise segments ──────────────────────────────────────────
+        var COL = '#222222';
+        var SW = 1.8;
+        var PT_SIZE = 3.5;
+
+        var segs = [
+            [2, 5, -4, true, false],
+            [5, 7, -1, true, false],
+            [7, 10, 3, true, false],
+            [10, 13, 8, true, true]
+        ];
+
+        for (var i = 0; i < segs.length; i++) {
+            var s = segs[i];
+            var x1 = s[0], x2 = s[1], yVal = s[2], cL = s[3], cR = s[4];
+
+            board.create('segment', [[x1, yVal], [x2, yVal]], {
+                strokeColor: COL, strokeWidth: SW, fixed: true, highlight: false
+            });
+
+            if (cL) {
+                board.create('point', [x1, yVal], {
+                    name: '', size: PT_SIZE, color: COL, fixed: true,
+                    highlight: false, showInfobox: false
+                });
+            } else {
+                board.create('point', [x1, yVal], {
+                    name: '', size: PT_SIZE, fillColor: '#ffffff',
+                    strokeColor: COL, strokeWidth: 1.5, fixed: true,
+                    highlight: false, showInfobox: false
+                });
+            }
+
+            if (cR) {
+                board.create('point', [x2, yVal], {
+                    name: '', size: PT_SIZE, color: COL, fixed: true,
+                    highlight: false, showInfobox: false
+                });
+            } else {
+                board.create('point', [x2, yVal], {
+                    name: '', size: PT_SIZE, fillColor: '#ffffff',
+                    strokeColor: COL, strokeWidth: 1.5, fixed: true,
+                    highlight: false, showInfobox: false
+                });
+            }
+        }
+
+        // Function label
+        board.create('text', [1.0, 9.2, 'g(x)'], {
+            fontSize: 10, color: COL, useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
