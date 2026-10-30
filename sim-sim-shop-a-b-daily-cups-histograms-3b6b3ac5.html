@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop A & Shop B — Daily Cups Sold Histograms</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 760px; margin: 0; padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .boards-row {
+            display: flex; gap: 16px; height: 100%;
+        }
+        .board-col {
+            flex: 1; display: flex; flex-direction: column; min-width: 0;
+        }
+        .board-title {
+            text-align: center; font-size: 15px; font-weight: 700;
+            margin-bottom: 4px; padding-top: 4px;
+        }
+        .board-wrapper {
+            flex: 1; background: white; border-radius: 8px; padding: 10px;
+            min-height: 0;
+        }
+        .board-wrapper > div { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="boards-row">
+            <div class="board-col">
+                <div class="board-title" style="color: #2563EB;">Shop A</div>
+                <div class="board-wrapper">
+                    <div id="boardA"></div>
+                </div>
+            </div>
+            <div class="board-col">
+                <div class="board-title" style="color: #059669;">Shop B</div>
+                <div class="board-wrapper">
+                    <div id="boardB"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ── Helper: draw a histogram on a given board ───────────────────── */
+        function buildHistogram(boardId, bbx, intervals, freqs, barColor, yAxisX) {
+            var board = JXG.JSXGraph.initBoard(boardId, {
+                boundingbox: bbx,
+                axis: false,
+                grid: false,
+                showNavigation: false,
+                showCopyright: false,
+                pan: { enabled: false },
+                zoom: { enabled: false }
+            });
+
+            var xMax = bbx[2], yMax = bbx[1];
+            var i;
+
+            /* ── Horizontal gridlines (y = 1 … 10) ─────────────────────── */
+            for (i = 1; i <= 10; i++) {
+                board.create('line', [[yAxisX, i], [intervals[intervals.length - 1], i]], {
+                    strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                    straightFirst: false, straightLast: false,
+                    fixed: true, highlight: false
+                });
+            }
+
+            /* ── X-axis ─────────────────────────────────────────────────── */
+            board.create('arrow', [[yAxisX, 0], [xMax - 2, 0]], {
+                strokeColor: '#444444', strokeWidth: 1.2,
+                lastArrow: { type: 2, size: 6 },
+                fixed: true, highlight: false
+            });
+
+            /* ── Y-axis ─────────────────────────────────────────────────── */
+            board.create('arrow', [[yAxisX, 0], [yAxisX, yMax - 0.3]], {
+                strokeColor: '#444444', strokeWidth: 1.2,
+                lastArrow: { type: 2, size: 6 },
+                fixed: true, highlight: false
+            });
+
+            /* ── X-axis ticks & labels ──────────────────────────────────── */
+            for (i = 0; i < intervals.length; i++) {
+                var xv = intervals[i];
+                board.create('segment', [[xv, -0.25], [xv, 0.25]], {
+                    strokeColor: '#444444', strokeWidth: 1.0,
+                    fixed: true, highlight: false
+                });
+                board.create('text', [xv, -0.9, String(xv)], {
+                    fontSize: 10, anchorX: 'middle', anchorY: 'middle',
+                    color: '#444444', fixed: true, highlight: false
+                });
+            }
+
+            /* ── Y-axis ticks & labels (1–10) ──────────────────────────── */
+            for (i = 1; i <= 10; i++) {
+                board.create('segment', [[yAxisX - 1.5, i], [yAxisX + 1.5, i]], {
+                    strokeColor: '#444444', strokeWidth: 1.0,
+                    fixed: true, highlight: false
+                });
+                board.create('text', [yAxisX - 3, i, String(i)], {
+                    fontSize: 10, anchorX: 'middle', anchorY: 'middle',
+                    color: '#444444', fixed: true, highlight: false
+                });
+            }
+
+            /* ── "0" label — shifted below axis to avoid overlap ────────── */
+            board.create('text', [yAxisX - 3, -0.5, '0'], {
+                fontSize: 10, anchorX: 'middle', anchorY: 'middle',
+                color: '#444444', fixed: true, highlight: false
+            });
+
+            /* ── Axis labels (KaTeX) ────────────────────────────────────── */
+            var xMid = (intervals[0] + intervals[intervals.length - 1]) / 2;
+            board.create('text', [xMid, -2.1, '\\text{Daily cups sold}'], {
+                fontSize: 12, anchorX: 'middle', anchorY: 'middle',
+                useKatex: true, color: '#444444', fixed: true, highlight: false
+            });
+
+            board.create('text', [yAxisX - 11.5, 5, '\\text{Frequency}'], {
+                fontSize: 12, anchorX: 'middle', anchorY: 'middle',
+                useKatex: true, color: '#444444', fixed: true, highlight: false,
+                display: 'html',
+                cssStyle: 'writing-mode: vertical-rl; transform: rotate(180deg);'
+            });
+
+            /* ── Bars ───────────────────────────────────────────────────── */
+            for (i = 0; i < freqs.length; i++) {
+                var x1 = intervals[i];
+                var x2 = intervals[i + 1];
+                var h = freqs[i];
+
+                var p1 = board.create('point', [x1, 0], { visible: false, fixed: true, name: '' });
+                var p2 = board.create('point', [x2, 0], { visible: false, fixed: true, name: '' });
+                var p3 = board.create('point', [x2, h], { visible: false, fixed: true, name: '' });
+                var p4 = board.create('point', [x1, h], { visible: false, fixed: true, name: '' });
+
+                board.create('polygon', [p1, p2, p3, p4], {
+                    fillColor: barColor,
+                    fillOpacity: 0.35,
+                    borders: { strokeColor: barColor, strokeWidth: 1.5 },
+                    vertices: { visible: false },
+                    hasInnerPoints: false,
+                    fixed: true, highlight: false
+                });
+            }
+
+            return board;
+        }
+
+        /* ── Shop A ─────────────────────────────────────────────────────── */
+        var intervalsA = [120, 140, 160, 180, 200, 220];
+        var freqsA = [2, 3, 5, 7, 8];
+        buildHistogram('boardA',
+            [85, 11.5, 232, -3],
+            intervalsA, freqsA, '#2563EB', 100);
+
+        /* ── Shop B ─────────────────────────────────────────────────────── */
+        var intervalsB = [80, 100, 120, 140, 160, 180];
+        var freqsB = [3, 5, 9, 5, 3];
+        buildHistogram('boardB',
+            [45, 11.5, 192, -3],
+            intervalsB, freqsB, '#059669', 60);
+    </script>
+</body>
+</html>
