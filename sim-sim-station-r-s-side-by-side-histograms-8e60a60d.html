@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Station R and Station S Histograms</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 620px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); position: relative; }
+        #board { width: 100%; height: 100%; }
+        .y-axis-label {
+            position: absolute;
+            left: -6px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-size: 13px;
+            font-style: italic;
+            color: #444444;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div class="y-axis-label">Frequency</div>
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 16.5, 61, -5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R_X0 = 0;
+        var S_X0 = 33;
+        var BAR_W = 5;
+        var Y_MAX = 15;
+        var NUM_BARS = 5;
+        var HIST_W = NUM_BARS * BAR_W;
+
+        var intervalLabels = ['50\u201354', '55\u201359', '60\u201364', '65\u201369', '70\u201374'];
+        var freqR = [2, 6, 14, 6, 2];
+        var freqS = [11, 8, 5, 4, 2];
+
+        var COL_R = '#2563EB';
+        var COL_S = '#059669';
+        var COL_AXIS = '#444444';
+        var COL_GRID = '#D1D5DB';
+
+        function drawHistogram(x0, freqs, color, title) {
+            var i, x1, x2, y, p1, p2, p3, p4;
+
+            // Horizontal grid lines
+            for (i = 2; i <= 14; i += 2) {
+                board.create('segment', [[x0, i], [x0 + HIST_W, i]], {
+                    strokeColor: COL_GRID, strokeWidth: 0.4, fixed: true, highlight: false
+                });
+            }
+
+            // Bars
+            for (i = 0; i < freqs.length; i++) {
+                x1 = x0 + i * BAR_W;
+                x2 = x1 + BAR_W;
+                y = freqs[i];
+
+                p1 = board.create('point', [x1, 0], { visible: false, name: '' });
+                p2 = board.create('point', [x2, 0], { visible: false, name: '' });
+                p3 = board.create('point', [x2, y], { visible: false, name: '' });
+                p4 = board.create('point', [x1, y], { visible: false, name: '' });
+
+                board.create('polygon', [p1, p2, p3, p4], {
+                    fillColor: color, fillOpacity: 0.55,
+                    borders: { strokeColor: color, strokeWidth: 1.5 },
+                    vertices: { visible: false },
+                    hasInnerPoints: false, fixed: true, highlight: false
+                });
+            }
+
+            // Y-axis
+            board.create('arrow', [[x0, 0], [x0, Y_MAX + 0.8]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2,
+                lastArrow: { type: 2, size: 6 },
+                fixed: true, highlight: false
+            });
+
+            // Y-axis ticks and labels
+            for (i = 2; i <= 14; i += 2) {
+                board.create('segment', [[x0 - 0.4, i], [x0, i]], {
+                    strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+                });
+                board.create('text', [x0 - 1.3, i, String(i)], {
+                    fontSize: 11, color: COL_AXIS, anchorX: 'right', anchorY: 'middle',
+                    fixed: true, highlight: false
+                });
+            }
+            board.create('text', [x0 - 1.3, 0, '0'], {
+                fontSize: 11, color: COL_AXIS, anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+
+            // X-axis
+            board.create('arrow', [[x0, 0], [x0 + HIST_W + 2, 0]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2,
+                lastArrow: { type: 2, size: 6 },
+                fixed: true, highlight: false
+            });
+
+            // X-axis ticks at bar boundaries
+            for (i = 0; i <= NUM_BARS; i++) {
+                var xPos = x0 + i * BAR_W;
+                board.create('segment', [[xPos, 0], [xPos, -0.4]], {
+                    strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+                });
+            }
+
+            // Interval labels centered under each bar
+            for (i = 0; i < NUM_BARS; i++) {
+                var barCenter = x0 + i * BAR_W + BAR_W / 2;
+                board.create('text', [barCenter, -1.4, intervalLabels[i]], {
+                    fontSize: 10, color: COL_AXIS, anchorX: 'middle', anchorY: 'middle',
+                    fixed: true, highlight: false
+                });
+            }
+
+            // Title just above the tallest bar area
+            board.create('text', [x0 + HIST_W / 2, 15.5, title], {
+                fontSize: 15, color: color, anchorX: 'middle', anchorY: 'middle',
+                cssStyle: 'font-weight:bold',
+                fixed: true, highlight: false
+            });
+        }
+
+        drawHistogram(R_X0, freqR, COL_R, 'Station R');
+        drawHistogram(S_X0, freqS, COL_S, 'Station S');
+
+        // Shared x-axis label
+        var centerX = (R_X0 + S_X0 + HIST_W) / 2;
+        board.create('text', [centerX, -3.5, 'Temperature (\u00B0F)'], {
+            fontSize: 13, color: COL_AXIS, anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-style:italic',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
