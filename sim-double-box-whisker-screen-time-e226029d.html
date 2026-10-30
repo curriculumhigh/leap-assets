@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Box-and-Whisker Plot — Screen Time</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 7, 26.5, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Data ────────────────────────────────────────────────────────
+        var teens  = { min: 2, q1: 8,  med: 12, q3: 16, max: 22, label: 'Teens' };
+        var adults = { min: 1, q1: 4,  med: 6,  q3: 10, max: 20, label: 'Adults' };
+
+        // ── Layout constants ────────────────────────────────────────────
+        var NL_Y = -0.5;       // number line vertical position
+        var TEEN_Y = 3.8;      // teens box center
+        var ADULT_Y = 1.5;     // adults box center
+        var BOX_H = 0.55;      // box half-height
+        var CAP_H = 0.55;      // whisker cap half-height
+
+        // ── Number line ─────────────────────────────────────────────────
+        board.create('segment', [[-0.5, NL_Y], [25, NL_Y]], {
+            strokeColor: '#222222',
+            strokeWidth: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        var tickH = 0.3;
+        for (var t = 0; t <= 24; t += 2) {
+            board.create('segment', [[t, NL_Y - tickH], [t, NL_Y + tickH]], {
+                strokeColor: '#222222',
+                strokeWidth: 1.5,
+                fixed: true,
+                highlight: false
+            });
+            board.create('text', [t, NL_Y - tickH - 0.35, String(t)], {
+                fontSize: 11,
+                color: '#444444',
+                anchorX: 'middle',
+                anchorY: 'top',
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // Number line label
+        board.create('text', [12, NL_Y - 1.6, 'Daily Screen Time (hours)'], {
+            fontSize: 12,
+            color: '#444444',
+            anchorX: 'middle',
+            anchorY: 'top',
+            fixed: true,
+            highlight: false,
+            cssStyle: 'font-weight:600'
+        });
+
+        // ── Helper: draw one box-and-whisker ────────────────────────────
+        function drawBoxPlot(data, centerY) {
+            // Box (Q1 to Q3)
+            var boxPts = [
+                board.create('point', [data.q1, centerY - BOX_H], { visible: false, fixed: true, name: '' }),
+                board.create('point', [data.q3, centerY - BOX_H], { visible: false, fixed: true, name: '' }),
+                board.create('point', [data.q3, centerY + BOX_H], { visible: false, fixed: true, name: '' }),
+                board.create('point', [data.q1, centerY + BOX_H], { visible: false, fixed: true, name: '' })
+            ];
+            board.create('polygon', boxPts, {
+                fillColor: '#E5E7EB',
+                fillOpacity: 0.4,
+                borders: { strokeColor: '#222222', strokeWidth: 1.8 },
+                vertices: { visible: false },
+                hasInnerPoints: false,
+                fixed: true,
+                highlight: false
+            });
+
+            // Median line (red)
+            board.create('segment', [[data.med, centerY - BOX_H], [data.med, centerY + BOX_H]], {
+                strokeColor: '#DC2626',
+                strokeWidth: 2.2,
+                fixed: true,
+                highlight: false
+            });
+
+            // Left whisker (min to Q1)
+            board.create('segment', [[data.min, centerY], [data.q1, centerY]], {
+                strokeColor: '#222222',
+                strokeWidth: 1.5,
+                fixed: true,
+                highlight: false
+            });
+
+            // Right whisker (Q3 to max)
+            board.create('segment', [[data.q3, centerY], [data.max, centerY]], {
+                strokeColor: '#222222',
+                strokeWidth: 1.5,
+                fixed: true,
+                highlight: false
+            });
+
+            // Min cap
+            board.create('segment', [[data.min, centerY - CAP_H], [data.min, centerY + CAP_H]], {
+                strokeColor: '#222222',
+                strokeWidth: 1.5,
+                fixed: true,
+                highlight: false
+            });
+
+            // Max cap
+            board.create('segment', [[data.max, centerY - CAP_H], [data.max, centerY + CAP_H]], {
+                strokeColor: '#222222',
+                strokeWidth: 1.5,
+                fixed: true,
+                highlight: false
+            });
+
+            // Value labels above the box
+            var labelY = centerY + BOX_H + 0.25;
+            var keyPoints = [
+                [data.min, String(data.min)],
+                [data.q1,  String(data.q1)],
+                [data.med, String(data.med)],
+                [data.q3,  String(data.q3)],
+                [data.max, String(data.max)]
+            ];
+            for (var j = 0; j < keyPoints.length; j++) {
+                board.create('text', [keyPoints[j][0], labelY, keyPoints[j][1]], {
+                    fontSize: 11,
+                    color: '#222222',
+                    cssStyle: 'font-weight:bold',
+                    anchorX: 'middle',
+                    anchorY: 'bottom',
+                    fixed: true,
+                    highlight: false
+                });
+            }
+
+            // Category label to the left
+            board.create('text', [-1, centerY, data.label], {
+                fontSize: 13,
+                color: '#222222',
+                cssStyle: 'font-weight:600',
+                anchorX: 'right',
+                anchorY: 'middle',
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // ── Draw both plots ─────────────────────────────────────────────
+        drawBoxPlot(teens, TEEN_Y);
+        drawBoxPlot(adults, ADULT_Y);
+
+        // ── Light vertical gridlines at each tick ───────────────────────
+        for (var g = 0; g <= 24; g += 2) {
+            board.create('segment', [[g, NL_Y + tickH], [g, 6.2]], {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4,
+                fixed: true,
+                highlight: false,
+                dash: 0
+            });
+        }
+    </script>
+</body>
+</html>
