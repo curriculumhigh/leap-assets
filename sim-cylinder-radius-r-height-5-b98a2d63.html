@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cylinder Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4.5, 9, 8.5, -2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Cylinder parameters ─────────────────────────────────────────
+        var cx = 2;          // center x
+        var byBot = 1;       // bottom ellipse center y
+        var byTop = 7;       // top ellipse center y (height = 6 visual units)
+        var rx = 3;          // ellipse x-radius (visual width)
+        var ry = 0.8;        // ellipse y-radius (perspective squash)
+
+        var COL_BODY = '#555555';
+        var COL_REF = '#DC2626';
+        var SW_BODY = 2.0;
+        var SW_REF = 1.5;
+
+        // ── Bottom ellipse — back half (dashed) ─────────────────────────
+        board.create('curve', [
+            function(t) { return cx + rx * Math.cos(t); },
+            function(t) { return byBot + ry * Math.sin(t); },
+            0, Math.PI
+        ], {
+            strokeColor: COL_BODY, strokeWidth: SW_BODY, dash: 3,
+            fixed: true, highlight: false
+        });
+
+        // ── Side edges (vertical lines) ─────────────────────────────────
+        board.create('segment', [[cx - rx, byBot], [cx - rx, byTop]], {
+            strokeColor: COL_BODY, strokeWidth: SW_BODY,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[cx + rx, byBot], [cx + rx, byTop]], {
+            strokeColor: COL_BODY, strokeWidth: SW_BODY,
+            fixed: true, highlight: false
+        });
+
+        // ── Bottom ellipse — front half (solid, drawn after sides) ──────
+        board.create('curve', [
+            function(t) { return cx + rx * Math.cos(t); },
+            function(t) { return byBot + ry * Math.sin(t); },
+            Math.PI, 2 * Math.PI
+        ], {
+            strokeColor: COL_BODY, strokeWidth: SW_BODY,
+            fixed: true, highlight: false
+        });
+
+        // ── Top ellipse (full, solid) ───────────────────────────────────
+        board.create('curve', [
+            function(t) { return cx + rx * Math.cos(t); },
+            function(t) { return byTop + ry * Math.sin(t); },
+            0, 2 * Math.PI
+        ], {
+            strokeColor: COL_BODY, strokeWidth: SW_BODY,
+            fixed: true, highlight: false
+        });
+
+        // ── Center dot on bottom base ───────────────────────────────────
+        board.create('point', [cx, byBot], {
+            name: '', size: 2, color: '#222222', fixed: true,
+            highlight: false, showInfobox: false
+        });
+
+        // ── Radius line (center of bottom to right edge) ────────────────
+        board.create('segment', [[cx, byBot], [cx + rx, byBot]], {
+            strokeColor: COL_REF, strokeWidth: SW_REF,
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        // ── Radius label ────────────────────────────────────────────────
+        board.create('text', [cx + rx / 2, byBot - 0.7, 'r \\text{ in.}'], {
+            useKatex: true, fontSize: 14, color: COL_REF,
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // ── Height dimension line (right side of cylinder) ──────────────
+        var dimX = cx + rx + 1.2;
+
+        board.create('segment', [[dimX, byBot], [dimX, byTop]], {
+            strokeColor: COL_REF, strokeWidth: SW_REF,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 },
+            fixed: true, highlight: false
+        });
+
+        // Small horizontal tick marks at top and bottom of dimension line
+        board.create('segment', [[dimX - 0.3, byBot], [dimX + 0.3, byBot]], {
+            strokeColor: COL_REF, strokeWidth: SW_REF,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[dimX - 0.3, byTop], [dimX + 0.3, byTop]], {
+            strokeColor: COL_REF, strokeWidth: SW_REF,
+            fixed: true, highlight: false
+        });
+
+        // ── Height label ────────────────────────────────────────────────
+        board.create('text', [dimX + 0.5, (byBot + byTop) / 2, '5 \\text{ in.}'], {
+            useKatex: true, fontSize: 14, color: COL_REF,
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
