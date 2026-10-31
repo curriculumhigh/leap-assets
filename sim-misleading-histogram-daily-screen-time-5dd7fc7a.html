@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Screen Time — Misleading Histogram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.2, 33, 5.3, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Constants ───────────────────────────────────────────────────
+        var AXIS_COL = '#444444';
+        var GRID_COL = '#D1D5DB';
+        var GRID_COL_HIGHLIGHT = '#AAAAAA';
+        var BAR_FILL = '#2563EB';
+        var BAR_OPACITY = 0.60;
+        var BAR_STROKE = '#2563EB';
+
+        // Bar positions (equal visual width = 1.2 units, gap = 0.25)
+        var barW = 1.2;
+        var gap = 0.25;
+        var bars = [
+            { x0: 0.5,              label: '0\\text{–}29',   h: 10 },
+            { x0: 0.5+barW+gap,     label: '30\\text{–}59',  h: 18 },
+            { x0: 0.5+2*(barW+gap), label: '60\\text{–}149', h: 26 }
+        ];
+
+        var yBottom = 4;
+        var yTicks = [4, 8, 12, 16, 20, 24, 28];
+        var barHeights = [10, 18, 26];
+
+        // x-extent of chart area
+        var xLeft = 0.5;
+        var xRight = bars[2].x0 + barW;
+
+        // ── Horizontal grid lines ───────────────────────────────────────
+        for (var gi = 0; gi < yTicks.length; gi++) {
+            var yy = yTicks[gi];
+            // Check if this tick matches a bar height — make it thicker
+            var isBarHeight = (barHeights.indexOf(yy) !== -1);
+            board.create('segment', [[xLeft, yy], [xRight, yy]], {
+                strokeColor: isBarHeight ? GRID_COL_HIGHLIGHT : GRID_COL,
+                strokeWidth: isBarHeight ? 1.0 : 0.4,
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Y-axis line (from 4 to ~30) ────────────────────────────────
+        board.create('segment', [[xLeft, yBottom], [xLeft, 30]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── X-axis line (at y = 4, the bottom of the chart) ────────────
+        board.create('segment', [[xLeft, yBottom], [xRight + 0.1, yBottom]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Y-axis tick marks and labels ────────────────────────────────
+        for (var ti = 0; ti < yTicks.length; ti++) {
+            var tv = yTicks[ti];
+            board.create('segment', [[xLeft - 0.12, tv], [xLeft, tv]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [xLeft - 0.25, tv, String(tv)], {
+                fontSize: 11, color: AXIS_COL, anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Y-axis label ────────────────────────────────────────────────
+        board.create('text', [-0.85, 16, '<div style="transform:rotate(-90deg);white-space:nowrap;font-style:italic;font-size:13px;color:#444444;">Number of Students</div>'], {
+            fontSize: 13, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ── X-axis label ────────────────────────────────────────────────
+        board.create('text', [(xLeft + xRight) / 2, 0.8, '\\textit{Minutes}'], {
+            fontSize: 13, color: AXIS_COL, anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Title ───────────────────────────────────────────────────────
+        board.create('text', [(xLeft + xRight) / 2, 31.5, '\\textbf{Daily Screen Time}'], {
+            fontSize: 16, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Bars ────────────────────────────────────────────────────────
+        function makeBar(x0, height) {
+            var x1 = x0 + barW;
+            var y0 = yBottom;
+            var y1 = height;
+            var p1 = board.create('point', [x0, y0], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [x1, y0], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [x1, y1], { visible: false, fixed: true, name: '' });
+            var p4 = board.create('point', [x0, y1], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: BAR_FILL, fillOpacity: BAR_OPACITY,
+                borders: { strokeColor: BAR_STROKE, strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        for (var bi = 0; bi < bars.length; bi++) {
+            makeBar(bars[bi].x0, bars[bi].h);
+        }
+
+        // ── X-axis tick marks at bin boundaries ─────────────────────────
+        var binBoundaries = [
+            bars[0].x0,
+            bars[0].x0 + barW,
+            bars[1].x0,
+            bars[1].x0 + barW,
+            bars[2].x0,
+            bars[2].x0 + barW
+        ];
+        for (var bbi = 0; bbi < binBoundaries.length; bbi++) {
+            board.create('segment', [[binBoundaries[bbi], yBottom], [binBoundaries[bbi], yBottom - 0.35]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+        }
+
+        // ── Bin labels (centered below each bar) ────────────────────────
+        for (var li = 0; li < bars.length; li++) {
+            var cx = bars[li].x0 + barW / 2;
+            board.create('text', [cx, 2.4, bars[li].label], {
+                fontSize: 12, color: AXIS_COL, anchorX: 'middle', anchorY: 'middle',
+                useKatex: true, fixed: true, highlight: false
+            });
+        }
+
+    </script>
+</body>
+</html>
