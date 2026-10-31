@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misleading Line Graph — National Park Visitors</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); position: relative; }
+        .y-axis-label {
+            position: absolute;
+            left: -6px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-size: 13px;
+            color: #444444;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div class="y-axis-label">Visitors (thousands)</div>
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.6, 7.0, 7.5, -1.3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        // ── Data ────────────────────────────────────────────────────────
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+        var values = [8, 12, 19, 48, 55, 58];
+
+        // Misleading y-axis: real values mapped to equally-spaced screen positions
+        var yTicks = [0, 5, 10, 20, 50, 60];
+
+        function misleadingY(val) {
+            if (val <= yTicks[0]) return 0;
+            if (val >= yTicks[yTicks.length - 1]) return yTicks.length - 1;
+            for (var i = 0; i < yTicks.length - 1; i++) {
+                if (val >= yTicks[i] && val <= yTicks[i + 1]) {
+                    var frac = (val - yTicks[i]) / (yTicks[i + 1] - yTicks[i]);
+                    return i + frac;
+                }
+            }
+            return 0;
+        }
+
+        var xPositions = [1, 2, 3, 4, 5, 6];
+
+        // ── Title ───────────────────────────────────────────────────────
+        board.create('text', [3.5, 6.3, '<b>Monthly National Park Visitors</b>'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Horizontal grid lines ───────────────────────────────────────
+        var i;
+        for (i = 0; i < yTicks.length; i++) {
+            board.create('segment', [[0.5, i], [6.5, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // Vertical grid lines
+        for (i = 0; i < xPositions.length; i++) {
+            board.create('segment', [[xPositions[i], 0], [xPositions[i], 5]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Axes ────────────────────────────────────────────────────────
+        // X-axis
+        board.create('arrow', [[0.5, 0], [7.0, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // Y-axis
+        board.create('arrow', [[0.5, -0.15], [0.5, 6.0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // ── Y-axis tick marks and labels ────────────────────────────────
+        for (i = 0; i < yTicks.length; i++) {
+            board.create('segment', [[0.4, i], [0.5, i]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [-0.05, i, String(yTicks[i])], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── X-axis tick marks and labels ────────────────────────────────
+        for (i = 0; i < months.length; i++) {
+            board.create('segment', [[xPositions[i], 0], [xPositions[i], -0.12]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [xPositions[i], -0.4, months[i]], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // X-axis label
+        board.create('text', [3.75, -0.95, '<i>Month</i>'], {
+            fontSize: 13, color: '#444444', anchorX: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Plot data ───────────────────────────────────────────────────
+        var plotX = [];
+        var plotY = [];
+        for (i = 0; i < values.length; i++) {
+            plotX.push(xPositions[i]);
+            plotY.push(misleadingY(values[i]));
+        }
+
+        // Line segments
+        for (i = 0; i < plotX.length - 1; i++) {
+            board.create('segment', [[plotX[i], plotY[i]], [plotX[i + 1], plotY[i + 1]]], {
+                strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+            });
+        }
+
+        // Data points
+        for (i = 0; i < plotX.length; i++) {
+            board.create('point', [plotX[i], plotY[i]], {
+                name: '', size: 4, color: '#222222', fixed: true, highlight: false,
+                showInfobox: false
+            });
+        }
+
+        // ── Data value labels ───────────────────────────────────────────
+        for (i = 0; i < plotX.length; i++) {
+            // Place label below for the top two points to avoid clipping
+            var above = (plotY[i] < 5.2);
+            var labelOffsetY = above ? 0.3 : -0.35;
+            var anchor = above ? 'bottom' : 'top';
+            board.create('text', [plotX[i], plotY[i] + labelOffsetY, String(values[i])], {
+                fontSize: 11, color: '#222222', anchorX: 'middle', anchorY: anchor,
+                fixed: true, highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
