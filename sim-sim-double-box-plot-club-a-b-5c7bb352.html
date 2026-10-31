@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Box Plot — Club A &amp; Club B</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [2, 11, 53, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        // ── Colors ──────────────────────────────────────────────────
+        var COL_A = '#2563EB';
+        var COL_B = '#059669';
+        var COL_AXIS = '#444444';
+
+        // ── Data ────────────────────────────────────────────────────
+        var A = { min: 15, q1: 22, med: 30, q3: 38, max: 47 };
+        var B = { min: 20, q1: 25, med: 32, q3: 35, max: 44 };
+
+        // ── Vertical positions ──────────────────────────────────────
+        var yA = 7.2;
+        var yB = 3.5;
+        var boxH = 0.8;
+        var capH = 0.5;
+
+        // ── Horizontal axis ─────────────────────────────────────────
+        var axisY = 0.5;
+
+        board.create('segment', [[9, axisY], [51, axisY]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        var tickVals = [10, 15, 20, 25, 30, 35, 40, 45, 50];
+        for (var i = 0; i < tickVals.length; i++) {
+            var tv = tickVals[i];
+            board.create('segment', [[tv, axisY + 0.25], [tv, axisY - 0.25]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [tv, axisY - 0.7, String(tv)], {
+                anchorX: 'middle', anchorY: 'middle', fontSize: 11,
+                color: COL_AXIS, fixed: true, highlight: false
+            });
+        }
+
+        board.create('text', [30, -1.2, '\\textit{Hours spent reading}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13,
+            color: COL_AXIS, fixed: true, highlight: false, useKatex: true
+        });
+
+        // ── Helper: draw one box plot ───────────────────────────────
+        function drawBoxPlot(data, yCenter, col) {
+            var yTop = yCenter + boxH;
+            var yBot = yCenter - boxH;
+
+            board.create('segment', [[data.min, yCenter], [data.q1, yCenter]], {
+                strokeColor: col, strokeWidth: 1.8, fixed: true, highlight: false
+            });
+            board.create('segment', [[data.q3, yCenter], [data.max, yCenter]], {
+                strokeColor: col, strokeWidth: 1.8, fixed: true, highlight: false
+            });
+
+            board.create('segment', [[data.min, yCenter - capH], [data.min, yCenter + capH]], {
+                strokeColor: col, strokeWidth: 1.8, fixed: true, highlight: false
+            });
+            board.create('segment', [[data.max, yCenter - capH], [data.max, yCenter + capH]], {
+                strokeColor: col, strokeWidth: 1.8, fixed: true, highlight: false
+            });
+
+            var p1 = board.create('point', [data.q1, yTop], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [data.q3, yTop], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [data.q3, yBot], { visible: false, fixed: true, name: '' });
+            var p4 = board.create('point', [data.q1, yBot], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: col, fillOpacity: 0.2,
+                borders: { strokeColor: col, strokeWidth: 1.8 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            board.create('segment', [[data.med, yTop], [data.med, yBot]], {
+                strokeColor: col, strokeWidth: 2.2, fixed: true, highlight: false
+            });
+
+            var labelY = yBot - 0.6;
+            var vals = [data.min, data.q1, data.med, data.q3, data.max];
+            for (var j = 0; j < vals.length; j++) {
+                board.create('text', [vals[j], labelY, String(vals[j])], {
+                    anchorX: 'middle', anchorY: 'top', fontSize: 11,
+                    color: col, fixed: true, highlight: false,
+                    cssStyle: 'font-weight:600'
+                });
+            }
+        }
+
+        drawBoxPlot(A, yA, COL_A);
+        drawBoxPlot(B, yB, COL_B);
+
+        // ── Club labels ─────────────────────────────────────────────
+        board.create('text', [5.5, yA - 0.4, '\\textbf{Club A}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13,
+            color: COL_A, fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [5.5, yB - 0.4, '\\textbf{Club B}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13,
+            color: COL_B, fixed: true, highlight: false, useKatex: true
+        });
+
+    </script>
+</body>
+</html>
