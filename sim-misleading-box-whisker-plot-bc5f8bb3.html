@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misleading Box-and-Whisker Plot</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 3.0, 6.2, -2.0],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var tickPositions = [0, 1, 2, 3, 4, 5];
+        var tickLabels = ['0', '2', '4', '10', '16', '20'];
+
+        var posMin = 1;
+        var posQ1 = 2;
+        var posMed = 3;
+        var posQ3 = 4;
+        var posMax = 5;
+
+        var boxCenter = 1.0;
+        var boxHalfH = 0.4;
+        var boxTop = boxCenter + boxHalfH;
+        var boxBot = boxCenter - boxHalfH;
+        var capHalf = 0.2;
+
+        var COL_BORDER = '#2563EB';
+        var COL_MEDIAN = '#DC2626';
+        var COL_FILL = '#DBEAFE';
+        var COL_AXIS = '#222222';
+
+        board.create('segment', [[0, 0], [5, 0]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var i, tx;
+        for (i = 0; i < tickPositions.length; i++) {
+            tx = tickPositions[i];
+            board.create('segment', [[tx, -0.15], [tx, 0.15]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            board.create('text', [tx, -0.5, tickLabels[i]], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 13, color: COL_AXIS, fixed: true, highlight: false
+            });
+        }
+
+        board.create('text', [2.5, -1.2, 'Daily Commute Time (minutes)'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: COL_AXIS, fixed: true, highlight: false,
+            cssStyle: 'font-style: italic;'
+        });
+
+        var boxP1 = board.create('point', [posQ1, boxTop], { visible: false, fixed: true, name: '' });
+        var boxP2 = board.create('point', [posQ3, boxTop], { visible: false, fixed: true, name: '' });
+        var boxP3 = board.create('point', [posQ3, boxBot], { visible: false, fixed: true, name: '' });
+        var boxP4 = board.create('point', [posQ1, boxBot], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [boxP1, boxP2, boxP3, boxP4], {
+            fillColor: COL_FILL, fillOpacity: 0.12,
+            borders: { strokeColor: COL_BORDER, strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[posMed, boxTop], [posMed, boxBot]], {
+            strokeColor: COL_MEDIAN, strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[posMin, boxCenter], [posQ1, boxCenter]], {
+            strokeColor: COL_BORDER, strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [[posQ3, boxCenter], [posMax, boxCenter]], {
+            strokeColor: COL_BORDER, strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[posMin, boxCenter - capHalf], [posMin, boxCenter + capHalf]], {
+            strokeColor: COL_BORDER, strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [[posMax, boxCenter - capHalf], [posMax, boxCenter + capHalf]], {
+            strokeColor: COL_BORDER, strokeWidth: 2, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
