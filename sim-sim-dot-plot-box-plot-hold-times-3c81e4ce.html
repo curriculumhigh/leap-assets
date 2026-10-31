@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dot Plot &amp; Box Plot — Hold Times</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 9.0, 23.5, -6.0],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Constants ───────────────────────────────────────────────────
+        var COL_DOT = '#2563EB';
+        var COL_BOX = '#059669';
+        var COL_MEDIAN = '#DC2626';
+        var COL_AXIS = '#444444';
+        var COL_GRID = '#D1D5DB';
+        var COL_TEXT = '#222222';
+
+        // Layout vertical positions
+        var AXIS_Y = 1.0;
+        var DOT_BASE_Y = 2.2;
+        var DOT_SPACING = 0.8;
+        var DOT_TITLE_Y = 5.0;
+
+        var DELIVERY_LABEL_Y = -0.2;
+        var BOX_TITLE_Y = -1.8;
+        var BOX_CENTER_Y = -3.0;
+        var BOX_HALF_H = 0.5;
+        var LABEL_Y = -4.0;
+        var WHISKER_CAP_HALF = 0.25;
+
+        var GRID_BOTTOM = -5.0;
+
+        // Data
+        var data = [1, 1, 2, 2, 2, 3, 18, 19, 19, 20, 20, 21];
+        var MIN = 1, Q1 = 2, MED = 10.5, Q3 = 19.5, MAX = 21;
+
+        // ── Vertical grid lines every 2 units ───────────────────────────
+        var i;
+        for (i = 0; i <= 22; i += 2) {
+            board.create('segment', [[i, GRID_BOTTOM], [i, DOT_TITLE_Y - 0.3]], {
+                strokeColor: COL_GRID, strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Horizontal axis ─────────────────────────────────────────────
+        board.create('segment', [[0, AXIS_Y], [22, AXIS_Y]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Tick marks every 2 units
+        for (i = 0; i <= 22; i += 2) {
+            board.create('segment', [[i, AXIS_Y - 0.2], [i, AXIS_Y + 0.2]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [i, AXIS_Y - 0.6, String(i)], {
+                fontSize: 11, color: COL_TEXT, anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── "Hold time (minutes)" ───────────────────────────────────────
+        board.create('text', [11, DELIVERY_LABEL_Y, 'Hold time (minutes)'], {
+            fontSize: 13, color: COL_TEXT, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-style:italic'
+        });
+
+        // ── Dot Plot ────────────────────────────────────────────────────
+        board.create('text', [11, DOT_TITLE_Y, 'Dot Plot'], {
+            fontSize: 15, color: COL_TEXT, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+
+        // Count occurrences
+        var counts = {};
+        for (i = 0; i < data.length; i++) {
+            var v = data[i];
+            counts[v] = (counts[v] || 0) + 1;
+        }
+
+        // Draw dots
+        var val;
+        for (val in counts) {
+            if (counts.hasOwnProperty(val)) {
+                var x = parseInt(val);
+                var c = counts[val];
+                for (var j = 0; j < c; j++) {
+                    board.create('point', [x, DOT_BASE_Y + j * DOT_SPACING], {
+                        name: '', size: 3, color: COL_DOT, fixed: true,
+                        highlight: false, showInfobox: false
+                    });
+                }
+            }
+        }
+
+        // ── Box Plot ────────────────────────────────────────────────────
+        board.create('text', [11, BOX_TITLE_Y, 'Box Plot'], {
+            fontSize: 15, color: COL_TEXT, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+
+        var boxTop = BOX_CENTER_Y + BOX_HALF_H;
+        var boxBot = BOX_CENTER_Y - BOX_HALF_H;
+
+        // Box (Q1 to Q3)
+        var bP1 = board.create('point', [Q1, boxTop], { visible: false, fixed: true, name: '' });
+        var bP2 = board.create('point', [Q3, boxTop], { visible: false, fixed: true, name: '' });
+        var bP3 = board.create('point', [Q3, boxBot], { visible: false, fixed: true, name: '' });
+        var bP4 = board.create('point', [Q1, boxBot], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [bP1, bP2, bP3, bP4], {
+            fillColor: COL_BOX, fillOpacity: 0.25,
+            borders: { strokeColor: COL_BOX, strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Median line (red)
+        board.create('segment', [[MED, boxTop], [MED, boxBot]], {
+            strokeColor: COL_MEDIAN, strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // Left whisker (min to Q1)
+        board.create('segment', [[MIN, BOX_CENTER_Y], [Q1, BOX_CENTER_Y]], {
+            strokeColor: COL_BOX, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        // Left whisker cap
+        board.create('segment', [[MIN, BOX_CENTER_Y - WHISKER_CAP_HALF], [MIN, BOX_CENTER_Y + WHISKER_CAP_HALF]], {
+            strokeColor: COL_BOX, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Right whisker (Q3 to max)
+        board.create('segment', [[Q3, BOX_CENTER_Y], [MAX, BOX_CENTER_Y]], {
+            strokeColor: COL_BOX, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        // Right whisker cap
+        board.create('segment', [[MAX, BOX_CENTER_Y - WHISKER_CAP_HALF], [MAX, BOX_CENTER_Y + WHISKER_CAP_HALF]], {
+            strokeColor: COL_BOX, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Five-number summary labels ──────────────────────────────────
+        var fiveNums = [
+            { val: MIN, label: '1', color: COL_TEXT },
+            { val: Q1, label: '2', color: COL_TEXT },
+            { val: MED, label: '10.5', color: COL_MEDIAN },
+            { val: Q3, label: '19.5', color: COL_TEXT },
+            { val: MAX, label: '21', color: COL_TEXT }
+        ];
+
+        for (i = 0; i < fiveNums.length; i++) {
+            var fn = fiveNums[i];
+            board.create('text', [fn.val, LABEL_Y, fn.label], {
+                fontSize: 12, color: fn.color, anchorX: 'middle', anchorY: 'top',
+                useKatex: true, fixed: true, highlight: false,
+                cssStyle: fn.color === COL_MEDIAN ? 'font-weight:bold' : ''
+            });
+        }
+    </script>
+</body>
+</html>
