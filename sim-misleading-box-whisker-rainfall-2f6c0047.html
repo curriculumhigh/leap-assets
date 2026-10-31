@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misleading Box-and-Whisker Plot — Monthly Rainfall</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 3.0, 6.2, -2.0],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Scale mapping ───────────────────────────────────────────────
+        var tickValues = [0, 1, 2, 5, 8, 10];
+        var tickPositions = [0, 1, 2, 3, 4, 5];
+
+        function dataToX(val) {
+            for (var i = 0; i < tickValues.length - 1; i++) {
+                if (val >= tickValues[i] && val <= tickValues[i + 1]) {
+                    var frac = (val - tickValues[i]) / (tickValues[i + 1] - tickValues[i]);
+                    return tickPositions[i] + frac * (tickPositions[i + 1] - tickPositions[i]);
+                }
+            }
+            return val;
+        }
+
+        // ── Five-number summary ─────────────────────────────────────────
+        var dataMin = 1;
+        var Q1 = 2;
+        var median = 5;
+        var Q3 = 8;
+        var dataMax = 10;
+
+        var xMin = dataToX(dataMin);
+        var xQ1 = dataToX(Q1);
+        var xMed = dataToX(median);
+        var xQ3 = dataToX(Q3);
+        var xMax = dataToX(dataMax);
+
+        // Box plot vertical positioning
+        var yCenter = 0.85;
+        var boxHalf = 0.3;
+        var capHalf = 0.2;
+
+        var boxTop = yCenter + boxHalf;
+        var boxBot = yCenter - boxHalf;
+
+        // ── Number line ─────────────────────────────────────────────────
+        board.create('segment', [[0, 0], [5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        for (var i = 0; i < tickValues.length; i++) {
+            var tx = tickPositions[i];
+            board.create('segment', [[tx, -0.12], [tx, 0.12]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [tx, -0.4, String(tickValues[i])], {
+                fontSize: 13, anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false, useKatex: true
+            });
+        }
+
+        // Axis title
+        board.create('text', [2.5, -1.05, '\\text{Monthly Rainfall (inches)}'], {
+            fontSize: 14, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true, color: '#333333'
+        });
+
+        // ── Box (Q1 to Q3) ──────────────────────────────────────────────
+        var bP1 = board.create('point', [xQ1, boxTop], { visible: false, fixed: true, name: '' });
+        var bP2 = board.create('point', [xQ3, boxTop], { visible: false, fixed: true, name: '' });
+        var bP3 = board.create('point', [xQ3, boxBot], { visible: false, fixed: true, name: '' });
+        var bP4 = board.create('point', [xQ1, boxBot], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [bP1, bP2, bP3, bP4], {
+            fillColor: '#E5E7EB', fillOpacity: 0.35,
+            borders: { strokeColor: '#222222', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Median line ─────────────────────────────────────────────────
+        board.create('segment', [[xMed, boxTop], [xMed, boxBot]], {
+            strokeColor: '#DC2626', strokeWidth: 2.5, fixed: true, highlight: false
+        });
+
+        // ── Left whisker (Min to Q1) ────────────────────────────────────
+        board.create('segment', [[xMin, yCenter], [xQ1, yCenter]], {
+            strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[xMin, yCenter - capHalf], [xMin, yCenter + capHalf]], {
+            strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Right whisker (Q3 to Max) ───────────────────────────────────
+        board.create('segment', [[xQ3, yCenter], [xMax, yCenter]], {
+            strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[xMax, yCenter - capHalf], [xMax, yCenter + capHalf]], {
+            strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
