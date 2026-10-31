@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dot Plot and Box Plot — Workout Durations</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 11, 32, -5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Constants ───────────────────────────────────────────────────
+        var DOT_COL = '#2563EB';
+        var BOX_BORDER = '#555555';
+        var BOX_FILL = '#E5E7EB';
+        var BOX_FILL_OP = 0.35;
+        var MEDIAN_COL = '#DC2626';
+        var LABEL_COL = '#2563EB';
+        var GRID_COL = '#D1D5DB';
+        var AXIS_COL = '#444444';
+
+        // Layout
+        var DOT_BASE = 5.5;
+        var DOT_SPACING = 0.9;
+        var BOX_CENTER = 1.5;
+        var BOX_HALF = 0.5;
+        var BOX_TOP = BOX_CENTER + BOX_HALF;
+        var BOX_BOT = BOX_CENTER - BOX_HALF;
+        var CAP_HALF = 0.25;
+
+        // Data
+        var data = [5, 5, 6, 7, 7, 25, 26, 27, 27, 28];
+        var MIN = 5, Q1 = 6, MED = 16, Q3 = 27, MAX = 28;
+
+        // ── Vertical grid lines every 1 unit, 0–30 ─────────────────────
+        var i;
+        for (i = 0; i <= 30; i++) {
+            board.create('segment', [[i, -3.5], [i, 10.5]], {
+                strokeColor: GRID_COL, strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Section titles ──────────────────────────────────────────────
+        board.create('text', [-1, 8.2, '\\textbf{Dot Plot}'], {
+            anchorX: 'left', anchorY: 'middle',
+            fontSize: 13, color: '#333', useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('text', [-1, 4.0, '\\textbf{Box Plot}'], {
+            anchorX: 'left', anchorY: 'middle',
+            fontSize: 13, color: '#333', useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Horizontal axis ────────────────────────────────────────────
+        board.create('arrow', [[-0.5, 0], [31, 0]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // Tick marks every 1 unit
+        for (i = 0; i <= 30; i++) {
+            board.create('segment', [[i, -0.2], [i, 0.2]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+
+        // Tick labels every 5 units
+        for (i = 0; i <= 30; i += 5) {
+            board.create('text', [i, -0.8, String(i)], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 11, color: '#333', fixed: true, highlight: false
+            });
+        }
+
+        // Axis label
+        board.create('text', [15, -2.0, '\\text{Duration (minutes)}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#333', useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Dot plot ────────────────────────────────────────────────────
+        var freq = {};
+        for (i = 0; i < data.length; i++) {
+            var v = data[i];
+            if (!freq[v]) freq[v] = 0;
+            freq[v]++;
+        }
+
+        var keys = Object.keys(freq);
+        for (var ki = 0; ki < keys.length; ki++) {
+            var val = parseInt(keys[ki]);
+            var count = freq[val];
+            for (var j = 0; j < count; j++) {
+                board.create('point', [val, DOT_BASE + j * DOT_SPACING], {
+                    name: '', size: 3, color: DOT_COL, fixed: true,
+                    highlight: false, showInfobox: false,
+                    strokeColor: DOT_COL
+                });
+            }
+        }
+
+        // ── Box plot ────────────────────────────────────────────────────
+
+        // Box (Q1 to Q3)
+        var bP1 = board.create('point', [Q1, BOX_TOP], { visible: false, fixed: true, name: '' });
+        var bP2 = board.create('point', [Q3, BOX_TOP], { visible: false, fixed: true, name: '' });
+        var bP3 = board.create('point', [Q3, BOX_BOT], { visible: false, fixed: true, name: '' });
+        var bP4 = board.create('point', [Q1, BOX_BOT], { visible: false, fixed: true, name: '' });
+        board.create('polygon', [bP1, bP2, bP3, bP4], {
+            fillColor: BOX_FILL, fillOpacity: BOX_FILL_OP,
+            borders: { strokeColor: BOX_BORDER, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Median line (red, thicker)
+        board.create('segment', [[MED, BOX_TOP], [MED, BOX_BOT]], {
+            strokeColor: MEDIAN_COL, strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // Left whisker (min to Q1)
+        board.create('segment', [[MIN, BOX_CENTER], [Q1, BOX_CENTER]], {
+            strokeColor: BOX_BORDER, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Right whisker (Q3 to max)
+        board.create('segment', [[Q3, BOX_CENTER], [MAX, BOX_CENTER]], {
+            strokeColor: BOX_BORDER, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Left cap (at min)
+        board.create('segment', [[MIN, BOX_CENTER - CAP_HALF], [MIN, BOX_CENTER + CAP_HALF]], {
+            strokeColor: BOX_BORDER, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Right cap (at max)
+        board.create('segment', [[MAX, BOX_CENTER - CAP_HALF], [MAX, BOX_CENTER + CAP_HALF]], {
+            strokeColor: BOX_BORDER, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Five-number summary labels (all above the box plot) ─────────
+        var LABEL_Y = BOX_TOP + 0.5;
+
+        // Min label (blue)
+        board.create('text', [MIN, LABEL_Y, '5'], {
+            anchorX: 'middle', anchorY: 'bottom',
+            fontSize: 12, color: LABEL_COL, cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+
+        // Q1 label (blue)
+        board.create('text', [Q1, LABEL_Y, '6'], {
+            anchorX: 'middle', anchorY: 'bottom',
+            fontSize: 12, color: LABEL_COL, cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+
+        // Median label (red)
+        board.create('text', [MED, LABEL_Y, '16'], {
+            anchorX: 'middle', anchorY: 'bottom',
+            fontSize: 12, color: MEDIAN_COL, cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+
+        // Q3 label (blue)
+        board.create('text', [Q3, LABEL_Y, '27'], {
+            anchorX: 'middle', anchorY: 'bottom',
+            fontSize: 12, color: LABEL_COL, cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+
+        // Max label (blue)
+        board.create('text', [MAX, LABEL_Y, '28'], {
+            anchorX: 'middle', anchorY: 'bottom',
+            fontSize: 12, color: LABEL_COL, cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
