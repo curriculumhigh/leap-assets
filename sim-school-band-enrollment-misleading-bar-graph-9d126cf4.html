@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Band Enrollment</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.0, 82.5, 4.8, 68.0],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Constants ───────────────────────────────────────────────
+        var AXIS_COL = '#444444';
+        var GRID_COL = '#D1D5DB';
+        var Y_MIN = 70;
+        var Y_MAX = 80;
+        var Y_STEP = 2;
+        var BAR_WIDTH = 0.7;
+
+        var COL_2022 = '#2563EB';
+        var COL_2023 = '#059669';
+
+        var bars = [
+            { x: 1.5, val: 72, label: '2022', fill: COL_2022 },
+            { x: 3.0, val: 78, label: '2023', fill: COL_2023 }
+        ];
+
+        // ── Horizontal grid lines ───────────────────────────────────
+        for (var g = Y_MIN; g <= Y_MAX; g += Y_STEP) {
+            board.create('segment', [[0, g], [4.2, g]], {
+                strokeColor: GRID_COL, strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Y-axis ─────────────────────────────────────────────────
+        board.create('segment', [[0, Y_MIN], [0, Y_MAX + 1.2]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        for (var yt = Y_MIN; yt <= Y_MAX; yt += Y_STEP) {
+            board.create('segment', [[-0.12, yt], [0, yt]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [-0.22, yt, String(yt)], {
+                fontSize: 11, color: AXIS_COL, anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── X-axis ─────────────────────────────────────────────────
+        board.create('segment', [[0, Y_MIN], [4.2, Y_MIN]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // ── Y-axis label ───────────────────────────────────────────
+        board.create('text', [-0.72, 75, 'Enrolled Students'], {
+            fontSize: 12, color: AXIS_COL, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            rotate: 90
+        });
+
+        // ── X-axis label (moved up) ────────────────────────────────
+        board.create('text', [2.25, 69.2, 'Year'], {
+            fontSize: 12, color: AXIS_COL, anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // ── Bars (flat solid fills) ────────────────────────────────
+        for (var i = 0; i < bars.length; i++) {
+            var b = bars[i];
+            var x1 = b.x - BAR_WIDTH / 2;
+            var x2 = b.x + BAR_WIDTH / 2;
+
+            var p1 = board.create('point', [x1, Y_MIN], { visible: false, name: '' });
+            var p2 = board.create('point', [x2, Y_MIN], { visible: false, name: '' });
+            var p3 = board.create('point', [x2, b.val], { visible: false, name: '' });
+            var p4 = board.create('point', [x1, b.val], { visible: false, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: b.fill, fillOpacity: 0.85,
+                borders: { strokeColor: b.fill, strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            // Value label above bar
+            board.create('text', [b.x, b.val + 0.6, String(b.val)], {
+                fontSize: 13, color: b.fill, anchorX: 'middle', anchorY: 'bottom',
+                fixed: true, highlight: false,
+                cssStyle: 'font-weight:bold'
+            });
+
+            // X-axis category label
+            board.create('text', [b.x, Y_MIN - 0.4, b.label], {
+                fontSize: 12, color: AXIS_COL, anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Title (plain text, no KaTeX) ───────────────────────────
+        board.create('text', [2.25, Y_MAX + 1.4, 'School Band Enrollment'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight:700'
+        });
+    </script>
+</body>
+</html>
