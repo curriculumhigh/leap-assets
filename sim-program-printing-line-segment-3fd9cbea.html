@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Program Printing</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .title { text-align: center; font-weight: 700; font-size: 15px; color: #222; margin-bottom: 4px; }
+        .board-area { position: relative; background: white; border-radius: 8px; padding: 10px; height: calc(100% - 40px); }
+        .y-axis-label {
+            position: absolute;
+            left: -2px;
+            top: 50%;
+            transform: rotate(-90deg) translateX(-50%);
+            transform-origin: 0 0;
+            font-size: 12px;
+            color: #222222;
+            white-space: nowrap;
+        }
+        #board { width: 100%; height: 100%; margin-left: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">Program Printing</div>
+        <div class="board-area">
+            <div class="y-axis-label">Number of deluxe programs</div>
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8, 28, 95, -5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Grid (Quadrant I area only) ─────────────────────────────────
+        var gx;
+        for (gx = 10; gx <= 90; gx += 10) {
+            board.create('segment', [[gx, 0], [gx, 25]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+        var gy;
+        for (gy = 5; gy <= 25; gy += 5) {
+            board.create('segment', [[0, gy], [90, gy]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Axes ────────────────────────────────────────────────────────
+        board.create('arrow', [[0, 0], [93, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        board.create('arrow', [[0, 0], [0, 27]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // ── Tick marks & labels — x-axis ────────────────────────────────
+        var tx;
+        for (tx = 10; tx <= 90; tx += 10) {
+            board.create('segment', [[tx, -0.5], [tx, 0.5]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [tx, -2.2, String(tx)], {
+                anchorX: 'middle', anchorY: 'middle', fontSize: 11, color: '#444444',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Tick marks & labels — y-axis ────────────────────────────────
+        var ty;
+        for (ty = 5; ty <= 25; ty += 5) {
+            board.create('segment', [[-1, ty], [1, ty]], {
+                strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [-3, ty, String(ty)], {
+                anchorX: 'middle', anchorY: 'middle', fontSize: 11, color: '#444444',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Origin label
+        board.create('text', [-3, -2.2, '0'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 11, color: '#444444',
+            fixed: true, highlight: false
+        });
+
+        // ── X-axis name label ───────────────────────────────────────────
+        board.create('text', [45, -4.3, '\\text{Number of standard programs}'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12, color: '#222222',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Line segment ────────────────────────────────────────────────
+        board.create('segment', [[0, 20], [80, 0]], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Endpoint points ─────────────────────────────────────────────
+        board.create('point', [0, 20], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false,
+            showInfobox: false
+        });
+        board.create('point', [80, 0], {
+            name: '', size: 3, color: '#222222', fixed: true, highlight: false,
+            showInfobox: false
+        });
+
+        // ── Coordinate labels ───────────────────────────────────────────
+        board.create('text', [3.5, 21.5, '(0,\\, 20)'], {
+            anchorX: 'left', anchorY: 'bottom', fontSize: 13, color: '#222222',
+            useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [81.5, 1.5, '(80,\\, 0)'], {
+            anchorX: 'left', anchorY: 'bottom', fontSize: 13, color: '#222222',
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
