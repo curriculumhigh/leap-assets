@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Box Plot — Period 1 and Period 2</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [8, 5.8, 53, -0.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_P1 = '#2563EB';
+        var COL_P2 = '#059669';
+        var COL_AXIS = '#444444';
+
+        // ── Data ────────────────────────────────────────────────────────
+        var p1 = { min: 18, q1: 27, med: 33, q3: 40, max: 48 };
+        var p2 = { min: 22, q1: 30, med: 35, q3: 38, max: 46 };
+
+        // ── Vertical positions ──────────────────────────────────────────
+        var y1 = 3.8;   // Period 1 center
+        var y2 = 1.8;   // Period 2 center
+        var boxH = 0.3;  // half-height of box
+        var capH = 0.15; // half-height of whisker caps
+
+        // ── Horizontal axis ─────────────────────────────────────────────
+        board.create('segment', [[15, 0.4], [50, 0.4]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Tick marks and labels every 5 units from 15 to 50
+        var tickVals = [15, 20, 25, 30, 35, 40, 45, 50];
+        for (var i = 0; i < tickVals.length; i++) {
+            var tv = tickVals[i];
+            // Tick mark
+            board.create('segment', [[tv, 0.25], [tv, 0.55]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            // Tick label below axis
+            board.create('text', [tv, -0.05, String(tv)], {
+                fontSize: 11, color: COL_AXIS, anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Helper: draw one box plot ───────────────────────────────────
+        function drawBoxPlot(data, yCenter, col, labelText) {
+            var yTop = yCenter + boxH;
+            var yBot = yCenter - boxH;
+            var labelY = yCenter - boxH - 0.25; // all labels below the plot
+
+            // Whisker: min to Q1
+            board.create('segment', [[data.min, yCenter], [data.q1, yCenter]], {
+                strokeColor: col, strokeWidth: 2.0, fixed: true, highlight: false
+            });
+
+            // Whisker: Q3 to max
+            board.create('segment', [[data.q3, yCenter], [data.max, yCenter]], {
+                strokeColor: col, strokeWidth: 2.0, fixed: true, highlight: false
+            });
+
+            // Min cap
+            board.create('segment', [[data.min, yCenter - capH], [data.min, yCenter + capH]], {
+                strokeColor: col, strokeWidth: 2.0, fixed: true, highlight: false
+            });
+
+            // Max cap
+            board.create('segment', [[data.max, yCenter - capH], [data.max, yCenter + capH]], {
+                strokeColor: col, strokeWidth: 2.0, fixed: true, highlight: false
+            });
+
+            // Box (Q1 to Q3)
+            var bx1 = board.create('point', [data.q1, yTop], { visible: false, fixed: true, name: '' });
+            var bx2 = board.create('point', [data.q3, yTop], { visible: false, fixed: true, name: '' });
+            var bx3 = board.create('point', [data.q3, yBot], { visible: false, fixed: true, name: '' });
+            var bx4 = board.create('point', [data.q1, yBot], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [bx1, bx2, bx3, bx4], {
+                fillColor: col, fillOpacity: 0.15,
+                borders: { strokeColor: col, strokeWidth: 2.0 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            // Median line
+            board.create('segment', [[data.med, yTop], [data.med, yBot]], {
+                strokeColor: col, strokeWidth: 2.5, fixed: true, highlight: false
+            });
+
+            // ── Value labels (all below the plot) ───────────────────────
+            board.create('text', [data.min, labelY, String(data.min)], {
+                fontSize: 11, color: col, anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+
+            board.create('text', [data.q1, labelY, String(data.q1)], {
+                fontSize: 11, color: col, anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+
+            board.create('text', [data.med, labelY, String(data.med)], {
+                fontSize: 11, color: col, anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+
+            board.create('text', [data.q3, labelY, String(data.q3)], {
+                fontSize: 11, color: col, anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+
+            board.create('text', [data.max, labelY, String(data.max)], {
+                fontSize: 11, color: col, anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+
+            // ── Period label (left of plot) ─────────────────────────────
+            board.create('text', [14, yCenter, labelText], {
+                fontSize: 13, color: col, anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false,
+                cssStyle: 'font-weight:600'
+            });
+        }
+
+        // ── Draw both box plots ─────────────────────────────────────────
+        drawBoxPlot(p1, y1, COL_P1, 'Period 1');
+        drawBoxPlot(p2, y2, COL_P2, 'Period 2');
+
+    </script>
+</body>
+</html>
