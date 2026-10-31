@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dot Plot and Box Plot — Waiting Times (Side by Side)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 760px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .sim-layout { display: flex; gap: 12px; height: 100%; }
+        .board-panel { flex: 1; background: white; border-radius: 8px; padding: 10px; }
+        #board-dot, #board-box { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sim-layout">
+            <div class="board-panel">
+                <div id="board-dot"></div>
+            </div>
+            <div class="board-panel">
+                <div id="board-box"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_DOT = '#222222';
+        var COL_BOX = '#2563EB';
+        var COL_MEDIAN = '#DC2626';
+        var COL_AXIS = '#444444';
+        var COL_GRID = '#D1D5DB';
+        var COL_LABEL = '#555555';
+
+        // ── Data ────────────────────────────────────────────────────────
+        var data = [2, 2, 3, 3, 3, 4, 14, 15, 15, 16, 16, 17];
+        var MIN = 2, Q1 = 3, MED = 9, Q3 = 15.5, MAX = 17;
+
+        // ── Shared helpers ──────────────────────────────────────────────
+        function drawAxis(b, yBase, xStart, xEnd) {
+            b.create('arrow', [[xStart - 0.5, yBase], [xEnd + 1, yBase]], {
+                strokeColor: COL_AXIS, strokeWidth: 1.2,
+                lastArrow: { type: 2, size: 6 },
+                fixed: true, highlight: false
+            });
+            for (var t = xStart; t <= xEnd; t += 2) {
+                b.create('segment', [[t, yBase - 0.25], [t, yBase + 0.25]], {
+                    strokeColor: COL_AXIS, strokeWidth: 1.0,
+                    fixed: true, highlight: false
+                });
+                b.create('text', [t, yBase - 0.75, String(t)], {
+                    fontSize: 10, color: COL_AXIS, anchorX: 'middle', anchorY: 'middle',
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        function drawGridLines(b, xStart, xEnd, yBottom, yTop) {
+            for (var t = xStart; t <= xEnd; t += 2) {
+                b.create('segment', [[t, yBottom], [t, yTop]], {
+                    strokeColor: COL_GRID, strokeWidth: 0.4,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── Dot plot base and box plot alignment ────────────────────────
+        var DOT_BASE = 1.2;
+        var DOT_SPACING = 0.85;
+
+        var BOX_HALF = 0.4;
+        var BOX_Y = DOT_BASE;
+        var CAP_HALF = 0.4;
+
+        var TITLE_Y_DOT = DOT_BASE + 2 * DOT_SPACING + 0.9;
+        var TITLE_Y_BOX = BOX_Y + BOX_HALF + 0.9;
+
+        var BB_XMIN = -1;
+        var BB_XMAX = 19.5;
+        var BB_YTOP = TITLE_Y_DOT + 1.2;
+        var BB_YBOT = -1.8;
+
+        // ════════════════════════════════════════════════════════════════
+        // DOT PLOT BOARD
+        // ════════════════════════════════════════════════════════════════
+        var boardDot = JXG.JSXGraph.initBoard('board-dot', {
+            boundingbox: [BB_XMIN, BB_YTOP, BB_XMAX, BB_YBOT],
+            axis: false, grid: false,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false }
+        });
+
+        drawAxis(boardDot, 0, 0, 18);
+        drawGridLines(boardDot, 0, 18, 0, BB_YTOP - 0.5);
+
+        boardDot.create('text', [0, TITLE_Y_DOT, 'Dot Plot'], {
+            fontSize: 13, color: COL_LABEL, fixed: true, highlight: false,
+            anchorX: 'left', cssStyle: 'font-weight:600'
+        });
+
+        var freq = {};
+        for (var i = 0; i < data.length; i++) {
+            var v = data[i];
+            if (!freq[v]) freq[v] = 0;
+            freq[v]++;
+        }
+
+        for (var val in freq) {
+            var count = freq[val];
+            var x = parseFloat(val);
+            for (var j = 0; j < count; j++) {
+                boardDot.create('point', [x, DOT_BASE + j * DOT_SPACING], {
+                    name: '', size: 4, color: COL_DOT,
+                    fixed: true, highlight: false, showInfobox: false
+                });
+            }
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // BOX PLOT BOARD
+        // ════════════════════════════════════════════════════════════════
+        var boardBox = JXG.JSXGraph.initBoard('board-box', {
+            boundingbox: [BB_XMIN, BB_YTOP, BB_XMAX, BB_YBOT],
+            axis: false, grid: false,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false }
+        });
+
+        drawAxis(boardBox, 0, 0, 18);
+        drawGridLines(boardBox, 0, 18, 0, BB_YTOP - 0.5);
+
+        boardBox.create('text', [0, TITLE_Y_BOX, 'Box Plot'], {
+            fontSize: 13, color: COL_LABEL, fixed: true, highlight: false,
+            anchorX: 'left', cssStyle: 'font-weight:600'
+        });
+
+        var bpPts = [
+            boardBox.create('point', [Q1, BOX_Y + BOX_HALF], { visible: false, fixed: true, name: '' }),
+            boardBox.create('point', [Q3, BOX_Y + BOX_HALF], { visible: false, fixed: true, name: '' }),
+            boardBox.create('point', [Q3, BOX_Y - BOX_HALF], { visible: false, fixed: true, name: '' }),
+            boardBox.create('point', [Q1, BOX_Y - BOX_HALF], { visible: false, fixed: true, name: '' })
+        ];
+        boardBox.create('polygon', bpPts, {
+            fillColor: COL_BOX, fillOpacity: 0.12,
+            borders: { strokeColor: COL_BOX, strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        boardBox.create('segment', [[MED, BOX_Y + BOX_HALF], [MED, BOX_Y - BOX_HALF]], {
+            strokeColor: COL_MEDIAN, strokeWidth: 2.0,
+            fixed: true, highlight: false
+        });
+
+        boardBox.create('segment', [[MIN, BOX_Y], [Q1, BOX_Y]], {
+            strokeColor: COL_BOX, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        boardBox.create('segment', [[Q3, BOX_Y], [MAX, BOX_Y]], {
+            strokeColor: COL_BOX, strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        boardBox.create('segment', [[MIN, BOX_Y - CAP_HALF], [MIN, BOX_Y + CAP_HALF]], {
+            strokeColor: COL_BOX, strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        boardBox.create('segment', [[MAX, BOX_Y - CAP_HALF], [MAX, BOX_Y + CAP_HALF]], {
+            strokeColor: COL_BOX, strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        var LABEL_Y = BOX_Y - BOX_HALF - 0.35;
+        var fiveNum = [
+            { val: MIN, label: '2', color: COL_BOX },
+            { val: Q1, label: '3', color: COL_BOX },
+            { val: MED, label: '9', color: COL_MEDIAN },
+            { val: Q3, label: '15.5', color: COL_BOX },
+            { val: MAX, label: '17', color: COL_BOX }
+        ];
+
+        for (var k = 0; k < fiveNum.length; k++) {
+            var item = fiveNum[k];
+            boardBox.create('text', [item.val, LABEL_Y, item.label], {
+                fontSize: 11, color: item.color, anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false,
+                cssStyle: 'font-weight:600'
+            });
+        }
+
+    </script>
+</body>
+</html>
