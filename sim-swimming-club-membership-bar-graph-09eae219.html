@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swimming Club Membership</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white; border-radius: 8px; padding: 10px;
+            height: calc(100% - 20px);
+            position: relative;
+            margin-left: 24px;
+        }
+        #board { width: 100%; height: 100%; }
+        .y-axis-label {
+            position: absolute;
+            left: -6px;
+            top: 50%;
+            transform: rotate(-90deg) translateX(-50%);
+            transform-origin: 0 0;
+            font-size: 14px;
+            font-style: italic;
+            color: #222222;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div class="y-axis-label">Members</div>
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 68, 5.2, 47.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        // ── Constants ───────────────────────────────────────────────────
+        var AXIS_COL = '#444444';
+        var GRID_COL = '#D1D5DB';
+        var BAR_BLUE = '#2563EB';
+        var BAR_BLUE_DARK = '#1D4ED8';
+        var BAR_GREEN = '#059669';
+        var BAR_GREEN_DARK = '#047857';
+
+        var yMin = 50;
+        var yMax = 65;
+        var ticks = [50, 53, 56, 59, 62, 65];
+
+        // Bar geometry
+        var barWidth = 0.9;
+        var bar1X = 1.5;
+        var bar2X = 3.5;
+        var val1 = 53;
+        var val2 = 62;
+
+        // ── Horizontal grid lines ───────────────────────────────────────
+        for (var i = 0; i < ticks.length; i++) {
+            board.create('segment', [[0, ticks[i]], [5, ticks[i]]], {
+                strokeColor: GRID_COL, strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Vertical axis (left edge) ───────────────────────────────────
+        board.create('segment', [[0, yMin], [0, yMax]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Horizontal axis (baseline at y=50) ─────────────────────────
+        board.create('segment', [[0, yMin], [5, yMin]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Y-axis tick marks and labels ────────────────────────────────
+        for (var j = 0; j < ticks.length; j++) {
+            board.create('segment', [[-0.12, ticks[j]], [0, ticks[j]]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [-0.18, ticks[j], String(ticks[j])], {
+                fontSize: 12, color: AXIS_COL, anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── X-axis label (Year) ─────────────────────────────────────────
+        board.create('text', [2.5, 48.3, 'Year'], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-style:italic'
+        });
+
+        // ── Title ───────────────────────────────────────────────────────
+        board.create('text', [2.5, 66.8, '\\textbf{Swimming Club Membership}'], {
+            fontSize: 16, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        // ── Bar helper ──────────────────────────────────────────────────
+        function drawBar(cx, value, fillColor, darkColor) {
+            var x1 = cx - barWidth / 2;
+            var x2 = cx + barWidth / 2;
+
+            // Main bar body
+            var p1 = board.create('point', [x1, yMin], { visible: false, name: '' });
+            var p2 = board.create('point', [x2, yMin], { visible: false, name: '' });
+            var p3 = board.create('point', [x2, value], { visible: false, name: '' });
+            var p4 = board.create('point', [x1, value], { visible: false, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: fillColor, fillOpacity: 0.72,
+                borders: { strokeColor: darkColor, strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            // Darker left strip for gradient/depth effect
+            var stripW = barWidth * 0.18;
+            var s1 = board.create('point', [x1, yMin], { visible: false, name: '' });
+            var s2 = board.create('point', [x1 + stripW, yMin], { visible: false, name: '' });
+            var s3 = board.create('point', [x1 + stripW, value], { visible: false, name: '' });
+            var s4 = board.create('point', [x1, value], { visible: false, name: '' });
+            board.create('polygon', [s1, s2, s3, s4], {
+                fillColor: darkColor, fillOpacity: 0.35,
+                borders: { strokeWidth: 0 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        // ── Draw bars ───────────────────────────────────────────────────
+        drawBar(bar1X, val1, BAR_BLUE, BAR_BLUE_DARK);
+        drawBar(bar2X, val2, BAR_GREEN, BAR_GREEN_DARK);
+
+        // ── Value labels above bars ─────────────────────────────────────
+        board.create('text', [bar1X, val1 + 0.9, '\\mathbf{53}'], {
+            fontSize: 14, color: BAR_BLUE_DARK, anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [bar2X, val2 + 0.9, '\\mathbf{62}'], {
+            fontSize: 14, color: BAR_GREEN_DARK, anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        // ── Category labels below bars ──────────────────────────────────
+        board.create('text', [bar1X, yMin - 0.9, '\\mathbf{2021}'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [bar2X, yMin - 0.9, '\\mathbf{2022}'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false, useKatex: true
+        });
+    </script>
+</body>
+</html>
