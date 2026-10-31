@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misleading Line Graph — Website Subscribers</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.4, 6.5, 7.5, -1.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Y-axis tick values and their equally-spaced screen positions ──
+        var yTickVals = [0, 4, 10, 20, 50, 60];
+        var yTickPositions = [0, 1, 2, 3, 4, 5]; // screen y
+
+        // ── misleadingY: map a real value to warped screen y ──────────────
+        function misleadingY(val) {
+            if (val <= yTickVals[0]) return yTickPositions[0];
+            if (val >= yTickVals[yTickVals.length - 1]) return yTickPositions[yTickPositions.length - 1];
+            for (var i = 0; i < yTickVals.length - 1; i++) {
+                if (val >= yTickVals[i] && val <= yTickVals[i + 1]) {
+                    var frac = (val - yTickVals[i]) / (yTickVals[i + 1] - yTickVals[i]);
+                    return yTickPositions[i] + frac * (yTickPositions[i + 1] - yTickPositions[i]);
+                }
+            }
+            return 0;
+        }
+
+        // ── Data ─────────────────────────────────────────────────────────
+        var months = ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var xPositions = [1, 2, 3, 4, 5, 6];
+        var dataValues = [5, 11, 18, 48, 54, 57];
+
+        var screenPts = [];
+        for (var i = 0; i < dataValues.length; i++) {
+            screenPts.push([xPositions[i], misleadingY(dataValues[i])]);
+        }
+
+        // ── Grid lines ──────────────────────────────────────────────────
+        // Horizontal grid lines at each y-tick position
+        for (var g = 0; g < yTickPositions.length; g++) {
+            board.create('segment', [[0.8, yTickPositions[g]], [6.5, yTickPositions[g]]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+        // Vertical grid lines at each month position
+        for (var g2 = 0; g2 < xPositions.length; g2++) {
+            board.create('segment', [[xPositions[g2], -0.15], [xPositions[g2], 5.2]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Custom axes ─────────────────────────────────────────────────
+        // X-axis
+        board.create('arrow', [[0, 0], [7.0, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        // Y-axis
+        board.create('arrow', [[0, 0], [0, 6.0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // ── X-axis tick marks and month labels ──────────────────────────
+        for (var t = 0; t < xPositions.length; t++) {
+            // Tick mark
+            board.create('segment', [[xPositions[t], -0.1], [xPositions[t], 0.1]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            // Month label
+            board.create('text', [xPositions[t], -0.45, months[t]], {
+                fontSize: 12, color: '#333333', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Y-axis tick marks and value labels ──────────────────────────
+        for (var u = 0; u < yTickVals.length; u++) {
+            // Tick mark
+            board.create('segment', [[-0.1, yTickPositions[u]], [0.1, yTickPositions[u]]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            // Value label
+            board.create('text', [-0.3, yTickPositions[u], String(yTickVals[u])], {
+                fontSize: 11, color: '#333333', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Axis name labels ────────────────────────────────────────────
+        board.create('text', [6.7, -0.7, '\\textit{Month}'], {
+            fontSize: 14, color: '#333333', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [-0.85, 5.8, '\\textit{Subscribers}'], {
+            fontSize: 12, color: '#333333', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [-0.85, 5.4, '\\textit{(thousands)}'], {
+            fontSize: 12, color: '#333333', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Line segments connecting data points ────────────────────────
+        for (var s = 0; s < screenPts.length - 1; s++) {
+            board.create('segment', [screenPts[s], screenPts[s + 1]], {
+                strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+            });
+        }
+
+        // ── Data points and value labels ────────────────────────────────
+        for (var d = 0; d < screenPts.length; d++) {
+            board.create('point', screenPts[d], {
+                name: '', size: 5, color: '#222222', fixed: true,
+                highlight: false, showInfobox: false
+            });
+            // Data value label above the point
+            board.create('text', [screenPts[d][0], screenPts[d][1] + 0.32, String(dataValues[d])], {
+                fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'bottom',
+                useKatex: true, fixed: true, highlight: false,
+                cssStyle: 'font-weight:bold'
+            });
+        }
+    </script>
+</body>
+</html>
