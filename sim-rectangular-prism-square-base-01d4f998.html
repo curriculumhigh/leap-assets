@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangular Prism — Square Base</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 8.5, 7.5, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var ox = 0, oy = 0;
+        var baseW = 3.5;
+        var baseH = 5.0;
+        var depth = 2.0;
+        var dAng = 35 * Math.PI / 180;
+        var dx = depth * Math.cos(dAng);
+        var dy = depth * Math.sin(dAng);
+
+        var A = [ox, oy];
+        var B = [ox + baseW, oy];
+        var C = [ox + baseW, oy + baseH];
+        var D = [ox, oy + baseH];
+
+        var E = [ox + dx, oy + dy];
+        var F = [ox + baseW + dx, oy + dy];
+        var G = [ox + baseW + dx, oy + baseH + dy];
+        var H = [ox + dx, oy + baseH + dy];
+
+        function pt(coords) {
+            return board.create('point', coords, {
+                visible: false, fixed: true, name: '', showInfobox: false
+            });
+        }
+
+        var pA = pt(A), pB = pt(B), pC = pt(C), pD = pt(D);
+        var pE = pt(E), pF = pt(F), pG = pt(G), pH = pt(H);
+
+        var solidStyle = { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false };
+        var dashedStyle = { strokeColor: '#999999', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false };
+
+        board.create('polygon', [pD, pC, pG, pH], {
+            fillColor: '#e8e8e8', fillOpacity: 0.5,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('polygon', [pB, pC, pG, pF], {
+            fillColor: '#f0f0f0', fillOpacity: 0.5,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('polygon', [pA, pB, pC, pD], {
+            fillColor: '#f8f8f8', fillOpacity: 0.4,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('segment', [pA, pE], dashedStyle);
+        board.create('segment', [pE, pF], dashedStyle);
+        board.create('segment', [pB, pF], dashedStyle);
+        board.create('segment', [pE, pH], dashedStyle);
+
+        board.create('segment', [pA, pB], solidStyle);
+        board.create('segment', [pB, pC], solidStyle);
+        board.create('segment', [pC, pD], solidStyle);
+        board.create('segment', [pD, pA], solidStyle);
+
+        board.create('segment', [pD, pH], solidStyle);
+        board.create('segment', [pH, pG], solidStyle);
+        board.create('segment', [pG, pC], solidStyle);
+
+        board.create('segment', [pF, pG], solidStyle);
+        board.create('segment', [pB, pF], solidStyle);
+
+        board.create('text', [
+            ox + baseW / 2, oy - 0.9,
+            '3 \\text{ in.}'
+        ], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [
+            (D[0] + H[0]) / 2 + 0.15, (D[1] + H[1]) / 2 + 0.55,
+            '3 \\text{ in.}'
+        ], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [
+            ox - 0.95, oy + baseH / 2,
+            'h \\text{ in.}'
+        ], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
