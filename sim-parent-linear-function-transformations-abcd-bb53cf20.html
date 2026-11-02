@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Linear Function and Transformations</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var COL_F = '#222222';
+        var COL_A = '#2563EB';
+        var COL_B = '#059669';
+        var COL_C = '#D97706';
+        var COL_D = '#7C3AED';
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 9, 5, -9],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [4.6, -0.5, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 8.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // ── Curves ──────────────────────────────────────────────────────
+
+        // f(x) = 2x - 1  (primary)
+        board.create('functiongraph', [function(x) { return 2 * x - 1; }], {
+            strokeColor: COL_F, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // A: f(x) + 3 = 2x + 2
+        board.create('functiongraph', [function(x) { return 2 * x + 2; }], {
+            strokeColor: COL_A, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // B: f(-x) = -2x - 1
+        board.create('functiongraph', [function(x) { return -2 * x - 1; }], {
+            strokeColor: COL_B, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // C: f(2x) = 4x - 1
+        board.create('functiongraph', [function(x) { return 4 * x - 1; }], {
+            strokeColor: COL_C, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // D: f(x) - 5 = 2x - 6
+        board.create('functiongraph', [function(x) { return 2 * x - 6; }], {
+            strokeColor: COL_D, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Labels (name only, KaTeX) ───────────────────────────────────
+
+        // f — upper-right area along the line
+        board.create('text', [3.6, 7.8, 'f'], {
+            fontSize: 13, color: COL_F, useKatex: true, fixed: true, highlight: false
+        });
+
+        // A — moved further right
+        board.create('text', [2.5, 7.8, 'A'], {
+            fontSize: 13, color: COL_A, useKatex: true, fixed: true, highlight: false
+        });
+
+        // B — upper-left area (negative slope goes up-left)
+        board.create('text', [-3.8, 7.8, 'B'], {
+            fontSize: 13, color: COL_B, useKatex: true, fixed: true, highlight: false
+        });
+
+        // C — steep slope, placed between A and f labels vertically
+        board.create('text', [1.1, 5.5, 'C'], {
+            fontSize: 13, color: COL_C, useKatex: true, fixed: true, highlight: false
+        });
+
+        // D — lower-right, same slope as f but shifted down
+        board.create('text', [3.6, 2.4, 'D'], {
+            fontSize: 13, color: COL_D, useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
