@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle — Legs 7/4 and 3/2, Hypotenuse c</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 350px;
+            margin: 0 auto;
+            padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            height: calc(100% - 20px);
+        }
+        #board {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 5.5, 5.5, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle vertices
+        // Right angle at bottom-right (C), vertical leg goes up (A), horizontal leg goes left (B)
+        var C = board.create('point', [4, 0.5], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var B = board.create('point', [0.5, 0.5], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var A = board.create('point', [4, 4.5], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // Triangle polygon (no fill)
+        board.create('polygon', [A, C, B], {
+            fillColor: 'none',
+            fillOpacity: 0,
+            borders: {
+                strokeColor: '#555555',
+                strokeWidth: 2.0,
+                fixed: true,
+                highlight: false
+            },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // Right angle marker at C (bottom-right)
+        var markerSize = 0.4;
+        var raPt1 = board.create('point', [C.X() - markerSize, C.Y()], {
+            visible: false, fixed: true, name: ''
+        });
+        var raPt2 = board.create('point', [C.X() - markerSize, C.Y() + markerSize], {
+            visible: false, fixed: true, name: ''
+        });
+        var raPt3 = board.create('point', [C.X(), C.Y() + markerSize], {
+            visible: false, fixed: true, name: ''
+        });
+
+        board.create('polygon', [raPt1, raPt2, raPt3, C], {
+            fillColor: 'none',
+            fillOpacity: 0,
+            borders: {
+                strokeColor: '#DC2626',
+                strokeWidth: 1.5,
+                fixed: true,
+                highlight: false
+            },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // Label: vertical leg (right side) — 7/4 in.
+        board.create('text', [4.45, 2.5, '\\tfrac{7}{4} \\text{ in.}'], {
+            useKatex: true,
+            fontSize: 14,
+            color: '#222222',
+            anchorX: 'left',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+
+        // Label: horizontal leg (bottom) — 3/2 in.
+        board.create('text', [2.25, -0.15, '\\tfrac{3}{2} \\text{ in.}'], {
+            useKatex: true,
+            fontSize: 14,
+            color: '#222222',
+            anchorX: 'middle',
+            anchorY: 'top',
+            fixed: true,
+            highlight: false
+        });
+
+        // Label: hypotenuse — c
+        // Midpoint of hypotenuse (A to B), offset to upper-left
+        var hypMidX = (A.X() + B.X()) / 2;
+        var hypMidY = (A.Y() + B.Y()) / 2;
+        board.create('text', [hypMidX - 0.55, hypMidY + 0.35, 'c'], {
+            useKatex: true,
+            fontSize: 15,
+            color: '#222222',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false,
+            cssStyle: 'font-style: italic;'
+        });
+    </script>
+</body>
+</html>
