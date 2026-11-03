@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph of y = 3|x - 1| - 9 and y = 3</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 8, 8, -12],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 2
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 2
+                    }
+                }
+            },
+            grid: false
+        });
+
+        // Manual grid at every 1 unit
+        var bb = [-6, 8, 8, -12];
+        var i;
+        for (i = Math.ceil(bb[0]); i <= Math.floor(bb[2]); i++) {
+            board.create('line', [[i, 0], [i, 1]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false, dash: 0
+            });
+        }
+        for (i = Math.ceil(bb[3]); i <= Math.floor(bb[1]); i++) {
+            board.create('line', [[0, i], [1, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false, dash: 0
+            });
+        }
+
+        // Axis labels
+        board.create('text', [7.5, -0.7, 'x'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.3, 7.5, 'y'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+
+        // Primary curve: y = 3|x - 1| - 9
+        board.create('functiongraph', [
+            function(x) { return 3 * Math.abs(x - 1) - 9; }
+        ], { strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Secondary curve: y = 3
+        board.create('functiongraph', [
+            function(x) { return 3; }
+        ], { strokeColor: '#2563EB', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // Label: y = 3|x - 1| - 9 — near the left branch
+        board.create('text', [-5.5, 6.2, 'y = 3|x-1|-9'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            fixed: true, highlight: false
+        });
+
+        // Label: y = 3
+        board.create('text', [5.5, 3.7, 'y = 3'], {
+            useKatex: true, fontSize: 13, color: '#2563EB',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
