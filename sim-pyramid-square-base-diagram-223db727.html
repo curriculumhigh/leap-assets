@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pyramid with Square Base</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4.5, 7.5, 4.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // --- Pyramid geometry (oblique projection) ---
+        var fl = [-2.2, 0];
+        var fr = [2.2, 0];
+        var br = [1.2, 1.6];
+        var bl = [-1.2, 1.6];
+        var apex = [0, 6.2];
+
+        var cx = (fl[0] + br[0]) / 2;
+        var cy = (fl[1] + br[1]) / 2;
+        var baseCenter = [cx, cy];
+
+        // --- Hidden edges (dashed) ---
+        board.create('segment', [bl, br], {
+            strokeColor: '#555555', strokeWidth: 1.2, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [bl, fl], {
+            strokeColor: '#555555', strokeWidth: 1.2, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // --- Visible base edges (solid) ---
+        board.create('segment', [fl, fr], {
+            strokeColor: '#555555', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [fr, br], {
+            strokeColor: '#555555', strokeWidth: 1.2,
+            fixed: true, highlight: false
+        });
+
+        // --- Lateral edges ---
+        board.create('segment', [fl, apex], {
+            strokeColor: '#555555', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [fr, apex], {
+            strokeColor: '#555555', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [br, apex], {
+            strokeColor: '#555555', strokeWidth: 1.2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [bl, apex], {
+            strokeColor: '#555555', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // --- Height line (dashed) ---
+        board.create('segment', [apex, baseCenter], {
+            strokeColor: '#555555', strokeWidth: 1.2, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // --- Right-angle symbol ---
+        var raSize = 0.35;
+        var dx1 = fr[0] - fl[0];
+        var dy1 = fr[1] - fl[1];
+        var len1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+        dx1 /= len1; dy1 /= len1;
+        var dx2 = br[0] - fr[0];
+        var dy2 = br[1] - fr[1];
+        var len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+        dx2 /= len2; dy2 /= len2;
+
+        var ra1 = [baseCenter[0] + raSize * dx1, baseCenter[1] + raSize * dy1];
+        var ra2 = [ra1[0] + raSize * dx2, ra1[1] + raSize * dy2];
+        var ra3 = [baseCenter[0] + raSize * dx2, baseCenter[1] + raSize * dy2];
+
+        board.create('segment', [ra1, ra2], {
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [ra3, ra2], {
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, highlight: false
+        });
+
+        board.create('point', baseCenter, {
+            name: '', size: 1.5, color: '#555555', fixed: true, highlight: false
+        });
+
+        // --- Labels ---
+
+        // Base edge label
+        board.create('text', [0, -0.7, 'x \\text{ in.}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        // Height label — shifted 2 units to the right
+        var hLabelX = baseCenter[0] + 0.9 + 2.0;
+        var hLabelY = (apex[1] + baseCenter[1]) / 2;
+        board.create('text', [hLabelX, hLabelY, '2x \\text{ in.}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
