@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Composite Right Triangles PQR and PQS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 23, 26, -3],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var R = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var P = board.create('point', [0, 6], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var Q = board.create('point', [8, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var S = board.create('point', [22.4, 19.2], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // ── Triangles (polygons, no fill) ───────────────────────────────
+        board.create('polygon', [P, Q, R], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+        board.create('polygon', [P, Q, S], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker helper ───────────────────────────────────
+        function drawRightAngleMarker(vertex, p1, p2, markerSize) {
+            var vx = vertex.X(), vy = vertex.Y();
+            var dx1 = p1.X() - vx, dy1 = p1.Y() - vy;
+            var len1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+            var ux1 = dx1 / len1, uy1 = dy1 / len1;
+
+            var dx2 = p2.X() - vx, dy2 = p2.Y() - vy;
+            var len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+            var ux2 = dx2 / len2, uy2 = dy2 / len2;
+
+            var a = [vx + markerSize * ux1, vy + markerSize * uy1];
+            var b = [vx + markerSize * (ux1 + ux2), vy + markerSize * (uy1 + uy2)];
+            var c = [vx + markerSize * ux2, vy + markerSize * uy2];
+
+            var pA = board.create('point', a, { visible: false, fixed: true, name: '' });
+            var pB = board.create('point', b, { visible: false, fixed: true, name: '' });
+            var pC = board.create('point', c, { visible: false, fixed: true, name: '' });
+
+            board.create('segment', [pA, pB], {
+                strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            board.create('segment', [pB, pC], {
+                strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+            });
+        }
+
+        // Right angle at R (between PR going up and QR going right)
+        drawRightAngleMarker(R, P, Q, 1.0);
+
+        // Right angle at Q (between PQ going to P and QS going to S)
+        drawRightAngleMarker(Q, P, S, 1.0);
+
+        // ── Vertex labels (bold, black) ─────────────────────────────────
+        board.create('text', [-1.3, 6.2, '<b>P</b>'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [-1.3, -0.8, '<b>R</b>'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [8.4, -1.2, '<b>Q</b>'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [22.8, 19.6, '<b>S</b>'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Side labels (blue, measurements) ───────────────────────────
+        var COL_MEAS = '#3B82F6';
+
+        // '6 ft' — left of PR (midpoint of PR is (0, 3), offset left)
+        board.create('text', [-2.0, 3, '6 ft'], {
+            fontSize: 13, color: COL_MEAS, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+
+        // '8 ft' — below QR (midpoint of QR is (4, 0), offset down)
+        board.create('text', [4, -1.5, '8 ft'], {
+            fontSize: 13, color: COL_MEAS, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+
+        // '24 ft' — right of QS
+        board.create('text', [15.2 + 1.6, 9.6 - 1.2, '24 ft'], {
+            fontSize: 13, color: COL_MEAS, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+
+        // 'x' — along PS
+        board.create('text', [11.2 - 1.0, 12.6 + 1.4, 'x'], {
+            fontSize: 14, color: COL_MEAS, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600; font-style:italic'
+        });
+    </script>
+</body>
+</html>
