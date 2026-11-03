@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Composite Right Triangles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 5.5, 19, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertex coordinates ──────────────────────────────────────────
+        var s = 1.0;
+        var D = board.create('point', [0, 0], { visible: false, fixed: true, name: '' });
+        var B = board.create('point', [4 * s, 0], { visible: false, fixed: true, name: '' });
+        var A = board.create('point', [0, 3 * s], { visible: false, fixed: true, name: '' });
+        var C = board.create('point', [4 * s + 12 * s, 0], { visible: false, fixed: true, name: '' });
+
+        // ── Triangle ABD ────────────────────────────────────────────────
+        board.create('polygon', [A, D, B], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── Triangle ABC ────────────────────────────────────────────────
+        board.create('polygon', [A, B, C], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── Right angle marker at D ─────────────────────────────────────
+        var raSize = 0.55;
+        board.create('segment', [[raSize, 0], [raSize, raSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[raSize, raSize], [0, raSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Right angle marker at B ─────────────────────────────────────
+        var bx = 4 * s;
+        var uBA_x = -4 / 5;
+        var uBA_y = 3 / 5;
+        var uBC_x = 1;
+        var uBC_y = 0;
+        var ra2 = raSize;
+
+        var rB1 = [bx + ra2 * uBC_x, ra2 * uBC_y];
+        var rB2 = [bx + ra2 * uBC_x + ra2 * uBA_x, ra2 * uBC_y + ra2 * uBA_y];
+        var rB3 = [bx + ra2 * uBA_x, ra2 * uBA_y];
+
+        board.create('segment', [rB1, rB2], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [rB2, rB3], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Vertex labels ───────────────────────────────────────────────
+        board.create('text', [-0.7, 3.2, '\\textbf{A}'], {
+            useKatex: true, fontSize: 14, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [3.6, -0.9, '\\textbf{B}'], {
+            useKatex: true, fontSize: 14, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [16.3, -0.9, '\\textbf{C}'], {
+            useKatex: true, fontSize: 14, color: '#222222', fixed: true, highlight: false
+        });
+        board.create('text', [-0.7, -0.9, '\\textbf{D}'], {
+            useKatex: true, fontSize: 14, color: '#222222', fixed: true, highlight: false
+        });
+
+        // ── Side length labels ──────────────────────────────────────────
+        // AD = 3 ft (left side, vertical)
+        board.create('text', [-1.6, 1.5, '3 \\text{ ft}'], {
+            useKatex: true, fontSize: 13, color: '#3B82F6', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // BD = 4 ft (bottom, between D and B)
+        board.create('text', [2, -0.55, '4 \\text{ ft}'], {
+            useKatex: true, fontSize: 13, color: '#3B82F6', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'top'
+        });
+
+        // BC = 12 ft (bottom, between B and C)
+        board.create('text', [10, -0.55, '12 \\text{ ft}'], {
+            useKatex: true, fontSize: 13, color: '#3B82F6', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'top'
+        });
+
+        // AC = x (hypotenuse of ABC)
+        board.create('text', [8.5, 2.3, 'x'], {
+            useKatex: true, fontSize: 14, color: '#3B82F6', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight: bold;'
+        });
+    </script>
+</body>
+</html>
