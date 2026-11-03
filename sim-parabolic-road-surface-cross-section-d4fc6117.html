@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parabolic Road Surface Cross-Section</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 0.55, 27, -0.15],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 4
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 0.1
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [25.8, -0.03, 'x \\text{ (ft)}'], {
+            fontSize: 14, fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [0.4, 0.52, 'y \\text{ (ft)}'], {
+            fontSize: 14, fixed: true, highlight: false, useKatex: true
+        });
+
+        // Parabola function
+        function roadY(x) {
+            return -0.0025 * x * x + 0.06 * x;
+        }
+
+        // Shaded region under the curve
+        var shadeCurve = [];
+        var shadeN = 200;
+        for (var i = 0; i <= shadeN; i++) {
+            var sx = 0 + (24 - 0) * i / shadeN;
+            shadeCurve.push([sx, roadY(sx)]);
+        }
+        shadeCurve.push([24, 0]);
+        shadeCurve.push([0, 0]);
+
+        board.create('polygon', shadeCurve, {
+            fillColor: '#222222', fillOpacity: 0.10,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Parabola curve
+        board.create('functiongraph', [
+            function(x) { return roadY(x); }, 0, 24
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Equation label near the peak
+        board.create('text', [13.5, 0.42, 'y = -0.0025x^2 + 0.06x'], {
+            fontSize: 13, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        // Hover instruction
+        board.create('text', [12, -0.07, 'Hover over a point to see its coordinates'], {
+            fontSize: 11, color: '#999999', anchorX: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Tooltip logic ───────────────────────────────────────────────
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function formatVal(v) {
+            if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+            if (Math.abs(v - 0.36) < 0.005) return '0.36';
+            return v.toFixed(2);
+        }
+
+        function showTooltip(pt, color) {
+            var xCoord = pt.X();
+            var yCoord = pt.Y();
+            var latex = '\\color{' + color + '}{\\left(' + formatVal(xCoord)
+                      + ',\\,' + formatVal(yCoord) + '\\right)}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xCoord, yCoord], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+        // ── Key points (hover to see coordinates) ───────────────────────
+        // Root at (0, 0)
+        var pt1 = board.create('point', [0, 0], {
+            name: '', size: 5, color: '#222222', fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: '#222222', highlightStrokeColor: '#222222'
+        });
+        pt1.on('over', function() { showTooltip(pt1, '#222222'); });
+        pt1.on('out', function() { hideTooltip(); });
+
+        // Vertex at (12, 0.36)
+        var pt2 = board.create('point', [12, 0.36], {
+            name: '', size: 5, color: '#222222', fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: '#222222', highlightStrokeColor: '#222222'
+        });
+        pt2.on('over', function() { showTooltip(pt2, '#222222'); });
+        pt2.on('out', function() { hideTooltip(); });
+
+        // Root at (24, 0)
+        var pt3 = board.create('point', [24, 0], {
+            name: '', size: 5, color: '#222222', fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: '#222222', highlightStrokeColor: '#222222'
+        });
+        pt3.on('over', function() { showTooltip(pt3, '#222222'); });
+        pt3.on('out', function() { hideTooltip(); });
+    </script>
+</body>
+</html>
