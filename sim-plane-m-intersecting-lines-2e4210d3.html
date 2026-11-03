@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plane M with Intersecting Lines</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 5.5, 6, -5.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Plane M as a 3D-perspective parallelogram ───────────────────
+        var planeV1 = [-4.5, -1.2];   // bottom-left
+        var planeV2 = [4.5, -1.2];    // bottom-right
+        var planeV3 = [3.0, 2.5];     // top-right
+        var planeV4 = [-3.0, 2.5];    // top-left
+
+        // ── Points on the plane surface ─────────────────────────────────
+        var Fx = -2.4, Fy = 1.8;
+        var Hx = 2.8, Hy = -0.2;
+        var Gx = -1.8, Gy = -0.5;
+        var Jx = 2.2, Jy = 1.9;
+
+        // ── Compute intersection K of lines FH and GJ ──────────────────
+        var dFHx = Hx - Fx, dFHy = Hy - Fy;
+        var dGJx = Jx - Gx, dGJy = Jy - Gy;
+        var det = dFHx * dGJy - dFHy * dGJx;
+        var t = ((Gx - Fx) * dGJy - (Gy - Fy) * dGJx) / det;
+        var Kx = Fx + t * dFHx;
+        var Ky = Fy + t * dFHy;
+
+        // ── Line extensions beyond the plane ────────────────────────────
+        var EXT = 3.5;
+
+        var lenFH = Math.sqrt(dFHx * dFHx + dFHy * dFHy);
+        var uFHx = dFHx / lenFH, uFHy = dFHy / lenFH;
+
+        var lenGJ = Math.sqrt(dGJx * dGJx + dGJy * dGJy);
+        var uGJx = dGJx / lenGJ, uGJy = dGJy / lenGJ;
+
+        var FH_ext1x = Fx - uFHx * EXT, FH_ext1y = Fy - uFHy * EXT;
+        var FH_ext2x = Hx + uFHx * EXT, FH_ext2y = Hy + uFHy * EXT;
+
+        var GJ_ext1x = Gx - uGJx * EXT, GJ_ext1y = Gy - uGJy * EXT;
+        var GJ_ext2x = Jx + uGJx * EXT, GJ_ext2y = Jy + uGJy * EXT;
+
+        // ── LAYER 1: Line portions "below" the plane (dashed, behind) ──
+        board.create('segment', [[FH_ext1x, FH_ext1y], [Fx, Fy]], {
+            strokeColor: '#555555', strokeWidth: 1.5, dash: 2,
+            fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 6 }
+        });
+
+        board.create('segment', [[GJ_ext1x, GJ_ext1y], [Gx, Gy]], {
+            strokeColor: '#555555', strokeWidth: 1.5, dash: 2,
+            fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 6 }
+        });
+
+        board.create('segment', [[Hx, Hy], [FH_ext2x, FH_ext2y]], {
+            strokeColor: '#555555', strokeWidth: 1.5, dash: 2,
+            fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        board.create('segment', [[Jx, Jy], [GJ_ext2x, GJ_ext2y]], {
+            strokeColor: '#555555', strokeWidth: 1.5, dash: 2,
+            fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // ── LAYER 2: The plane polygon (light blue shading) ─────────────
+        var pV1 = board.create('point', planeV1, { visible: false, fixed: true, name: '' });
+        var pV2 = board.create('point', planeV2, { visible: false, fixed: true, name: '' });
+        var pV3 = board.create('point', planeV3, { visible: false, fixed: true, name: '' });
+        var pV4 = board.create('point', planeV4, { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [pV1, pV2, pV3, pV4], {
+            fillColor: '#BFDBFE', fillOpacity: 0.55,
+            borders: { strokeColor: '#555555', strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── LAYER 3: Line portions "on" the plane (solid, on top) ───────
+        board.create('segment', [[Fx, Fy], [Hx, Hy]], {
+            strokeColor: '#555555', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        board.create('segment', [[Gx, Gy], [Jx, Jy]], {
+            strokeColor: '#555555', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        // ── LAYER 4: Points on the plane ────────────────────────────────
+        board.create('point', [Fx, Fy], {
+            name: 'F', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-16, 6] }
+        });
+
+        board.create('point', [Hx, Hy], {
+            name: 'H', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -12] }
+        });
+
+        board.create('point', [Gx, Gy], {
+            name: 'G', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-16, -10] }
+        });
+
+        board.create('point', [Jx, Jy], {
+            name: 'J', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-6, 14] }
+        });
+
+        // Intersection point K
+        board.create('point', [Kx, Ky], {
+            name: 'K', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -12] }
+        });
+
+        // ── Plane label M (positioned clear of all lines) ───────────────
+        board.create('text', [4.0, -0.2, '\\mathcal{M}'], {
+            useKatex: true, fontSize: 18, color: '#222222',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
