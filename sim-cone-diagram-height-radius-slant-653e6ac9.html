@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cone Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 15, 7, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Cone geometry constants ─────────────────────────────────
+        var apex = [0, 13];
+        var baseCenter = [0, 1];
+        var baseLeft = [-5, 1];
+        var baseRight = [5, 1];
+        var radius = 5;
+        var ellipseY = 1;
+        var ellipseSemiMinor = 1.2;
+
+        // ── Hidden construction points ──────────────────────────────
+        var pApex = board.create('point', apex, { visible: false, fixed: true, name: '' });
+        var pCenter = board.create('point', baseCenter, { visible: false, fixed: true, name: '' });
+        var pLeft = board.create('point', baseLeft, { visible: false, fixed: true, name: '' });
+        var pRight = board.create('point', baseRight, { visible: false, fixed: true, name: '' });
+
+        // ── Cone body shading (triangle) ────────────────────────────
+        board.create('polygon', [pApex, pLeft, pRight], {
+            fillColor: '#e5e7eb',
+            fillOpacity: 0.35,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Base ellipse (3D effect) ────────────────────────────────
+        // Front half (solid)
+        board.create('curve', [
+            function(t) { return radius * Math.cos(t); },
+            function(t) { return ellipseY + ellipseSemiMinor * Math.sin(t); },
+            -Math.PI, 0
+        ], {
+            strokeColor: '#555555',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Back half (dashed, behind cone)
+        board.create('curve', [
+            function(t) { return radius * Math.cos(t); },
+            function(t) { return ellipseY + ellipseSemiMinor * Math.sin(t); },
+            0, Math.PI
+        ], {
+            strokeColor: '#555555',
+            strokeWidth: 1.0,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Slant edges ─────────────────────────────────────────────
+        // Left slant
+        board.create('segment', [pApex, pLeft], {
+            strokeColor: '#555555',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Right slant
+        board.create('segment', [pApex, pRight], {
+            strokeColor: '#555555',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Height (dashed reference line) ──────────────────────────
+        board.create('segment', [pApex, pCenter], {
+            strokeColor: '#DC2626',
+            strokeWidth: 1.0,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Radius line (from center to right edge) ─────────────────
+        board.create('segment', [pCenter, pRight], {
+            strokeColor: '#555555',
+            strokeWidth: 1.0,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Right angle marker at base center ───────────────────────
+        var sqSize = 0.7;
+        board.create('polygon', [
+            [0, 1],
+            [sqSize, 1],
+            [sqSize, 1 + sqSize],
+            [0, 1 + sqSize]
+        ], {
+            fillColor: 'none',
+            fillOpacity: 0,
+            vertices: { visible: false },
+            borders: { strokeColor: '#DC2626', strokeWidth: 1.2 },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Labels ──────────────────────────────────────────────────
+        // Height label: "12 cm" — left of the dashed line
+        board.create('text', [-1.8, 7, '12\\text{ cm}'], {
+            useKatex: true,
+            fontSize: 14,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            anchorX: 'middle',
+            anchorY: 'middle'
+        });
+
+        // Radius label: "5 cm" — below the base radius
+        board.create('text', [2.5, -0.5, '5\\text{ cm}'], {
+            useKatex: true,
+            fontSize: 14,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            anchorX: 'middle',
+            anchorY: 'middle'
+        });
+
+        // Slant height label: "x" — right of the right slant edge
+        board.create('text', [3.8, 7.8, 'x'], {
+            useKatex: true,
+            fontSize: 15,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            anchorX: 'middle',
+            anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
