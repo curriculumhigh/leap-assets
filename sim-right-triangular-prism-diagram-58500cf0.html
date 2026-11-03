@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangular Prism</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 7.5, 10.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Front triangle vertices (right angle at bottom-left)
+        var Ax = 1.0, Ay = 1.0;
+        var Bx = 5.5, By = 1.0;
+        var Cx = 1.0, Cy = 4.4;
+
+        // Back triangle vertices (oblique projection offset)
+        var dx = 2.8, dy = 1.8;
+        var Ax2 = Ax + dx, Ay2 = Ay + dy;
+        var Bx2 = Bx + dx, By2 = By + dy;
+        var Cx2 = Cx + dx, Cy2 = Cy + dy;
+
+        // Create points (all invisible)
+        var pA = board.create('point', [Ax, Ay], { visible: false, fixed: true, name: '' });
+        var pB = board.create('point', [Bx, By], { visible: false, fixed: true, name: '' });
+        var pC = board.create('point', [Cx, Cy], { visible: false, fixed: true, name: '' });
+        var pA2 = board.create('point', [Ax2, Ay2], { visible: false, fixed: true, name: '' });
+        var pB2 = board.create('point', [Bx2, By2], { visible: false, fixed: true, name: '' });
+        var pC2 = board.create('point', [Cx2, Cy2], { visible: false, fixed: true, name: '' });
+
+        // Back face (dashed, drawn first so it's behind)
+        var dashStyle = { strokeColor: '#999999', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false };
+        board.create('segment', [pA2, pB2], dashStyle);
+        board.create('segment', [pA2, pC2], dashStyle);
+        board.create('segment', [pB2, pC2], { strokeColor: '#999999', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false });
+
+        // Hidden lateral edge (A to A2)
+        board.create('segment', [pA, pA2], { strokeColor: '#999999', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false });
+
+        // Shaded side faces (light fill for 3D depth)
+        board.create('polygon', [pA, pB, pB2, pA2], {
+            fillColor: '#D1D5DB', fillOpacity: 0.10,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('polygon', [pB, pB2, pC2, pC], {
+            fillColor: '#D1D5DB', fillOpacity: 0.06,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('polygon', [pC, pC2, pA2, pA], {
+            fillColor: '#D1D5DB', fillOpacity: 0.08,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('polygon', [pA, pB, pC], {
+            fillColor: '#E5E7EB', fillOpacity: 0.12,
+            borders: { visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Front face edges (solid, prominent)
+        var solidStyle = { strokeColor: '#222222', strokeWidth: 2.0, fixed: true, highlight: false };
+        board.create('segment', [pA, pB], solidStyle);
+        board.create('segment', [pA, pC], solidStyle);
+        board.create('segment', [pB, pC], solidStyle);
+
+        // Visible lateral edges (B to B2, C to C2)
+        var lateralStyle = { strokeColor: '#222222', strokeWidth: 1.5, fixed: true, highlight: false };
+        board.create('segment', [pB, pB2], lateralStyle);
+        board.create('segment', [pC, pC2], lateralStyle);
+
+        // Visible back edge (B2-C2)
+        board.create('segment', [pB2, pC2], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // Right angle marker at A (front face)
+        var sqSize = 0.38;
+        var sqP1 = board.create('point', [Ax + sqSize, Ay], { visible: false, fixed: true, name: '' });
+        var sqP2 = board.create('point', [Ax + sqSize, Ay + sqSize], { visible: false, fixed: true, name: '' });
+        var sqP3 = board.create('point', [Ax, Ay + sqSize], { visible: false, fixed: true, name: '' });
+        board.create('segment', [sqP1, sqP2], { strokeColor: '#222222', strokeWidth: 1.4, fixed: true, highlight: false });
+        board.create('segment', [sqP2, sqP3], { strokeColor: '#222222', strokeWidth: 1.4, fixed: true, highlight: false });
+
+        // Labels
+        board.create('text', [(Ax + Bx) / 2, Ay - 0.55, '3.2\\text{ cm}'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [Ax - 0.7, (Ay + Cy) / 2, '2.4\\text{ cm}'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var hypMidX = (Bx + Cx) / 2;
+        var hypMidY = (By + Cy) / 2;
+        var hypDx = Bx - Cx;
+        var hypDy = By - Cy;
+        var hypLen = Math.sqrt(hypDx * hypDx + hypDy * hypDy);
+        var perpX = hypDy / hypLen;
+        var perpY = -hypDx / hypLen;
+        var labelOffsetDist = 0.55;
+        board.create('text', [hypMidX + perpX * labelOffsetDist, hypMidY + perpY * labelOffsetDist, 'x'], {
+            useKatex: true, fontSize: 16, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
