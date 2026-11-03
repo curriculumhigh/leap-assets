@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph of y = x² + 10x + 25</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+        .coord-tooltip {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 14px;
+            pointer-events: none;
+            display: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <div class="coord-tooltip" id="tooltip"></div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-10, 30, 2, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Manual axes ─────────────────────────────────────────────────
+        var xAxis = board.create('axis', [[0, 0], [1, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            ticks: {
+                strokeColor: '#444444',
+                label: { fontSize: 11 },
+                minorTicks: 0,
+                ticksDistance: 1,
+                drawZero: false
+            }
+        });
+
+        var yAxis = board.create('axis', [[0, 0], [0, 1]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            ticks: {
+                strokeColor: '#444444',
+                label: { fontSize: 11 },
+                minorTicks: 0,
+                ticksDistance: 5,
+                drawZero: false
+            }
+        });
+
+        // ── Manual grid ─────────────────────────────────────────────────
+        var gridColor = '#D1D5DB';
+        var gridWidth = 0.4;
+        var i;
+
+        // Vertical grid lines every 1 unit
+        for (i = -10; i <= 2; i++) {
+            if (i === 0) continue;
+            board.create('line', [[i, 0], [i, 1]], {
+                strokeColor: gridColor, strokeWidth: gridWidth,
+                fixed: true, highlight: false, dash: 0,
+                straightFirst: true, straightLast: true
+            });
+        }
+
+        // Horizontal grid lines every 5 units
+        for (i = -5; i <= 30; i += 5) {
+            if (i === 0) continue;
+            board.create('line', [[0, i], [1, i]], {
+                strokeColor: gridColor, strokeWidth: gridWidth,
+                fixed: true, highlight: false, dash: 0,
+                straightFirst: true, straightLast: true
+            });
+        }
+
+        // Axis labels
+        board.create('text', [1.6, -0.7, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.3, 29.2, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // ── Function: f(x) = x^2 + 10x + 25 = (x + 5)^2 ───────────────
+        board.create('functiongraph', [
+            function(x) { return x * x + 10 * x + 25; }
+        ], { strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Function label (name only)
+        board.create('text', [-2.2, 12, 'f(x)'], {
+            fontSize: 13, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Tooltip setup ───────────────────────────────────────────────
+        var tooltip = document.getElementById('tooltip');
+        var boardContainer = document.getElementById('board');
+
+        function formatValKatex(v) {
+            if (Math.abs(v - Math.round(v)) < 0.001) return String(Math.round(v));
+            return v.toFixed(2);
+        }
+
+        function showTooltip(pt, color) {
+            var xCoord = pt.X();
+            var yCoord = pt.Y();
+            var latex = '\\color{' + color + '}{\\left(' + formatValKatex(xCoord)
+                      + ',\\,' + formatValKatex(yCoord) + '\\right)}';
+            katex.render(latex, tooltip, { throwOnError: false });
+            tooltip.style.borderColor = color;
+            tooltip.style.display = 'block';
+            var rect = boardContainer.getBoundingClientRect();
+            var coords = new JXG.Coords(JXG.COORDS_BY_USER, [xCoord, yCoord], board);
+            var sx = coords.scrCoords[1] + rect.left;
+            var sy = coords.scrCoords[2] + rect.top;
+            tooltip.style.left = (sx + 14) + 'px';
+            tooltip.style.top = (sy - 28) + 'px';
+        }
+
+        function hideTooltip() { tooltip.style.display = 'none'; }
+
+        // ── Key points with hover tooltips ──────────────────────────────
+        // Vertex at (-5, 0)
+        var vertex = board.create('point', [-5, 0], {
+            name: '', size: 5, color: '#222222', fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: '#222222', highlightStrokeColor: '#222222'
+        });
+        vertex.on('over', function() { showTooltip(vertex, '#222222'); });
+        vertex.on('out', function() { hideTooltip(); });
+
+        // y-intercept at (0, 25)
+        var yInt = board.create('point', [0, 25], {
+            name: '', size: 5, color: '#222222', fixed: true,
+            showInfobox: false, highlight: true,
+            highlightFillColor: '#222222', highlightStrokeColor: '#222222'
+        });
+        yInt.on('over', function() { showTooltip(yInt, '#222222'); });
+        yInt.on('out', function() { hideTooltip(); });
+    </script>
+</body>
+</html>
