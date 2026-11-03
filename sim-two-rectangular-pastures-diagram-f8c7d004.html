@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Rectangular Pastures</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 6.5, 12.5, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_FENCE = '#555555';
+        var FENCE_W = 2.0;
+
+        // Rectangle dimensions in board units
+        var rectW = 4;   // width of each rectangle (x)
+        var rectH = 5;   // height of each rectangle (y)
+
+        // Origins
+        var x0 = 1;
+        var y0 = 0.5;
+
+        // Corner points (all hidden)
+        // Left rectangle: A-B-C-D
+        var A = board.create('point', [x0, y0], { visible: false, fixed: true, name: '' });
+        var B = board.create('point', [x0 + rectW, y0], { visible: false, fixed: true, name: '' });
+        var C = board.create('point', [x0 + rectW, y0 + rectH], { visible: false, fixed: true, name: '' });
+        var D = board.create('point', [x0, y0 + rectH], { visible: false, fixed: true, name: '' });
+
+        // Right rectangle: B-E-F-C (shares side B-C)
+        var E = board.create('point', [x0 + 2 * rectW, y0], { visible: false, fixed: true, name: '' });
+        var F = board.create('point', [x0 + 2 * rectW, y0 + rectH], { visible: false, fixed: true, name: '' });
+
+        // --- Fence segments ---
+        // Bottom horizontal (A to E)
+        board.create('segment', [A, E], { strokeColor: COL_FENCE, strokeWidth: FENCE_W, fixed: true, highlight: false });
+        // Top horizontal (D to F)
+        board.create('segment', [D, F], { strokeColor: COL_FENCE, strokeWidth: FENCE_W, fixed: true, highlight: false });
+        // Left vertical (A to D)
+        board.create('segment', [A, D], { strokeColor: COL_FENCE, strokeWidth: FENCE_W, fixed: true, highlight: false });
+        // Middle vertical (B to C) — shared side
+        board.create('segment', [B, C], { strokeColor: COL_FENCE, strokeWidth: FENCE_W, fixed: true, highlight: false });
+        // Right vertical (E to F)
+        board.create('segment', [E, F], { strokeColor: COL_FENCE, strokeWidth: FENCE_W, fixed: true, highlight: false });
+
+        // --- Dimension labels ---
+        // x label under left rectangle
+        board.create('text', [x0 + rectW / 2, y0 - 0.7, 'x'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // x label under right rectangle
+        board.create('text', [x0 + rectW + rectW / 2, y0 - 0.7, 'x'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // y label to the left of left edge
+        board.create('text', [x0 - 0.7, y0 + rectH / 2, 'y'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
