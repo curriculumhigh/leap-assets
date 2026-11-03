@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Triangle Sail</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 13, 46, -5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertices
+        var A = board.create('point', [0, 0], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        var B = board.create('point', [40, 0], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        var C = board.create('point', [0, 9], { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+
+        // Triangle polygon — no fill, dark gray borders, vertex dots hidden
+        board.create('polygon', [A, B, C], {
+            fillColor: 'none',
+            fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // Right-angle marker at A
+        board.create('segment', [[1.4, 0], [1.4, 1.4]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[1.4, 1.4], [0, 1.4]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Label: 40 m (below the bottom leg)
+        board.create('text', [20, -2.2, '40 \\text{ m}'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Label: 9 m (left of the vertical leg)
+        board.create('text', [-3, 4.5, '9 \\text{ m}'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Label: c (offset outward from hypotenuse midpoint)
+        // Hypotenuse midpoint: (20, 4.5)
+        // Direction B→C: (-40, 9), outward normal (upper-right): (9, 40) normalized
+        // |normal| = sqrt(81+1600) = sqrt(1681) = 41
+        // Unit outward: (9/41, 40/41) ≈ (0.2195, 0.9756)
+        // Offset 2 units: (20 + 2*0.2195, 4.5 + 2*0.9756) ≈ (20.44, 6.45)
+        board.create('text', [20.44, 6.45, 'c'], {
+            useKatex: true, fontSize: 16, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
