@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Intersecting Planes M and N</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-11, 11, 14, -7],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_M = '#2563EB';
+        var COL_N = '#059669';
+        var COL_LINE = '#222222';
+        var COL_PT = '#222222';
+        var COL_SEG = '#555555';
+        var PT_LAYER = 9;
+        var LBL_LAYER = 9;
+
+        function fp(coords) {
+            return board.create('point', coords, { visible: false, fixed: true, name: '' });
+        }
+
+        function insideQuad(c0, c1, c2, c3, s, t) {
+            var bot = [c0[0] + t * (c1[0] - c0[0]), c0[1] + t * (c1[1] - c0[1])];
+            var top_ = [c3[0] + t * (c2[0] - c3[0]), c3[1] + t * (c2[1] - c3[1])];
+            return [bot[0] + s * (top_[0] - bot[0]), bot[1] + s * (top_[1] - bot[1])];
+        }
+
+        // Intersection line endpoints
+        var INT_L = [-6.5, 0];
+        var INT_R = [9.5, 0];
+
+        // Plane M (blue) — rises up-left from intersection
+        var M_RISE_X = -2.5;
+        var M_RISE_Y = 7.5;
+
+        var M_bl = [INT_L[0], INT_L[1]];
+        var M_br = [INT_R[0], INT_R[1]];
+        var M_tr = [INT_R[0] + M_RISE_X, INT_R[1] + M_RISE_Y];
+        var M_tl = [INT_L[0] + M_RISE_X, INT_L[1] + M_RISE_Y];
+
+        var pM_bl = fp(M_bl);
+        var pM_br = fp(M_br);
+        var pM_tr = fp(M_tr);
+        var pM_tl = fp(M_tl);
+
+        board.create('polygon', [pM_bl, pM_br, pM_tr, pM_tl], {
+            fillColor: COL_M, fillOpacity: 0.10,
+            borders: { strokeColor: COL_M, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Plane N (green) — tilts down-left from intersection
+        var N_DEPTH_X = -2.5;
+        var N_DEPTH_Y = -5.5;
+
+        var N_tl = [INT_L[0], INT_L[1]];
+        var N_tr = [INT_R[0], INT_R[1]];
+        var N_br = [INT_R[0] + N_DEPTH_X, INT_R[1] + N_DEPTH_Y];
+        var N_bl = [INT_L[0] + N_DEPTH_X, INT_L[1] + N_DEPTH_Y];
+
+        var pN_tl = fp(N_tl);
+        var pN_tr = fp(N_tr);
+        var pN_br = fp(N_br);
+        var pN_bl = fp(N_bl);
+
+        board.create('polygon', [pN_tl, pN_tr, pN_br, pN_bl], {
+            fillColor: COL_N, fillOpacity: 0.08,
+            borders: { strokeColor: COL_N, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Intersection line (arrows both ends) ────────────────────────
+        var lineExt = 1.5;
+        var il_dx = INT_R[0] - INT_L[0];
+        var il_len = Math.abs(il_dx);
+        var il_ux = il_dx / il_len;
+
+        board.create('segment',
+            [[INT_L[0] - il_ux * lineExt, INT_L[1]],
+             [INT_R[0] + il_ux * lineExt, INT_R[1]]],
+            {
+                strokeColor: COL_LINE, strokeWidth: 2.0, fixed: true, highlight: false,
+                firstArrow: { type: 2, size: 6 },
+                lastArrow: { type: 2, size: 6 }
+            }
+        );
+
+        // ── Points on intersection line: P, Q, R, S ────────────────────
+        function onIntLine(t) {
+            return [
+                INT_L[0] + t * (INT_R[0] - INT_L[0]),
+                INT_L[1] + t * (INT_R[1] - INT_L[1])
+            ];
+        }
+
+        var intPtDefs = [
+            { name: 'P', t: 0.10, offX: 0, offY: 0.55 },
+            { name: 'Q', t: 0.35, offX: 0, offY: 0.55 },
+            { name: 'R', t: 0.58, offX: 0, offY: 0.55 },
+            { name: 'S', t: 0.82, offX: 0, offY: 0.55 }
+        ];
+
+        for (var i = 0; i < intPtDefs.length; i++) {
+            var ip = intPtDefs[i];
+            var c = onIntLine(ip.t);
+            board.create('point', c, {
+                name: '', size: 3, color: COL_PT, fixed: true,
+                highlight: false, showInfobox: false, layer: PT_LAYER
+            });
+            board.create('text', [c[0] + ip.offX, c[1] + ip.offY, ip.name], {
+                fontSize: 14, color: COL_PT, fixed: true,
+                anchorX: 'middle', anchorY: 'bottom',
+                useKatex: true, highlight: false, layer: LBL_LAYER
+            });
+        }
+
+        // ── Points in Plane M: T, U ─────────────────────────────────────
+        var T_coords = insideQuad(M_bl, M_br, M_tr, M_tl, 0.70, 0.25);
+        var U_coords = insideQuad(M_bl, M_br, M_tr, M_tl, 0.45, 0.65);
+
+        board.create('point', T_coords, {
+            name: '', size: 3, color: COL_PT, fixed: true,
+            highlight: false, showInfobox: false, layer: PT_LAYER
+        });
+        board.create('text', [T_coords[0] + 0.15, T_coords[1] + 0.55, 'T'], {
+            fontSize: 14, color: COL_PT, fixed: true,
+            anchorX: 'middle', useKatex: true, highlight: false, layer: LBL_LAYER
+        });
+
+        board.create('point', U_coords, {
+            name: '', size: 3, color: COL_PT, fixed: true,
+            highlight: false, showInfobox: false, layer: PT_LAYER
+        });
+        board.create('text', [U_coords[0] + 0.15, U_coords[1] + 0.55, 'U'], {
+            fontSize: 14, color: COL_PT, fixed: true,
+            anchorX: 'middle', useKatex: true, highlight: false, layer: LBL_LAYER
+        });
+
+        // ── Points in Plane N: V, W (W shifted down-right) ─────────────
+        var V_coords = insideQuad(N_tl, N_tr, N_br, N_bl, 0.50, 0.55);
+        var W_coords = insideQuad(N_tl, N_tr, N_br, N_bl, 0.72, 0.30);
+
+        board.create('point', V_coords, {
+            name: '', size: 3, color: COL_PT, fixed: true,
+            highlight: false, showInfobox: false, layer: PT_LAYER
+        });
+        board.create('text', [V_coords[0] - 0.6, V_coords[1] + 0.45, 'V'], {
+            fontSize: 14, color: COL_PT, fixed: true,
+            anchorX: 'right', useKatex: true, highlight: false, layer: LBL_LAYER
+        });
+
+        board.create('point', W_coords, {
+            name: '', size: 3, color: COL_PT, fixed: true,
+            highlight: false, showInfobox: false, layer: PT_LAYER
+        });
+        board.create('text', [W_coords[0] + 0.5, W_coords[1] - 0.55, 'W'], {
+            fontSize: 14, color: COL_PT, fixed: true,
+            anchorX: 'left', anchorY: 'top', useKatex: true, highlight: false, layer: LBL_LAYER
+        });
+
+        // ── Line through V and W (arrows both ends, clipped to plane N) ─
+        var vw_dx = W_coords[0] - V_coords[0];
+        var vw_dy = W_coords[1] - V_coords[1];
+        var vw_len = Math.sqrt(vw_dx * vw_dx + vw_dy * vw_dy);
+        var vw_ux = vw_dx / vw_len;
+        var vw_uy = vw_dy / vw_len;
+
+        var nEdges = [
+            [N_tl, N_tr],
+            [N_tr, N_br],
+            [N_br, N_bl],
+            [N_bl, N_tl]
+        ];
+
+        function lineSegIntersect(p, d, a, b) {
+            var abx = b[0] - a[0];
+            var aby = b[1] - a[1];
+            var det = d[0] * aby - d[1] * abx;
+            if (Math.abs(det) < 1e-9) return null;
+            var t = ((a[0] - p[0]) * aby - (a[1] - p[1]) * abx) / det;
+            var s = ((a[0] - p[0]) * d[1] - (a[1] - p[1]) * d[0]) / det;
+            if (s >= -0.01 && s <= 1.01) return t;
+            return null;
+        }
+
+        var tNeg = [];
+        var tPos = [];
+
+        for (var ei = 0; ei < nEdges.length; ei++) {
+            var tt = lineSegIntersect(V_coords, [vw_dx, vw_dy], nEdges[ei][0], nEdges[ei][1]);
+            if (tt !== null) {
+                if (tt < 0) tNeg.push(tt);
+                else if (tt > 0) tPos.push(tt);
+            }
+        }
+
+        var extBehindV = tNeg.length > 0 ? Math.max.apply(null, tNeg) : -2;
+        var extPastW = tPos.length > 0 ? Math.min.apply(null, tPos) : 2;
+
+        var arrowInset = 0.3;
+        var vwLineStart = [
+            V_coords[0] + (extBehindV + arrowInset) * vw_dx,
+            V_coords[1] + (extBehindV + arrowInset) * vw_dy
+        ];
+        var vwLineEnd = [
+            V_coords[0] + (extPastW - arrowInset) * vw_dx,
+            V_coords[1] + (extPastW - arrowInset) * vw_dy
+        ];
+
+        board.create('segment', [vwLineStart, vwLineEnd], {
+            strokeColor: COL_SEG, strokeWidth: 1.5, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 6 },
+            lastArrow: { type: 2, size: 6 },
+            layer: 7
+        });
+
+        // ── Point X (outside both planes) ───────────────────────────────
+        var X_coords = [11.5, -5.5];
+
+        board.create('point', X_coords, {
+            name: '', size: 3, color: COL_PT, fixed: true,
+            highlight: false, showInfobox: false, layer: PT_LAYER
+        });
+        board.create('text', [X_coords[0] + 0.5, X_coords[1] + 0.1, 'X'], {
+            fontSize: 14, color: COL_PT, fixed: true,
+            anchorX: 'left', useKatex: true, highlight: false, layer: LBL_LAYER
+        });
+
+        // ── Ray from V through X ────────────────────────────────────────
+        var vx_dx = X_coords[0] - V_coords[0];
+        var vx_dy = X_coords[1] - V_coords[1];
+        var vx_len = Math.sqrt(vx_dx * vx_dx + vx_dy * vx_dy);
+        var vx_ux = vx_dx / vx_len;
+        var vx_uy = vx_dy / vx_len;
+
+        var det_vx = vx_dx * (-(N_br[1] - N_tr[1])) - (-(N_br[0] - N_tr[0])) * vx_dy;
+        var exitPt;
+        if (Math.abs(det_vx) > 0.001) {
+            var t_cross = ((N_tr[0] - V_coords[0]) * (-(N_br[1] - N_tr[1])) - (N_tr[1] - V_coords[1]) * (-(N_br[0] - N_tr[0]))) / det_vx;
+            exitPt = [V_coords[0] + t_cross * vx_dx, V_coords[1] + t_cross * vx_dy];
+        } else {
+            exitPt = [(V_coords[0] + X_coords[0]) / 2, (V_coords[1] + X_coords[1]) / 2];
+        }
+
+        board.create('segment', [V_coords, exitPt], {
+            strokeColor: COL_SEG, strokeWidth: 1.5, dash: 2,
+            fixed: true, highlight: false, layer: 7
+        });
+
+        var rayExt = 1.8;
+        var rayEnd = [X_coords[0] + vx_ux * rayExt, X_coords[1] + vx_uy * rayExt];
+
+        board.create('segment', [exitPt, rayEnd], {
+            strokeColor: COL_SEG, strokeWidth: 1.5,
+            fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 },
+            layer: 7
+        });
+
+        // Re-draw V and X points on top
+        board.create('point', V_coords, {
+            name: '', size: 3, color: COL_PT, fixed: true,
+            highlight: false, showInfobox: false, layer: PT_LAYER
+        });
+        board.create('point', X_coords, {
+            name: '', size: 3, color: COL_PT, fixed: true,
+            highlight: false, showInfobox: false, layer: PT_LAYER
+        });
+
+        // ── Plane labels ────────────────────────────────────────────────
+        var mPos = insideQuad(M_bl, M_br, M_tr, M_tl, 0.80, 0.88);
+        board.create('text', [mPos[0], mPos[1], '\\mathit{M}'], {
+            fontSize: 20, color: COL_M, fixed: true,
+            useKatex: true, highlight: false, layer: LBL_LAYER
+        });
+
+        // N label — pushed further left to avoid VW line
+        var nPos = insideQuad(N_tl, N_tr, N_br, N_bl, 0.85, 0.06);
+        board.create('text', [nPos[0], nPos[1], '\\mathit{N}'], {
+            fontSize: 20, color: COL_N, fixed: true,
+            useKatex: true, highlight: false, layer: LBL_LAYER
+        });
+
+    </script>
+</body>
+</html>
