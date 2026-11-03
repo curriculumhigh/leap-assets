@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangular Pyramid — Slant Height</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 12, 15, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var FL = [3, 1];
+        var FR = [10, 1];
+        var BR = [12, 3.2];
+        var BL = [5, 3.2];
+
+        var centerBase = [(FL[0] + BR[0]) / 2, (FL[1] + BR[1]) / 2];
+        var apex = [centerBase[0], centerBase[1] + 7.2];
+        var midFront = [(FL[0] + FR[0]) / 2, (FL[1] + FR[1]) / 2];
+
+        var pFL = board.create('point', FL, { visible: false, fixed: true, name: '' });
+        var pFR = board.create('point', FR, { visible: false, fixed: true, name: '' });
+        var pBR = board.create('point', BR, { visible: false, fixed: true, name: '' });
+        var pBL = board.create('point', BL, { visible: false, fixed: true, name: '' });
+        var pApex = board.create('point', apex, { visible: false, fixed: true, name: '' });
+        var pCenter = board.create('point', centerBase, { visible: false, fixed: true, name: '' });
+        var pMidFront = board.create('point', midFront, { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [pBL, pBR], {
+            strokeColor: '#AAAAAA', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [pBL, pFL], {
+            strokeColor: '#AAAAAA', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [pBR, pFR], {
+            strokeColor: '#AAAAAA', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [pFL, pFR], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('segment', [pBL, pApex], {
+            strokeColor: '#AAAAAA', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [pBR, pApex], {
+            strokeColor: '#AAAAAA', strokeWidth: 1.2, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [pFL, pApex], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [pFR, pApex], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('segment', [pCenter, pMidFront], {
+            strokeColor: '#BBBBBB', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [pApex, pCenter], {
+            strokeColor: '#DC2626', strokeWidth: 2.0, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [pCenter, pMidFront], {
+            strokeColor: '#2563EB', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        board.create('segment', [pApex, pMidFront], {
+            strokeColor: '#2563EB', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var raSize = 0.4;
+        var dx = midFront[0] - centerBase[0];
+        var dy = midFront[1] - centerBase[1];
+        var d = Math.sqrt(dx * dx + dy * dy);
+        var ux = dx / d;
+        var uy = dy / d;
+
+        var ra1 = [centerBase[0], centerBase[1] + raSize];
+        var ra2 = [centerBase[0] + ux * raSize, centerBase[1] + uy * raSize + raSize];
+        var ra3 = [centerBase[0] + ux * raSize, centerBase[1] + uy * raSize];
+
+        board.create('segment',
+            [board.create('point', ra1, { visible: false, fixed: true, name: '' }),
+             board.create('point', ra2, { visible: false, fixed: true, name: '' })],
+            { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false }
+        );
+        board.create('segment',
+            [board.create('point', ra2, { visible: false, fixed: true, name: '' }),
+             board.create('point', ra3, { visible: false, fixed: true, name: '' })],
+            { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false }
+        );
+
+        board.create('point', apex, { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        board.create('point', centerBase, { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+        board.create('point', midFront, { name: '', size: 2, color: '#222222', fixed: true, highlight: false });
+
+        board.create('text', [6.5, -0.5, '9.6 \\text{ ft}'], {
+            useKatex: true, fontSize: 15, color: '#555555',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [8.6, 5.7, '7.2 \\text{ ft}'], {
+            useKatex: true, fontSize: 15, color: '#DC2626',
+            anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [7.0, 0.3, '4.8 \\text{ ft}'], {
+            useKatex: true, fontSize: 15, color: '#2563EB',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [5.2, 5.2, 'x \\text{ ft}'], {
+            useKatex: true, fontSize: 16, color: '#2563EB',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
