@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buoy Coordinate Plane</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 33, 33, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Grid lines every 2 units from 0 to 30
+        var i;
+        for (i = 0; i <= 30; i += 2) {
+            board.create('segment', [[i, 0], [i, 30]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+            board.create('segment', [[0, i], [30, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // x-axis
+        board.create('arrow', [[0, 0], [31.5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        // y-axis
+        board.create('arrow', [[0, 0], [0, 31.5]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // Tick marks and labels every 5 units
+        var tickLen = 0.4;
+        var j;
+        for (j = 5; j <= 30; j += 5) {
+            board.create('segment', [[j, -tickLen], [j, tickLen]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [j, -1.4, String(j)], {
+                fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+                color: '#444444', fixed: true, highlight: false
+            });
+            board.create('segment', [[-tickLen, j], [tickLen, j]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [-1.4, j, String(j)], {
+                fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+                color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        // Origin label
+        board.create('text', [-1.2, -1.2, '0'], {
+            fontSize: 11, anchorX: 'middle', anchorY: 'middle',
+            color: '#444444', fixed: true, highlight: false
+        });
+
+        // Axis name labels
+        board.create('text', [31.2, -1.2, '<i>x</i>'], {
+            fontSize: 14, fixed: true, highlight: false
+        });
+        board.create('text', [0.8, 31.4, '<i>y</i>'], {
+            fontSize: 14, fixed: true, highlight: false
+        });
+
+        // Buoy P at (4, 8)
+        board.create('point', [4, 8], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false,
+            showInfobox: false
+        });
+        board.create('text', [2.2, 9.4, 'P\\,(4,\\, 8)'], {
+            fontSize: 13, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        // Buoy Q at (16, 8)
+        board.create('point', [16, 8], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false,
+            showInfobox: false
+        });
+        board.create('text', [17, 9.4, 'Q\\,(16,\\, 8)'], {
+            fontSize: 13, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+
+        // Buoy R at (16, 17)
+        board.create('point', [16, 17], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false,
+            showInfobox: false
+        });
+        board.create('text', [17, 18.2, 'R\\,(16,\\, 17)'], {
+            fontSize: 13, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
