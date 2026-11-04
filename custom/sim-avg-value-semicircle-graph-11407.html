@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semicircle and Line Segments f</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        // Equal scale on both axes: fix the x-range, derive the y-range from the canvas shape
+        var XMIN = -3.45, XMAX = 7.85;
+        var el = document.getElementById('board');
+        var halfH = (XMAX - XMIN) * el.clientHeight / el.clientWidth / 2;
+        var BB = [XMIN, halfH, XMAX, -halfH];
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: BB,
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var UX = (BB[2] - BB[0]) / board.canvasWidth;
+        var UY = (BB[1] - BB[3]) / board.canvasHeight;
+        var i;
+
+        /* ── Grid lines ─────────────────────────────────────────────── */
+        for (i = -3; i <= 7; i++) {
+            board.create('segment', [[i, -3], [i, 3]], { strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false });
+        }
+        for (i = -3; i <= 3; i++) {
+            board.create('segment', [[-3, i], [7, i]], { strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false });
+        }
+
+        /* ── Axes ───────────────────────────────────────────────────── */
+        board.create('arrow', [[-3.3, 0], [7.6, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false
+        });
+        board.create('arrow', [[0, -3.3], [0, 3.35]], {
+            strokeColor: '#444444', strokeWidth: 1.2, lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false
+        });
+
+        /* ── Ticks and tick labels ──────────────────────────────────── */
+        for (i = -3; i <= 7; i++) {
+            if (i === 0) continue;
+            board.create('segment', [[i, -4 * UY], [i, 4 * UY]], { strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false });
+            // x = 2 and x = 6 are where f meets the axis on a slant: nudge those labels off the segments
+            var dx = (i === 2) ? -6 : (i === 6 ? 6 : 0);
+            board.create('text', [i + dx * UX, -12 * UY, (i < 0 ? '−' : '') + String(Math.abs(i))], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+            });
+        }
+        for (i = -3; i <= 3; i++) {
+            if (i === 0) continue;
+            board.create('segment', [[-4 * UX, i], [4 * UX, i]], { strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false });
+            // y = 2 sits on the top of the semicircle: lift that label just above its grid line
+            var isTop = (i === 2);
+            board.create('text', [-8 * UX, isTop ? i + 2 * UY : i, (i < 0 ? '−' : '') + String(Math.abs(i))], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: isTop ? 'bottom' : 'middle', fixed: true, highlight: false
+            });
+        }
+        board.create('text', [-7 * UX, -11 * UY, '0'], {
+            fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        /* ── Axis name labels ───────────────────────────────────────── */
+        board.create('text', [7.6, 14 * UY, 'x'], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle', useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [12 * UX, 3.3, 'y'], {
+            fontSize: 14, color: '#222222', anchorX: 'left', anchorY: 'middle', useKatex: true, fixed: true, highlight: false
+        });
+
+        /* ── f: upper semicircle on [−2, 2], then line segments ─────── */
+        var COL = '#222222';   // primary curve
+        board.create('curve', [
+            function (t) { return 2 * Math.cos(t); },
+            function (t) { return 2 * Math.sin(t); },
+            0, Math.PI
+        ], { strokeColor: COL, strokeWidth: 1.8, numberPointsHigh: 400, numberPointsLow: 200, fixed: true, highlight: false });
+
+        var pts = [[2, 0], [4, -2], [6, 0]];
+        for (i = 0; i < pts.length - 1; i++) {
+            board.create('segment', [pts[i], pts[i + 1]], {
+                strokeColor: COL, strokeWidth: 1.8, fixed: true, highlight: false
+            });
+        }
+        var dots = [[-2, 0], [2, 0], [4, -2], [6, 0]];
+        for (i = 0; i < dots.length; i++) {
+            board.create('point', dots[i], {
+                name: '', size: 3, color: COL, fixed: true, highlight: false, showInfobox: false
+            });
+        }
+
+        /* ── Function label ─────────────────────────────────────────── */
+        board.create('text', [1.75, 1.75, 'y = f(x)'], {
+            fontSize: 13, color: COL, anchorX: 'left', anchorY: 'bottom',
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
