@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle — 5 ft, 12 ft, 13 ft</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 14, 16, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // 5-12-13 right triangle
+        // A=(1,1), B=(14,1) => AB = 13 (base/hypotenuse)
+        // C such that AC=12, BC=5, right angle at C
+        var cxVal = 314 / 26;
+        var cyVal = 1 + Math.sqrt(25 - Math.pow(cxVal - 14, 2));
+
+        var A = board.create('point', [1, 1], { name: '', fixed: true, size: 0, visible: false });
+        var B = board.create('point', [14, 1], { name: '', fixed: true, size: 0, visible: false });
+        var C = board.create('point', [cxVal, cyVal], { name: '', fixed: true, size: 0, visible: false });
+
+        // Triangle polygon — light blue fill, dark gray outline
+        var tri = board.create('polygon', [A, B, C], {
+            fillColor: '#2563EB',
+            fillOpacity: 0.12,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // Side labels — positioned outside each side
+        // Base AB (13 ft) — centered below
+        var midABx = (1 + 14) / 2;
+        board.create('text', [midABx, -0.5, '13 \\text{ ft}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold;'
+        });
+
+        // Side AC (12 ft) — left side, label offset outward
+        var midACx = (1 + cxVal) / 2;
+        var midACy = (1 + cyVal) / 2;
+        var acDx = cxVal - 1;
+        var acDy = cyVal - 1;
+        var acLen = Math.sqrt(acDx * acDx + acDy * acDy);
+        var acNx = -acDy / acLen;
+        var acNy = acDx / acLen;
+        board.create('text', [midACx + acNx * 1.0, midACy + acNy * 1.0, '12 \\text{ ft}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold;'
+        });
+
+        // Side BC (5 ft) — right side, label offset outward
+        var midBCx = (14 + cxVal) / 2;
+        var midBCy = (1 + cyVal) / 2;
+        var bcDx = cxVal - 14;
+        var bcDy = cyVal - 1;
+        var bcLen = Math.sqrt(bcDx * bcDx + bcDy * bcDy);
+        var bcNx = bcDy / bcLen;
+        var bcNy = -bcDx / bcLen;
+        board.create('text', [midBCx + bcNx * 1.0, midBCy + bcNy * 1.0, '5 \\text{ ft}'], {
+            useKatex: true, fontSize: 15, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight: bold;'
+        });
+    </script>
+</body>
+</html>
