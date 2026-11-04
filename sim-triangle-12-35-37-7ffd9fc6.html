@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle 12-35-37</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var cx = 288 / 74;
+        var cy = Math.sqrt(144 - cx * cx);
+
+        var pad = 4;
+        var bbLeft = Math.min(0, cx) - pad;
+        var bbRight = 37 + pad;
+        var bbTop = cy + pad;
+        var bbBottom = 0 - pad;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [bbLeft, bbTop, bbRight, bbBottom],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var A = board.create('point', [0, 0], { visible: false, fixed: true, name: '' });
+        var B = board.create('point', [37, 0], { visible: false, fixed: true, name: '' });
+        var C = board.create('point', [cx, cy], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [A, B, C], {
+            fillColor: '#DBEAFE',
+            fillOpacity: 0.5,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        var baseMidX = 37 / 2;
+        var baseMidY = -2.2;
+        board.create('text', [baseMidX, baseMidY, '\\textbf{37 in.}'], {
+            useKatex: true,
+            fontSize: 14,
+            color: '#333333',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+
+        var leftMidX = (0 + cx) / 2;
+        var leftMidY = (0 + cy) / 2;
+        var leftLen = 12;
+        var leftNx = -cy / leftLen;
+        var leftNy = cx / leftLen;
+        var leftOffset = 2.2;
+        board.create('text', [leftMidX + leftNx * leftOffset, leftMidY + leftNy * leftOffset, '\\textbf{12 in.}'], {
+            useKatex: true,
+            fontSize: 14,
+            color: '#333333',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+
+        var rightMidX = (37 + cx) / 2;
+        var rightMidY = (0 + cy) / 2;
+        var rightLen = 35;
+        var rightNx = cy / rightLen;
+        var rightNy = (37 - cx) / rightLen;
+        var rightOffset = 2.2;
+        board.create('text', [rightMidX + rightNx * rightOffset, rightMidY + rightNy * rightOffset, '\\textbf{35 in.}'], {
+            useKatex: true,
+            fontSize: 14,
+            color: '#333333',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
