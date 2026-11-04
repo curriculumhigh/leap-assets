@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Greenhouse Average Temperature Rectangle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.7, 98, 14.2, -16],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // units per pixel (for pixel-sized offsets)
+        var UX = (14.2 + 1.7) / board.canvasWidth;
+        var UY = (98 + 16) / board.canvasHeight;
+
+        var i;
+
+        /* ── Grid lines ─────────────────────────────────────────────── */
+        for (i = 1; i <= 13; i++) {
+            board.create('segment', [[i, 0], [i, 90]], { strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false });
+        }
+        for (i = 10; i <= 90; i += 10) {
+            board.create('segment', [[0, i], [13, i]], { strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false });
+        }
+
+        /* ── Axes ───────────────────────────────────────────────────── */
+        board.create('arrow', [[0, 0], [13.75, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false
+        });
+        board.create('arrow', [[0, 0], [0, 96]], {
+            strokeColor: '#444444', strokeWidth: 1.2, lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false
+        });
+
+        /* ── Ticks and tick labels ──────────────────────────────────── */
+        for (i = 1; i <= 13; i++) {
+            board.create('segment', [[i, -4 * UY], [i, 4 * UY]], { strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false });
+            board.create('text', [i, -13 * UY, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+            });
+        }
+        for (i = 10; i <= 90; i += 10) {
+            board.create('segment', [[-4 * UX, i], [4 * UX, i]], { strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false });
+            board.create('text', [-8 * UX, i, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false
+            });
+        }
+        board.create('text', [-8 * UX, -13 * UY, '0'], {
+            fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        /* ── Axis name labels (KaTeX) ───────────────────────────────── */
+        board.create('text', [13.75, -32 * UY, 't\\text{ (hours)}'], {
+            fontSize: 14, color: '#222222', anchorX: 'right', anchorY: 'middle', useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [10 * UX, 95, 'T\\text{ (}{}^{\\circ}\\text{F)}'], {
+            fontSize: 14, color: '#222222', anchorX: 'left', anchorY: 'middle', useKatex: true, fixed: true, highlight: false
+        });
+
+        /* ── Temperature curve T(t) = 55 + 6t − t²/3, 0 ≤ t ≤ 12 ───── */
+        var COL = '#222222';   // primary curve
+        var RECT = '#2563EB';  // 2nd object: average-value rectangle
+        var AVG = 75;
+        var TC = 9 - Math.sqrt(21);   // curve meets T = 75 at t ≈ 4.417
+        function T(t) { return 55 + 6 * t - t * t / 3; }
+
+        function regionPts(a, b) {
+            // curve from a to b, then back along T = AVG
+            var pts = [], n = 80, k, t;
+            for (k = 0; k <= n; k++) { t = a + (b - a) * k / n; pts.push([t, T(t)]); }
+            pts.push([b, AVG]); pts.push([a, AVG]);
+            return pts;
+        }
+
+        /* ── Average-value rectangle (0..12 × 0..75) ────────────────── */
+        board.create('polygon', [[0, 0], [12, 0], [12, AVG], [0, AVG]], {
+            fillColor: RECT, fillOpacity: 0.12,
+            borders: { strokeColor: RECT, strokeWidth: 0, strokeOpacity: 0 },
+            vertices: { visible: false }, hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        /* ── Hatch pattern for the gap below the line ───────────────── */
+        var svgDefs = board.renderer.defs;
+        var NS = 'http://www.w3.org/2000/svg';
+        var pat = document.createElementNS(NS, 'pattern');
+        pat.setAttribute('id', 'hatchOrange');
+        pat.setAttribute('patternUnits', 'userSpaceOnUse');
+        pat.setAttribute('width', '6');
+        pat.setAttribute('height', '6');
+        pat.setAttribute('patternTransform', 'rotate(45)');
+        var bg = document.createElementNS(NS, 'rect');
+        bg.setAttribute('width', '6'); bg.setAttribute('height', '6');
+        bg.setAttribute('fill', '#D97706'); bg.setAttribute('fill-opacity', '0.10');
+        var ln = document.createElementNS(NS, 'line');
+        ln.setAttribute('x1', '0'); ln.setAttribute('y1', '0');
+        ln.setAttribute('x2', '0'); ln.setAttribute('y2', '6');
+        ln.setAttribute('stroke', '#D97706'); ln.setAttribute('stroke-width', '1.6');
+        ln.setAttribute('stroke-opacity', '0.85');
+        pat.appendChild(bg); pat.appendChild(ln);
+        svgDefs.appendChild(pat);
+
+        // Gap: curve BELOW the line, 0 ≤ t ≤ TC (hatched)
+        var gap = board.create('polygon', regionPts(0, TC), {
+            fillColor: '#D97706', fillOpacity: 0.25,
+            borders: { strokeWidth: 0, strokeOpacity: 0 },
+            vertices: { visible: false }, hasInnerPoints: false, fixed: true, highlight: false
+        });
+        gap.rendNode.setAttribute('fill', 'url(#hatchOrange)');
+        gap.rendNode.setAttribute('fill-opacity', '1');
+
+        // Excess: curve ABOVE the line, TC ≤ t ≤ 12 (solid orange)
+        board.create('polygon', regionPts(TC, 12), {
+            fillColor: '#D97706', fillOpacity: 0.45,
+            borders: { strokeWidth: 0, strokeOpacity: 0 },
+            vertices: { visible: false }, hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        /* ── Dashed top edge of the rectangle (T = T_avg) ───────────── */
+        board.create('segment', [[0, AVG], [12, AVG]], {
+            strokeColor: RECT, strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+        });
+
+        /* ── Curve ──────────────────────────────────────────────────── */
+        board.create('functiongraph', [function(t) { return T(t); }, 0, 12], {
+            strokeColor: COL, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        /* ── Label for the average line ─────────────────────────────── */
+        // No numeric value: the item asks for T_avg in an input that is
+        // visible at the same time as this graph.
+        board.create('text', [6 * UX, AVG + 5 * UY, 'T_{\\text{avg}}'], {
+            fontSize: 13, color: RECT, anchorX: 'left', anchorY: 'bottom',
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
