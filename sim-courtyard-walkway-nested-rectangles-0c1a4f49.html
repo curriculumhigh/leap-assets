@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangular Courtyard with Walkway</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 22, 31, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Layout constants
+        var W_INNER = 22;
+        var H_INNER = 16;
+        var BORDER = 2.2;
+
+        // Inner rectangle corners
+        var ix1 = BORDER;
+        var iy1 = BORDER;
+        var ix2 = BORDER + W_INNER;
+        var iy2 = BORDER + H_INNER;
+
+        // Outer rectangle corners
+        var ox1 = 0;
+        var oy1 = 0;
+        var ox2 = ix2 + BORDER;
+        var oy2 = iy2 + BORDER;
+
+        // ── Outer rectangle (grey, walkway region) ──────────────────────
+        var outerP1 = board.create('point', [ox1, oy1], { visible: false, name: '' });
+        var outerP2 = board.create('point', [ox2, oy1], { visible: false, name: '' });
+        var outerP3 = board.create('point', [ox2, oy2], { visible: false, name: '' });
+        var outerP4 = board.create('point', [ox1, oy2], { visible: false, name: '' });
+
+        board.create('polygon', [outerP1, outerP2, outerP3, outerP4], {
+            fillColor: '#E5E7EB',
+            fillOpacity: 0.45,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Inner rectangle (blue, courtyard) ───────────────────────────
+        var innerP1 = board.create('point', [ix1, iy1], { visible: false, name: '' });
+        var innerP2 = board.create('point', [ix2, iy1], { visible: false, name: '' });
+        var innerP3 = board.create('point', [ix2, iy2], { visible: false, name: '' });
+        var innerP4 = board.create('point', [ix1, iy2], { visible: false, name: '' });
+
+        board.create('polygon', [innerP1, innerP2, innerP3, innerP4], {
+            fillColor: '#ffffff',
+            fillOpacity: 1.0,
+            borders: { strokeColor: '#2563EB', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Dimension label: "22 ft" — horizontal, centered below inner bottom edge ──
+        var innerCX = (ix1 + ix2) / 2;
+
+        // Horizontal dimension line just inside bottom of inner rect
+        var dimHY = iy1 + 1.2;
+        board.create('segment', [[ix1 + 0.3, dimHY], [ix2 - 0.3, dimHY]], {
+            strokeColor: '#2563EB', strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 4 },
+            lastArrow: { type: 2, size: 4 }
+        });
+        board.create('text', [innerCX, dimHY + 0.9, '22 \\text{ ft}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#2563EB',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Dimension label: "16 ft" — vertical, centered along left edge of inner rect ──
+        var innerCY = (iy1 + iy2) / 2;
+
+        // Vertical dimension line just inside left of inner rect
+        var dimVX = ix1 + 1.5;
+        board.create('segment', [[dimVX, iy1 + 0.3], [dimVX, iy2 - 0.3]], {
+            strokeColor: '#2563EB', strokeWidth: 1.0, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 4 },
+            lastArrow: { type: 2, size: 4 }
+        });
+        // Rotated "16 ft" label using CSS transform
+        board.create('text', [dimVX + 0.9, innerCY, '16 \\text{ ft}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#2563EB',
+            useKatex: true, fixed: true, highlight: false,
+            cssStyle: 'transform: rotate(-90deg); white-space: nowrap;'
+        });
+
+        // ── Walkway "x" labels — one in each border strip ───────────────
+        // Top strip
+        board.create('text', [(ix1 + ix2) / 2, (iy2 + oy2) / 2, 'x'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 15, color: '#555555',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // Bottom strip
+        board.create('text', [(ix1 + ix2) / 2, (oy1 + iy1) / 2, 'x'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 15, color: '#555555',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // Left strip
+        board.create('text', [(ox1 + ix1) / 2, (iy1 + iy2) / 2, 'x'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 15, color: '#555555',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // Right strip
+        board.create('text', [(ix2 + ox2) / 2, (iy1 + iy2) / 2, 'x'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 15, color: '#555555',
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
