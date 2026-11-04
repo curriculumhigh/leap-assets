@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle — 9 yd, 40 yd, 41 yd</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 13, 46, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertices
+        var A = board.create('point', [0, 0], { visible: false, fixed: true, name: '' });
+        var B = board.create('point', [41, 0], { visible: false, fixed: true, name: '' });
+        // C such that AC = 9, BC = 40
+        // Cx = (41² + 9² - 40²) / (2·41) = (1681 + 81 - 1600) / 82 = 162/82 ≈ 1.9756
+        // Cy = sqrt(9² - Cx²) = sqrt(81 - 3.903) ≈ sqrt(77.097) ≈ 8.781
+        var Cx = 162 / 82;
+        var Cy = Math.sqrt(81 - Cx * Cx);
+        var C = board.create('point', [Cx, Cy], { visible: false, fixed: true, name: '' });
+
+        // Triangle with light fill, dark outline
+        var tri = board.create('polygon', [A, B, C], {
+            fillColor: '#E8EDF2',
+            fillOpacity: 0.45,
+            borders: {
+                strokeColor: '#555555',
+                strokeWidth: 2.0,
+                fixed: true,
+                highlight: false
+            },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // Centroid for outward offset direction
+        var centX = (0 + 41 + Cx) / 3;
+        var centY = (0 + 0 + Cy) / 3;
+
+        // Helper: midpoint of two coords, offset outward from centroid
+        function labelPos(x1, y1, x2, y2, offset) {
+            var mx = (x1 + x2) / 2;
+            var my = (y1 + y2) / 2;
+            // Direction from centroid to midpoint
+            var dx = mx - centX;
+            var dy = my - centY;
+            var len = Math.sqrt(dx * dx + dy * dy);
+            if (len < 0.001) return [mx, my];
+            return [mx + offset * dx / len, my + offset * dy / len];
+        }
+
+        // Side AB = 41 yd (base, label below)
+        var posAB = labelPos(0, 0, 41, 0, 2.2);
+        board.create('text', [posAB[0], posAB[1], '<b>41 yd</b>'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#333333',
+            fixed: true, highlight: false
+        });
+
+        // Side AC = 9 yd (left side, label to the left)
+        var posAC = labelPos(0, 0, Cx, Cy, 2.2);
+        board.create('text', [posAC[0], posAC[1], '<b>9 yd</b>'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#333333',
+            fixed: true, highlight: false
+        });
+
+        // Side BC = 40 yd (right side, label to the right)
+        var posBC = labelPos(41, 0, Cx, Cy, 2.2);
+        board.create('text', [posBC[0], posBC[1], '<b>40 yd</b>'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#333333',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
