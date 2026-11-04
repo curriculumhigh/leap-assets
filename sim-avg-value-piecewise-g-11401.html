@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piecewise Linear g</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 560px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var BB = [-1.3, 5.7, 9.9, -5.6];
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: BB,
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var UX = (BB[2] - BB[0]) / board.canvasWidth;
+        var UY = (BB[1] - BB[3]) / board.canvasHeight;
+        var i;
+
+        /* ── Grid lines ─────────────────────────────────────────────── */
+        for (i = -1; i <= 9; i++) {
+            board.create('segment', [[i, -5], [i, 5]], { strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false });
+        }
+        for (i = -5; i <= 5; i++) {
+            board.create('segment', [[-1, i], [9, i]], { strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false });
+        }
+
+        /* ── Axes ───────────────────────────────────────────────────── */
+        board.create('arrow', [[-1.15, 0], [9.6, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false
+        });
+        board.create('arrow', [[0, -5.4], [0, 5.5]], {
+            strokeColor: '#444444', strokeWidth: 1.2, lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false
+        });
+
+        /* ── Ticks and tick labels ──────────────────────────────────── */
+        for (i = -1; i <= 9; i++) {
+            if (i === 0) continue;
+            board.create('segment', [[i, -4 * UY], [i, 4 * UY]], { strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false });
+            // x = 3 is where g crosses the axis: nudge that label left of the curve
+            var dx = (i === 3) ? -7 : 0;
+            board.create('text', [i + dx * UX, -12 * UY, (i < 0 ? '−' : '') + String(Math.abs(i))], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+            });
+        }
+        for (i = -5; i <= 5; i++) {
+            if (i === 0) continue;
+            board.create('segment', [[-4 * UX, i], [4 * UX, i]], { strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false });
+            board.create('text', [-8 * UX, i, (i < 0 ? '−' : '') + String(Math.abs(i))], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false
+            });
+        }
+        board.create('text', [-7 * UX, -11 * UY, '0'], {
+            fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        /* ── Axis name labels ───────────────────────────────────────── */
+        board.create('text', [9.6, 14 * UY, 'x'], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle', useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [12 * UX, 5.45, 'y'], {
+            fontSize: 14, color: '#222222', anchorX: 'left', anchorY: 'middle', useKatex: true, fixed: true, highlight: false
+        });
+
+        /* ── Piecewise-linear g ─────────────────────────────────────── */
+        var COL = '#222222';   // primary curve
+        var pts = [[0, 4], [2, 4], [4, -4], [8, -4]];
+        for (i = 0; i < pts.length - 1; i++) {
+            board.create('segment', [pts[i], pts[i + 1]], {
+                strokeColor: COL, strokeWidth: 1.8, fixed: true, highlight: false
+            });
+        }
+        for (i = 0; i < pts.length; i++) {
+            board.create('point', pts[i], {
+                name: '', size: 5, color: COL, fixed: true, highlight: false, showInfobox: false
+            });
+        }
+
+        /* ── Function label ─────────────────────────────────────────── */
+        board.create('text', [6, -4 + 10 * UY, 'y = g(x)'], {
+            fontSize: 13, color: COL, anchorX: 'middle', anchorY: 'bottom',
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
