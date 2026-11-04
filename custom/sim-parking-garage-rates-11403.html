@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parking Garage Rates</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var BB = [-0.95, 70, 9.0, -10];
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: BB,
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // units per pixel (for pixel-sized offsets)
+        var UX = (BB[2] - BB[0]) / board.canvasWidth;
+        var UY = (BB[1] - BB[3]) / board.canvasHeight;
+        var i;
+
+        /* ── Grid lines ─────────────────────────────────────────────── */
+        for (i = 1; i <= 8; i++) {
+            board.create('segment', [[i, 0], [i, 60]], { strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false });
+        }
+        for (i = 10; i <= 60; i += 10) {
+            board.create('segment', [[0, i], [8.4, i]], { strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false });
+        }
+
+        /* ── Axes ───────────────────────────────────────────────────── */
+        board.create('arrow', [[-0.3, 0], [8.65, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false
+        });
+        board.create('arrow', [[0, 0], [0, 65]], {
+            strokeColor: '#444444', strokeWidth: 1.2, lastArrow: { type: 2, size: 6 }, fixed: true, highlight: false
+        });
+
+        /* ── Ticks and tick labels ──────────────────────────────────── */
+        for (i = 1; i <= 8; i++) {
+            board.create('segment', [[i, -4 * UY], [i, 4 * UY]], { strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false });
+            board.create('text', [i, -13 * UY, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+            });
+        }
+        for (i = 10; i <= 60; i += 10) {
+            board.create('segment', [[-4 * UX, i], [4 * UX, i]], { strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false });
+            board.create('text', [-8 * UX, i, String(i)], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false
+            });
+        }
+        board.create('text', [-8 * UX, -13 * UY, '0'], {
+            fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        /* ── Axis name labels (KaTeX) ───────────────────────────────── */
+        board.create('text', [8.65, -32 * UY, 't\\text{ (hours)}'], {
+            fontSize: 14, color: '#222222', anchorX: 'right', anchorY: 'middle', useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [10 * UX, 65, '\\text{cars per hour}'], {
+            fontSize: 14, color: '#222222', anchorX: 'left', anchorY: 'middle', useKatex: true, fixed: true, highlight: false
+        });
+
+        /* ── D(t) = 30, 0 ≤ t ≤ 8 (2nd curve, solid) ────────────────── */
+        var COL_L = '#2563EB';
+        board.create('segment', [[0, 30], [8, 30]], {
+            strokeColor: COL_L, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        /* ── A(t): piecewise linear (primary curve) ─────────────────── */
+        var COL_E = '#222222';
+        var pts = [[0, 10], [2, 50], [6, 50], [8, 10]];
+        for (i = 0; i < pts.length - 1; i++) {
+            board.create('segment', [pts[i], pts[i + 1]], {
+                strokeColor: COL_E, strokeWidth: 1.8, fixed: true, highlight: false
+            });
+        }
+        for (i = 0; i < pts.length; i++) {
+            board.create('point', pts[i], {
+                name: '', size: 3, color: COL_E, fixed: true, highlight: false, showInfobox: false
+            });
+        }
+
+        /* ── Function labels ────────────────────────────────────────── */
+        board.create('text', [4, 50 + 9 * UY, 'A(t)'], {
+            fontSize: 13, color: COL_E, anchorX: 'middle', anchorY: 'bottom',
+            useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [8 + 8 * UX, 30, 'D(t)'], {
+            fontSize: 13, color: COL_L, anchorX: 'left', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
