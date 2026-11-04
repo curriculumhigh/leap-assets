@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle Exterior Angle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 7.5, 11.5, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle vertices
+        var A = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+        var B = board.create('point', [10, 0], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+        var C = board.create('point', [7, 6], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+
+        // Triangle edges
+        board.create('polygon', [A, B, C], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Extension of side BC beyond C
+        var dx = C.X() - B.X();
+        var dy = C.Y() - B.Y();
+        var len = Math.sqrt(dx * dx + dy * dy);
+        var ux = dx / len;
+        var uy = dy / len;
+        var extLen = 3.0;
+        var extPt = board.create('point', [C.X() + ux * extLen, C.Y() + uy * extLen], {
+            name: '', visible: false, fixed: true
+        });
+
+        board.create('segment', [C, extPt], {
+            strokeColor: '#555555', strokeWidth: 2.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // Vertex labels
+        board.create('text', [-0.6, -0.4, 'A'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600; font-style:italic'
+        });
+        board.create('text', [10.3, -0.4, 'B'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:600; font-style:italic'
+        });
+        board.create('text', [7.0, 6.5, 'C'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle',
+            cssStyle: 'font-weight:600; font-style:italic'
+        });
+
+        // Angle arc at A: interior angle
+        board.create('nonReflexAngle', [B, A, C], {
+            radius: 1.0,
+            fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Angle A label
+        var angA_bisX = 1.6;
+        var angA_bisY = 0.65;
+        board.create('text', [angA_bisX, angA_bisY, '(3x+5)^\\circ'], {
+            fontSize: 12, color: '#222222', useKatex: true,
+            fixed: true, highlight: false, anchorX: 'left'
+        });
+
+        // Angle arc at B: interior angle
+        board.create('nonReflexAngle', [C, B, A], {
+            radius: 1.0,
+            fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Angle B label
+        var angB_bisX = 8.3;
+        var angB_bisY = 0.65;
+        board.create('text', [angB_bisX, angB_bisY, '(2x-5)^\\circ'], {
+            fontSize: 12, color: '#222222', useKatex: true,
+            fixed: true, highlight: false, anchorX: 'right'
+        });
+
+        // Exterior angle at C
+        board.create('nonReflexAngle', [A, C, extPt], {
+            radius: 0.8,
+            fillColor: '#DC2626', fillOpacity: 0.10,
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Exterior angle label — along bisector
+        var caX = A.X() - C.X();
+        var caY = A.Y() - C.Y();
+        var caLen = Math.sqrt(caX * caX + caY * caY);
+        var caUx = caX / caLen;
+        var caUy = caY / caLen;
+        var ceX = extPt.X() - C.X();
+        var ceY = extPt.Y() - C.Y();
+        var ceLen = Math.sqrt(ceX * ceX + ceY * ceY);
+        var ceUx = ceX / ceLen;
+        var ceUy = ceY / ceLen;
+        var bisX = caUx + ceUx;
+        var bisY = caUy + ceUy;
+        var bisLen = Math.sqrt(bisX * bisX + bisY * bisY);
+        bisX /= bisLen;
+        bisY /= bisLen;
+
+        var extLabelDist = 1.5;
+        board.create('text', [C.X() + bisX * extLabelDist, C.Y() + bisY * extLabelDist, '130^\\circ'], {
+            fontSize: 13, color: '#DC2626', useKatex: true,
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:600'
+        });
+    </script>
+</body>
+</html>
