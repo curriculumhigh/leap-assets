@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle 7-24-25</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 9.5, 28, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertices
+        var Ax = 0, Ay = 0;
+        var Bx = 25, By = 0;
+        var Cx = 1.96, Cy = 6.72;
+
+        var A = board.create('point', [Ax, Ay], { visible: false, fixed: true, name: '' });
+        var B = board.create('point', [Bx, By], { visible: false, fixed: true, name: '' });
+        var C = board.create('point', [Cx, Cy], { visible: false, fixed: true, name: '' });
+
+        // Triangle polygon — light fill, dark outline
+        var tri = board.create('polygon', [A, B, C], {
+            fillColor: '#E8EEF4',
+            fillOpacity: 0.55,
+            borders: {
+                strokeColor: '#555555',
+                strokeWidth: 2.0,
+                fixed: true,
+                highlight: false
+            },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // Centroid for outward offset direction
+        var centX = (Ax + Bx + Cx) / 3;
+        var centY = (Ay + By + Cy) / 3;
+
+        // Helper: compute label position outside a side
+        function labelPos(p1x, p1y, p2x, p2y, offset) {
+            var mx = (p1x + p2x) / 2;
+            var my = (p1y + p2y) / 2;
+            var dx = mx - centX;
+            var dy = my - centY;
+            var len = Math.sqrt(dx * dx + dy * dy);
+            if (len < 0.001) return [mx, my];
+            return [mx + (dx / len) * offset, my + (dy / len) * offset];
+        }
+
+        var OFFSET = 1.3;
+
+        // Side AB (bottom, 25 cm)
+        var posAB = labelPos(Ax, Ay, Bx, By, OFFSET);
+        board.create('text', [posAB[0], posAB[1], '25 cm'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#222222',
+            cssStyle: 'font-weight:600',
+            fixed: true, highlight: false
+        });
+
+        // Side AC (left, 7 cm)
+        var posAC = labelPos(Ax, Ay, Cx, Cy, OFFSET);
+        board.create('text', [posAC[0], posAC[1], '7 cm'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#222222',
+            cssStyle: 'font-weight:600',
+            fixed: true, highlight: false
+        });
+
+        // Side BC (right, 24 cm)
+        var posBC = labelPos(Bx, By, Cx, Cy, OFFSET);
+        board.create('text', [posBC[0], posBC[1], '24 cm'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#222222',
+            cssStyle: 'font-weight:600',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
