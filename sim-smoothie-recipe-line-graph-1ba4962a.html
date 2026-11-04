@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smoothie Recipe</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); display: flex; flex-direction: column; }
+        .title { text-align: center; font-size: 15px; font-weight: 700; color: #222; padding: 4px 0 2px 0; flex-shrink: 0; }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; flex: 1; min-height: 0; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">Smoothie Recipe</div>
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 31, 13.5, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Manual axes ─────────────────────────────────────────────────
+        var xAxis = board.create('arrow', [[-1.5, 0], [13.5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        var yAxis = board.create('arrow', [[0, -4], [0, 31]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // ── Manual tick marks and labels ────────────────────────────────
+        var tickLen = 0.4;
+        var i;
+
+        var xTicks = [3, 6, 9, 12];
+        for (i = 0; i < xTicks.length; i++) {
+            var xv = xTicks[i];
+            board.create('segment', [[xv, -tickLen], [xv, tickLen]], {
+                strokeColor: '#444444', strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            board.create('text', [xv, -1.2, String(xv)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        var yTicks = [4, 8, 12, 16, 20, 24, 28];
+        for (i = 0; i < yTicks.length; i++) {
+            var yv = yTicks[i];
+            board.create('segment', [[-tickLen, yv], [tickLen, yv]], {
+                strokeColor: '#444444', strokeWidth: 1.0,
+                fixed: true, highlight: false
+            });
+            board.create('text', [-0.8, yv, String(yv)], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        board.create('text', [-0.6, -1.2, '0'], {
+            fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Major grid lines ────────────────────────────────────────────
+        var gridColor = '#D1D5DB';
+        var gridWidth = 0.4;
+
+        for (i = 0; i < xTicks.length; i++) {
+            board.create('segment', [[xTicks[i], -4], [xTicks[i], 31]], {
+                strokeColor: gridColor, strokeWidth: gridWidth,
+                fixed: true, highlight: false, layer: 0
+            });
+        }
+
+        for (i = 0; i < yTicks.length; i++) {
+            board.create('segment', [[-1.5, yTicks[i]], [13.5, yTicks[i]]], {
+                strokeColor: gridColor, strokeWidth: gridWidth,
+                fixed: true, highlight: false, layer: 0
+            });
+        }
+
+        // ── Axis labels ─────────────────────────────────────────────────
+        board.create('text', [11.5, -2.5, '\\textit{Banana (cups)}'], {
+            fontSize: 13, fixed: true, highlight: false, useKatex: true, anchorX: 'middle'
+        });
+        board.create('text', [0.3, 29.5, '\\textit{Yogurt (cups)}'], {
+            fontSize: 13, fixed: true, highlight: false, useKatex: true, anchorX: 'left'
+        });
+
+        // ── Line through origin with slope 8/3 ─────────────────────────
+        board.create('segment', [[0, 0], [10.5, 28]], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
