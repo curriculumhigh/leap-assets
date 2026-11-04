@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle with Interior Angles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 7, 10.5, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var A = board.create('point', [0.5, 0.5], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+        var B = board.create('point', [9, 0.5], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+        var C = board.create('point', [3.5, 5.8], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false
+        });
+
+        var poly = board.create('polygon', [A, B, C], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        var arcA = board.create('nonReflexAngle', [B, A, C], {
+            radius: 0.8,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        var arcB = board.create('nonReflexAngle', [C, B, A], {
+            radius: 0.8,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        var arcC = board.create('nonReflexAngle', [A, C, B], {
+            radius: 0.8,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        function bisectorOffset(vertex, p1, p2, dist) {
+            var ax = p1.X() - vertex.X();
+            var ay = p1.Y() - vertex.Y();
+            var bx = p2.X() - vertex.X();
+            var by = p2.Y() - vertex.Y();
+            var aLen = Math.sqrt(ax * ax + ay * ay);
+            var bLen = Math.sqrt(bx * bx + by * by);
+            ax /= aLen; ay /= aLen;
+            bx /= bLen; by /= bLen;
+            var mx = ax + bx;
+            var my = ay + by;
+            var mLen = Math.sqrt(mx * mx + my * my);
+            if (mLen < 0.001) { mx = -ay; my = ax; mLen = 1; }
+            mx /= mLen; my /= mLen;
+            return [vertex.X() + mx * dist, vertex.Y() + my * dist];
+        }
+
+        var posA = bisectorOffset(A, B, C, 1.5);
+        board.create('text', [posA[0], posA[1], '40^\\circ'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var posC = bisectorOffset(C, A, B, 1.5);
+        board.create('text', [posC[0], posC[1], '(3x+5)^\\circ'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var posB = bisectorOffset(B, C, A, 1.5);
+        board.create('text', [posB[0], posB[1], '(x-5)^\\circ'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
