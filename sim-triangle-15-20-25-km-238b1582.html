@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle 15-20-25 km</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 16, 29, -4],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var A = board.create('point', [0, 0], { visible: false, fixed: true, name: '' });
+        var B = board.create('point', [25, 0], { visible: false, fixed: true, name: '' });
+        var C = board.create('point', [16, 12], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [A, B, C], {
+            fillColor: '#DBEAFE',
+            fillOpacity: 0.35,
+            borders: {
+                strokeColor: '#555555',
+                strokeWidth: 2
+            },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        board.create('text', [12.5, -1.8, '25\\text{ km}'], {
+            useKatex: true,
+            fontSize: 14,
+            color: '#333333',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+
+        board.create('text', [8 - 1.1, 6 + 1.5, '20\\text{ km}'], {
+            useKatex: true,
+            fontSize: 14,
+            color: '#333333',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+
+        board.create('text', [20.5 + 1.4, 6 + 1.1, '15\\text{ km}'], {
+            useKatex: true,
+            fontSize: 14,
+            color: '#333333',
+            anchorX: 'middle',
+            anchorY: 'middle',
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
