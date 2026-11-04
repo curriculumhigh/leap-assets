@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangular Garden Border</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 14, 17, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Triangle vertices
+        var A = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var B = board.create('point', [12, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var C = board.create('point', [0, 9], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // Triangle polygon — no fill
+        board.create('polygon', [A, B, C], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Show vertex points on top
+        A.setAttribute({ visible: true });
+        B.setAttribute({ visible: true });
+        C.setAttribute({ visible: true });
+
+        // Side labels — placed at midpoints, offset outward for clearance
+
+        // Bottom side AB = 12 ft
+        board.create('text', [6, -1.5, '12 \\text{ ft}'], {
+            useKatex: true, fontSize: 14, color: '#333333',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Left side AC = 9 ft
+        board.create('text', [-2.0, 4.5, '9 \\text{ ft}'], {
+            useKatex: true, fontSize: 14, color: '#333333',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // Hypotenuse BC = 15 ft
+        var hypNormLen = Math.sqrt(81 + 144);
+        var hypOffX = 1.5 * 9 / hypNormLen;
+        var hypOffY = 1.5 * 12 / hypNormLen;
+        board.create('text', [6 + hypOffX, 4.5 + hypOffY, '15 \\text{ ft}'], {
+            useKatex: true, fontSize: 14, color: '#333333',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
