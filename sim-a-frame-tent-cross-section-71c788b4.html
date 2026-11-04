@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A-Frame Tent Cross-Section</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 17, 31, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Triangle vertices (hidden points) ───────────────────────────
+        var A = board.create('point', [2, 2], { visible: false, fixed: true, name: '' });
+        var B = board.create('point', [2, 12], { visible: false, fixed: true, name: '' });
+        var C = board.create('point', [26, 2], { visible: false, fixed: true, name: '' });
+
+        // ── Triangle sides ──────────────────────────────────────────────
+        // Vertical side AB (centre pole)
+        board.create('segment', [A, B], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        // Horizontal side AC (ground edge)
+        board.create('segment', [A, C], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        // Diagonal side BC (slant)
+        board.create('segment', [B, C], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Tent peak (small inverted-V above B) ───────────────────────
+        var peakLeft = board.create('point', [0.8, 12], { visible: false, fixed: true, name: '' });
+        var peakRight = board.create('point', [3.2, 12], { visible: false, fixed: true, name: '' });
+        var peakTop = board.create('point', [2, 13.8], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [peakLeft, peakTop], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [peakTop, peakRight], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        // Small horizontal bar connecting peak base to triangle top
+        board.create('segment', [peakLeft, peakRight], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Ground feet ─────────────────────────────────────────────────
+        // Left foot at A — short horizontal segment
+        board.create('segment', [[0.5, 2], [3.5, 2]], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        // Right foot at C — short horizontal segment
+        board.create('segment', [[24.5, 2], [27.5, 2]], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Dimension line — vertical (AB): "10 in." ────────────────────
+        var dimVx = -0.8; // x offset for vertical dimension line
+
+        // Vertical dimension line
+        board.create('segment', [[dimVx, 2], [dimVx, 12]], {
+            strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        // Top tick
+        board.create('segment', [[dimVx - 0.5, 12], [dimVx + 0.5, 12]], {
+            strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        // Bottom tick
+        board.create('segment', [[dimVx - 0.5, 2], [dimVx + 0.5, 2]], {
+            strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        // Label "10 in."
+        board.create('text', [-2.2, 7, '10 \\text{ in.}'], {
+            useKatex: true, fontSize: 14, color: '#3B82F6',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Dimension line — horizontal (AC): "24 in." ──────────────────
+        var dimHy = 0.2; // y offset for horizontal dimension line
+
+        // Horizontal dimension line
+        board.create('segment', [[2, dimHy], [26, dimHy]], {
+            strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        // Left tick
+        board.create('segment', [[2, dimHy - 0.5], [2, dimHy + 0.5]], {
+            strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        // Right tick
+        board.create('segment', [[26, dimHy - 0.5], [26, dimHy + 0.5]], {
+            strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        // Label "24 in."
+        board.create('text', [14, -1.5, '24 \\text{ in.}'], {
+            useKatex: true, fontSize: 14, color: '#3B82F6',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Slant label: "27 in." ───────────────────────────────────────
+        // Midpoint of BC is (14, 7). Offset outward (above-right of the diagonal).
+        var bcMidX = (2 + 26) / 2;
+        var bcMidY = (12 + 2) / 2;
+        // Normal direction of BC: BC goes from (2,12) to (26,2), direction (24,-10).
+        // Outward normal (away from triangle interior) points upper-right: (10,24) normalized.
+        var nLen = Math.sqrt(10 * 10 + 24 * 24);
+        var offX = 10 / nLen * 2.2;
+        var offY = 24 / nLen * 2.2;
+
+        board.create('text', [bcMidX + offX, bcMidY + offY, '27 \\text{ in.}'], {
+            useKatex: true, fontSize: 14, color: '#3B82F6',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
