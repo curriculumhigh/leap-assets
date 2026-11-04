@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wooden Easel Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 27, 22, -5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var Ax = 2, Ay = 2;
+        var Bx = 2, By = 22;
+        var Cx = 17, Cy = 2;
+
+        var WOOD = '#6B4226';
+        var WOOD_W = 3.5;
+
+        board.create('segment', [[Ax, Ay], [Bx, By]], {
+            strokeColor: WOOD, strokeWidth: WOOD_W, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[Ax, Ay], [Cx, Cy]], {
+            strokeColor: WOOD, strokeWidth: WOOD_W, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[Bx, By], [Cx, Cy]], {
+            strokeColor: WOOD, strokeWidth: WOOD_W, fixed: true, highlight: false
+        });
+
+        board.create('point', [Ax, Ay], {
+            name: '', size: 3, color: WOOD, fixed: true, highlight: false
+        });
+        board.create('point', [Bx, By], {
+            name: '', size: 3, color: WOOD, fixed: true, highlight: false
+        });
+        board.create('point', [Cx, Cy], {
+            name: '', size: 3, color: WOOD, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[Ax - 0.8, Ay - 0.3], [Ax + 0.8, Ay - 0.3]], {
+            strokeColor: '#888888', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[Cx - 0.8, Cy - 0.3], [Cx + 0.8, Cy - 0.3]], {
+            strokeColor: '#888888', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var canvasW = 4;
+        var canvasH = 3;
+        var cLeft = Bx - canvasW / 2;
+        var cRight = Bx + canvasW / 2;
+        var cTop = By + canvasH;
+        var cBot = By;
+
+        var cp1 = board.create('point', [cLeft, cBot], { visible: false, fixed: true, name: '' });
+        var cp2 = board.create('point', [cRight, cBot], { visible: false, fixed: true, name: '' });
+        var cp3 = board.create('point', [cRight, cTop], { visible: false, fixed: true, name: '' });
+        var cp4 = board.create('point', [cLeft, cTop], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [cp1, cp2, cp3, cp4], {
+            fillColor: '#F5F0E8', fillOpacity: 0.6,
+            borders: { strokeColor: '#8B7355', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('text', [Ax - 2.2, (Ay + By) / 2, '20 \\text{ in.}'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [(Ax + Cx) / 2, Ay - 2, '15 \\text{ in.}'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var diagMx = (Bx + Cx) / 2;
+        var diagMy = (By + Cy) / 2;
+        var dx = Cx - Bx;
+        var dy = Cy - By;
+        var len = Math.sqrt(dx * dx + dy * dy);
+        var perpX = -dy / len;
+        var perpY = dx / len;
+        var offsetDist = 1.8;
+
+        board.create('text', [diagMx + perpX * offsetDist, diagMy + perpY * offsetDist, '26 \\text{ in.}'], {
+            useKatex: true, fontSize: 14, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        function drawTick(px, py, nx, ny, color) {
+            var tickLen = 0.5;
+            board.create('segment', [
+                [px - ny * tickLen, py + nx * tickLen],
+                [px + ny * tickLen, py - nx * tickLen]
+            ], {
+                strokeColor: color || '#666666', strokeWidth: 1.2,
+                fixed: true, highlight: false
+            });
+        }
+
+        drawTick(Ax - 1.2, Ay + 0.5, 0, 1, '#666666');
+        drawTick(Ax - 1.2, By - 0.5, 0, 1, '#666666');
+        board.create('segment', [[Ax - 1.2, Ay + 0.5], [Ax - 1.2, By - 0.5]], {
+            strokeColor: '#666666', strokeWidth: 0.8, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[Ax, Ay], [Ax - 1.5, Ay]], {
+            strokeColor: '#CCCCCC', strokeWidth: 0.6, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[Bx, By], [Bx - 1.5, By]], {
+            strokeColor: '#CCCCCC', strokeWidth: 0.6, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        drawTick(Ax + 0.5, Ay - 1.2, 1, 0, '#666666');
+        drawTick(Cx - 0.5, Cy - 1.2, 1, 0, '#666666');
+        board.create('segment', [[Ax + 0.5, Ay - 1.2], [Cx - 0.5, Cy - 1.2]], {
+            strokeColor: '#666666', strokeWidth: 0.8, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[Ax, Ay], [Ax, Ay - 1.5]], {
+            strokeColor: '#CCCCCC', strokeWidth: 0.6, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[Cx, Cy], [Cx, Cy - 1.5]], {
+            strokeColor: '#CCCCCC', strokeWidth: 0.6, dash: 2,
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
