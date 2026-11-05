@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predicted Community Center Memberships</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-outer { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); display: flex; align-items: center; }
+        .y-axis-label {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            font-size: 13px;
+            color: #444444;
+            white-space: nowrap;
+            flex-shrink: 0;
+            margin-right: 4px;
+        }
+        .board-inner { flex: 1; height: 100%; }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-outer">
+            <div class="y-axis-label">Number of members</div>
+            <div class="board-inner">
+                <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 480, 9, 170],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Grid ────────────────────────────────────────────────────── */
+        var xi, yi;
+        for (xi = 0; xi <= 8; xi++) {
+            board.create('segment', [[xi, 180], [xi, 460]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+        for (yi = 200; yi <= 450; yi += 50) {
+            board.create('segment', [[-0.3, yi], [8.5, yi]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        /* ── Axes ────────────────────────────────────────────────────── */
+        board.create('arrow', [[-0.3, 200], [8.7, 200]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        board.create('arrow', [[0, 185], [0, 468]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        /* ── x-axis ticks and labels (0–8) ───────────────────────────── */
+        for (xi = 0; xi <= 8; xi++) {
+            board.create('segment', [[xi, 197], [xi, 203]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [xi, 190, String(xi)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── y-axis ticks and labels (200–450 every 50) ──────────────── */
+        for (yi = 200; yi <= 450; yi += 50) {
+            board.create('segment', [[-0.12, yi], [0.12, yi]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [-0.3, yi, String(yi)], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        /* ── x-axis label ────────────────────────────────────────────── */
+        board.create('text', [4, 177, '\\text{Years from now}'], {
+            fontSize: 13, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        /* ── Title ───────────────────────────────────────────────────── */
+        board.create('text', [4, 472, '\\textbf{Predicted Community Center Memberships}'], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        /* ── Lines ───────────────────────────────────────────────────── */
+        board.create('functiongraph', [
+            function(x) { return 420 - 14 * x; }, 0, 8
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        board.create('functiongraph', [
+            function(x) { return 280 + 14 * x; }, 0, 8
+        ], {
+            strokeColor: '#2563EB', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        /* ── Intersection point ──────────────────────────────────────── */
+        board.create('point', [5, 350], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false,
+            showInfobox: false
+        });
+
+        /* ── Curve labels (name only) ────────────────────────────────── */
+        board.create('text', [0.5, 432, '\\text{Gym}'], {
+            fontSize: 13, color: '#222222', anchorX: 'left', anchorY: 'bottom',
+            useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [0.5, 288, '\\text{Pool}'], {
+            fontSize: 13, color: '#2563EB', anchorX: 'left', anchorY: 'top',
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
