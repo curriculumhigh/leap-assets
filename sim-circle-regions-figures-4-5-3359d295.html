@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Figures 4 and 5 — Circle Regions</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-10, 7, 10, -7],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 3.8;
+        var COL_OUTLINE = '#555555';
+        var COL_CENTER = '#222222';
+
+        // ── Figure 4 (left): 3 lines through center → 6 regions ────────
+        var cx1 = -5;
+        var cy1 = 0.8;
+
+        var center1 = board.create('point', [cx1, cy1], {
+            name: '', fixed: true, size: 2, color: COL_CENTER, highlight: false
+        });
+
+        board.create('circle', [center1, R], {
+            strokeColor: COL_OUTLINE, strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none', fillOpacity: 0
+        });
+
+        // 3 lines at 0°, 60°, 120°
+        var angles1 = [0, Math.PI / 3, 2 * Math.PI / 3];
+        for (var i = 0; i < angles1.length; i++) {
+            var a = angles1[i];
+            var x1 = cx1 + R * Math.cos(a);
+            var y1 = cy1 + R * Math.sin(a);
+            var x2 = cx1 - R * Math.cos(a);
+            var y2 = cy1 - R * Math.sin(a);
+            board.create('segment', [[x1, y1], [x2, y2]], {
+                strokeColor: COL_OUTLINE, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+        }
+
+        // Label
+        board.create('text', [cx1, cy1 - R - 1.2, 'Figure 4'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 11,
+            color: '#333', fixed: true, highlight: false
+        });
+
+        // ── Figure 5 (right): 4 lines through center → 8 regions ───────
+        var cx2 = 5;
+        var cy2 = 0.8;
+
+        var center2 = board.create('point', [cx2, cy2], {
+            name: '', fixed: true, size: 2, color: COL_CENTER, highlight: false
+        });
+
+        board.create('circle', [center2, R], {
+            strokeColor: COL_OUTLINE, strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none', fillOpacity: 0
+        });
+
+        // 4 lines at 0°, 45°, 90°, 135°
+        var angles2 = [0, Math.PI / 4, Math.PI / 2, 3 * Math.PI / 4];
+        for (var j = 0; j < angles2.length; j++) {
+            var a2 = angles2[j];
+            var xa = cx2 + R * Math.cos(a2);
+            var ya = cy2 + R * Math.sin(a2);
+            var xb = cx2 - R * Math.cos(a2);
+            var yb = cy2 - R * Math.sin(a2);
+            board.create('segment', [[xa, ya], [xb, yb]], {
+                strokeColor: COL_OUTLINE, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+        }
+
+        // Label
+        board.create('text', [cx2, cy2 - R - 1.2, 'Figure 5'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 11,
+            color: '#333', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
