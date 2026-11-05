@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-Shaped Figures Pattern</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 10.5, 48, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: true
+        });
+
+        var FILL_COLOR = '#E5E7EB';
+        var STROKE_COLOR = '#555555';
+        var STROKE_WIDTH = 1.2;
+        var LABEL_COLOR = '#444444';
+
+        function drawSquare(brd, x, y) {
+            var p1 = brd.create('point', [x, y], { visible: false, fixed: true, name: '' });
+            var p2 = brd.create('point', [x + 1, y], { visible: false, fixed: true, name: '' });
+            var p3 = brd.create('point', [x + 1, y + 1], { visible: false, fixed: true, name: '' });
+            var p4 = brd.create('point', [x, y + 1], { visible: false, fixed: true, name: '' });
+            brd.create('polygon', [p1, p2, p3, p4], {
+                fillColor: FILL_COLOR,
+                fillOpacity: 1.0,
+                borders: { strokeColor: STROKE_COLOR, strokeWidth: STROKE_WIDTH },
+                vertices: { visible: false },
+                hasInnerPoints: false,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        function drawCross(brd, cx, cy, armLength) {
+            var row, col;
+            for (row = -armLength; row <= armLength; row++) {
+                drawSquare(brd, cx, cy + row);
+            }
+            for (col = -armLength; col <= armLength; col++) {
+                if (col !== 0) {
+                    drawSquare(brd, cx + col, cy);
+                }
+            }
+        }
+
+        var arms = [0, 1, 2, 3, 4];
+        var gap = 2.0;
+        var cy = 4.5;
+
+        var positions = [];
+        var currentX = 0.5;
+
+        for (var i = 0; i < arms.length; i++) {
+            var halfWidth = arms[i];
+            var centerX = currentX + halfWidth;
+            positions.push(centerX);
+            var fullWidth = 2 * arms[i] + 1;
+            currentX = currentX + fullWidth + gap;
+        }
+
+        for (var f = 0; f < 5; f++) {
+            drawCross(board, positions[f], cy, arms[f]);
+
+            var labelY = cy - arms[f] - 1.5;
+            board.create('text', [positions[f] + 0.5, labelY, 'Figure ' + (f + 1)], {
+                anchorX: 'middle',
+                anchorY: 'top',
+                fontSize: 13,
+                color: LABEL_COLOR,
+                fixed: true,
+                highlight: false
+            });
+        }
+    </script>
+</body>
+</html>
