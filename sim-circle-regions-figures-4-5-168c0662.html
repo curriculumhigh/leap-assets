@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle Regions — Figures 4 and 5</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+        .jxgbox text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8.5, 5.2, 8.5, -5.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 2.8;
+        var CX1 = -4.0;
+        var CX2 = 4.0;
+        var CY = 0.5;
+
+        // ── Figure 4: Circle with 3 diameters (6 regions) ──────────────
+
+        var O1 = board.create('point', [CX1, CY], { visible: false, fixed: true, name: '' });
+        board.create('circle', [O1, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var diamAngles1 = [0, Math.PI / 3, 2 * Math.PI / 3];
+        for (var i = 0; i < diamAngles1.length; i++) {
+            var a = diamAngles1[i];
+            var x1 = CX1 + R * Math.cos(a);
+            var y1 = CY + R * Math.sin(a);
+            var x2 = CX1 - R * Math.cos(a);
+            var y2 = CY - R * Math.sin(a);
+            board.create('segment', [[x1, y1], [x2, y2]], {
+                strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+            });
+        }
+
+        board.create('point', [CX1, CY], {
+            name: '', size: 1.5, color: '#555555', fixed: true, highlight: false
+        });
+
+        board.create('text', [CX1, CY - R - 1.0, 'Figure 4'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 11,
+            color: '#333333', fixed: true, highlight: false
+        });
+
+        // ── Figure 5: Circle with 3 diameters + 1 chord (7 regions) ────
+
+        var O2 = board.create('point', [CX2, CY], { visible: false, fixed: true, name: '' });
+        board.create('circle', [O2, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var diamAngles2 = [0, Math.PI / 3, 2 * Math.PI / 3];
+        for (var j = 0; j < diamAngles2.length; j++) {
+            var a2 = diamAngles2[j];
+            var x1b = CX2 + R * Math.cos(a2);
+            var y1b = CY + R * Math.sin(a2);
+            var x2b = CX2 - R * Math.cos(a2);
+            var y2b = CY - R * Math.sin(a2);
+            board.create('segment', [[x1b, y1b], [x2b, y2b]], {
+                strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+            });
+        }
+
+        board.create('point', [CX2, CY], {
+            name: '', size: 1.5, color: '#555555', fixed: true, highlight: false
+        });
+
+        var chordAng1 = 8 * Math.PI / 180;
+        var chordAng2 = 52 * Math.PI / 180;
+        var cx1 = CX2 + R * Math.cos(chordAng1);
+        var cy1 = CY + R * Math.sin(chordAng1);
+        var cx2 = CX2 + R * Math.cos(chordAng2);
+        var cy2 = CY + R * Math.sin(chordAng2);
+        board.create('segment', [[cx1, cy1], [cx2, cy2]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('text', [CX2, CY - R - 1.0, 'Figure 5'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 11,
+            color: '#333333', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
