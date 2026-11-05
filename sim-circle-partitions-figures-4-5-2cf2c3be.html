@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Figure 4 and Figure 5</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7.5, 4.5, 7.5, -4.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_OUTLINE = '#555555';
+        var COL_LINE = '#555555';
+        var R = 2.8;
+
+        // ── Figure 4: Circle divided into 3 equal parts with curved lines ──
+        var cx1 = -3.5;
+        var cy1 = 0.5;
+
+        // Circle outline
+        var center1 = board.create('point', [cx1, cy1], { visible: false, name: '' });
+        board.create('circle', [center1, R], {
+            strokeColor: COL_OUTLINE, strokeWidth: 2.0, fillColor: 'none',
+            fixed: true, highlight: false
+        });
+
+        // Three curved dividers from center to circumference, equally spaced (120° apart)
+        var startAngles3 = [Math.PI / 2, Math.PI / 2 + 2 * Math.PI / 3, Math.PI / 2 + 4 * Math.PI / 3];
+
+        for (var i = 0; i < 3; i++) {
+            (function(idx) {
+                var endAngle = startAngles3[idx];
+                var ex = cx1 + R * Math.cos(endAngle);
+                var ey = cy1 + R * Math.sin(endAngle);
+
+                var mx = (cx1 + ex) / 2;
+                var my = (cy1 + ey) / 2;
+                var dx = ex - cx1;
+                var dy = ey - cy1;
+                var perpX = dy;
+                var perpY = -dx;
+                var bowAmount = 0.35;
+                var cpx = mx + bowAmount * perpX;
+                var cpy = my + bowAmount * perpY;
+
+                board.create('curve', [
+                    function(t) { return (1 - t) * (1 - t) * cx1 + 2 * (1 - t) * t * cpx + t * t * ex; },
+                    function(t) { return (1 - t) * (1 - t) * cy1 + 2 * (1 - t) * t * cpy + t * t * ey; },
+                    0, 1
+                ], {
+                    strokeColor: COL_LINE, strokeWidth: 1.5, fixed: true, highlight: false
+                });
+            })(i);
+        }
+
+        // Label
+        board.create('text', [cx1, cy1 - R - 0.7, 'Figure 4'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 11, color: '#333',
+            fixed: true, highlight: false
+        });
+
+        // ── Figure 5: Circle divided into 5 equal parts with straight lines ──
+        var cx2 = 3.5;
+        var cy2 = 0.5;
+
+        var center2 = board.create('point', [cx2, cy2], { visible: false, name: '' });
+        board.create('circle', [center2, R], {
+            strokeColor: COL_OUTLINE, strokeWidth: 2.0, fillColor: 'none',
+            fixed: true, highlight: false
+        });
+
+        for (var j = 0; j < 5; j++) {
+            var angle5 = Math.PI / 2 + j * 2 * Math.PI / 5;
+            var px = cx2 + R * Math.cos(angle5);
+            var py = cy2 + R * Math.sin(angle5);
+            board.create('segment', [[cx2, cy2], [px, py]], {
+                strokeColor: COL_LINE, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+        }
+
+        // Label
+        board.create('text', [cx2, cy2 - R - 0.7, 'Figure 5'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 11, color: '#333',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
