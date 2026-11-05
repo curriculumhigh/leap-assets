@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Option B — Figures 4 and 5</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+        .jxgbox { border: none !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7.5, 4.8, 7.5, -4.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 2.8;
+        var CX_LEFT = -3.5;
+        var CX_RIGHT = 3.5;
+        var CY = 0.4;
+        var LINE_COL = '#2563EB';
+        var CIRCLE_COL = '#555555';
+
+        function drawFigure(cx, cy, radius, numLines, label) {
+            var center = board.create('point', [cx, cy], { visible: false, fixed: true, name: '' });
+            board.create('circle', [center, radius], {
+                strokeColor: CIRCLE_COL, strokeWidth: 2.0, fillColor: 'none',
+                fixed: true, highlight: false
+            });
+
+            var spacing = (2 * radius) / (numLines + 1);
+            var topY = cy + radius;
+
+            for (var i = 1; i <= numLines; i++) {
+                var lineY = topY - i * spacing;
+                var dy = lineY - cy;
+                var dx = Math.sqrt(radius * radius - dy * dy);
+
+                board.create('segment', [[cx - dx, lineY], [cx + dx, lineY]], {
+                    strokeColor: LINE_COL, strokeWidth: 1.5, fixed: true, highlight: false
+                });
+            }
+
+            board.create('text', [cx, cy - radius - 0.9, label], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 10, color: '#333', fixed: true, highlight: false
+            });
+        }
+
+        drawFigure(CX_LEFT, CY, R, 2, 'Figure 4');
+        drawFigure(CX_RIGHT, CY, R, 3, 'Figure 5');
+    </script>
+</body>
+</html>
