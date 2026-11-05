@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pattern of Figures — Circle Regions</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7.5, 3.2, 7.5, -3.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 1.6;
+        var cx1 = -4.5, cx2 = 0, cx3 = 4.5;
+        var cy = 0.4;
+        var COL_OUTLINE = '#555555';
+        var COL_LINE = '#555555';
+        var COL_LABEL = '#222222';
+
+        // ── Figure 1: Single circle ─────────────────────────────────────
+        var c1Center = board.create('point', [cx1, cy], { visible: false, fixed: true, name: '' });
+        board.create('circle', [c1Center, R], {
+            strokeColor: COL_OUTLINE, strokeWidth: 2.0, fillColor: 'none', fillOpacity: 0,
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [cx1, cy - R - 0.7, 'Figure 1'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13, color: COL_LABEL,
+            fixed: true, highlight: false
+        });
+
+        // ── Figure 2: Circle + one diameter ─────────────────────────────
+        var c2Center = board.create('point', [cx2, cy], { visible: false, fixed: true, name: '' });
+        board.create('circle', [c2Center, R], {
+            strokeColor: COL_OUTLINE, strokeWidth: 2.0, fillColor: 'none', fillOpacity: 0,
+            fixed: true, highlight: false
+        });
+
+        // Horizontal diameter
+        board.create('segment', [[cx2 - R, cy], [cx2 + R, cy]], {
+            strokeColor: COL_LINE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('text', [cx2, cy - R - 0.7, 'Figure 2'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13, color: COL_LABEL,
+            fixed: true, highlight: false
+        });
+
+        // ── Figure 3: Circle + two diameters ────────────────────────────
+        var c3Center = board.create('point', [cx3, cy], { visible: false, fixed: true, name: '' });
+        board.create('circle', [c3Center, R], {
+            strokeColor: COL_OUTLINE, strokeWidth: 2.0, fillColor: 'none', fillOpacity: 0,
+            fixed: true, highlight: false
+        });
+
+        // Horizontal diameter
+        board.create('segment', [[cx3 - R, cy], [cx3 + R, cy]], {
+            strokeColor: COL_LINE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Vertical diameter
+        board.create('segment', [[cx3, cy - R], [cx3, cy + R]], {
+            strokeColor: COL_LINE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('text', [cx3, cy - R - 0.7, 'Figure 3'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 13, color: COL_LABEL,
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
