@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Intersecting Planes S and T</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 6, 9, -5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_PLANE_S = '#2563EB';
+        var COL_PLANE_T = '#059669';
+        var COL_POINT = '#222222';
+        var COL_LINE = '#222222';
+        var COL_RAY = '#555555';
+
+        var pS1 = board.create('point', [-5.5, 3.5], { visible: false, fixed: true, name: '' });
+        var pS2 = board.create('point', [2.5, 4.5], { visible: false, fixed: true, name: '' });
+        var pS3 = board.create('point', [3.5, 0.5], { visible: false, fixed: true, name: '' });
+        var pS4 = board.create('point', [-4.5, -0.5], { visible: false, fixed: true, name: '' });
+
+        var planeS = board.create('polygon', [pS1, pS2, pS3, pS4], {
+            fillColor: COL_PLANE_S, fillOpacity: 0.07,
+            borders: { strokeColor: COL_PLANE_S, strokeWidth: 1.5, strokeOpacity: 0.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        var pT1 = board.create('point', [-1.5, 5.0], { visible: false, fixed: true, name: '' });
+        var pT2 = board.create('point', [7.5, 3.0], { visible: false, fixed: true, name: '' });
+        var pT3 = board.create('point', [6.0, -3.5], { visible: false, fixed: true, name: '' });
+        var pT4 = board.create('point', [-3.0, -1.5], { visible: false, fixed: true, name: '' });
+
+        var planeT = board.create('polygon', [pT1, pT2, pT3, pT4], {
+            fillColor: COL_PLANE_T, fillOpacity: 0.07,
+            borders: { strokeColor: COL_PLANE_T, strokeWidth: 1.5, strokeOpacity: 0.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('text', [-4.2, 3.2, '\\mathcal{S}'], {
+            useKatex: true, fontSize: 18, color: COL_PLANE_S,
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [6.2, 2.0, '\\mathcal{T}'], {
+            useKatex: true, fontSize: 18, color: COL_PLANE_T,
+            fixed: true, highlight: false
+        });
+
+        var H = board.create('point', [1.0, 1.0], {
+            name: '', fixed: true, size: 3, color: COL_POINT, highlight: false
+        });
+
+        var B = board.create('point', [-1.5, -1.0], {
+            name: '', fixed: true, size: 3, color: COL_POINT, highlight: false
+        });
+
+        var F = board.create('point', [-1.8, 2.8], {
+            name: '', fixed: true, size: 3, color: COL_POINT, highlight: false
+        });
+
+        var D = board.create('point', [3.2, -0.4], {
+            name: '', fixed: true, size: 3, color: COL_POINT, highlight: false
+        });
+
+        var E = board.create('point', [-2.5, 0.2], {
+            name: '', fixed: true, size: 3, color: COL_POINT, highlight: false
+        });
+
+        var G = board.create('point', [4.5, 2.2], {
+            name: '', fixed: true, size: 3, color: COL_POINT, highlight: false
+        });
+
+        board.create('text', [1.25, 1.35, 'H'], {
+            useKatex: true, fontSize: 14, color: COL_POINT,
+            fixed: true, highlight: false
+        });
+        board.create('text', [-1.9, -1.4, 'B'], {
+            useKatex: true, fontSize: 14, color: COL_POINT,
+            fixed: true, highlight: false
+        });
+        board.create('text', [-2.15, 3.15, 'F'], {
+            useKatex: true, fontSize: 14, color: COL_POINT,
+            fixed: true, highlight: false
+        });
+        board.create('text', [3.45, -0.8, 'D'], {
+            useKatex: true, fontSize: 14, color: COL_POINT,
+            fixed: true, highlight: false
+        });
+        board.create('text', [-3.0, 0.0, 'E'], {
+            useKatex: true, fontSize: 14, color: COL_POINT,
+            fixed: true, highlight: false
+        });
+        board.create('text', [4.75, 2.55, 'G'], {
+            useKatex: true, fontSize: 14, color: COL_POINT,
+            fixed: true, highlight: false
+        });
+
+        var dx_hb = B.X() - H.X();
+        var dy_hb = B.Y() - H.Y();
+        var ext = 1.8;
+        board.create('segment', [
+            [H.X() - dx_hb * ext, H.Y() - dy_hb * ext],
+            [B.X() + dx_hb * ext, B.Y() + dy_hb * ext]
+        ], {
+            strokeColor: COL_LINE, strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        var dx_fd = D.X() - F.X();
+        var dy_fd = D.Y() - F.Y();
+        var ext2 = 0.3;
+        board.create('segment', [
+            [F.X() - dx_fd * ext2, F.Y() - dy_fd * ext2],
+            [D.X() + dx_fd * ext2, D.Y() + dy_fd * ext2]
+        ], {
+            strokeColor: COL_RAY, strokeWidth: 1.2,
+            fixed: true, highlight: false
+        });
+
+        var dx_he = E.X() - H.X();
+        var dy_he = E.Y() - H.Y();
+        var extRay = 0.4;
+        board.create('segment', [
+            [H.X(), H.Y()],
+            [E.X() + dx_he * extRay, E.Y() + dy_he * extRay]
+        ], {
+            strokeColor: COL_RAY, strokeWidth: 1.2,
+            fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        var dx_hg = G.X() - H.X();
+        var dy_hg = G.Y() - H.Y();
+        board.create('segment', [
+            [H.X(), H.Y()],
+            [G.X() + dx_hg * extRay, G.Y() + dy_hg * extRay]
+        ], {
+            strokeColor: COL_RAY, strokeWidth: 1.2,
+            fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+
+    </script>
+</body>
+</html>
