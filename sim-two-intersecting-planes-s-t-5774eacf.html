@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Intersecting Planes S and T</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8, 6.5, 8, -6.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_OUTLINE = '#555555';
+        var COL_POINT = '#222222';
+        var COL_PLANE_S = '#B0C4DE';
+        var COL_PLANE_T = '#D4C4A8';
+
+        var pS1 = [-7, 4.5];
+        var pS2 = [0, 5.5];
+        var pS3 = [0, -5.5];
+        var pS4 = [-7, -4.5];
+
+        var pT1 = [0, 5.5];
+        var pT2 = [7, 4.5];
+        var pT3 = [7, -4.5];
+        var pT4 = [0, -5.5];
+
+        function fp(coords) {
+            return board.create('point', coords, { visible: false, fixed: true, name: '' });
+        }
+
+        var ps1 = fp(pS1), ps2 = fp(pS2), ps3 = fp(pS3), ps4 = fp(pS4);
+        board.create('polygon', [ps1, ps2, ps3, ps4], {
+            fillColor: COL_PLANE_S, fillOpacity: 0.15,
+            borders: { strokeColor: COL_OUTLINE, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        var pt1 = fp(pT1), pt2 = fp(pT2), pt3 = fp(pT3), pt4 = fp(pT4);
+        board.create('polygon', [pt1, pt2, pt3, pt4], {
+            fillColor: COL_PLANE_T, fillOpacity: 0.15,
+            borders: { strokeColor: COL_OUTLINE, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        board.create('segment', [[0, 5.5], [0, -5.5]], {
+            strokeColor: COL_OUTLINE, strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var B = board.create('point', [0, 3.0], {
+            name: 'B', size: 2, color: COL_POINT, fixed: true, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [10, 2] }
+        });
+        var G = board.create('point', [0, 0], {
+            name: 'G', size: 2, color: COL_POINT, fixed: true, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [10, -2] }
+        });
+        var C = board.create('point', [0, -3.0], {
+            name: 'C', size: 2, color: COL_POINT, fixed: true, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [10, -2] }
+        });
+
+        var D = board.create('point', [-5.5, 3.2], {
+            name: 'D', size: 2, color: COL_POINT, fixed: true, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [-16, 4] }
+        });
+        var E = board.create('point', [5.5, -3.2], {
+            name: 'E', size: 2, color: COL_POINT, fixed: true, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [8, -10] }
+        });
+        var F = board.create('point', [5.5, 3.2], {
+            name: 'F', size: 2, color: COL_POINT, fixed: true, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [8, 4] }
+        });
+        var H = board.create('point', [-5.5, -3.2], {
+            name: 'H', size: 2, color: COL_POINT, fixed: true, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [-16, -10] }
+        });
+
+        var dLen = 1.2;
+        var dxDE = -5.5, dyDE = 3.2;
+        var lenDE = Math.sqrt(dxDE * dxDE + dyDE * dyDE);
+        board.create('segment', [[0, 0], [dLen * dxDE / lenDE, dLen * dyDE / lenDE]], {
+            strokeColor: COL_OUTLINE, strokeWidth: 1.5, dash: 2, fixed: true, highlight: false, layer: 1
+        });
+        var dxGE = 5.5, dyGE = -3.2;
+        var lenGE = Math.sqrt(dxGE * dxGE + dyGE * dyGE);
+        board.create('segment', [[0, 0], [dLen * dxGE / lenGE, dLen * dyGE / lenGE]], {
+            strokeColor: COL_OUTLINE, strokeWidth: 1.5, dash: 2, fixed: true, highlight: false, layer: 1
+        });
+
+        var dxGF = 5.5, dyGF = 3.2;
+        var lenGF = Math.sqrt(dxGF * dxGF + dyGF * dyGF);
+        board.create('segment', [[0, 0], [dLen * dxGF / lenGF, dLen * dyGF / lenGF]], {
+            strokeColor: COL_OUTLINE, strokeWidth: 1.5, dash: 2, fixed: true, highlight: false, layer: 1
+        });
+        var dxGH = -5.5, dyGH = -3.2;
+        var lenGH = Math.sqrt(dxGH * dxGH + dyGH * dyGH);
+        board.create('segment', [[0, 0], [dLen * dxGH / lenGH, dLen * dyGH / lenGH]], {
+            strokeColor: COL_OUTLINE, strokeWidth: 1.5, dash: 2, fixed: true, highlight: false, layer: 1
+        });
+
+        board.create('segment', [D, G], {
+            strokeColor: COL_OUTLINE, strokeWidth: 1.5, fixed: true, highlight: false, layer: 5
+        });
+        board.create('segment', [G, E], {
+            strokeColor: COL_OUTLINE, strokeWidth: 1.5, fixed: true, highlight: false, layer: 5
+        });
+        board.create('segment', [F, G], {
+            strokeColor: COL_OUTLINE, strokeWidth: 1.5, fixed: true, highlight: false, layer: 5
+        });
+        board.create('segment', [G, H], {
+            strokeColor: COL_OUTLINE, strokeWidth: 1.5, fixed: true, highlight: false, layer: 5
+        });
+
+        board.create('text', [-3.8, -1.0, '<i style="font-size:18px; font-weight:600; color:#444;">S</i>'], {
+            fontSize: 18, fixed: true, highlight: false
+        });
+        board.create('text', [3.2, -1.0, '<i style="font-size:18px; font-weight:600; color:#444;">T</i>'], {
+            fontSize: 18, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
