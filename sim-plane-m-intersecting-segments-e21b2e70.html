@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plane M — Intersecting Segments</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 4.5, 5.5, -4.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Plane M (parallelogram) ──────────────────────────────── */
+        var planeCorners = [
+            board.create('point', [-4.2, -2.2], { visible: false, fixed: true, name: '' }),
+            board.create('point', [4.2, -2.2], { visible: false, fixed: true, name: '' }),
+            board.create('point', [5.0, 2.2], { visible: false, fixed: true, name: '' }),
+            board.create('point', [-3.4, 2.2], { visible: false, fixed: true, name: '' })
+        ];
+
+        board.create('polygon', planeCorners, {
+            fillColor: '#F3F4F6',
+            fillOpacity: 0.6,
+            borders: { strokeColor: '#9CA3AF', strokeWidth: 1.2 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        /* Plane label */
+        board.create('text', [-3.9, 1.7, 'M'], {
+            fontSize: 12, color: '#555555', fixed: true, highlight: false,
+            cssStyle: 'font-style:italic; font-weight:600;'
+        });
+
+        /* ── Intersection point W ─────────────────────────────────── */
+        var W = board.create('point', [0.3, 0.1], {
+            name: '', fixed: true, size: 2.5, color: '#222222', highlight: false
+        });
+
+        /* W label */
+        board.create('text', [0.6, -0.55, 'W'], {
+            fontSize: 10, color: '#222222', fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        /* ── Segment PQ ───────────────────────────────────────────── */
+        var P = board.create('point', [-3.6, 2.0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var Q = board.create('point', [3.8, -1.5], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        board.create('segment', [P, Q], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        /* P label */
+        board.create('text', [-4.1, 2.3, 'P'], {
+            fontSize: 10, color: '#222222', fixed: true, highlight: false,
+            useKatex: true
+        });
+        /* Q label */
+        board.create('text', [4.0, -1.9, 'Q'], {
+            fontSize: 10, color: '#222222', fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        /* ── Segment RS ───────────────────────────────────────────── */
+        var R = board.create('point', [-2.8, -1.8], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var S = board.create('point', [3.8, 1.8], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        board.create('segment', [R, S], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        /* R label */
+        board.create('text', [-3.4, -2.1, 'R'], {
+            fontSize: 10, color: '#222222', fixed: true, highlight: false,
+            useKatex: true
+        });
+        /* S label */
+        board.create('text', [4.0, 2.0, 'S'], {
+            fontSize: 10, color: '#222222', fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        /* ── Segment TU ───────────────────────────────────────────── */
+        var T = board.create('point', [-0.8, 3.2], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var U = board.create('point', [1.2, -3.0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        board.create('segment', [T, U], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        /* T label */
+        board.create('text', [-1.2, 3.4, 'T'], {
+            fontSize: 10, color: '#222222', fixed: true, highlight: false,
+            useKatex: true
+        });
+        /* U label */
+        board.create('text', [1.4, -3.4, 'U'], {
+            fontSize: 10, color: '#222222', fixed: true, highlight: false,
+            useKatex: true
+        });
+
+    </script>
+</body>
+</html>
