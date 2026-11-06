@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intersecting Planes S and T</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 8, 12, -1],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Plane geometry ─────────────────────────────────────────────
+        // Intersection line runs roughly vertical through the middle
+        var intTop = [5.5, 7.5];
+        var intBot = [5.5, 0.5];
+
+        // Plane S (left/back) — parallelogram
+        var S1 = [0.5, 5.5];
+        var S2 = [5.5, 7.5];  // intTop
+        var S3 = [5.5, 0.5];  // intBot
+        var S4 = [0.5, -0.5];
+
+        // Plane T (right/front) — parallelogram, slightly offset to overlap
+        var T1 = [5.5, 7.5];  // intTop
+        var T2 = [10.5, 5.5];
+        var T3 = [10.5, -0.5];
+        var T4 = [5.5, 0.5];  // intBot
+
+        // Helper: create invisible fixed point
+        function fp(coords) {
+            return board.create('point', coords, { visible: false, fixed: true, name: '' });
+        }
+
+        // ── Draw Plane S (back) first ──────────────────────────────────
+        var pS1 = fp(S1), pS2 = fp(S2), pS3 = fp(S3), pS4 = fp(S4);
+        board.create('polygon', [pS1, pS2, pS3, pS4], {
+            fillColor: '#93C5FD', fillOpacity: 0.12,
+            borders: { strokeColor: '#555555', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Draw Plane T (front) ──────────────────────────────────────
+        var pT1 = fp(T1), pT2 = fp(T2), pT3 = fp(T3), pT4 = fp(T4);
+        board.create('polygon', [pT1, pT2, pT3, pT4], {
+            fillColor: '#FDBA74', fillOpacity: 0.12,
+            borders: { strokeColor: '#555555', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Intersection line (bold, on top) ──────────────────────────
+        board.create('segment', [intTop, intBot], {
+            strokeColor: '#222222', strokeWidth: 2.0, fixed: true, highlight: false, layer: 7
+        });
+
+        // ── Points ────────────────────────────────────────────────────
+        // B on plane S (upper left area)
+        var B = board.create('point', [2.2, 5.0], {
+            name: 'B', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-16, 4] }
+        });
+
+        // G on plane S (lower left area)
+        var G = board.create('point', [2.5, 1.8], {
+            name: 'G', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-16, -8] }
+        });
+
+        // E on the intersection line
+        var E = board.create('point', [5.5, 3.8], {
+            name: 'E', fixed: true, size: 3, color: '#222222', highlight: false, layer: 8,
+            label: { fontSize: 15, color: '#222222', offset: [-6, 10] }
+        });
+
+        // F on plane T (right area)
+        var F = board.create('point', [8.5, 3.2], {
+            name: 'F', fixed: true, size: 3, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, -8] }
+        });
+
+        // ── Connecting lines ──────────────────────────────────────────
+        // Line B to F: solid on plane S side (B to E), then solid on plane T side (E to F)
+        // Since B-E is on plane S (visible) and E-F is on plane T (visible), both solid
+        board.create('segment', [[B.X(), B.Y()], [E.X(), E.Y()]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[E.X(), E.Y()], [F.X(), F.Y()]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Line B to G: on plane S, fully visible
+        board.create('segment', [[B.X(), B.Y()], [G.X(), G.Y()]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Line G to F: G is on plane S, F on plane T.
+        // Visible from G to the intersection line, then passes behind plane T briefly
+        // We split at the intersection line crossing
+        // G to intersection point on the line (approx)
+        var gfSlope = (F.Y() - G.Y()) / (F.X() - G.X());
+        var gfIntX = 5.5;
+        var gfIntY = G.Y() + gfSlope * (gfIntX - G.X());
+
+        // G to intersection: visible (on plane S)
+        board.create('segment', [[G.X(), G.Y()], [gfIntX, gfIntY]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        // Intersection to F: visible (on plane T)
+        board.create('segment', [[gfIntX, gfIntY], [F.X(), F.Y()]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Line from B extending through to plane T (dashed behind plane T)
+        // B through E, continuing past E into plane T as dashed
+        var bExtX = 8.0;
+        var beSlope = (E.Y() - B.Y()) / (E.X() - B.X());
+        var bExtY = E.Y() + beSlope * (bExtX - E.X());
+        board.create('segment', [[E.X(), E.Y()], [bExtX, bExtY]], {
+            strokeColor: '#555555', strokeWidth: 1.2, dash: 3, fixed: true, highlight: false
+        });
+
+        // Line from F extending through to plane S (dashed behind plane S)
+        var fExtX = 3.0;
+        var feSlope = (E.Y() - F.Y()) / (E.X() - F.X());
+        var fExtY = E.Y() + feSlope * (fExtX - E.X());
+        board.create('segment', [[E.X(), E.Y()], [fExtX, fExtY]], {
+            strokeColor: '#555555', strokeWidth: 1.2, dash: 3, fixed: true, highlight: false
+        });
+
+        // Line from G through E, dashed extension past intersection into plane T
+        var geSlope = (E.Y() - G.Y()) / (E.X() - G.X());
+        var gExtX = 8.2;
+        var gExtY = E.Y() + geSlope * (gExtX - E.X());
+        board.create('segment', [[G.X(), G.Y()], [E.X(), E.Y()]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[E.X(), E.Y()], [gExtX, gExtY]], {
+            strokeColor: '#555555', strokeWidth: 1.2, dash: 3, fixed: true, highlight: false
+        });
+
+        // ── Plane labels ──────────────────────────────────────────────
+        board.create('text', [1.8, 7.0, '<i style="font-size:18px; color:#3B82F6; font-weight:600;">S</i>'], {
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+        board.create('text', [9.0, 7.0, '<i style="font-size:18px; color:#D97706; font-weight:600;">T</i>'], {
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
