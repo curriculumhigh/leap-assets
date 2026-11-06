@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rational function graph option C</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var XMIN = -6, XMAX = 6, YMIN = -6, YMAX = 8;
+        var XR = XMAX - XMIN, YR = YMAX - YMIN;
+        var PAD_L = 0.036 * XR, PAD_R = 0.043 * XR, PAD_T = 0.03 * YR, PAD_B = 0.036 * YR;
+        var GX = 1, GY = 1, LX = 1, LY = 1;
+        var BB = [XMIN - PAD_L, YMAX + PAD_T, XMAX + PAD_R, YMIN - PAD_B];
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: BB,
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var VAS = [1], HAS = [1], SLANTS = [];
+        var PX = 1 / board.unitX, PY = 1 / board.unitY;  // one pixel in user units
+        var COL_PRIMARY = '#222222';
+        var COL_ASYMPTOTE = '#0EA5E9';
+        var COL_AXIS = '#444444';
+        var GRID_COL = '#D1D5DB';
+        var i;
+
+        // Grid (layer 1) — integer lines across the window, skipping the axes
+        for (i = XMIN; i <= XMAX; i += GX) {
+            if (i === 0) continue;
+            board.create('segment', [[i, YMIN - PAD_B], [i, YMAX + PAD_T]], {
+                strokeColor: GRID_COL, strokeWidth: 0.5, fixed: true, highlight: false, layer: 1
+            });
+        }
+        for (i = YMIN; i <= YMAX; i += GY) {
+            if (i === 0) continue;
+            board.create('segment', [[XMIN - PAD_L, i], [XMAX + PAD_R, i]], {
+                strokeColor: GRID_COL, strokeWidth: 0.5, fixed: true, highlight: false, layer: 1
+            });
+        }
+
+        // Axes with arrowheads
+        board.create('arrow', [[XMIN - PAD_L, 0], [XMAX + PAD_R - 2 * PX, 0]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false, layer: 3
+        });
+        board.create('arrow', [[0, YMIN - PAD_B], [0, YMAX + PAD_T - 2 * PY]], {
+            strokeColor: COL_AXIS, strokeWidth: 1.2, lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false, layer: 3
+        });
+
+        // Ticks + plain-text tick labels (Unicode minus for negatives)
+        function lbl(v) { return v < 0 ? '\u2212' + Math.abs(v) : String(v); }
+        var TX = 4 * PX, TY = 4 * PY;
+        function onLine(v, arr) { return arr.indexOf(v) >= 0 ? 'background:#ffffff;padding:0 2px;' : ''; }
+        for (i = Math.ceil(XMIN / LX) * LX; i <= XMAX; i += LX) {
+            if (i === 0) continue;
+            board.create('segment', [[i, -TY], [i, TY]], {
+                strokeColor: COL_AXIS, strokeWidth: 1, fixed: true, highlight: false, layer: 3
+            });
+            board.create('text', [i, -6 * PY, lbl(i)], {
+                fontSize: 11, color: '#222222', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false, layer: 4, cssStyle: onLine(i, VAS)
+            });
+        }
+        for (i = Math.ceil(YMIN / LY) * LY; i <= YMAX; i += LY) {
+            if (i === 0) continue;
+            board.create('segment', [[-TX, i], [TX, i]], {
+                strokeColor: COL_AXIS, strokeWidth: 1, fixed: true, highlight: false, layer: 3
+            });
+            board.create('text', [-6 * PX, i, lbl(i)], {
+                fontSize: 11, color: '#222222', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false, layer: 4, cssStyle: onLine(i, HAS)
+            });
+        }
+        // Axis-name labels
+        board.create('text', [XMAX + PAD_R - 10 * PX, 8 * PY, '<i>x</i>'], {
+            fontSize: 14, anchorX: 'middle', anchorY: 'bottom', fixed: true, highlight: false
+        });
+        board.create('text', [7 * PX, YMAX + PAD_T - 9 * PY, '<i>y</i>'], {
+            fontSize: 14, anchorX: 'left', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // Dashed asymptotes (construction lines, cyan)
+        for (i = 0; i < VAS.length; i++) {
+            board.create('segment', [[VAS[i], YMIN - PAD_B], [VAS[i], YMAX + PAD_T]], {
+                strokeColor: COL_ASYMPTOTE, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false, layer: 5
+            });
+        }
+        for (i = 0; i < HAS.length; i++) {
+            board.create('segment', [[XMIN - PAD_L, HAS[i]], [XMAX + PAD_R, HAS[i]]], {
+                strokeColor: COL_ASYMPTOTE, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false, layer: 5
+            });
+        }
+
+        // Slant asymptotes y = m x + b, across the whole window (SVG clips to the board)
+        for (i = 0; i < SLANTS.length; i++) {
+            var m = SLANTS[i][0], b0 = SLANTS[i][1], xa = XMIN - PAD_L, xb = XMAX + PAD_R;
+            board.create('segment', [[xa, m * xa + b0], [xb, m * xb + b0]], {
+                strokeColor: COL_ASYMPTOTE, strokeWidth: 1.2, dash: 2, fixed: true, highlight: false, layer: 5
+            });
+        }
+
+        // Function, drawn as separate branches between vertical asymptotes, clipped to the window
+        function f(x) { return (x + 3) / (x - 1); }
+        var EPS = 0.004, SAMPLES = 1500;
+        function branch(a, b) {
+            var xs = [], ys = [], k, x, y, n = SAMPLES;
+            for (k = 0; k <= n; k++) {
+                x = a + (b - a) * k / n;
+                y = f(x);
+                if (y > YMAX + PAD_T + 2) y = YMAX + PAD_T + 2;
+                if (y < YMIN - PAD_B - 2) y = YMIN - PAD_B - 2;
+                xs.push(x); ys.push(y);
+            }
+            board.create('curve', [xs, ys], {
+                strokeColor: COL_PRIMARY, strokeWidth: 1.8, fixed: true, highlight: false, layer: 6
+            });
+        }
+        var cuts = [XMIN - PAD_L].concat(VAS.slice().sort(function(p, q) { return p - q; })).concat([XMAX + PAD_R]);
+        for (i = 0; i < cuts.length - 1; i++) {
+            branch(cuts[i] + (i === 0 ? 0 : EPS), cuts[i + 1] - (i === cuts.length - 2 ? 0 : EPS));
+        }
+
+        // Hole(s) — open circle exactly on the curve
+        var HOLES = [];
+        for (i = 0; i < HOLES.length; i++) {
+            board.create('point', [HOLES[i], f(HOLES[i])], {
+                name: '', size: 5, fillColor: '#ffffff', strokeColor: COL_PRIMARY, strokeWidth: 1.5,
+                fixed: true, highlight: false, showInfobox: false, layer: 9
+            });
+        }
+        // Key point(s) — solid filled dot exactly on the curve
+        var DOTS = [];
+        for (i = 0; i < DOTS.length; i++) {
+            board.create('point', [DOTS[i], f(DOTS[i])], {
+                name: '', size: 4, fillColor: COL_PRIMARY, strokeColor: COL_PRIMARY, strokeWidth: 1,
+                fixed: true, highlight: false, showInfobox: false, withLabel: false, layer: 9
+            });
+        }
+    </script>
+</body>
+</html>
