@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>If-Then Diagram: Points and Line in a Plane</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 6.5, 19.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        var COL_PLANE_FILL = '#E5E7EB';
+        var COL_PLANE_STROKE = '#555555';
+        var COL_POINT = '#222222';
+        var COL_LINE = '#222222';
+        var COL_ARROW = '#555555';
+        var COL_HEADER_IF = '#2563EB';
+        var COL_HEADER_THEN = '#059669';
+
+        function drawPlane(cx, cy, w, h, skew) {
+            var x1 = cx - w / 2 + skew;
+            var x2 = cx + w / 2 + skew;
+            var x3 = cx + w / 2 - skew;
+            var x4 = cx - w / 2 - skew;
+            var yt = cy + h / 2;
+            var yb = cy - h / 2;
+
+            var p1 = board.create('point', [x1, yt], { visible: false, name: '' });
+            var p2 = board.create('point', [x2, yt], { visible: false, name: '' });
+            var p3 = board.create('point', [x3, yb], { visible: false, name: '' });
+            var p4 = board.create('point', [x4, yb], { visible: false, name: '' });
+
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: COL_PLANE_FILL, fillOpacity: 0.5,
+                borders: { strokeColor: COL_PLANE_STROKE, strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            return {
+                topLeft: [x1, yt], topRight: [x2, yt],
+                botRight: [x3, yb], botLeft: [x4, yb],
+                cx: cx, cy: cy
+            };
+        }
+
+        var planeW = 6.8, planeH = 3.6, planeSkew = 0.7;
+
+        var ifCx = 4.5, ifCy = 2.2;
+        var planeIf = drawPlane(ifCx, ifCy, planeW, planeH, planeSkew);
+
+        board.create('text', [ifCx, 5.0, '\\textbf{If}'], {
+            useKatex: true, fontSize: 16, color: COL_HEADER_IF,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('text', [planeIf.botRight[0] + 0.15, planeIf.botRight[1] + 0.15, '\\textit{M}'], {
+            useKatex: true, fontSize: 14, color: COL_PLANE_STROKE,
+            anchorX: 'left', anchorY: 'bottom', fixed: true, highlight: false
+        });
+
+        var ifRx = ifCx - 1.0, ifRy = ifCy + 0.25;
+        var ifSx = ifCx + 1.0, ifSy = ifCy - 0.25;
+
+        board.create('point', [ifRx, ifRy], {
+            name: 'R', size: 3, color: COL_POINT, fixed: true, highlight: false,
+            showInfobox: false,
+            label: {
+                fontSize: 13, color: COL_POINT, useKatex: true,
+                offset: [-5, 12], anchorX: 'middle'
+            }
+        });
+
+        board.create('point', [ifSx, ifSy], {
+            name: 'S', size: 3, color: COL_POINT, fixed: true, highlight: false,
+            showInfobox: false,
+            label: {
+                fontSize: 13, color: COL_POINT, useKatex: true,
+                offset: [5, 12], anchorX: 'middle'
+            }
+        });
+
+        board.create('arrow', [[8.5, ifCy], [10.0, ifCy]], {
+            strokeColor: COL_ARROW, strokeWidth: 2.0,
+            lastArrow: { type: 2, size: 7 },
+            fixed: true, highlight: false
+        });
+
+        var thenCx = 14.5, thenCy = 2.2;
+        var planeThen = drawPlane(thenCx, thenCy, planeW, planeH, planeSkew);
+
+        board.create('text', [thenCx, 5.0, '\\textbf{Then}'], {
+            useKatex: true, fontSize: 16, color: COL_HEADER_THEN,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('text', [planeThen.botRight[0] + 0.15, planeThen.botRight[1] + 0.15, '\\textit{M}'], {
+            useKatex: true, fontSize: 14, color: COL_PLANE_STROKE,
+            anchorX: 'left', anchorY: 'bottom', fixed: true, highlight: false
+        });
+
+        var thenRx = thenCx - 1.0, thenRy = thenCy + 0.25;
+        var thenSx = thenCx + 1.0, thenSy = thenCy - 0.25;
+
+        var dx = thenSx - thenRx;
+        var dy = thenSy - thenRy;
+        var len = Math.sqrt(dx * dx + dy * dy);
+        var ux = dx / len;
+        var uy = dy / len;
+        var ext = 1.8;
+
+        board.create('segment', [
+            [thenRx - ext * ux, thenRy - ext * uy],
+            [thenSx + ext * ux, thenSy + ext * uy]
+        ], {
+            strokeColor: COL_LINE, strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        board.create('point', [thenRx, thenRy], {
+            name: 'R', size: 3, color: COL_POINT, fixed: true, highlight: false,
+            showInfobox: false,
+            label: {
+                fontSize: 13, color: COL_POINT, useKatex: true,
+                offset: [-5, 12], anchorX: 'middle'
+            }
+        });
+
+        board.create('point', [thenSx, thenSy], {
+            name: 'S', size: 3, color: COL_POINT, fixed: true, highlight: false,
+            showInfobox: false,
+            label: {
+                fontSize: 13, color: COL_POINT, useKatex: true,
+                offset: [5, 12], anchorX: 'middle'
+            }
+        });
+
+        var tipX = thenSx + ext * ux * 0.75;
+        var tipY = thenSy + ext * uy * 0.75;
+        board.create('point', [tipX, tipY], {
+            visible: false, name: '\\overleftrightarrow{RS}', fixed: true,
+            showInfobox: false,
+            label: {
+                fontSize: 12, color: COL_LINE, useKatex: true,
+                offset: [0, 12], anchorX: 'middle'
+            }
+        });
+    </script>
+</body>
+</html>
