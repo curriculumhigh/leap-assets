@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Intersecting Lines — Angle 3 = 159°</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 4.5, 5.5, -4.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var O = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 0, visible: false
+        });
+
+        var A = board.create('point', [4.2, 2.4], { name: '', fixed: true, visible: false });
+        var C = board.create('point', [-4.2, -2.4], { name: '', fixed: true, visible: false });
+        var D = board.create('point', [-4.2, 1.8], { name: '', fixed: true, visible: false });
+        var B = board.create('point', [4.2, -1.8], { name: '', fixed: true, visible: false });
+
+        board.create('segment', [C, A], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [D, B], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        board.create('point', [0, 0], {
+            name: '', fixed: true, size: 1.5, color: '#555555', highlight: false
+        });
+
+        board.create('nonReflexAngle', [B, O, A], {
+            radius: 0.9, fillColor: 'none', fillOpacity: 0,
+            strokeColor: '#222222', strokeWidth: 0.8,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [C, O, B], {
+            radius: 0.9, fillColor: 'none', fillOpacity: 0,
+            strokeColor: '#222222', strokeWidth: 0.8,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [D, O, C], {
+            radius: 0.9, fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [A, O, D], {
+            radius: 0.9, fillColor: 'none', fillOpacity: 0,
+            strokeColor: '#222222', strokeWidth: 0.8,
+            fixed: true, name: '', withLabel: false
+        });
+
+        function bisectorXY(px, py, qx, qy, radius) {
+            var a1 = Math.atan2(py, px);
+            var a2 = Math.atan2(qy, qx);
+            var diff = a2 - a1;
+            if (diff > Math.PI) diff -= 2 * Math.PI;
+            if (diff < -Math.PI) diff += 2 * Math.PI;
+            var mid = a1 + diff / 2;
+            return [radius * Math.cos(mid), radius * Math.sin(mid)];
+        }
+
+        var lbl1Pos = bisectorXY(B.X(), B.Y(), A.X(), A.Y(), 1.6);
+        board.create('text', [lbl1Pos[0], lbl1Pos[1], '1'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#222222', fixed: true, highlight: false
+        });
+
+        var lbl2Pos = bisectorXY(C.X(), C.Y(), B.X(), B.Y(), 1.6);
+        board.create('text', [lbl2Pos[0], lbl2Pos[1], '2'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#222222', fixed: true, highlight: false
+        });
+
+        var lbl3Pos = bisectorXY(D.X(), D.Y(), C.X(), C.Y(), 1.6);
+        board.create('text', [lbl3Pos[0], lbl3Pos[1], '3'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-weight:bold'
+        });
+
+        var lbl4Pos = bisectorXY(A.X(), A.Y(), D.X(), D.Y(), 1.6);
+        board.create('text', [lbl4Pos[0], lbl4Pos[1], '4'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#222222', fixed: true, highlight: false
+        });
+
+        var msr3Pos = bisectorXY(D.X(), D.Y(), C.X(), C.Y(), 2.8);
+        board.create('text', [msr3Pos[0], msr3Pos[1], '159\u00B0'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#DC2626', fixed: true, highlight: false,
+            cssStyle: 'font-weight:bold'
+        });
+    </script>
+</body>
+</html>
