@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Four Rays from Point K</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 4.5, 5, -4.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var K = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2.5, color: '#222222', highlight: false
+        });
+
+        var angJK = 145 * Math.PI / 180;
+        var angKL = angJK - Math.PI;
+        var angKM = 40 * Math.PI / 180;
+        var angKN = angKM - Math.PI;
+
+        var rayLen = 6;
+        var labelDist = 3.8;
+
+        var tipJ = board.create('point', [rayLen * Math.cos(angJK), rayLen * Math.sin(angJK)], { visible: false, fixed: true, name: '' });
+        var tipL = board.create('point', [rayLen * Math.cos(angKL), rayLen * Math.sin(angKL)], { visible: false, fixed: true, name: '' });
+        var tipM = board.create('point', [rayLen * Math.cos(angKM), rayLen * Math.sin(angKM)], { visible: false, fixed: true, name: '' });
+        var tipN = board.create('point', [rayLen * Math.cos(angKN), rayLen * Math.sin(angKN)], { visible: false, fixed: true, name: '' });
+
+        var rayStyle = { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false };
+        board.create('segment', [K, tipJ], rayStyle);
+        board.create('segment', [K, tipL], rayStyle);
+        board.create('segment', [K, tipM], rayStyle);
+        board.create('segment', [K, tipN], rayStyle);
+
+        var lblOff = 0.35;
+        board.create('text', [labelDist * Math.cos(angJK) - 0.15, labelDist * Math.sin(angJK) + lblOff, 'J'], {
+            fontSize: 16, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-weight:600; font-style:italic;'
+        });
+        board.create('text', [labelDist * Math.cos(angKM) + 0.15, labelDist * Math.sin(angKM) + lblOff, 'M'], {
+            fontSize: 16, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-weight:600; font-style:italic;'
+        });
+        board.create('text', [labelDist * Math.cos(angKL) + 0.15, labelDist * Math.sin(angKL) - lblOff, 'L'], {
+            fontSize: 16, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-weight:600; font-style:italic;'
+        });
+        board.create('text', [labelDist * Math.cos(angKN) - 0.15, labelDist * Math.sin(angKN) - lblOff, 'N'], {
+            fontSize: 16, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-weight:600; font-style:italic;'
+        });
+
+        board.create('text', [0.35, -0.45, 'K'], {
+            fontSize: 16, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', cssStyle: 'font-weight:600; font-style:italic;'
+        });
+
+        var arcRadius = 1.2;
+        var COL_SHADE = '#2563EB';
+
+        board.create('sector', [K, 
+            [arcRadius * Math.cos(angKM), arcRadius * Math.sin(angKM)], 
+            [arcRadius * Math.cos(angJK), arcRadius * Math.sin(angJK)]
+        ], {
+            fillColor: COL_SHADE, fillOpacity: 0.12,
+            strokeColor: COL_SHADE, strokeWidth: 1.5,
+            fixed: true, highlight: false,
+            radiusPoint: { visible: false },
+            anglePoint: { visible: false }
+        });
+
+        board.create('sector', [K,
+            [arcRadius * Math.cos(angKL), arcRadius * Math.sin(angKL)],
+            [arcRadius * Math.cos(angKN), arcRadius * Math.sin(angKN)]
+        ], {
+            fillColor: COL_SHADE, fillOpacity: 0.12,
+            strokeColor: COL_SHADE, strokeWidth: 1.5,
+            fixed: true, highlight: false,
+            radiusPoint: { visible: false },
+            anglePoint: { visible: false }
+        });
+
+        var arcR2 = 0.85;
+
+        board.create('curve', [
+            function(t) { return arcR2 * Math.cos(t); },
+            function(t) { return arcR2 * Math.sin(t); },
+            angKM, angJK
+        ], {
+            strokeColor: COL_SHADE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('curve', [
+            function(t) { return arcR2 * Math.cos(t); },
+            function(t) { return arcR2 * Math.sin(t); },
+            angKN + 2 * Math.PI, angKL + 2 * Math.PI
+        ], {
+            strokeColor: COL_SHADE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
