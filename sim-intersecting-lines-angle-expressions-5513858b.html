@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intersecting Lines — Angle Expressions</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 4.2, 5.5, -4.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: true
+        });
+
+        /* ── Two intersecting lines ─────────────────────────────── */
+        var A1 = board.create('point', [-4.2, 3.2], { visible: false, fixed: true, name: '' });
+        var A2 = board.create('point', [4.2, -3.2], { visible: false, fixed: true, name: '' });
+        board.create('line', [A1, A2], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true,
+            straightFirst: true, straightLast: true, highlight: false
+        });
+
+        var B1 = board.create('point', [4.2, 3.2], { visible: false, fixed: true, name: '' });
+        var B2 = board.create('point', [-4.2, -3.2], { visible: false, fixed: true, name: '' });
+        board.create('line', [B1, B2], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true,
+            straightFirst: true, straightLast: true, highlight: false
+        });
+
+        /* ── Small angle arcs ───────────────────────────────────── */
+        var O = board.create('point', [0, 0], { visible: false, fixed: true, name: '' });
+
+        var rA1 = board.create('point', [-1, 0.762], { visible: false, fixed: true, name: '' });
+        var rB1 = board.create('point', [1, 0.762], { visible: false, fixed: true, name: '' });
+        var rA2 = board.create('point', [1, -0.762], { visible: false, fixed: true, name: '' });
+        var rB2 = board.create('point', [-1, -0.762], { visible: false, fixed: true, name: '' });
+
+        board.create('nonReflexAngle', [rA1, O, rB1], {
+            radius: 0.7, fillColor: '#D1D5DB', fillOpacity: 0.15,
+            strokeColor: '#999999', strokeWidth: 0.8,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [rB1, O, rA2], {
+            radius: 0.7, fillColor: '#D1D5DB', fillOpacity: 0.15,
+            strokeColor: '#999999', strokeWidth: 0.8,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [rA2, O, rB2], {
+            radius: 0.7, fillColor: '#D1D5DB', fillOpacity: 0.15,
+            strokeColor: '#999999', strokeWidth: 0.8,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [rB2, O, rA1], {
+            radius: 0.7, fillColor: '#D1D5DB', fillOpacity: 0.15,
+            strokeColor: '#999999', strokeWidth: 0.8,
+            fixed: true, name: '', withLabel: false
+        });
+
+        /* ── Angle expression labels (KaTeX) ────────────────────── */
+        board.create('text', [0, 2.2, '(9x+56)^{\\circ}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [2.8, 0, '(3y+28)^{\\circ}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [0, -2.2, '(13x+32)^{\\circ}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [-2.8, 0, '(6y-14)^{\\circ}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
