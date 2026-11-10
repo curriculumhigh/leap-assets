@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collinear Points — J, K, L, P, Q, R</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 520px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 2.5, 13.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var Y = 0.5;
+        var xJ = 1.0, xK = 3.0, xL = 5.0, xP = 7.5, xQ = 10.0, xR = 12.5;
+
+        /* Main segment */
+        board.create('segment', [[xJ - 0.5, Y], [xR + 0.5, Y]], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        /* Point style */
+        var ptStyle = {
+            size: 2.5, color: '#222222', fixed: true, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [0, 16], anchorX: 'middle' }
+        };
+
+        board.create('point', [xJ, Y], JXG.merge(ptStyle, { name: 'J' }));
+        board.create('point', [xK, Y], JXG.merge(ptStyle, { name: 'K' }));
+        board.create('point', [xL, Y], JXG.merge(ptStyle, { name: 'L' }));
+        board.create('point', [xP, Y], JXG.merge(ptStyle, { name: 'P' }));
+        board.create('point', [xQ, Y], JXG.merge(ptStyle, { name: 'Q' }));
+        board.create('point', [xR, Y], JXG.merge(ptStyle, { name: 'R' }));
+    </script>
+</body>
+</html>
