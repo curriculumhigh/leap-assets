@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Line — Midpoint and Distance</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4.5, 4.5, 10.5, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Number line (horizontal axis) ───────────────────────────────
+        board.create('arrow', [[-4, 0], [10.2, 0]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true,
+            highlight: false
+        });
+        // Left stub (no arrow, just extends left)
+        board.create('segment', [[-4.2, 0], [-4, 0]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Tick marks and labels ───────────────────────────────────────
+        var tickMin = -3;
+        var tickMax = 9;
+        for (var t = tickMin; t <= tickMax; t++) {
+            // Tick mark
+            board.create('segment', [[t, -0.25], [t, 0.25]], {
+                strokeColor: '#444444',
+                strokeWidth: 1.0,
+                fixed: true,
+                highlight: false
+            });
+            // Tick label
+            board.create('text', [t, -0.7, String(t)], {
+                anchorX: 'middle',
+                anchorY: 'top',
+                fontSize: 11,
+                color: '#444444',
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // ── Solid dots at −2, 3, and 8 ─────────────────────────────────
+        // Points at −2 and 8
+        board.create('point', [-2, 0], {
+            name: '',
+            size: 5,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            showInfobox: false
+        });
+        board.create('point', [8, 0], {
+            name: '',
+            size: 5,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            showInfobox: false
+        });
+        // Midpoint at 3
+        board.create('point', [3, 0], {
+            name: '',
+            size: 4,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            showInfobox: false
+        });
+
+        // ── Point labels (below tick labels) ────────────────────────────
+        board.create('text', [-2, -1.55, '-2'], {
+            anchorX: 'middle',
+            anchorY: 'top',
+            fontSize: 14,
+            color: '#222222',
+            cssStyle: 'font-weight:bold',
+            fixed: true,
+            highlight: false
+        });
+        board.create('text', [8, -1.55, '8'], {
+            anchorX: 'middle',
+            anchorY: 'top',
+            fontSize: 14,
+            color: '#222222',
+            cssStyle: 'font-weight:bold',
+            fixed: true,
+            highlight: false
+        });
+        board.create('text', [3, -1.55, '3'], {
+            anchorX: 'middle',
+            anchorY: 'top',
+            fontSize: 14,
+            color: '#222222',
+            cssStyle: 'font-weight:bold',
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Distance arrows (above the number line) ────────────────────
+        var arrowY = 1.8;
+
+        // Arrow from midpoint 3 to left point −2
+        board.create('arrow', [[3, arrowY], [-2, arrowY]], {
+            strokeColor: '#2563EB',
+            strokeWidth: 1.8,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true,
+            highlight: false
+        });
+        // Arrow from midpoint 3 to right point 8
+        board.create('arrow', [[3, arrowY], [8, arrowY]], {
+            strokeColor: '#2563EB',
+            strokeWidth: 1.8,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Small vertical connectors (from arrow level down to points) ─
+        board.create('segment', [[-2, 0.4], [-2, arrowY]], {
+            strokeColor: '#2563EB',
+            strokeWidth: 0.8,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+        board.create('segment', [[8, 0.4], [8, arrowY]], {
+            strokeColor: '#2563EB',
+            strokeWidth: 0.8,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+        board.create('segment', [[3, 0.4], [3, arrowY]], {
+            strokeColor: '#2563EB',
+            strokeWidth: 0.8,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Distance labels ("5") centered above each arrow ────────────
+        board.create('text', [0.5, arrowY + 0.7, '5'], {
+            anchorX: 'middle',
+            anchorY: 'bottom',
+            fontSize: 15,
+            color: '#2563EB',
+            cssStyle: 'font-weight:bold',
+            useKatex: true,
+            fixed: true,
+            highlight: false
+        });
+        board.create('text', [5.5, arrowY + 0.7, '5'], {
+            anchorX: 'middle',
+            anchorY: 'bottom',
+            fontSize: 15,
+            color: '#2563EB',
+            cssStyle: 'font-weight:bold',
+            useKatex: true,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
