@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Which Party's Candidate Will You Vote For?</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px);
+            display: flex; flex-direction: column;
+        }
+        .chart-title {
+            text-align: center; font-size: 15px; font-weight: 700; color: #222222;
+            padding: 8px 4px 2px 4px; line-height: 1.3;
+        }
+        .board-wrapper {
+            background: white; border-radius: 8px; padding: 10px;
+            flex: 1; min-height: 0;
+        }
+        #board { width: 100%; height: 100%; }
+        .annotation {
+            text-align: center; font-size: 12px; color: #666666;
+            padding: 6px 4px 4px 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="chart-title">Which Party's Candidate Will You Vote For?</div>
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+        <div class="annotation">Margin of Error: ±3%</div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 6.5, 7, -6.5],
+            axis: false, grid: false,
+            keepAspectRatio: true,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false }
+        });
+
+        // ── Data ────────────────────────────────────────────────────────
+        var data = [
+            { name: 'Independent', pct: 41, color: '#2563EB' },
+            { name: 'Conservative', pct: 31, color: '#DC2626' },
+            { name: 'Progressive', pct: 17, color: '#059669' },
+            { name: 'Reform', pct: 7, color: '#D97706' },
+            { name: 'Other', pct: 4, color: '#9CA3AF' }
+        ];
+
+        var CX = 0, CY = 0, R = 4.2;
+
+        // ── Draw pie sectors ────────────────────────────────────────────
+        var startAngle = Math.PI / 2; // start from top (12 o'clock)
+
+        for (var i = 0; i < data.length; i++) {
+            var sweep = (data[i].pct / 100) * 2 * Math.PI;
+            var endAngle = startAngle - sweep; // clockwise
+
+            // Build polygon points: center + arc points
+            var pts = [[CX, CY]];
+            var steps = Math.max(Math.round(sweep / 0.02), 20);
+            for (var s = 0; s <= steps; s++) {
+                var a = startAngle - (sweep * s / steps);
+                pts.push([CX + R * Math.cos(a), CY + R * Math.sin(a)]);
+            }
+
+            // Create invisible fixed points
+            var jxgPts = [];
+            for (var p = 0; p < pts.length; p++) {
+                jxgPts.push(board.create('point', pts[p], {
+                    visible: false, fixed: true, name: '', withLabel: false
+                }));
+            }
+
+            // Create filled polygon for the sector
+            board.create('polygon', jxgPts, {
+                fillColor: data[i].color,
+                fillOpacity: 0.85,
+                borders: { strokeColor: '#FFFFFF', strokeWidth: 2.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false,
+                fixed: true,
+                highlight: false
+            });
+
+            // ── Label placement ─────────────────────────────────────────
+            var midAngle = startAngle - sweep / 2;
+
+            // For large sectors, place label inside; for small sectors, outside
+            var labelR, anchorX, anchorY;
+            if (data[i].pct >= 15) {
+                // Inside the sector
+                labelR = R * 0.58;
+                var lx = CX + labelR * Math.cos(midAngle);
+                var ly = CY + labelR * Math.sin(midAngle);
+
+                board.create('text', [lx, ly - 0.25, data[i].name], {
+                    anchorX: 'middle', anchorY: 'middle',
+                    fontSize: 13, color: '#FFFFFF',
+                    cssStyle: 'font-weight:700; text-shadow: 0 1px 3px rgba(0,0,0,0.4);',
+                    fixed: true, highlight: false
+                });
+                board.create('text', [lx, ly + 0.55, data[i].pct + '%'], {
+                    anchorX: 'middle', anchorY: 'middle',
+                    fontSize: 15, color: '#FFFFFF',
+                    cssStyle: 'font-weight:800; text-shadow: 0 1px 3px rgba(0,0,0,0.4);',
+                    fixed: true, highlight: false
+                });
+            } else {
+                // Outside the sector with a leader line
+                var innerR = R * 0.85;
+                var outerR = R + 1.1;
+                var ix = CX + innerR * Math.cos(midAngle);
+                var iy = CY + innerR * Math.sin(midAngle);
+                var ox = CX + outerR * Math.cos(midAngle);
+                var oy = CY + outerR * Math.sin(midAngle);
+
+                // Leader line
+                board.create('segment', [[ix, iy], [ox, oy]], {
+                    strokeColor: data[i].color, strokeWidth: 1.2,
+                    fixed: true, highlight: false
+                });
+
+                // Determine horizontal extension direction
+                var extendX = (Math.cos(midAngle) >= 0) ? 1.0 : -1.0;
+                var textAnchor = (extendX > 0) ? 'left' : 'right';
+                var hookEnd = [ox + extendX, oy];
+
+                // Horizontal hook
+                board.create('segment', [[ox, oy], hookEnd], {
+                    strokeColor: data[i].color, strokeWidth: 1.2,
+                    fixed: true, highlight: false
+                });
+
+                var textX = hookEnd[0] + extendX * 0.15;
+                var textY = hookEnd[1];
+
+                board.create('text', [textX, textY + 0.15, data[i].name], {
+                    anchorX: textAnchor, anchorY: 'bottom',
+                    fontSize: 12, color: data[i].color,
+                    cssStyle: 'font-weight:600;',
+                    fixed: true, highlight: false
+                });
+                board.create('text', [textX, textY - 0.15, data[i].pct + '%'], {
+                    anchorX: textAnchor, anchorY: 'top',
+                    fontSize: 13, color: data[i].color,
+                    cssStyle: 'font-weight:700;',
+                    fixed: true, highlight: false
+                });
+            }
+
+            startAngle = endAngle;
+        }
+    </script>
+</body>
+</html>
