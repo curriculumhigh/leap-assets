@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angle Diagram — J, K, L with Rays</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.2, 6.2, 13.2, -1.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: true
+        });
+
+        var COL_LINE = '#555555';
+        var COL_PT = '#222222';
+        var COL_MEASURE = '#3B82F6';
+        var COL_RIGHT = '#DC2626';
+        var COL_RAY = '#555555';
+
+        var J = board.create('point', [1, 0], {
+            name: 'J', fixed: true, size: 2, color: COL_PT, highlight: false,
+            label: { fontSize: 14, color: COL_PT, offset: [-4, -18] }
+        });
+        var K = board.create('point', [6, 0], {
+            name: 'K', fixed: true, size: 2, color: COL_PT, highlight: false,
+            label: { fontSize: 14, color: COL_PT, offset: [-4, -18] }
+        });
+        var L = board.create('point', [11, 0], {
+            name: 'L', fixed: true, size: 2, color: COL_PT, highlight: false,
+            label: { fontSize: 14, color: COL_PT, offset: [-4, -18] }
+        });
+
+        board.create('segment', [[-0.5, 0], [12.5, 0]], {
+            strokeColor: COL_LINE, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        var RAY_LEN = 5.2;
+
+        var angJA = 63 * Math.PI / 180;
+        var A = board.create('point', [
+            J.X() + RAY_LEN * Math.cos(angJA),
+            J.Y() + RAY_LEN * Math.sin(angJA)
+        ], {
+            name: 'A', fixed: true, size: 0, color: COL_PT, highlight: false,
+            label: { fontSize: 14, color: COL_PT, offset: [-4, 8] }
+        });
+
+        var angKB = 180 - 27;
+        var angKB_rad = angKB * Math.PI / 180;
+        var B = board.create('point', [
+            K.X() + RAY_LEN * Math.cos(angKB_rad),
+            K.Y() + RAY_LEN * Math.sin(angKB_rad)
+        ], {
+            name: 'B', fixed: true, size: 0, color: COL_PT, highlight: false,
+            label: { fontSize: 14, color: COL_PT, offset: [-4, 8] }
+        });
+
+        var angKC_rad = 63 * Math.PI / 180;
+        var C = board.create('point', [
+            K.X() + RAY_LEN * Math.cos(angKC_rad),
+            K.Y() + RAY_LEN * Math.sin(angKC_rad)
+        ], {
+            name: 'C', fixed: true, size: 0, color: COL_PT, highlight: false,
+            label: { fontSize: 14, color: COL_PT, offset: [4, 8] }
+        });
+
+        var angLD_rad = (180 - 27) * Math.PI / 180;
+        var D = board.create('point', [
+            L.X() + RAY_LEN * Math.cos(angLD_rad),
+            L.Y() + RAY_LEN * Math.sin(angLD_rad)
+        ], {
+            name: 'D', fixed: true, size: 0, color: COL_PT, highlight: false,
+            label: { fontSize: 14, color: COL_PT, offset: [-4, 8] }
+        });
+
+        board.create('segment', [J, A], {
+            strokeColor: COL_RAY, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [K, B], {
+            strokeColor: COL_RAY, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [K, C], {
+            strokeColor: COL_RAY, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [L, D], {
+            strokeColor: COL_RAY, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        function ptAtAngle(vx, vy, angleDeg, dist) {
+            var rad = angleDeg * Math.PI / 180;
+            return [vx + dist * Math.cos(rad), vy + dist * Math.sin(rad)];
+        }
+
+        var ARC_RADIUS = 1.0;
+        var ARC_RADIUS_SM = 0.8;
+
+        function makeRef(x, y) {
+            return board.create('point', [x, y], { visible: false, fixed: true, name: '' });
+        }
+
+        var refJK = makeRef(J.X() + 2, J.Y());
+        var arcAJK = board.create('nonReflexAngle', [refJK, J, A], {
+            radius: ARC_RADIUS,
+            fillColor: COL_MEASURE, fillOpacity: 0.06,
+            strokeColor: COL_MEASURE, strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        var bisAJK = 63 / 2;
+        var lblAJK_pos = ptAtAngle(J.X(), J.Y(), bisAJK, ARC_RADIUS + 0.7);
+        board.create('text', [lblAJK_pos[0], lblAJK_pos[1], '63\u00B0'], {
+            fontSize: 12, color: COL_MEASURE, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var refKJ = makeRef(K.X() - 2, K.Y());
+        var arcBKJ = board.create('nonReflexAngle', [B, K, refKJ], {
+            radius: ARC_RADIUS_SM,
+            fillColor: COL_MEASURE, fillOpacity: 0.06,
+            strokeColor: COL_MEASURE, strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        var bisBKJ = (153 + 180) / 2;
+        var lblBKJ_pos = ptAtAngle(K.X(), K.Y(), bisBKJ, ARC_RADIUS_SM + 0.7);
+        board.create('text', [lblBKJ_pos[0], lblBKJ_pos[1], '27\u00B0'], {
+            fontSize: 12, color: COL_MEASURE, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var SQ = 0.45;
+        var sq1 = ptAtAngle(K.X(), K.Y(), 63, SQ);
+        var sq2 = ptAtAngle(sq1[0], sq1[1], 153, SQ);
+        var sq3 = ptAtAngle(K.X(), K.Y(), 153, SQ);
+        board.create('polygon', [
+            makeRef(K.X(), K.Y()),
+            makeRef(sq1[0], sq1[1]),
+            makeRef(sq2[0], sq2[1]),
+            makeRef(sq3[0], sq3[1])
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_RIGHT, strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        var refKL = makeRef(K.X() + 2, K.Y());
+        var arcCKL = board.create('nonReflexAngle', [refKL, K, C], {
+            radius: ARC_RADIUS,
+            fillColor: COL_MEASURE, fillOpacity: 0.06,
+            strokeColor: COL_MEASURE, strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        var bisCKL = 63 / 2;
+        var lblCKL_pos = ptAtAngle(K.X(), K.Y(), bisCKL, ARC_RADIUS + 0.7);
+        board.create('text', [lblCKL_pos[0], lblCKL_pos[1], '63\u00B0'], {
+            fontSize: 12, color: COL_MEASURE, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var refLK = makeRef(L.X() - 2, L.Y());
+        var arcDLK = board.create('nonReflexAngle', [D, L, refLK], {
+            radius: ARC_RADIUS_SM,
+            fillColor: COL_MEASURE, fillOpacity: 0.06,
+            strokeColor: COL_MEASURE, strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        var bisDLK = (153 + 180) / 2;
+        var lblDLK_pos = ptAtAngle(L.X(), L.Y(), bisDLK, ARC_RADIUS_SM + 0.7);
+        board.create('text', [lblDLK_pos[0], lblDLK_pos[1], '27\u00B0'], {
+            fontSize: 12, color: COL_MEASURE, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
