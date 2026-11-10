@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three Lines Through Point N</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 5.5, 5.5, -5.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var LINE_COL = '#555555';
+        var LINE_W = 1.5;
+        var PT_COL = '#222222';
+        var LBL_SIZE = 14;
+        var ARROW = { type: 2, size: 6 };
+        var RAY_LEN = 4.5;
+
+        var N = board.create('point', [0, 0], {
+            name: 'N', fixed: true, size: 2, color: PT_COL, highlight: false,
+            label: { fontSize: LBL_SIZE, color: PT_COL, offset: [8, -12] }
+        });
+
+        var ANG_J = 135 * Math.PI / 180;
+        var cosJ = RAY_LEN * Math.cos(ANG_J);
+        var sinJ = RAY_LEN * Math.sin(ANG_J);
+
+        var pF = board.create('point', [-RAY_LEN, 0], { visible: false, fixed: true, name: '' });
+        var pH = board.create('point', [RAY_LEN, 0],  { visible: false, fixed: true, name: '' });
+        board.create('line', [pF, pH], {
+            strokeColor: LINE_COL, strokeWidth: LINE_W, fixed: true, highlight: false,
+            firstArrow: ARROW, lastArrow: ARROW
+        });
+
+        var pG = board.create('point', [0, RAY_LEN],  { visible: false, fixed: true, name: '' });
+        var pK = board.create('point', [0, -RAY_LEN], { visible: false, fixed: true, name: '' });
+        board.create('line', [pG, pK], {
+            strokeColor: LINE_COL, strokeWidth: LINE_W, fixed: true, highlight: false,
+            firstArrow: ARROW, lastArrow: ARROW
+        });
+
+        var pJ = board.create('point', [cosJ, sinJ],   { visible: false, fixed: true, name: '' });
+        var pL = board.create('point', [-cosJ, -sinJ], { visible: false, fixed: true, name: '' });
+        board.create('line', [pJ, pL], {
+            strokeColor: LINE_COL, strokeWidth: LINE_W, fixed: true, highlight: false,
+            firstArrow: ARROW, lastArrow: ARROW
+        });
+
+        var SQ = 0.45;
+        board.create('polygon', [
+            board.create('point', [-SQ, 0],   { visible: false, fixed: true, name: '' }),
+            board.create('point', [-SQ, SQ],  { visible: false, fixed: true, name: '' }),
+            board.create('point', [0, SQ],    { visible: false, fixed: true, name: '' }),
+            N
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: LINE_COL, strokeWidth: 1.2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        var OFF = 0.7;
+
+        board.create('text', [-RAY_LEN - OFF, 0.3, '<b>F</b>'], {
+            fontSize: LBL_SIZE, color: PT_COL, fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [RAY_LEN + OFF, 0.3, '<b>H</b>'], {
+            fontSize: LBL_SIZE, color: PT_COL, fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [0.4, RAY_LEN + OFF, '<b>G</b>'], {
+            fontSize: LBL_SIZE, color: PT_COL, fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [0.4, -RAY_LEN - OFF, '<b>K</b>'], {
+            fontSize: LBL_SIZE, color: PT_COL, fixed: true, highlight: false, anchorX: 'middle'
+        });
+        var jLblX = (RAY_LEN + OFF) * Math.cos(ANG_J);
+        var jLblY = (RAY_LEN + OFF) * Math.sin(ANG_J);
+        board.create('text', [jLblX - 0.15, jLblY + 0.25, '<b>J</b>'], {
+            fontSize: LBL_SIZE, color: PT_COL, fixed: true, highlight: false, anchorX: 'middle'
+        });
+        board.create('text', [-jLblX + 0.15, -jLblY - 0.25, '<b>L</b>'], {
+            fontSize: LBL_SIZE, color: PT_COL, fixed: true, highlight: false, anchorX: 'middle'
+        });
+    </script>
+</body>
+</html>
