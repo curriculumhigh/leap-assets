@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometry Diagram — Lines and Ray at Point K</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 5.5, 6.5, -4.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Central point K ────────────────────────────────────────────
+        var K = board.create('point', [0, 0], {
+            name: 'K', fixed: true, size: 2.5, color: '#222222',
+            highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, -14] }
+        });
+
+        // ── Ray / line endpoints (invisible, for drawing) ──────────────
+        var pW = board.create('point', [-5.5, 0], { visible: false, fixed: true, name: '' });
+        var pX = board.create('point', [5.5, 0], { visible: false, fixed: true, name: '' });
+        var pV = board.create('point', [0, 4.5], { visible: false, fixed: true, name: '' });
+
+        var angY = 145 * Math.PI / 180;
+        var rayLen = 5.5;
+        var pY = board.create('point', [rayLen * Math.cos(angY), rayLen * Math.sin(angY)], {
+            visible: false, fixed: true, name: ''
+        });
+        var pZ = board.create('point', [-rayLen * Math.cos(angY), -rayLen * Math.sin(angY)], {
+            visible: false, fixed: true, name: ''
+        });
+
+        // ── Draw lines and ray ─────────────────────────────────────────
+        board.create('segment', [pW, pX], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [pY, pZ], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [K, pV], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Endpoint labels ────────────────────────────────────────────
+        board.create('text', [-5.5, -0.45, 'W'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'top'
+        });
+        board.create('text', [5.5, -0.45, 'X'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'top'
+        });
+        board.create('text', [0.35, 4.5, 'V'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+
+        var yLabelR = rayLen + 0.35;
+        board.create('text', [yLabelR * Math.cos(angY) - 0.1, yLabelR * Math.sin(angY) + 0.15, 'Y'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var angZ = angY + Math.PI;
+        board.create('text', [yLabelR * Math.cos(angZ) + 0.1, yLabelR * Math.sin(angZ) - 0.15, 'Z'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ── Right-angle square at ∠WKV ─────────────────────────────────
+        var sqSize = 0.45;
+        var sq1 = board.create('point', [-sqSize, 0], { visible: false, fixed: true, name: '' });
+        var sq2 = board.create('point', [-sqSize, sqSize], { visible: false, fixed: true, name: '' });
+        var sq3 = board.create('point', [0, sqSize], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [sq1, sq2], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [sq2, sq3], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Angle arc for ∠WKY = 35° ──────────────────────────────────
+        var arcR = 1.1;
+        var arcPtW = board.create('point', [-arcR, 0], { visible: false, fixed: true, name: '' });
+        var arcPtY = board.create('point', [arcR * Math.cos(angY), arcR * Math.sin(angY)], {
+            visible: false, fixed: true, name: ''
+        });
+
+        board.create('nonReflexAngle', [arcPtW, K, arcPtY], {
+            radius: 0.8,
+            fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, highlight: false,
+            name: '', withLabel: false
+        });
+
+        var bisAngle = 162.5 * Math.PI / 180;
+        var labelR = 1.45;
+        board.create('text', [
+            labelR * Math.cos(bisAngle),
+            labelR * Math.sin(bisAngle),
+            '35\u00B0'
+        ], {
+            fontSize: 12, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+    </script>
+</body>
+</html>
