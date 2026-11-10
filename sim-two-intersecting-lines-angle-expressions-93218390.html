@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Intersecting Lines — Angle Expressions</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 4.5, 5.5, -4.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertex
+        var O = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        // Line angles (radians)
+        var ang1 = 35 * Math.PI / 180;
+        var ang2 = 140 * Math.PI / 180;
+
+        var LEN = 5.0;
+
+        function ep(angle) { return [LEN * Math.cos(angle), LEN * Math.sin(angle)]; }
+
+        var pA = ep(ang1);
+        var pB = ep(ang2);
+        var pC = ep(ang1 + Math.PI);
+        var pD = ep(ang2 + Math.PI);
+
+        var A = board.create('point', pA, { visible: false, fixed: true, name: '' });
+        var B = board.create('point', pB, { visible: false, fixed: true, name: '' });
+        var C = board.create('point', pC, { visible: false, fixed: true, name: '' });
+        var D = board.create('point', pD, { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [A, C], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        board.create('segment', [B, D], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var ARC_R = 0.75;
+        var COL1 = '#222222';
+        var COL2 = '#2563EB';
+        var COL3 = '#059669';
+        var COL4 = '#D97706';
+
+        function makeArc(startAng, endAng, color) {
+            return board.create('curve', [
+                function(t) { return ARC_R * Math.cos(t); },
+                function(t) { return ARC_R * Math.sin(t); },
+                startAng,
+                endAng
+            ], {
+                strokeColor: color, strokeWidth: 1.8, fixed: true, highlight: false
+            });
+        }
+
+        makeArc(ang1, ang2, COL1);
+        makeArc(ang2, ang1 + Math.PI, COL2);
+        makeArc(ang1 + Math.PI, ang2 + Math.PI, COL3);
+        makeArc(ang2 + Math.PI, ang1 + 2 * Math.PI, COL4);
+
+        var LABEL_R = 2.4;
+
+        function midAngle(a1, a2) { return (a1 + a2) / 2; }
+
+        var mid1 = midAngle(ang1, ang2);
+        var mid2 = midAngle(ang2, ang1 + Math.PI);
+        var mid3 = midAngle(ang1 + Math.PI, ang2 + Math.PI);
+        var mid4 = midAngle(ang2 + Math.PI, ang1 + 2 * Math.PI);
+
+        board.create('text', [
+            LABEL_R * Math.cos(mid1),
+            LABEL_R * Math.sin(mid1),
+            '(5x+12)^{\\circ}'
+        ], {
+            useKatex: true, fontSize: 14, color: COL1,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [
+            (LABEL_R + 0.2) * Math.cos(mid2),
+            (LABEL_R + 0.2) * Math.sin(mid2),
+            '(11x+40)^{\\circ}'
+        ], {
+            useKatex: true, fontSize: 14, color: COL2,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [
+            LABEL_R * Math.cos(mid3),
+            LABEL_R * Math.sin(mid3),
+            '(8x-12)^{\\circ}'
+        ], {
+            useKatex: true, fontSize: 14, color: COL3,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [
+            (LABEL_R + 0.2) * Math.cos(mid4),
+            (LABEL_R + 0.2) * Math.sin(mid4),
+            '(15x+8)^{\\circ}'
+        ], {
+            useKatex: true, fontSize: 14, color: COL4,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
