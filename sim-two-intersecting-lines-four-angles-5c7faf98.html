@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Intersecting Lines — Four Angles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 4, 5, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Intersection point
+        var O = board.create('point', [0, 0], {
+            visible: false, fixed: true, name: ''
+        });
+
+        // Line 1: slight tilt (~12° from horizontal)
+        var ang1 = 12 * Math.PI / 180;
+        var L1A = board.create('point', [5 * Math.cos(ang1), 5 * Math.sin(ang1)], { visible: false, fixed: true, name: '' });
+        var L1B = board.create('point', [-5 * Math.cos(ang1), -5 * Math.sin(ang1)], { visible: false, fixed: true, name: '' });
+
+        // Line 2: steeper (~78° from horizontal)
+        var ang2 = 78 * Math.PI / 180;
+        var L2A = board.create('point', [5 * Math.cos(ang2), 5 * Math.sin(ang2)], { visible: false, fixed: true, name: '' });
+        var L2B = board.create('point', [-5 * Math.cos(ang2), -5 * Math.sin(ang2)], { visible: false, fixed: true, name: '' });
+
+        // Draw lines
+        board.create('line', [L1B, L1A], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false,
+            straightFirst: true, straightLast: true
+        });
+        board.create('line', [L2B, L2A], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false,
+            straightFirst: true, straightLast: true
+        });
+
+        // Small dot at intersection
+        board.create('point', [0, 0], {
+            name: '', size: 1.5, color: '#555555', fixed: true, highlight: false
+        });
+
+        // Angle arcs and labels
+        var arcRadius = 0.7;
+        var labelDist = 1.4;
+        var arcColor = '#888888';
+        var arcWidth = 1.0;
+        var labelSize = 15;
+
+        // Ray angles (from positive x-axis, counter-clockwise)
+        var rayAngles = {
+            L1A: ang1,           // ~12° (right-ish)
+            L2A: ang2,           // ~78° (up-ish)
+            L1B: ang1 + Math.PI, // ~192° (left-ish)
+            L2B: ang2 + Math.PI  // ~258° (down-ish)
+        };
+
+        // Define the four angles as [startRay, endRay] going counter-clockwise
+        // Angle 1 (top): from L1A CCW to L2A
+        // Angle 2 (right): from L2B CCW to L1A
+        // Angle 3 (bottom): from L1B CCW to L2B
+        // Angle 4 (left): from L2A CCW to L1B
+        var angles = [
+            { label: '1', from: rayAngles.L1A, to: rayAngles.L2A },
+            { label: '2', from: rayAngles.L2B, to: rayAngles.L1A },
+            { label: '3', from: rayAngles.L1B, to: rayAngles.L2B },
+            { label: '4', from: rayAngles.L2A, to: rayAngles.L1B }
+        ];
+
+        for (var i = 0; i < angles.length; i++) {
+            var a = angles[i];
+            var startAng = a.from;
+            var endAng = a.to;
+
+            // Ensure endAng > startAng for the arc
+            if (endAng < startAng) endAng += 2 * Math.PI;
+
+            // Draw arc
+            (function(startA, endA) {
+                board.create('curve', [
+                    function(t) { return arcRadius * Math.cos(t); },
+                    function(t) { return arcRadius * Math.sin(t); },
+                    startA,
+                    endA
+                ], {
+                    strokeColor: arcColor, strokeWidth: arcWidth, fixed: true, highlight: false
+                });
+            })(startAng, endAng);
+
+            // Place label at bisector
+            var bisector = (startAng + endAng) / 2;
+            var lx = labelDist * Math.cos(bisector);
+            var ly = labelDist * Math.sin(bisector);
+
+            board.create('text', [lx, ly, a.label], {
+                fontSize: labelSize, color: '#222222',
+                anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false,
+                cssStyle: 'font-weight: 600; font-style: italic;'
+            });
+        }
+    </script>
+</body>
+</html>
