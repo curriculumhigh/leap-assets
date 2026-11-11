@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pool Expansion — Before and After</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .diagrams { display: flex; gap: 10px; height: calc(100% - 6px); }
+        .diagram-col { flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .diagram-title { font-size: 15px; font-weight: 700; color: #333; margin-bottom: 4px; }
+        .board-wrap { background: white; border-radius: 8px; padding: 6px; flex: 1; width: 100%; }
+        .board-wrap > div { width: 100%; height: 100%; }
+        .JXG_navigation { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="diagrams">
+            <div class="diagram-col">
+                <div class="diagram-title">Before</div>
+                <div class="board-wrap">
+                    <div id="board-before"></div>
+                </div>
+            </div>
+            <div class="diagram-col">
+                <div class="diagram-title">After</div>
+                <div class="board-wrap">
+                    <div id="board-after"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+
+        var lockdown = {
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false, wheel: false, pinch: false },
+            drag: { enabled: false },
+            keepAspectRatio: false,
+            selection: { enabled: false }
+        };
+
+        /* ============================================================
+           BEFORE — 20 ft × 12 ft
+           ============================================================ */
+        var b1 = JXG.JSXGraph.initBoard('board-before', JXG.merge(lockdown, {
+            boundingbox: [-5, 17, 25, -5]
+        }));
+        b1.removeEventHandlers();
+
+        var bP1 = b1.create('point', [0, 0], {visible: false, name: ''});
+        var bP2 = b1.create('point', [20, 0], {visible: false, name: ''});
+        var bP3 = b1.create('point', [20, 12], {visible: false, name: ''});
+        var bP4 = b1.create('point', [0, 12], {visible: false, name: ''});
+        b1.create('polygon', [bP1, bP2, bP3, bP4], {
+            fillColor: '#f3f4f6', fillOpacity: 0.6,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            fixed: true, hasInnerPoints: false, highlight: false
+        });
+
+        // Bottom: 20 ft
+        b1.create('text', [10, -2.6, '20\\text{ ft}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#333', useKatex: true, fixed: true, highlight: false
+        });
+        // Left: 12 ft — rotated vertically
+        b1.create('text', [-3, 6, '12\\text{ ft}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#333', useKatex: true, fixed: true, highlight: false,
+            cssStyle: 'transform: rotate(-90deg); white-space: nowrap;'
+        });
+
+        /* ============================================================
+           AFTER — (20 + x) ft × (12 + x) ft
+           ============================================================ */
+        var XV = 5;
+
+        var b2 = JXG.JSXGraph.initBoard('board-after', JXG.merge(lockdown, {
+            boundingbox: [-6, 22, 30, -6]
+        }));
+        b2.removeEventHandlers();
+
+        // --- Original 20×12 region (light gray) ---
+        var aP1 = b2.create('point', [0, 0], {visible: false, name: ''});
+        var aP2 = b2.create('point', [20, 0], {visible: false, name: ''});
+        var aP3 = b2.create('point', [20, 12], {visible: false, name: ''});
+        var aP4 = b2.create('point', [0, 12], {visible: false, name: ''});
+        b2.create('polygon', [aP1, aP2, aP3, aP4], {
+            fillColor: '#f3f4f6', fillOpacity: 0.6,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            fixed: true, hasInnerPoints: false, highlight: false
+        });
+
+        // --- Right strip: x wide × 12 tall (shaded) ---
+        var rP1 = b2.create('point', [20, 0], {visible: false, name: ''});
+        var rP2 = b2.create('point', [20 + XV, 0], {visible: false, name: ''});
+        var rP3 = b2.create('point', [20 + XV, 12], {visible: false, name: ''});
+        var rP4 = b2.create('point', [20, 12], {visible: false, name: ''});
+        b2.create('polygon', [rP1, rP2, rP3, rP4], {
+            fillColor: '#2563EB', fillOpacity: 0.15,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            fixed: true, hasInnerPoints: false, highlight: false
+        });
+
+        // --- Top strip: 20 wide × x tall (shaded) ---
+        var tP1 = b2.create('point', [0, 12], {visible: false, name: ''});
+        var tP2 = b2.create('point', [20, 12], {visible: false, name: ''});
+        var tP3 = b2.create('point', [20, 12 + XV], {visible: false, name: ''});
+        var tP4 = b2.create('point', [0, 12 + XV], {visible: false, name: ''});
+        b2.create('polygon', [tP1, tP2, tP3, tP4], {
+            fillColor: '#2563EB', fillOpacity: 0.15,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            fixed: true, hasInnerPoints: false, highlight: false
+        });
+
+        // --- Corner square: x × x (slightly deeper shading) ---
+        var cP1 = b2.create('point', [20, 12], {visible: false, name: ''});
+        var cP2 = b2.create('point', [20 + XV, 12], {visible: false, name: ''});
+        var cP3 = b2.create('point', [20 + XV, 12 + XV], {visible: false, name: ''});
+        var cP4 = b2.create('point', [20, 12 + XV], {visible: false, name: ''});
+        b2.create('polygon', [cP1, cP2, cP3, cP4], {
+            fillColor: '#2563EB', fillOpacity: 0.22,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            fixed: true, hasInnerPoints: false, highlight: false
+        });
+
+        // --- Dashed lines at original boundary ---
+        b2.create('segment', [[20, 0], [20, 12 + XV]], {
+            strokeColor: '#999999', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        b2.create('segment', [[0, 12], [20 + XV, 12]], {
+            strokeColor: '#999999', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // --- Overall dimension: bottom (20 + x) ft ---
+        b2.create('text', [(20 + XV) / 2, -3.2, '(20 + x)\\text{ ft}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#333', useKatex: true, fixed: true, highlight: false
+        });
+
+        // --- Overall dimension: left (12 + x) ft — rotated vertically ---
+        b2.create('text', [-3.8, (12 + XV) / 2, '(12 + x)\\text{ ft}'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 14, color: '#333', useKatex: true, fixed: true, highlight: false,
+            cssStyle: 'transform: rotate(-90deg); white-space: nowrap;'
+        });
+
+    })();
+    </script>
+</body>
+</html>
