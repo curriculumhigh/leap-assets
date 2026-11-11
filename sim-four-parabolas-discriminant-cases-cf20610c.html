@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Four Parabolas A–D</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 600px; margin: 0; padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .grid-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 8px;
+            height: 100%;
+        }
+        .board-cell {
+            background: white;
+            border-radius: 8px;
+            padding: 6px;
+            position: relative;
+        }
+        .board-cell > div {
+            width: 100%;
+            height: 100%;
+        }
+        .JXG_navigation_button { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="grid-wrapper">
+            <div class="board-cell"><div id="boardA"></div></div>
+            <div class="board-cell"><div id="boardB"></div></div>
+            <div class="board-cell"><div id="boardC"></div></div>
+            <div class="board-cell"><div id="boardD"></div></div>
+        </div>
+    </div>
+
+    <script>
+        // ── Shared board-creation helper ────────────────────────────────
+        function makeBoard(id, bbox) {
+            return JXG.JSXGraph.initBoard(id, {
+                boundingbox: bbox,
+                axis: true,
+                showNavigation: false,
+                showCopyright: false,
+                pan: { enabled: false },
+                zoom: { enabled: false },
+                defaultAxes: {
+                    x: {
+                        strokeColor: '#444444', strokeWidth: 1.2,
+                        lastArrow: { type: 2, size: 5 },
+                        ticks: {
+                            strokeColor: '#444444',
+                            label: { fontSize: 10 },
+                            minorTicks: 0,
+                            ticksDistance: 1
+                        }
+                    },
+                    y: {
+                        strokeColor: '#444444', strokeWidth: 1.2,
+                        lastArrow: { type: 2, size: 5 },
+                        ticks: {
+                            strokeColor: '#444444',
+                            label: { fontSize: 10 },
+                            minorTicks: 0,
+                            ticksDistance: 1
+                        }
+                    }
+                },
+                grid: { strokeColor: '#D1D5DB', strokeWidth: 0.4 }
+            });
+        }
+
+        // ── Helper: add axis labels near arrow tips ─────────────────────
+        function addAxisLabels(brd, bbox) {
+            brd.create('text', [bbox[2] - 0.35, -0.35, '<i>x</i>'], {
+                fontSize: 12, fixed: true, highlight: false
+            });
+            brd.create('text', [0.2, bbox[1] - 0.3, '<i>y</i>'], {
+                fontSize: 12, fixed: true, highlight: false
+            });
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // Board A — opens upward, vertex at (2, 0), one x-intercept
+        // y = (x − 2)²
+        // ════════════════════════════════════════════════════════════════
+        var bbA = [-1, 5, 5, -1.5];
+        var bA = makeBoard('boardA', bbA);
+        addAxisLabels(bA, bbA);
+
+        var COL_A = '#222222';
+
+        bA.create('functiongraph', [function(x) { return Math.pow(x - 2, 2); }], {
+            strokeColor: COL_A, strokeWidth: 1.8, fixed: true
+        });
+
+        // Vertex / x-intercept
+        bA.create('point', [2, 0], {
+            name: '', size: 4, color: COL_A, fixed: true, highlight: false
+        });
+
+        // Label — top-left corner, clear of the curve which is centered at x=2
+        bA.create('text', [0.1, 4.2, '\\textbf{A}'], {
+            useKatex: true, fontSize: 16, color: COL_A, fixed: true
+        });
+
+        // ════════════════════════════════════════════════════════════════
+        // Board B — opens upward, vertex below x-axis, two x-intercepts
+        // y = (x − 1)² − 2    vertex (1, −2), roots 1±√2
+        // ════════════════════════════════════════════════════════════════
+        var bbB = [-1.5, 5, 4.5, -3];
+        var bB = makeBoard('boardB', bbB);
+        addAxisLabels(bB, bbB);
+
+        var COL_B = '#2563EB';
+
+        bB.create('functiongraph', [function(x) { return Math.pow(x - 1, 2) - 2; }], {
+            strokeColor: COL_B, strokeWidth: 1.8, fixed: true
+        });
+
+        // Vertex
+        bB.create('point', [1, -2], {
+            name: '', size: 4, color: COL_B, fixed: true, highlight: false
+        });
+
+        // x-intercepts at 1 ± √2
+        var r2 = Math.sqrt(2);
+        bB.create('point', [1 - r2, 0], {
+            name: '', size: 4, color: COL_B, fixed: true, highlight: false
+        });
+        bB.create('point', [1 + r2, 0], {
+            name: '', size: 4, color: COL_B, fixed: true, highlight: false
+        });
+
+        // Label — top-left corner, clear of the curve
+        bB.create('text', [-0.8, 4.2, '\\textbf{B}'], {
+            useKatex: true, fontSize: 16, color: COL_B, fixed: true
+        });
+
+        // ════════════════════════════════════════════════════════════════
+        // Board C — opens upward, vertex above x-axis, no x-intercepts
+        // y = (x − 1)² + 1.5    vertex (1, 1.5)
+        // ════════════════════════════════════════════════════════════════
+        var bbC = [-1.5, 6, 4.5, -1];
+        var bC = makeBoard('boardC', bbC);
+        addAxisLabels(bC, bbC);
+
+        var COL_C = '#059669';
+
+        bC.create('functiongraph', [function(x) { return Math.pow(x - 1, 2) + 1.5; }], {
+            strokeColor: COL_C, strokeWidth: 1.8, fixed: true
+        });
+
+        // Vertex
+        bC.create('point', [1, 1.5], {
+            name: '', size: 4, color: COL_C, fixed: true, highlight: false
+        });
+
+        // Label — top-right corner, clear of the curve which is centered at x=1
+        bC.create('text', [3.5, 5.2, '\\textbf{C}'], {
+            useKatex: true, fontSize: 16, color: COL_C, fixed: true
+        });
+
+        // ════════════════════════════════════════════════════════════════
+        // Board D — opens downward, vertex above x-axis, two x-intercepts
+        // y = −(x − 1)² + 2    vertex (1, 2), roots 1±√2
+        // ════════════════════════════════════════════════════════════════
+        var bbD = [-1.5, 3.5, 4.5, -4];
+        var bD = makeBoard('boardD', bbD);
+        addAxisLabels(bD, bbD);
+
+        var COL_D = '#D97706';
+
+        bD.create('functiongraph', [function(x) { return -Math.pow(x - 1, 2) + 2; }], {
+            strokeColor: COL_D, strokeWidth: 1.8, fixed: true
+        });
+
+        // Vertex
+        bD.create('point', [1, 2], {
+            name: '', size: 4, color: COL_D, fixed: true, highlight: false
+        });
+
+        // x-intercepts at 1 ± √2
+        bD.create('point', [1 - r2, 0], {
+            name: '', size: 4, color: COL_D, fixed: true, highlight: false
+        });
+        bD.create('point', [1 + r2, 0], {
+            name: '', size: 4, color: COL_D, fixed: true, highlight: false
+        });
+
+        // Label — bottom-right corner, clear of the downward-opening curve
+        bD.create('text', [3.5, -3.2, '\\textbf{D}'], {
+            useKatex: true, fontSize: 16, color: COL_D, fixed: true
+        });
+    </script>
+</body>
+</html>
