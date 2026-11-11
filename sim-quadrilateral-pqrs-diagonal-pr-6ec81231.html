@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadrilateral PQRS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 12, 15, -3],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertex coordinates ──────────────────────────────────────────
+        var Q = board.create('point', [0, 0], {
+            name: 'Q', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, -14], cssStyle: 'font-weight:bold' }
+        });
+
+        var P = board.create('point', [0, 8], {
+            name: 'P', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, 6], cssStyle: 'font-weight:bold' }
+        });
+
+        var R = board.create('point', [7, 0], {
+            name: 'R', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [6, -14], cssStyle: 'font-weight:bold' }
+        });
+
+        // S: right angle at R in triangle PRS
+        var prDx = 7 - 0;
+        var prDy = 0 - 8;
+        var prLen = Math.sqrt(prDx * prDx + prDy * prDy);
+        var perpUx = -prDy / prLen;
+        var perpUy = prDx / prLen;
+        var rsVisual = 4.0;
+        var sx = 7 + rsVisual * perpUx;
+        var sy = 0 + rsVisual * perpUy;
+
+        var S = board.create('point', [sx, sy], {
+            name: 'S', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, 4], cssStyle: 'font-weight:bold' }
+        });
+
+        // ── Quadrilateral edges ─────────────────────────────────────────
+        var edgeStyle = { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false };
+
+        board.create('segment', [P, Q], edgeStyle);
+        board.create('segment', [Q, R], edgeStyle);
+        board.create('segment', [R, S], edgeStyle);
+        board.create('segment', [S, P], edgeStyle);
+
+        // ── Diagonal PR (dashed) ────────────────────────────────────────
+        board.create('segment', [P, R], {
+            strokeColor: '#555555', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Right angle marker at Q ─────────────────────────────────────
+        var raSize = 0.7;
+        board.create('segment', [[0, raSize], [raSize, raSize]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[raSize, raSize], [raSize, 0]], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Right angle marker at R (perpendicular: PR and RS) ──────────
+        var rpUx = -prDx / prLen;
+        var rpUy = -prDy / prLen;
+        var ra2 = 0.7;
+        var raPt1 = [7 + ra2 * rpUx, 0 + ra2 * rpUy];
+        var raPt2 = [7 + ra2 * rpUx + ra2 * perpUx, 0 + ra2 * rpUy + ra2 * perpUy];
+        var raPt3 = [7 + ra2 * perpUx, 0 + ra2 * perpUy];
+
+        board.create('segment', [raPt1, raPt2], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [raPt2, raPt3], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Side labels (KaTeX) ─────────────────────────────────────────
+
+        // PQ: left side
+        board.create('text', [-1.4, 4, '30 \\text{ m}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // QR: bottom side
+        board.create('text', [3.5, -1.2, '(3x+3) \\text{ m}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // RS: right side
+        var rsMidX = (7 + sx) / 2;
+        var rsMidY = (0 + sy) / 2;
+        board.create('text', [rsMidX + 1.6, rsMidY - 0.3, '(x+6) \\text{ m}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // PS: top side
+        var psMidX = (0 + sx) / 2;
+        var psMidY = (8 + sy) / 2;
+        board.create('text', [psMidX - 0.2, psMidY + 1.0, '35 \\text{ m}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
