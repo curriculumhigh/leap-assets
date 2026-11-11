@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Point Off the Unit Circle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+      var BB = [-1.35, 1.3, 3.1, -1.35];
+      var board = null;
+      var el = document.getElementById('board');
+      // Smallest box containing BB with the board's pixel aspect ratio (equal x/y scale, nothing clipped).
+      function fitBox(w, h) {
+        var bw = BB[2] - BB[0], bh = BB[1] - BB[3];
+        var cx = (BB[0] + BB[2]) / 2, cy = (BB[1] + BB[3]) / 2;
+        if (w / h > bw / bh) { bw = bh * w / h; } else { bh = bw * h / w; }
+        return [cx - bw / 2, cy + bh / 2, cx + bw / 2, cy - bh / 2];
+      }
+      // Build only once the board has a real size (the editor may load this iframe while hidden),
+      // and refit the bounding box whenever the iframe is resized.
+      function build() {
+        board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: fitBox(el.clientWidth, el.clientHeight),
+            keepAspectRatio: false,
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var XMIN = BB[0], YMAX = BB[1], XMAX = BB[2], YMIN = BB[3];
+
+        // Axes (no ticks)
+        board.create('arrow', [[XMIN + 0.05, 0], [XMAX - 0.05, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        board.create('arrow', [[0, YMIN + 0.05], [0, YMAX - 0.05]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        board.create('text', [XMAX - 0.2, -0.16, 'x'], {
+            useKatex: true, fontSize: 14, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+        board.create('text', [0.14, YMAX - 0.17, 'y'], {
+            useKatex: true, fontSize: 14, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Unit circle
+        board.create('circle', [[0, 0], 1], {
+            strokeColor: '#555555', strokeWidth: 1.5, fillColor: 'none', fixed: true, highlight: false
+        });
+
+        // Direction of the terminal side: (12, -5) / 13
+        var UX = 12 / 13, UY = -5 / 13;
+        var PX = UX, PY = UY;               // on the unit circle
+        var QD = 2.4;                        // schematic distance for Q
+        var QX = QD * UX, QY = QD * UY;
+        var RD = 2.75;                       // ray end
+
+        // Reference drops (red dashed) + right-angle markers
+        var RA = 0.09;
+        function drop(x, y) {
+            board.create('segment', [[x, y], [x, 0]], {
+                strokeColor: '#DC2626', strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+            });
+            board.create('curve', [[x - RA, x - RA, x], [0, -RA, -RA]], {
+                strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+        drop(PX, PY);
+        drop(QX, QY);
+
+        // Terminal ray (primary)
+        board.create('arrow', [[0, 0], [RD * UX, RD * UY]], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // Angle theta: CCW from positive x-axis to the terminal side
+        var TH = Math.atan2(UY, UX) + 2 * Math.PI;   // ~292.6 deg
+        var AR = 0.22;
+        board.create('curve', [
+            function (t) { return AR * Math.cos(t); },
+            function (t) { return AR * Math.sin(t); },
+            0, TH - 0.12
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+        board.create('text', [0.3, 0.27, '\\theta'], {
+            useKatex: true, fontSize: 15, color: '#DC2626', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Origin label
+        board.create('text', [-0.33, 0.13, 'O'], {
+            useKatex: true, fontSize: 14, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Length 1 along OP (measurement blue), below OP (outside the small triangle)
+        board.create('text', [PX / 2 - 0.13 * 0.385, PY / 2 - 0.13 * 0.923, '1'], {
+            useKatex: true, fontSize: 14, color: '#3B82F6', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // Points
+        board.create('point', [PX, PY], {
+            name: '', size: 5, color: '#222222', fixed: true, showInfobox: false, highlight: false
+        });
+        board.create('text', [PX + 0.08, PY - 0.24, 'P'], {
+            useKatex: true, fontSize: 14, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+
+        board.create('point', [QX, QY], {
+            name: '', size: 5, color: '#2563EB', fixed: true, showInfobox: false, highlight: false
+        });
+        board.create('text', [QX + 0.12, QY + 0.2, 'Q(12,\\ -5)'], {
+            useKatex: true, fontSize: 14, color: '#2563EB', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+      }
+      function sync() {
+        var w = el.clientWidth, h = el.clientHeight;
+        if (w < 20 || h < 20) return;
+        if (!board) { build(); return; }
+        board.resizeContainer(w, h, true, true);
+        board.setBoundingBox(fitBox(w, h), false);
+        board.fullUpdate();
+      }
+      if (window.ResizeObserver) { new ResizeObserver(sync).observe(el); }
+      window.addEventListener('resize', sync);
+      window.addEventListener('load', sync);
+      sync();
+    </script>
+</body>
+</html>
