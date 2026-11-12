@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>W = 85x² (option card)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.35, 108, 1.35, -14],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 0.5
+                    }
+                },
+                y: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 20
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [1.22, -4, 'x'], {
+            fontSize: 11, fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [0.06, 103, 'W'], {
+            fontSize: 11, fixed: true, highlight: false, useKatex: true
+        });
+
+        // Shaded region under W = 85x², x >= 0
+        var shadedCurve = board.create('curve', [[], []], {
+            strokeWidth: 0,
+            fillColor: '#222222',
+            fillOpacity: 0.12,
+            fixed: true,
+            highlight: false
+        });
+
+        shadedCurve.updateDataArray = function() {
+            var xMin = 0;
+            var xMax = 1.35;
+            var steps = 120;
+            var dx = (xMax - xMin) / steps;
+            this.dataX = [xMin];
+            this.dataY = [0];
+            for (var i = 0; i <= steps; i++) {
+                var x = xMin + i * dx;
+                this.dataX.push(x);
+                this.dataY.push(85 * x * x);
+            }
+            // Close back along x-axis
+            this.dataX.push(xMax);
+            this.dataY.push(0);
+            this.dataX.push(xMin);
+            this.dataY.push(0);
+        };
+        board.update();
+
+        // Parabola W = 85x², x >= 0
+        board.create('functiongraph', [
+            function(x) { return 85 * x * x; },
+            0, 1.35
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Function label — name only
+        board.create('text', [0.82, 82, 'W'], {
+            fontSize: 11,
+            color: '#222222',
+            useKatex: true,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
