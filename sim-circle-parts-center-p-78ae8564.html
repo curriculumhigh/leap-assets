@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle with Center P — Parts of a Circle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 5.5, 6.5, -5.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var CX = 0, CY = 0;
+        var R = 3.5;
+        var COL_OUTLINE = '#555555';
+        var COL_PT = '#222222';
+        var SEG_W = 1.5;
+        var PT_SIZE = 2;
+        var LBL_SIZE = 14;
+
+        var diam_ang = 145 * Math.PI / 180;
+        var ptM = [CX + R * Math.cos(diam_ang), CY + R * Math.sin(diam_ang)];
+        var ptN = [CX - R * Math.cos(diam_ang), CY - R * Math.sin(diam_ang)];
+
+        var ptT_ang = 190 * Math.PI / 180;
+        var ptS_ang = 235 * Math.PI / 180;
+        var ptR_ang = 295 * Math.PI / 180;
+        var ptQ_ang = 355 * Math.PI / 180;
+
+        var ptQ = [CX + R * Math.cos(ptQ_ang), CY + R * Math.sin(ptQ_ang)];
+        var ptR_c = [CX + R * Math.cos(ptR_ang), CY + R * Math.sin(ptR_ang)];
+        var ptS = [CX + R * Math.cos(ptS_ang), CY + R * Math.sin(ptS_ang)];
+        var ptT = [CX + R * Math.cos(ptT_ang), CY + R * Math.sin(ptT_ang)];
+
+        var ptV_final = [3.8, -4.0];
+
+        var P = board.create('point', [CX, CY], {
+            name: '', size: PT_SIZE, color: COL_PT, fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [CX + 0.3, CY + 0.35, 'P'], {
+            fontSize: LBL_SIZE, color: COL_PT, fixed: true, highlight: false, useKatex: true
+        });
+
+        var circle = board.create('circle', [P, R], {
+            strokeColor: COL_OUTLINE, strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none', fillOpacity: 0
+        });
+
+        var M = board.create('point', ptM, {
+            name: '', size: PT_SIZE, color: COL_PT, fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [ptM[0] - 0.55, ptM[1] + 0.35, 'M'], {
+            fontSize: LBL_SIZE, color: COL_PT, fixed: true, highlight: false, useKatex: true
+        });
+
+        var N = board.create('point', ptN, {
+            name: '', size: PT_SIZE, color: COL_PT, fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [ptN[0] + 0.3, ptN[1] - 0.5, 'N'], {
+            fontSize: LBL_SIZE, color: COL_PT, fixed: true, highlight: false, useKatex: true
+        });
+
+        var Q = board.create('point', ptQ, {
+            name: '', size: PT_SIZE, color: COL_PT, fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [ptQ[0] + 0.35, ptQ[1] + 0.15, 'Q'], {
+            fontSize: LBL_SIZE, color: COL_PT, fixed: true, highlight: false, useKatex: true
+        });
+
+        var Rpt = board.create('point', ptR_c, {
+            name: '', size: PT_SIZE, color: COL_PT, fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [ptR_c[0] + 0.1, ptR_c[1] - 0.5, 'R'], {
+            fontSize: LBL_SIZE, color: COL_PT, fixed: true, highlight: false, useKatex: true
+        });
+
+        var S = board.create('point', ptS, {
+            name: '', size: PT_SIZE, color: COL_PT, fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [ptS[0] - 0.55, ptS[1] - 0.35, 'S'], {
+            fontSize: LBL_SIZE, color: COL_PT, fixed: true, highlight: false, useKatex: true
+        });
+
+        var T = board.create('point', ptT, {
+            name: '', size: PT_SIZE, color: COL_PT, fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [ptT[0] - 0.55, ptT[1] + 0.15, 'T'], {
+            fontSize: LBL_SIZE, color: COL_PT, fixed: true, highlight: false, useKatex: true
+        });
+
+        var V = board.create('point', ptV_final, {
+            name: '', size: PT_SIZE, color: COL_PT, fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [ptV_final[0] + 0.3, ptV_final[1] - 0.35, 'V'], {
+            fontSize: LBL_SIZE, color: COL_PT, fixed: true, highlight: false, useKatex: true
+        });
+
+        board.create('segment', [M, N], {
+            strokeColor: COL_OUTLINE, strokeWidth: SEG_W, fixed: true, highlight: false
+        });
+
+        board.create('segment', [N, Q], {
+            strokeColor: COL_OUTLINE, strokeWidth: SEG_W, fixed: true, highlight: false
+        });
+
+        board.create('segment', [S, T], {
+            strokeColor: COL_OUTLINE, strokeWidth: SEG_W, fixed: true, highlight: false
+        });
+
+        board.create('segment', [P, Rpt], {
+            strokeColor: COL_OUTLINE, strokeWidth: SEG_W, fixed: true, highlight: false
+        });
+
+        board.create('line', [Rpt, V], {
+            strokeColor: COL_OUTLINE, strokeWidth: SEG_W, fixed: true, highlight: false,
+            straightFirst: true, straightLast: true,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        [M, N, Q, Rpt, S, T, P, V].forEach(function(pt) {
+            pt.setAttribute({ layer: 9 });
+        });
+
+    </script>
+</body>
+</html>
