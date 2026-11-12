@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangles FGH and WXY — SSS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 5.5, 21.5, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        function computeApex(base, leftSide, rightSide) {
+            var ax = (base * base + leftSide * leftSide - rightSide * rightSide) / (2 * base);
+            var ay = Math.sqrt(leftSide * leftSide - ax * ax);
+            return [ax, ay];
+        }
+
+        // ── Triangle FGH (left) ─────────────────────────────────────────
+        var offsetX1 = 1;
+        var offsetY1 = 0;
+        var base1 = 8;
+        var apex1 = computeApex(base1, 5, 6);
+
+        var G = board.create('point', [offsetX1, offsetY1], {
+            name: 'G', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-14, -14], cssStyle: 'font-weight:bold' }
+        });
+        var H = board.create('point', [offsetX1 + base1, offsetY1], {
+            name: 'H', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, -14], cssStyle: 'font-weight:bold' }
+        });
+        var F = board.create('point', [offsetX1 + apex1[0], offsetY1 + apex1[1]], {
+            name: 'F', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, 10], cssStyle: 'font-weight:bold' }
+        });
+
+        board.create('polygon', [G, H, F], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        G.setAttribute({ visible: true });
+        H.setAttribute({ visible: true });
+        F.setAttribute({ visible: true });
+
+        board.create('text', [offsetX1 + base1 / 2, offsetY1 - 0.7, '8'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14, color: '#3B82F6',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+        var midFG_x = (G.X() + F.X()) / 2;
+        var midFG_y = (G.Y() + F.Y()) / 2;
+        var dxFG = F.X() - G.X();
+        var dyFG = F.Y() - G.Y();
+        var lenFG = Math.sqrt(dxFG * dxFG + dyFG * dyFG);
+        var nxFG = -dyFG / lenFG;
+        var nyFG = dxFG / lenFG;
+        board.create('text', [midFG_x + nxFG * 0.55, midFG_y + nyFG * 0.55, '5'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14, color: '#3B82F6',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+        var midFH_x = (H.X() + F.X()) / 2;
+        var midFH_y = (H.Y() + F.Y()) / 2;
+        var dxFH = F.X() - H.X();
+        var dyFH = F.Y() - H.Y();
+        var lenFH = Math.sqrt(dxFH * dxFH + dyFH * dyFH);
+        var nxFH = dyFH / lenFH;
+        var nyFH = -dxFH / lenFH;
+        board.create('text', [midFH_x + nxFH * 0.55, midFH_y + nyFH * 0.55, '6'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14, color: '#3B82F6',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+
+        // ── Triangle WXY (right) ────────────────────────────────────────
+        var offsetX2 = 12;
+        var offsetY2 = 0;
+        var base2 = 8;
+        var apex2 = computeApex(base2, 5, 6);
+
+        var X = board.create('point', [offsetX2, offsetY2], {
+            name: 'X', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-14, -14], cssStyle: 'font-weight:bold' }
+        });
+        var Y = board.create('point', [offsetX2 + base2, offsetY2], {
+            name: 'Y', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, -14], cssStyle: 'font-weight:bold' }
+        });
+        var W = board.create('point', [offsetX2 + apex2[0], offsetY2 + apex2[1]], {
+            name: 'W', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, 10], cssStyle: 'font-weight:bold' }
+        });
+
+        board.create('polygon', [X, Y, W], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        X.setAttribute({ visible: true });
+        Y.setAttribute({ visible: true });
+        W.setAttribute({ visible: true });
+
+        board.create('text', [offsetX2 + base2 / 2, offsetY2 - 0.7, '8'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14, color: '#3B82F6',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+        var midWX_x = (X.X() + W.X()) / 2;
+        var midWX_y = (X.Y() + W.Y()) / 2;
+        var dxWX = W.X() - X.X();
+        var dyWX = W.Y() - X.Y();
+        var lenWX = Math.sqrt(dxWX * dxWX + dyWX * dyWX);
+        var nxWX = -dyWX / lenWX;
+        var nyWX = dxWX / lenWX;
+        board.create('text', [midWX_x + nxWX * 0.55, midWX_y + nyWX * 0.55, '5'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14, color: '#3B82F6',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+        var midWY_x = (Y.X() + W.X()) / 2;
+        var midWY_y = (Y.Y() + W.Y()) / 2;
+        var dxWY = W.X() - Y.X();
+        var dyWY = W.Y() - Y.Y();
+        var lenWY = Math.sqrt(dxWY * dxWY + dyWY * dyWY);
+        var nxWY = dyWY / lenWY;
+        var nyWY = -dxWY / lenWY;
+        board.create('text', [midWY_x + nxWY * 0.55, midWY_y + nyWY * 0.55, '6'], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 14, color: '#3B82F6',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+    </script>
+</body>
+</html>
