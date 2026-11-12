@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Quadrilaterals RSTV and DCBA</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 8.5, 18.5, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var OUTLINE = '#555555';
+        var MARK_COL = '#DC2626';
+        var LABEL_COL = '#222222';
+        var MARK_W = 1.8;
+
+        // ── Helper: draw tick marks on a segment midpoint ───────────────
+        function drawTicks(p1, p2, count) {
+            var mx = (p1[0] + p2[0]) / 2;
+            var my = (p1[1] + p2[1]) / 2;
+            var dx = p2[0] - p1[0];
+            var dy = p2[1] - p1[1];
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var nx = -dy / len;
+            var ny = dx / len;
+            var tx = dx / len;
+            var ty = dy / len;
+            var tickLen = 0.35;
+            var spacing = 0.22;
+            var startOffset = -(count - 1) * spacing / 2;
+            for (var i = 0; i < count; i++) {
+                var off = startOffset + i * spacing;
+                var cx = mx + off * tx;
+                var cy = my + off * ty;
+                board.create('segment', [
+                    [cx - tickLen * nx, cy - tickLen * ny],
+                    [cx + tickLen * nx, cy + tickLen * ny]
+                ], {
+                    strokeColor: MARK_COL, strokeWidth: MARK_W,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── Helper: draw angle arc(s) ───────────────────────────────────
+        function drawAngleArcs(prev, vertex, next, count) {
+            var baseRadius = 0.45;
+            var radiusStep = 0.15;
+            for (var i = 0; i < count; i++) {
+                var r = baseRadius + i * radiusStep;
+                var pPrev = board.create('point', prev, { visible: false, name: '' });
+                var pVert = board.create('point', vertex, { visible: false, name: '' });
+                var pNext = board.create('point', next, { visible: false, name: '' });
+                board.create('nonReflexAngle', [pPrev, pVert, pNext], {
+                    radius: r,
+                    fillColor: 'none', fillOpacity: 0,
+                    strokeColor: MARK_COL, strokeWidth: MARK_W,
+                    fixed: true, name: '', withLabel: false,
+                    highlight: false
+                });
+            }
+        }
+
+        // ── Helper: create a labeled vertex point ───────────────────────
+        function makeVertex(coords, name, labelOffset) {
+            return board.create('point', coords, {
+                name: name, fixed: true, size: 2, color: LABEL_COL,
+                highlight: false, showInfobox: false,
+                label: {
+                    fontSize: 14, color: LABEL_COL,
+                    offset: labelOffset,
+                    cssStyle: 'font-weight:bold'
+                }
+            });
+        }
+
+        // ══════════════════════════════════════════════════════════════════
+        // QUADRILATERAL RSTV (left side)
+        // ══════════════════════════════════════════════════════════════════
+        var R = [1, 6];
+        var S = [4.5, 7];
+        var T = [5.5, 3.5];
+        var V = [0.5, 2.5];
+
+        var pR = makeVertex(R, 'R', [-16, 8]);
+        var pS = makeVertex(S, 'S', [4, 10]);
+        var pT = makeVertex(T, 'T', [6, -8]);
+        var pV = makeVertex(V, 'V', [-16, -8]);
+
+        board.create('polygon', [pR, pS, pT, pV], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: OUTLINE, strokeWidth: 2.0, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        [pR, pS, pT, pV].forEach(function(p) { p.setAttribute({ visible: true }); });
+
+        // Angle marks — R: 1 arc, S: 2 arcs, T: 3 arcs, V: 4 arcs
+        drawAngleArcs(V, R, S, 1);
+        drawAngleArcs(R, S, T, 2);
+        drawAngleArcs(S, T, V, 3);
+        drawAngleArcs(T, V, R, 4);
+
+        // Side tick marks — RS:1, ST:2, TV:3, VR:4
+        drawTicks(R, S, 1);
+        drawTicks(S, T, 2);
+        drawTicks(T, V, 3);
+        drawTicks(V, R, 4);
+
+        // ══════════════════════════════════════════════════════════════════
+        // QUADRILATERAL DCBA (right side) — congruent, reflected
+        // Correspondence: D↔R, C↔S, B↔T, A↔V
+        // ══════════════════════════════════════════════════════════════════
+        var offX = 10;
+        var D = [offX + 5.5, 6.2];
+        var C = [offX + 2, 7.2];
+        var B = [offX + 1, 3.7];
+        var A = [offX + 6, 2.7];
+
+        var pD = makeVertex(D, 'D', [6, 8]);
+        var pC = makeVertex(C, 'C', [-14, 10]);
+        var pB = makeVertex(B, 'B', [-16, -8]);
+        var pA = makeVertex(A, 'A', [6, -8]);
+
+        board.create('polygon', [pD, pC, pB, pA], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: OUTLINE, strokeWidth: 2.0, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        [pD, pC, pB, pA].forEach(function(p) { p.setAttribute({ visible: true }); });
+
+        // Angle marks — D: 1 arc, C: 2 arcs, B: 3 arcs, A: 4 arcs
+        drawAngleArcs(A, D, C, 1);
+        drawAngleArcs(D, C, B, 2);
+        drawAngleArcs(C, B, A, 3);
+        drawAngleArcs(B, A, D, 4);
+
+        // Side tick marks — DC:1, CB:2, BA:3, AD:4
+        drawTicks(D, C, 1);
+        drawTicks(C, B, 2);
+        drawTicks(B, A, 3);
+        drawTicks(A, D, 4);
+    </script>
+</body>
+</html>
