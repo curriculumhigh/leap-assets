@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concentric Circles with Tangent Line</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-11, 9.5, 11, -7],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R1 = 3;
+        var R2 = 7;
+        var COL_SHAPE = '#555555';
+        var COL_POINT = '#222222';
+        var COL_MARK = '#DC2626';
+
+        // ── Center O ────────────────────────────────────────────────────
+        var O = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            showInfobox: false
+        });
+
+        // Label O — offset upper-right, away from the vertical radius line
+        board.create('text', [0.5, 0.5, 'O'], {
+            fontSize: 15, color: COL_POINT, fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        // ── Circles ─────────────────────────────────────────────────────
+        var C1 = board.create('circle', [O, R1], {
+            strokeColor: COL_SHAPE, strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none', fillOpacity: 0
+        });
+
+        var C2 = board.create('circle', [O, R2], {
+            strokeColor: COL_SHAPE, strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none', fillOpacity: 0
+        });
+
+        // ── Circle labels (C₁ and C₂) ──────────────────────────────────
+        board.create('text', [1.4, 1.6, 'C_1'], {
+            fontSize: 14, color: COL_SHAPE, fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        board.create('text', [5.6, 4.6, 'C_2'], {
+            fontSize: 14, color: COL_SHAPE, fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        // ── Tangent point N at bottom of C₁ ────────────────────────────
+        var N = board.create('point', [0, -R1], {
+            name: '', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            showInfobox: false
+        });
+
+        board.create('text', [0.4, -3.9, 'N'], {
+            fontSize: 15, color: COL_POINT, fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        // ── Horizontal tangent line at y = -3 ──────────────────────────
+        var lineY = -R1;
+        board.create('line', [[0, lineY], [1, lineY]], {
+            strokeColor: COL_SHAPE, strokeWidth: 1.5, fixed: true, highlight: false,
+            straightFirst: true, straightLast: true
+        });
+
+        // ── Points where line intersects C₂ ────────────────────────────
+        var xInt = Math.sqrt(R2 * R2 - R1 * R1);
+
+        board.create('point', [-xInt, lineY], {
+            name: '', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            showInfobox: false
+        });
+        board.create('point', [xInt, lineY], {
+            name: '', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            showInfobox: false
+        });
+
+        // ── Point M — left, outside C₂ ─────────────────────────────────
+        var M = board.create('point', [-9.5, lineY], {
+            name: '', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            showInfobox: false
+        });
+
+        board.create('text', [-9.8, -2.2, 'M'], {
+            fontSize: 15, color: COL_POINT, fixed: true, highlight: false,
+            useKatex: true, anchorX: 'middle'
+        });
+
+        // ── Point S — right, outside C₂ ────────────────────────────────
+        var S = board.create('point', [9.5, lineY], {
+            name: '', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            showInfobox: false
+        });
+
+        board.create('text', [9.8, -2.2, 'S'], {
+            fontSize: 15, color: COL_POINT, fixed: true, highlight: false,
+            useKatex: true, anchorX: 'middle'
+        });
+
+        // ── Radius ON (vertical dashed segment from O to N) ────────────
+        board.create('segment', [[0, 0], [0, -R1]], {
+            strokeColor: COL_SHAPE, strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── Right-angle marker at N (ON ⊥ tangent line) ────────────────
+        var sqSize = 0.55;
+        board.create('segment', [[0, lineY], [0, lineY + sqSize]], {
+            strokeColor: COL_MARK, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[0, lineY + sqSize], [sqSize, lineY + sqSize]], {
+            strokeColor: COL_MARK, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [[sqSize, lineY + sqSize], [sqSize, lineY]], {
+            strokeColor: COL_MARK, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
