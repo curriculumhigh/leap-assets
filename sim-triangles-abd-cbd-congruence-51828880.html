@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangles ABD and CBD</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 7.5, 7, -6.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Points ──────────────────────────────────────────────────────
+        var B = board.create('point', [0, 5], {
+            name: 'B', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [-4, 12] }
+        });
+        var A = board.create('point', [-3.8, 0.5], {
+            name: 'A', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, -4] }
+        });
+        var C = board.create('point', [3.8, 0.5], {
+            name: 'C', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, -4] }
+        });
+        var D = board.create('point', [0, -4], {
+            name: 'D', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [-4, -18] }
+        });
+
+        // ── Segments ────────────────────────────────────────────────────
+        board.create('segment', [B, A], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [B, C], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [B, D], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [A, D], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [C, D], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Tick marks on BA and BC (congruence) ────────────────────────
+        function drawTick(p1, p2, color) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var tickLen = 0.25;
+            board.create('segment', [
+                [mx - px * tickLen, my - py * tickLen],
+                [mx + px * tickLen, my + py * tickLen]
+            ], {
+                strokeColor: color, strokeWidth: 1.8, fixed: true, highlight: false
+            });
+        }
+
+        drawTick(B, A, '#DC2626');
+        drawTick(B, C, '#DC2626');
+
+        // ── Angle arcs at B: ∠ABD and ∠CBD ─────────────────────────────
+        board.create('nonReflexAngle', [A, B, D], {
+            radius: 0.7,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fillColor: '#DC2626', fillOpacity: 0.06,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        board.create('nonReflexAngle', [D, B, C], {
+            radius: 0.7,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fillColor: '#DC2626', fillOpacity: 0.06,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Congruence tick on each angle arc
+        function drawAngleArcTick(vertex, p1, p2, radius, color) {
+            var a1 = Math.atan2(p1.Y() - vertex.Y(), p1.X() - vertex.X());
+            var a2 = Math.atan2(p2.Y() - vertex.Y(), p2.X() - vertex.X());
+            var diff = a2 - a1;
+            if (diff > Math.PI) diff -= 2 * Math.PI;
+            if (diff < -Math.PI) diff += 2 * Math.PI;
+            var bisector = a1 + diff / 2;
+            var cx = vertex.X() + radius * Math.cos(bisector);
+            var cy = vertex.Y() + radius * Math.sin(bisector);
+            var px = -Math.sin(bisector);
+            var py = Math.cos(bisector);
+            var tl = 0.15;
+            board.create('segment', [
+                [cx - px * tl, cy - py * tl],
+                [cx + px * tl, cy + py * tl]
+            ], {
+                strokeColor: color, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+        }
+
+        drawAngleArcTick(B, A, D, 0.7, '#DC2626');
+        drawAngleArcTick(B, D, C, 0.7, '#DC2626');
+
+        // ── Side labels (KaTeX) — all placed OUTSIDE the triangles ──────
+        function labelOutside(p1, p2, labelText, outwardDist) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var nx1 = -dy / len;
+            var ny1 = dx / len;
+            var cx = 0, cy = 0.5;
+            var toC_x = cx - mx;
+            var toC_y = cy - my;
+            var dot = nx1 * toC_x + ny1 * toC_y;
+            var nx, ny;
+            if (dot < 0) {
+                nx = nx1;
+                ny = ny1;
+            } else {
+                nx = -nx1;
+                ny = -ny1;
+            }
+            board.create('text', [
+                mx + nx * outwardDist,
+                my + ny * outwardDist,
+                labelText
+            ], {
+                useKatex: true, fontSize: 13, color: '#222222',
+                anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        labelOutside(B, A, '4x + 1', 1.0);
+        labelOutside(B, C, '6x - 7', 1.0);
+        labelOutside(A, D, '3y - 2', 1.0);
+        labelOutside(C, D, 'y + 6', 1.0);
+    </script>
+</body>
+</html>
