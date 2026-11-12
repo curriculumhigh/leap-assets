@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Triangles GHJ and PQR</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 7, 15.5, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var OUTLINE = '#555555';
+        var VERT_COL = '#222222';
+        var LABEL_COL = '#2563EB';
+
+        // ── Triangle GHJ (left) ─────────────────────────────────────────
+        var G = board.create('point', [0.5, 0.5], {
+            name: 'G', fixed: true, size: 2, color: VERT_COL, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: VERT_COL, offset: [-16, -10] }
+        });
+        var H = board.create('point', [4.5, 0.5], {
+            name: 'H', fixed: true, size: 2, color: VERT_COL, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: VERT_COL, offset: [6, -10] }
+        });
+        var J = board.create('point', [3, 5.2], {
+            name: 'J', fixed: true, size: 2, color: VERT_COL, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: VERT_COL, offset: [-2, 10] }
+        });
+
+        board.create('polygon', [G, H, J], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: OUTLINE, strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Side label GH: "4x - 3" — below the bottom side
+        board.create('text', [
+            (G.X() + H.X()) / 2,
+            (G.Y() + H.Y()) / 2 - 0.7,
+            '4x - 3'
+        ], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: LABEL_COL,
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Triangle PQR (right) ────────────────────────────────────────
+        var P = board.create('point', [8.5, 0.5], {
+            name: 'P', fixed: true, size: 2, color: VERT_COL, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: VERT_COL, offset: [-16, -10] }
+        });
+        var Q = board.create('point', [12.5, 0.5], {
+            name: 'Q', fixed: true, size: 2, color: VERT_COL, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: VERT_COL, offset: [6, -10] }
+        });
+        var R = board.create('point', [11, 5.2], {
+            name: 'R', fixed: true, size: 2, color: VERT_COL, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: VERT_COL, offset: [-2, 10] }
+        });
+
+        board.create('polygon', [P, Q, R], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: OUTLINE, strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Side label PQ: "17" — below the bottom side
+        board.create('text', [
+            (P.X() + Q.X()) / 2,
+            (P.Y() + Q.Y()) / 2 - 0.7,
+            '17'
+        ], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: LABEL_COL,
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // Side label PR: "12" — left side of triangle PQR, offset outward
+        var prMidX = (P.X() + R.X()) / 2;
+        var prMidY = (P.Y() + R.Y()) / 2;
+        var prDx = R.X() - P.X();
+        var prDy = R.Y() - P.Y();
+        var prLen = Math.sqrt(prDx * prDx + prDy * prDy);
+        var prNx = -prDy / prLen;
+        var prNy = prDx / prLen;
+        var prOff = 0.6;
+
+        board.create('text', [
+            prMidX + prNx * prOff,
+            prMidY + prNy * prOff,
+            '12'
+        ], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: LABEL_COL,
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // Side label QR: "9" — right side of triangle PQR, offset outward
+        var qrMidX = (Q.X() + R.X()) / 2;
+        var qrMidY = (Q.Y() + R.Y()) / 2;
+        var qrDx = R.X() - Q.X();
+        var qrDy = R.Y() - Q.Y();
+        var qrLen = Math.sqrt(qrDx * qrDx + qrDy * qrDy);
+        var qrNx = qrDy / qrLen;
+        var qrNy = -qrDx / qrLen;
+        var qrOff = 0.55;
+
+        board.create('text', [
+            qrMidX + qrNx * qrOff,
+            qrMidY + qrNy * qrOff,
+            '9'
+        ], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: LABEL_COL,
+            useKatex: true, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
