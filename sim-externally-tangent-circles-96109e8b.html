@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Externally Tangent Circles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var R1 = 2.5;
+        var R2 = 1.5;
+        var cx1 = -R1 + (R1 - R2) / 2;
+        var cx2 = cx1 + R1 + R2;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [cx1 - R1 - 1.5, 4, cx2 + R2 + 1.5, -4],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* Left circle — larger */
+        var c1Center = board.create('point', [cx1, 0], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+        board.create('circle', [c1Center, R1], {
+            strokeColor: '#555555', strokeWidth: 2.0,
+            fillColor: 'none', fillOpacity: 0,
+            fixed: true, highlight: false
+        });
+
+        /* Right circle — smaller */
+        var c2Center = board.create('point', [cx2, 0], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+        board.create('circle', [c2Center, R2], {
+            strokeColor: '#555555', strokeWidth: 2.0,
+            fillColor: 'none', fillOpacity: 0,
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
