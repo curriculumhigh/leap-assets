@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>W = 85x² with shaded region</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.35, 155, 1.85, -18],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 10 },
+                        minorTicks: 0,
+                        ticksDistance: 0.5
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 10 },
+                        minorTicks: 0,
+                        ticksDistance: 50
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [1.72, -6, 'x'], { useKatex: true, fontSize: 12, fixed: true, highlight: false });
+        board.create('text', [0.08, 148, 'W'], { useKatex: true, fontSize: 12, fixed: true, highlight: false });
+
+        // Shaded region: area ABOVE the parabola in quadrant I (x >= 0, W >= 0)
+        var YMAX = 155;
+        var XMAX = 1.85;
+
+        var shadePtsX = [];
+        var shadePtsY = [];
+        var N = 80;
+
+        // Start at top-left of Q1
+        shadePtsX.push(0);
+        shadePtsY.push(YMAX);
+
+        // Top-right corner
+        shadePtsX.push(XMAX);
+        shadePtsY.push(YMAX);
+
+        // Down the right edge to the parabola value at XMAX
+        var wAtXmax = 85 * XMAX * XMAX;
+        if (wAtXmax > YMAX) {
+            shadePtsX.push(XMAX);
+            shadePtsY.push(YMAX);
+        } else {
+            shadePtsX.push(XMAX);
+            shadePtsY.push(wAtXmax);
+        }
+
+        // Along the parabola from x = min(XMAX, xExit) back to 0
+        var xStart = Math.min(XMAX, Math.sqrt(YMAX / 85));
+        for (var i = N; i >= 0; i--) {
+            var xx = xStart * i / N;
+            var ww = 85 * xx * xx;
+            if (ww <= YMAX) {
+                shadePtsX.push(xx);
+                shadePtsY.push(ww);
+            }
+        }
+
+        // Close back to top-left
+        shadePtsX.push(0);
+        shadePtsY.push(YMAX);
+
+        // Create invisible points for polygon
+        var shadePoints = [];
+        for (var j = 0; j < shadePtsX.length; j++) {
+            shadePoints.push(board.create('point', [shadePtsX[j], shadePtsY[j]], { visible: false, fixed: true, name: '' }));
+        }
+
+        board.create('polygon', shadePoints, {
+            fillColor: '#222222',
+            fillOpacity: 0.12,
+            borders: { strokeWidth: 0, visible: false },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // Parabola W = 85x², x >= 0 only
+        board.create('functiongraph', [
+            function(x) { return 85 * x * x; },
+            0, XMAX
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Curve label — name only
+        board.create('text', [1.05, 120, 'W'], {
+            useKatex: true,
+            fontSize: 11,
+            color: '#222222',
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
