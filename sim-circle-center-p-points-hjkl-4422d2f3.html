@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle with Center P</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 6, 6, -6],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 3.5;
+        var cx = 0, cy = 0;
+
+        // Center point P
+        var P = board.create('point', [cx, cy], {
+            name: 'P',
+            size: 3,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, -12] }
+        });
+
+        // Circle
+        var circle = board.create('circle', [P, R], {
+            strokeColor: '#555555',
+            strokeWidth: 2.0,
+            fixed: true,
+            highlight: false
+        });
+
+        // Points on the circle
+        // H — upper left (~135°)
+        var angH = 135 * Math.PI / 180;
+        var H = board.create('point', [cx + R * Math.cos(angH), cy + R * Math.sin(angH)], {
+            name: 'H',
+            size: 2,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, 6] }
+        });
+
+        // J — upper right (~50°)
+        var angJ = 50 * Math.PI / 180;
+        var J = board.create('point', [cx + R * Math.cos(angJ), cy + R * Math.sin(angJ)], {
+            name: 'J',
+            size: 2,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, 6] }
+        });
+
+        // K — right (~330°)
+        var angK = 330 * Math.PI / 180;
+        var K = board.create('point', [cx + R * Math.cos(angK), cy + R * Math.sin(angK)], {
+            name: 'K',
+            size: 2,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [10, -4] }
+        });
+
+        // L — bottom (~245°)
+        var angL = 245 * Math.PI / 180;
+        var L = board.create('point', [cx + R * Math.cos(angL), cy + R * Math.sin(angL)], {
+            name: 'L',
+            size: 2,
+            color: '#222222',
+            fixed: true,
+            highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-8, -18] }
+        });
+
+        // Segments HP and KP (radii)
+        board.create('segment', [H, P], {
+            strokeColor: '#555555',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+
+        board.create('segment', [K, P], {
+            strokeColor: '#555555',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
