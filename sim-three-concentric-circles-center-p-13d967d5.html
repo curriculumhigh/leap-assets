@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three Concentric Circles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-14.67, 11, 14.67, -11],
+            axis: true,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444',
+                    strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [14.2, -0.6, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.35, 10.5, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Center point P
+        var P = board.create('point', [0, 0], {
+            name: 'P',
+            fixed: true,
+            size: 3,
+            color: '#222222',
+            highlight: false,
+            label: {
+                fontSize: 14,
+                color: '#222222',
+                offset: [10, -12],
+                useKatex: true
+            }
+        });
+
+        // Circle with radius 2
+        board.create('circle', [P, 2], {
+            strokeColor: '#555555',
+            strokeWidth: 2.0,
+            fillColor: 'none',
+            fillOpacity: 0,
+            fixed: true,
+            highlight: false
+        });
+
+        // Circle with radius 5
+        board.create('circle', [P, 5], {
+            strokeColor: '#555555',
+            strokeWidth: 2.0,
+            fillColor: 'none',
+            fillOpacity: 0,
+            fixed: true,
+            highlight: false
+        });
+
+        // Circle with radius 9
+        board.create('circle', [P, 9], {
+            strokeColor: '#555555',
+            strokeWidth: 2.0,
+            fillColor: 'none',
+            fillOpacity: 0,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
