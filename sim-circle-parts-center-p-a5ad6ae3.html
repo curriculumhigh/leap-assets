@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle with Center P — Parts of a Circle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 6.5, 7.5, -7],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 4;
+        var CX = 0, CY = 0;
+        var SEG_COL = '#555555';
+        var SEG_W = 1.5;
+        var PT_COL = '#222222';
+        var LBL_SIZE = 14;
+
+        function circPt(angleDeg) {
+            var a = angleDeg * Math.PI / 180;
+            return [CX + R * Math.cos(a), CY + R * Math.sin(a)];
+        }
+
+        var P = board.create('point', [CX, CY], {
+            name: 'P', fixed: true, size: 2, color: PT_COL, highlight: false,
+            label: { fontSize: LBL_SIZE, color: PT_COL, offset: [8, 8] }
+        });
+
+        var circle = board.create('circle', [P, R], {
+            strokeColor: SEG_COL, strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none', fillOpacity: 0
+        });
+
+        var posD = circPt(55);
+        var D = board.create('point', posD, {
+            name: 'D', fixed: true, size: 2, color: PT_COL, highlight: false,
+            label: { fontSize: LBL_SIZE, color: PT_COL, offset: [6, 8] }
+        });
+
+        var posF = circPt(345);
+        var F = board.create('point', posF, {
+            name: 'F', fixed: true, size: 2, color: PT_COL, highlight: false,
+            label: { fontSize: LBL_SIZE, color: PT_COL, offset: [10, -2] }
+        });
+
+        var posH = circPt(300);
+        var H = board.create('point', posH, {
+            name: 'H', fixed: true, size: 2, color: PT_COL, highlight: false,
+            label: { fontSize: LBL_SIZE, color: PT_COL, offset: [4, -14] }
+        });
+
+        var posM = circPt(235);
+        var M = board.create('point', posM, {
+            name: 'M', fixed: true, size: 2, color: PT_COL, highlight: false,
+            label: { fontSize: LBL_SIZE, color: PT_COL, offset: [-16, -10] }
+        });
+
+        var posN = circPt(140);
+        var N = board.create('point', posN, {
+            name: 'N', fixed: true, size: 2, color: PT_COL, highlight: false,
+            label: { fontSize: LBL_SIZE, color: PT_COL, offset: [-16, 6] }
+        });
+
+        board.create('segment', [D, M], {
+            strokeColor: SEG_COL, strokeWidth: SEG_W, fixed: true, highlight: false
+        });
+
+        board.create('segment', [P, F], {
+            strokeColor: SEG_COL, strokeWidth: SEG_W, fixed: true, highlight: false
+        });
+        board.create('segment', [P, N], {
+            strokeColor: SEG_COL, strokeWidth: SEG_W, fixed: true, highlight: false
+        });
+
+        board.create('segment', [N, H], {
+            strokeColor: SEG_COL, strokeWidth: SEG_W, fixed: true, highlight: false
+        });
+
+        board.create('segment', [D, F], {
+            strokeColor: SEG_COL, strokeWidth: SEG_W, fixed: true, highlight: false
+        });
+
+        board.create('line', [F, H], {
+            strokeColor: SEG_COL, strokeWidth: SEG_W, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        var angH = 300 * Math.PI / 180;
+        var tangDirX = -Math.sin(angH);
+        var tangDirY = Math.cos(angH);
+
+        var wDist = 3.2;
+        var posW = [posH[0] - wDist * tangDirX, posH[1] - wDist * tangDirY];
+
+        var W = board.create('point', posW, {
+            name: 'W', fixed: true, size: 2, color: PT_COL, highlight: false,
+            label: { fontSize: LBL_SIZE, color: PT_COL, offset: [6, -12] }
+        });
+
+        var extDirX = posH[0] - posW[0];
+        var extDirY = posH[1] - posW[1];
+        var extLen = Math.sqrt(extDirX * extDirX + extDirY * extDirY);
+        extDirX /= extLen;
+        extDirY /= extLen;
+
+        var rayEnd = [posH[0] + 3.5 * extDirX, posH[1] + 3.5 * extDirY];
+        var rayEndPt = board.create('point', rayEnd, { visible: false, fixed: true, name: '' });
+
+        board.create('arrow', [W, rayEndPt], {
+            strokeColor: SEG_COL, strokeWidth: SEG_W, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+
+    </script>
+</body>
+</html>
