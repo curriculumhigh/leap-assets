@@ -26,7 +26,13 @@
         var GX = 1, GY = 1, LX = 1, LY = 1;
         var BB = [XMIN - PAD_L, YMAX + PAD_T, XMAX + PAD_R, YMIN - PAD_B];
 
-        var board = JXG.JSXGraph.initBoard('board', {
+        var board = null, el = document.getElementById('board');
+        // Build only once the board has a real size (Learnosity/the editor can load this iframe
+        // while hidden, which made the pixel-based axes, ticks and labels vanish), and rebuild
+        // whenever the iframe is resized, since those offsets are measured in pixels.
+        function build() {
+        if (board) { JXG.JSXGraph.freeBoard(board); board = null; }
+        board = JXG.JSXGraph.initBoard('board', {
             boundingbox: BB,
             axis: false,
             grid: false,
@@ -157,6 +163,19 @@
                 fixed: true, highlight: false, showInfobox: false, withLabel: false, layer: 9
             });
         }
+        }
+        var lastW = 0, lastH = 0;
+        function sync() {
+            var w = el.clientWidth, h = el.clientHeight;
+            if (w < 20 || h < 20) return;
+            if (board && w === lastW && h === lastH) return;
+            lastW = w; lastH = h;
+            build();
+        }
+        if (window.ResizeObserver) { new ResizeObserver(sync).observe(el); }
+        window.addEventListener('resize', sync);
+        window.addEventListener('load', sync);
+        sync();
     </script>
 </body>
 </html>
