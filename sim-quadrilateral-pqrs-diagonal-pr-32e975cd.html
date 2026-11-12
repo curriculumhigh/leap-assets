@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadrilateral PQRS with Diagonal PR</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 6.5, 9.5, -2.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertex coordinates
+        var pCoord = [1, 5];
+        var qCoord = [7, 5.5];
+        var rCoord = [8, 1];
+        var sCoord = [1.5, 0.5];
+
+        // Vertices — small fixed points, no infobox
+        var P = board.create('point', pCoord, {
+            name: 'P', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-16, 8], cssStyle: 'font-weight:bold' }
+        });
+        var Q = board.create('point', qCoord, {
+            name: 'Q', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, 8], cssStyle: 'font-weight:bold' }
+        });
+        var R = board.create('point', rCoord, {
+            name: 'R', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -10], cssStyle: 'font-weight:bold' }
+        });
+        var S = board.create('point', sCoord, {
+            name: 'S', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-16, -10], cssStyle: 'font-weight:bold' }
+        });
+
+        // Quadrilateral edges — solid, no fill
+        board.create('polygon', [P, Q, R, S], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Diagonal PR — solid
+        board.create('segment', [P, R], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Side labels (KaTeX, offset outward from centroid) ───────────
+        var cx = (pCoord[0] + qCoord[0] + rCoord[0] + sCoord[0]) / 4;
+        var cy = (pCoord[1] + qCoord[1] + rCoord[1] + sCoord[1]) / 4;
+
+        function midpoint(a, b) {
+            return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+        }
+
+        function outwardOffset(mid, offDist) {
+            var dx = mid[0] - cx;
+            var dy = mid[1] - cy;
+            var len = Math.sqrt(dx * dx + dy * dy);
+            if (len < 0.001) return [0, 0];
+            return [dx / len * offDist, dy / len * offDist];
+        }
+
+        // PQ label
+        var midPQ = midpoint(pCoord, qCoord);
+        var offPQ = outwardOffset(midPQ, 0.6);
+        board.create('text', [midPQ[0] + offPQ[0], midPQ[1] + offPQ[1], '3x+1'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // QR label — pushed further right
+        var midQR = midpoint(qCoord, rCoord);
+        var offQR = outwardOffset(midQR, 1.1);
+        board.create('text', [midQR[0] + offQR[0], midQR[1] + offQR[1], '2x+4'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // RS label
+        var midRS = midpoint(rCoord, sCoord);
+        var offRS = outwardOffset(midRS, 0.6);
+        board.create('text', [midRS[0] + offRS[0], midRS[1] + offRS[1], 'x+9'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // PS label — pushed further left
+        var midPS = midpoint(pCoord, sCoord);
+        var offPS = outwardOffset(midPS, 1.1);
+        board.create('text', [midPS[0] + offPS[0], midPS[1] + offPS[1], '4x-4'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
