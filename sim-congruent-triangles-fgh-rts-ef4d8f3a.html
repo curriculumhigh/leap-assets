@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Triangles FGH and RTS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 5, 7, -5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_SIDE = '#555555';
+        var COL_MARK = '#DC2626';
+        var COL_LABEL = '#222222';
+        var SIDE_WIDTH = 2.0;
+
+        // ── Triangle FGH (left side, upright-ish) ──────────────────────
+        var F = board.create('point', [-5.0, -2.2], { name: 'F', fixed: true, size: 2, color: COL_LABEL, highlight: false, showInfobox: false, label: { fontSize: 14, color: COL_LABEL, offset: [-14, -10] } });
+        var G = board.create('point', [-1.5, -2.2], { name: 'G', fixed: true, size: 2, color: COL_LABEL, highlight: false, showInfobox: false, label: { fontSize: 14, color: COL_LABEL, offset: [6, -10] } });
+        var H = board.create('point', [-4.0, 2.0], { name: 'H', fixed: true, size: 2, color: COL_LABEL, highlight: false, showInfobox: false, label: { fontSize: 14, color: COL_LABEL, offset: [-6, 10] } });
+
+        var segFG = board.create('segment', [F, G], { strokeColor: COL_SIDE, strokeWidth: SIDE_WIDTH, fixed: true, highlight: false });
+        var segGH = board.create('segment', [G, H], { strokeColor: COL_SIDE, strokeWidth: SIDE_WIDTH, fixed: true, highlight: false });
+        var segFH = board.create('segment', [F, H], { strokeColor: COL_SIDE, strokeWidth: SIDE_WIDTH, fixed: true, highlight: false });
+
+        // ── Triangle RTS (right side, rotated ~140° and reflected) ─────
+        var rot = 140 * Math.PI / 180;
+        var cosR = Math.cos(rot), sinR = Math.sin(rot);
+
+        var cx1 = (-5.0 + -1.5 + -4.0) / 3;
+        var cy1 = (-2.2 + -2.2 + 2.0) / 3;
+
+        function transformPt(px, py) {
+            var dx = px - cx1, dy = py - cy1;
+            var rx = dx * cosR - dy * sinR;
+            var ry = dx * sinR + dy * cosR;
+            ry = -ry;
+            return [rx + 4.0, ry + 0.2];
+        }
+
+        var Rc = transformPt(-5.0, -2.2);
+        var Tc = transformPt(-1.5, -2.2);
+        var Sc = transformPt(-4.0, 2.0);
+
+        var R_ = board.create('point', Rc, { name: 'R', fixed: true, size: 2, color: COL_LABEL, highlight: false, showInfobox: false, label: { fontSize: 14, color: COL_LABEL, offset: [8, 6] } });
+        var T = board.create('point', Tc, { name: 'T', fixed: true, size: 2, color: COL_LABEL, highlight: false, showInfobox: false, label: { fontSize: 14, color: COL_LABEL, offset: [-4, -14] } });
+        var S = board.create('point', Sc, { name: 'S', fixed: true, size: 2, color: COL_LABEL, highlight: false, showInfobox: false, label: { fontSize: 14, color: COL_LABEL, offset: [-14, 6] } });
+
+        var segRT = board.create('segment', [R_, T], { strokeColor: COL_SIDE, strokeWidth: SIDE_WIDTH, fixed: true, highlight: false });
+        var segTS = board.create('segment', [T, S], { strokeColor: COL_SIDE, strokeWidth: SIDE_WIDTH, fixed: true, highlight: false });
+        var segRS = board.create('segment', [R_, S], { strokeColor: COL_SIDE, strokeWidth: SIDE_WIDTH, fixed: true, highlight: false });
+
+        // ── Tick mark helper ────────────────────────────────────────────
+        function drawTicks(p1, p2, n) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var tx = dx / len;
+            var ty = dy / len;
+            var tickHalf = 0.22;
+            var spacing = 0.22;
+            var startOffset = -(n - 1) / 2 * spacing;
+
+            for (var i = 0; i < n; i++) {
+                var offset = startOffset + i * spacing;
+                var cx = mx + offset * tx;
+                var cy = my + offset * ty;
+                board.create('segment', [
+                    [cx - tickHalf * px, cy - tickHalf * py],
+                    [cx + tickHalf * px, cy + tickHalf * py]
+                ], { strokeColor: COL_MARK, strokeWidth: 1.8, fixed: true, highlight: false });
+            }
+        }
+
+        drawTicks(F, G, 1);
+        drawTicks(G, H, 2);
+        drawTicks(F, H, 3);
+
+        drawTicks(R_, T, 1);
+        drawTicks(T, S, 2);
+        drawTicks(R_, S, 3);
+
+        // ── Angle arc helper ────────────────────────────────────────────
+        function drawAngleArcs(vertex, p1, p2, n) {
+            var baseRadius = 0.45;
+            var arcSpacing = 0.16;
+
+            for (var i = 0; i < n; i++) {
+                var r = baseRadius + i * arcSpacing;
+                board.create('nonReflexAngle', [p1, vertex, p2], {
+                    radius: r,
+                    fillColor: 'none',
+                    fillOpacity: 0,
+                    strokeColor: COL_MARK,
+                    strokeWidth: 1.5,
+                    fixed: true,
+                    name: '',
+                    withLabel: false,
+                    highlight: false
+                });
+            }
+        }
+
+        drawAngleArcs(F, H, G, 1);
+        drawAngleArcs(G, F, H, 2);
+        drawAngleArcs(H, G, F, 3);
+
+        drawAngleArcs(R_, S, T, 1);
+        drawAngleArcs(T, R_, S, 2);
+        drawAngleArcs(S, T, R_, 3);
+
+    </script>
+</body>
+</html>
