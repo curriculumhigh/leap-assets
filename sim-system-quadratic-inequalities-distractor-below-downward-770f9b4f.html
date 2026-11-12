@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System of Quadratic Inequalities — Distractor</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 6px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3, 6, 7, -11],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 2
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 2
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [6.5, -0.7, 'x'], { fontSize: 10, useKatex: true, fixed: true, highlight: false });
+        board.create('text', [0.25, 5.4, 'y'], { fontSize: 10, useKatex: true, fixed: true, highlight: false });
+
+        // Functions
+        function f(x) { return -x * x + 2 * x + 3; }
+        function g(x) { return x * x - 4 * x - 5; }
+
+        // Shaded region between curves from x = -1 to x = 4
+        var shadedCurve = board.create('curve', [[], []], {
+            strokeWidth: 0,
+            fillColor: '#888888',
+            fillOpacity: 0.15,
+            fixed: true,
+            highlight: false
+        });
+
+        var xMin = -1, xMax = 4;
+        var steps = 80;
+        var dx = (xMax - xMin) / steps;
+        var xData = [];
+        var yData = [];
+
+        var i;
+        for (i = 0; i <= steps; i++) {
+            var xi = xMin + i * dx;
+            xData.push(xi);
+            yData.push(f(xi));
+        }
+        for (i = steps; i >= 0; i--) {
+            var xi2 = xMin + i * dx;
+            xData.push(xi2);
+            yData.push(g(xi2));
+        }
+        xData.push(xMin);
+        yData.push(f(xMin));
+
+        shadedCurve.dataX = xData;
+        shadedCurve.dataY = yData;
+
+        // Primary curve: y = -x² + 2x + 3 (solid)
+        board.create('functiongraph', [f, -3, 7], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Secondary curve: y = x² - 4x - 5 (dashed)
+        board.create('functiongraph', [g, -3, 7], {
+            strokeColor: '#2563EB',
+            strokeWidth: 1.5,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        // Function labels (name only)
+        board.create('text', [-2.2, 2.2, 'f(x)'], {
+            fontSize: 10, color: '#222222', useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [5.2, -2.5, 'g(x)'], {
+            fontSize: 10, color: '#2563EB', useKatex: true, fixed: true, highlight: false
+        });
+
+        board.update();
+    </script>
+</body>
+</html>
