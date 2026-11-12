@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangle EFGH — Diagonals</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.8, 3.2, 6.8, -2.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Rectangle vertices ──────────────────────────────────────────
+        var E = board.create('point', [0, 2], {
+            name: 'E', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, 6], fontWeight: 'bold' }
+        });
+        var F = board.create('point', [5, 2], {
+            name: 'F', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, 6], fontWeight: 'bold' }
+        });
+        var G = board.create('point', [5, -1], {
+            name: 'G', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -12], fontWeight: 'bold' }
+        });
+        var H = board.create('point', [0, -1], {
+            name: 'H', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, -12], fontWeight: 'bold' }
+        });
+
+        // ── Rectangle sides ─────────────────────────────────────────────
+        board.create('segment', [E, F], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [F, G], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [G, H], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [H, E], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+
+        // ── Diagonals ───────────────────────────────────────────────────
+        board.create('segment', [E, G], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [F, H], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // ── Intersection point K ────────────────────────────────────────
+        var K = board.create('point', [2.5, 0.5], {
+            name: 'K', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, 14], fontWeight: 'bold' }
+        });
+
+        // ── Tick mark helpers ───────────────────────────────────────────
+        function drawTick(p1, p2, tickLen) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var half = tickLen / 2;
+            board.create('segment', [
+                [mx - px * half, my - py * half],
+                [mx + px * half, my + py * half]
+            ], {
+                strokeColor: '#DC2626', strokeWidth: 1.8, fixed: true, highlight: false
+            });
+        }
+
+        function drawDoubleTick(p1, p2, tickLen, gap) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var ux = dx / len;
+            var uy = dy / len;
+            var px = -dy / len;
+            var py = dx / len;
+            var half = tickLen / 2;
+            var halfGap = gap / 2;
+
+            var cx1 = mx - ux * halfGap;
+            var cy1 = my - uy * halfGap;
+            board.create('segment', [
+                [cx1 - px * half, cy1 - py * half],
+                [cx1 + px * half, cy1 + py * half]
+            ], {
+                strokeColor: '#DC2626', strokeWidth: 1.8, fixed: true, highlight: false
+            });
+
+            var cx2 = mx + ux * halfGap;
+            var cy2 = my + uy * halfGap;
+            board.create('segment', [
+                [cx2 - px * half, cy2 - py * half],
+                [cx2 + px * half, cy2 + py * half]
+            ], {
+                strokeColor: '#DC2626', strokeWidth: 1.8, fixed: true, highlight: false
+            });
+        }
+
+        // ── Single ticks on EK and GK (congruent pair 1) ────────────────
+        drawTick(E, K, 0.45);
+        drawTick(G, K, 0.45);
+
+        // ── Double ticks on FK and HK (congruent pair 2) ────────────────
+        drawDoubleTick(F, K, 0.45, 0.22);
+        drawDoubleTick(H, K, 0.45, 0.22);
+    </script>
+</body>
+</html>
