@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangles XYZ and PQR — Side-Angle Comparison</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 7, 16, -2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_EDGE = '#555555';
+        var COL_MEASURE = '#3B82F6';
+        var COL_ANGLE = '#DC2626';
+        var COL_LABEL = '#222222';
+
+        // ── Shared triangle geometry ────────────────────────────────────
+        var baseAngle = 8 * Math.PI / 180;
+        var baseLen = 4.5;
+        var sideAngle = baseAngle + 50 * Math.PI / 180;
+        var sideLen = 5;
+
+        function triCoords(origin) {
+            var ax = origin[0];
+            var ay = origin[1];
+            var bx = ax + baseLen * Math.cos(baseAngle);
+            var by = ay + baseLen * Math.sin(baseAngle);
+            var tx = ax + sideLen * Math.cos(sideAngle);
+            var ty = ay + sideLen * Math.sin(sideAngle);
+            return {
+                angleVtx: [ax, ay],
+                baseVtx:  [bx, by],
+                topVtx:   [tx, ty]
+            };
+        }
+
+        function sideLabelPos(p1, p2, offX, offY) {
+            return [(p1[0] + p2[0]) / 2 + offX, (p1[1] + p2[1]) / 2 + offY];
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // △ XYZ  (left)
+        // ═══════════════════════════════════════════════════════════════
+        var t1 = triCoords([1, 0.5]);
+
+        var ptY = board.create('point', t1.angleVtx, {
+            name: 'Y', fixed: true, size: 2, color: COL_LABEL,
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [-10, -14] }
+        });
+        var ptX = board.create('point', t1.topVtx, {
+            name: 'X', fixed: true, size: 2, color: COL_LABEL,
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [-12, 6] }
+        });
+        var ptZ = board.create('point', t1.baseVtx, {
+            name: 'Z', fixed: true, size: 2, color: COL_LABEL,
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [6, -14] }
+        });
+
+        board.create('polygon', [ptX, ptY, ptZ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_EDGE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true
+        });
+        ptX.setAttribute({ visible: true });
+        ptY.setAttribute({ visible: true });
+        ptZ.setAttribute({ visible: true });
+
+        var xyLbl = sideLabelPos(t1.topVtx, t1.angleVtx, -0.85, 0.1);
+        board.create('text', [xyLbl[0], xyLbl[1], '5 \\text{ cm}'], {
+            fontSize: 13, color: COL_MEASURE, useKatex: true,
+            fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        board.create('nonReflexAngle', [ptX, ptY, ptZ], {
+            radius: 0.65,
+            fillColor: COL_ANGLE, fillOpacity: 0.08,
+            strokeColor: COL_ANGLE, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        var bisY = (sideAngle + baseAngle) / 2;
+        board.create('text', [
+            t1.angleVtx[0] + 1.15 * Math.cos(bisY),
+            t1.angleVtx[1] + 1.15 * Math.sin(bisY),
+            '50^\\circ'
+        ], {
+            fontSize: 12, color: COL_ANGLE, useKatex: true,
+            fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // △ PQR  (right) — identical geometry, shifted horizontally
+        // ═══════════════════════════════════════════════════════════════
+        var t2 = triCoords([9, 0.5]);
+
+        var ptQ = board.create('point', t2.angleVtx, {
+            name: 'Q', fixed: true, size: 2, color: COL_LABEL,
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [-12, -14] }
+        });
+        var ptP = board.create('point', t2.topVtx, {
+            name: 'P', fixed: true, size: 2, color: COL_LABEL,
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [-12, 6] }
+        });
+        var ptR = board.create('point', t2.baseVtx, {
+            name: 'R', fixed: true, size: 2, color: COL_LABEL,
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [6, -14] }
+        });
+
+        board.create('polygon', [ptP, ptQ, ptR], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_EDGE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true
+        });
+        ptP.setAttribute({ visible: true });
+        ptQ.setAttribute({ visible: true });
+        ptR.setAttribute({ visible: true });
+
+        var pqLbl = sideLabelPos(t2.topVtx, t2.angleVtx, -0.85, 0.1);
+        board.create('text', [pqLbl[0], pqLbl[1], '5 \\text{ cm}'], {
+            fontSize: 13, color: COL_MEASURE, useKatex: true,
+            fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        board.create('nonReflexAngle', [ptP, ptQ, ptR], {
+            radius: 0.65,
+            fillColor: COL_ANGLE, fillOpacity: 0.08,
+            strokeColor: COL_ANGLE, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('text', [
+            t2.angleVtx[0] + 1.15 * Math.cos(bisY),
+            t2.angleVtx[1] + 1.15 * Math.sin(bisY),
+            '50^\\circ'
+        ], {
+            fontSize: 12, color: COL_ANGLE, useKatex: true,
+            fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+    </script>
+</body>
+</html>
