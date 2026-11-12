@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>W = 85x² — Shaded Region</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.12, 28, 0.62, -3],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 0.2
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 5 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 9 },
+                        minorTicks: 0,
+                        ticksDistance: 5
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [0.57, -1.2, '<i>x</i>'], { fontSize: 12, fixed: true, highlight: false });
+        board.create('text', [0.03, 26.5, '<i>y</i>'], { fontSize: 12, fixed: true, highlight: false });
+
+        // Shaded region: area between x-axis and the parabola for x >= 0
+        var xMax = 0.62;
+        board.create('curve', [
+            function(t) {
+                if (t <= 1) {
+                    return t * xMax;
+                } else {
+                    return (2 - t) * xMax;
+                }
+            },
+            function(t) {
+                if (t <= 1) {
+                    return 0;
+                } else {
+                    var xv = (2 - t) * xMax;
+                    return 85 * xv * xv;
+                }
+            },
+            0, 2
+        ], {
+            strokeWidth: 0,
+            fillColor: '#222222',
+            fillOpacity: 0.12,
+            fixed: true,
+            highlight: false
+        });
+
+        // Dashed parabola W = 85x² for x >= 0
+        board.create('functiongraph', [
+            function(x) { return 85 * x * x; },
+            0, 0.62
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        // Function label — name only
+        board.create('text', [0.42, 22, 'W'], {
+            fontSize: 13,
+            color: '#222222',
+            useKatex: true,
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
