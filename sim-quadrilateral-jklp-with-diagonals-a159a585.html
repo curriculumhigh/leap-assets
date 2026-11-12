@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadrilateral JKLP with Diagonals</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 5.5, 8.5, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var coordJ = [1, 4.5];
+        var coordL = [6.5, 4.5];
+        var coordP = [7, 0.5];
+        var coordK = [0.5, 0.5];
+
+        var J = board.create('point', coordJ, {
+            name: 'J', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, 8], fontWeight: 'bold' }
+        });
+        var L = board.create('point', coordL, {
+            name: 'L', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, 8], fontWeight: 'bold' }
+        });
+        var P = board.create('point', coordP, {
+            name: 'P', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, -12], fontWeight: 'bold' }
+        });
+        var K = board.create('point', coordK, {
+            name: 'K', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, -12], fontWeight: 'bold' }
+        });
+
+        board.create('segment', [J, L], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [L, P], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [P, K], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+        board.create('segment', [K, J], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        board.create('segment', [K, L], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('segment', [J, P], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
