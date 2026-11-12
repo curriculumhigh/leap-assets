@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadrilateral EFGH with Congruence Marks</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 7.5, 9, -1],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var E = board.create('point', [1, 5.5], {
+            name: 'E', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [-16, 6] }
+        });
+        var F = board.create('point', [1.5, 1], {
+            name: 'F', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [-16, -12] }
+        });
+        var G = board.create('point', [6.5, 1], {
+            name: 'G', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, -12] }
+        });
+        var H = board.create('point', [7, 5.5], {
+            name: 'H', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, 6] }
+        });
+
+        // ── Quadrilateral sides (all solid) ─────────────────────────────
+        board.create('segment', [E, F], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [F, G], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [G, H], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [H, E], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // ── Diagonals (solid) ───────────────────────────────────────────
+        board.create('segment', [E, G], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [H, F], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Congruence tick marks on EF and HG ─────────────────────────
+        function drawTick(p1, p2, color) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var tickLen = 0.25;
+            board.create('segment', [
+                [mx - px * tickLen, my - py * tickLen],
+                [mx + px * tickLen, my + py * tickLen]
+            ], {
+                strokeColor: color, strokeWidth: 2, fixed: true, highlight: false
+            });
+        }
+
+        drawTick(E, F, '#DC2626');
+        drawTick(H, G, '#DC2626');
+
+        // ── Angle arcs: ∠EFG at F and ∠HGF at G ───────────────────────
+        board.create('nonReflexAngle', [E, F, G], {
+            radius: 0.7,
+            fillColor: '#DC2626', fillOpacity: 0.10,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [H, G, F], {
+            radius: 0.7,
+            fillColor: '#DC2626', fillOpacity: 0.10,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // ── Small arc tick marks to indicate angle congruence ───────────
+        function drawArcTick(vertex, p1, p2, radius, color) {
+            var a1 = Math.atan2(p1.Y() - vertex.Y(), p1.X() - vertex.X());
+            var a2 = Math.atan2(p2.Y() - vertex.Y(), p2.X() - vertex.X());
+            var diff = a2 - a1;
+            if (diff < 0) diff += 2 * Math.PI;
+            if (diff > Math.PI) {
+                diff = diff - 2 * Math.PI;
+            }
+            var midAngle = a1 + diff / 2;
+            var ax = vertex.X() + radius * Math.cos(midAngle);
+            var ay = vertex.Y() + radius * Math.sin(midAngle);
+            var rx = Math.cos(midAngle);
+            var ry = Math.sin(midAngle);
+            var tickLen = 0.15;
+            board.create('segment', [
+                [ax - rx * tickLen, ay - ry * tickLen],
+                [ax + rx * tickLen, ay + ry * tickLen]
+            ], {
+                strokeColor: color, strokeWidth: 2, fixed: true, highlight: false
+            });
+        }
+
+        drawArcTick(F, E, G, 0.7, '#DC2626');
+        drawArcTick(G, H, F, 0.7, '#DC2626');
+
+    </script>
+</body>
+</html>
