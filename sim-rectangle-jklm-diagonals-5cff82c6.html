@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rectangle JKLM with Diagonals</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 5, 10, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var Jc = [0, 3.5];
+        var Kc = [8, 3.5];
+        var Lc = [8, 0];
+        var Mc = [0, 0];
+
+        var J = board.create('point', Jc, {
+            name: 'J', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [-16, 8], cssStyle: 'font-weight:bold; font-style:italic;' }
+        });
+        var K = board.create('point', Kc, {
+            name: 'K', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, 8], cssStyle: 'font-weight:bold; font-style:italic;' }
+        });
+        var L = board.create('point', Lc, {
+            name: 'L', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, -14], cssStyle: 'font-weight:bold; font-style:italic;' }
+        });
+        var M = board.create('point', Mc, {
+            name: 'M', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, -14], cssStyle: 'font-weight:bold; font-style:italic;' }
+        });
+
+        board.create('segment', [K, L], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [L, M], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [M, J], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [J, L], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [K, M], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
