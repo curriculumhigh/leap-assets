@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Triangles JKL and MNP</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 7.5, 15, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var OUTLINE = '#555555';
+        var MARK = '#DC2626';
+        var LABEL_COL = '#222222';
+
+        // Triangle JKL
+        var J = board.create('point', [2.5, 6.2], { name: 'J', fixed: true, size: 2, color: LABEL_COL, highlight: false, label: { fontSize: 14, color: LABEL_COL, offset: [-2, 12] } });
+        var K = board.create('point', [0.5, 1.0], { name: 'K', fixed: true, size: 2, color: LABEL_COL, highlight: false, label: { fontSize: 14, color: LABEL_COL, offset: [-18, -6] } });
+        var L = board.create('point', [5.5, 1.0], { name: 'L', fixed: true, size: 2, color: LABEL_COL, highlight: false, label: { fontSize: 14, color: LABEL_COL, offset: [8, -6] } });
+
+        var triJKL = board.create('polygon', [J, K, L], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: OUTLINE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        J.setAttribute({ visible: true });
+        K.setAttribute({ visible: true });
+        L.setAttribute({ visible: true });
+
+        // Triangle MNP
+        var M = board.create('point', [9.0, 1.0], { name: 'M', fixed: true, size: 2, color: LABEL_COL, highlight: false, label: { fontSize: 14, color: LABEL_COL, offset: [-18, -6] } });
+        var N = board.create('point', [12.0, 6.5], { name: 'N', fixed: true, size: 2, color: LABEL_COL, highlight: false, label: { fontSize: 14, color: LABEL_COL, offset: [4, 12] } });
+        var P = board.create('point', [14.0, 1.0], { name: 'P', fixed: true, size: 2, color: LABEL_COL, highlight: false, label: { fontSize: 14, color: LABEL_COL, offset: [8, -6] } });
+
+        var triMNP = board.create('polygon', [M, N, P], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: OUTLINE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        M.setAttribute({ visible: true });
+        N.setAttribute({ visible: true });
+        P.setAttribute({ visible: true });
+
+        // Helper: draw angle arc(s)
+        function drawAngleArcs(p1, vertex, p2, count) {
+            var baseRadius = 0.55;
+            var gap = 0.18;
+            for (var i = 0; i < count; i++) {
+                board.create('nonReflexAngle', [p1, vertex, p2], {
+                    radius: baseRadius + i * gap,
+                    fillColor: 'none', fillOpacity: 0,
+                    strokeColor: MARK, strokeWidth: 1.5,
+                    fixed: true, name: '', withLabel: false, highlight: false
+                });
+            }
+        }
+
+        // Triangle JKL angle arcs
+        drawAngleArcs(K, J, L, 1);
+        drawAngleArcs(J, K, L, 2);
+        drawAngleArcs(K, L, J, 3);
+
+        // Triangle MNP angle arcs
+        drawAngleArcs(M, N, P, 1);
+        drawAngleArcs(N, M, P, 2);
+        drawAngleArcs(M, P, N, 3);
+
+        // Helper: draw tick marks on a side
+        function drawTickMarks(ptA, ptB, count) {
+            var mx = (ptA.X() + ptB.X()) / 2;
+            var my = (ptA.Y() + ptB.Y()) / 2;
+            var dx = ptB.X() - ptA.X();
+            var dy = ptB.Y() - ptA.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var ux = dx / len;
+            var uy = dy / len;
+
+            var tickHalf = 0.3;
+            var spacing = 0.18;
+
+            var startOffset = -(count - 1) / 2 * spacing;
+
+            for (var i = 0; i < count; i++) {
+                var offset = startOffset + i * spacing;
+                var cx = mx + offset * ux;
+                var cy = my + offset * uy;
+                board.create('segment', [
+                    [cx - tickHalf * px, cy - tickHalf * py],
+                    [cx + tickHalf * px, cy + tickHalf * py]
+                ], {
+                    strokeColor: MARK, strokeWidth: 1.8,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // Triangle JKL tick marks
+        drawTickMarks(J, K, 1);
+        drawTickMarks(K, L, 2);
+        drawTickMarks(J, L, 3);
+
+        // Triangle MNP tick marks
+        drawTickMarks(N, M, 1);
+        drawTickMarks(M, P, 2);
+        drawTickMarks(N, P, 3);
+
+    </script>
+</body>
+</html>
