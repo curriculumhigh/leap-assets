@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Parabolas with Intersection Points</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 12, 8, -4],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Manual gridlines
+        var bb = board.getBoundingBox();
+        var xMin = Math.ceil(bb[0]);
+        var xMax = Math.floor(bb[2]);
+        var yMin = Math.ceil(bb[3]);
+        var yMax = Math.floor(bb[1]);
+
+        for (var gx = xMin; gx <= xMax; gx++) {
+            board.create('line', [[gx, 0], [gx, 1]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false,
+                straightFirst: true, straightLast: true
+            });
+        }
+        for (var gy = yMin; gy <= yMax; gy++) {
+            board.create('line', [[0, gy], [1, gy]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                fixed: true, highlight: false,
+                straightFirst: true, straightLast: true
+            });
+        }
+
+        // Axes
+        var xAxis = board.create('axis', [[0, 0], [1, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            ticks: {
+                strokeColor: '#444444',
+                label: { fontSize: 11, anchorX: 'middle', offset: [0, -14] },
+                minorTicks: 0,
+                ticksDistance: 1,
+                insertTicks: false,
+                drawZero: false
+            }
+        });
+
+        var yAxis = board.create('axis', [[0, 0], [0, 1]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            ticks: {
+                strokeColor: '#444444',
+                label: { fontSize: 11, anchorX: 'right', offset: [-8, 0] },
+                minorTicks: 0,
+                ticksDistance: 2,
+                insertTicks: false,
+                drawZero: false
+            }
+        });
+
+        // Axis labels
+        board.create('text', [7.6, -0.5, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 11.5, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // Colors
+        var COL_F = '#222222';
+        var COL_G = '#2563EB';
+
+        // Primary curve: f(x) = -x^2 + 6x - 1 (opens down)
+        board.create('functiongraph', [
+            function(x) { return -x * x + 6 * x - 1; }
+        ], { strokeColor: COL_F, strokeWidth: 1.8, fixed: true, highlight: false });
+
+        // Secondary curve: g(x) = x^2 - 2x - 1 (opens up)
+        board.create('functiongraph', [
+            function(x) { return x * x - 2 * x - 1; }
+        ], { strokeColor: COL_G, strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // Intersection point 1: (0, -1)
+        board.create('point', [0, -1], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Intersection point 2: (4, 7)
+        board.create('point', [4, 7], {
+            name: '', size: 5, color: '#222222', fixed: true, highlight: false, showInfobox: false
+        });
+
+        // Coordinate labels for intersection points
+        // (0, -1): offset to lower-left to avoid y-axis and tick marks
+        board.create('text', [-0.15, -1.7, '(0,\\, -1)'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', fixed: true, highlight: false
+        });
+
+        // (4, 7): offset to upper-right to avoid curves
+        board.create('text', [4.8, 7.5, '(4,\\, 7)'], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'left', fixed: true, highlight: false
+        });
+
+        // Curve labels (name + rule)
+        // f(x) label: right side, near the descending branch
+        board.create('text', [5.0, 2.2, 'f(x) = -x^2 + 6x - 1'], {
+            useKatex: true, fontSize: 12, color: COL_F, fixed: true, highlight: false
+        });
+
+        // g(x) label: left side, near the ascending left branch
+        board.create('text', [-1.8, 4.5, 'g(x) = x^2 - 2x - 1'], {
+            useKatex: true, fontSize: 12, color: COL_G, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
