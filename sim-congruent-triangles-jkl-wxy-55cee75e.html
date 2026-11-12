@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Triangles JKL and WXY</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8.5, 5.5, 8.5, -5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var OUTLINE = '#555555';
+        var MARK = '#DC2626';
+        var LABEL_COL = '#222222';
+
+        // ── Triangle JKL (left side) ────────────────────────────────────
+        var J = board.create('point', [-6.5, -2.5], { visible: false, fixed: true, name: '' });
+        var K = board.create('point', [-2, -2.5], { visible: false, fixed: true, name: '' });
+        var L = board.create('point', [-3.5, 2.5], { visible: false, fixed: true, name: '' });
+
+        var triJKL = board.create('polygon', [J, K, L], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: OUTLINE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true
+        });
+
+        // Vertex labels for JKL
+        board.create('text', [-6.9, -3.1, 'J'], { fontSize: 15, color: LABEL_COL, cssStyle: 'font-weight:bold', fixed: true, highlight: false });
+        board.create('text', [-1.5, -3.1, 'K'], { fontSize: 15, color: LABEL_COL, cssStyle: 'font-weight:bold', fixed: true, highlight: false });
+        board.create('text', [-3.8, 3.1, 'L'], { fontSize: 15, color: LABEL_COL, cssStyle: 'font-weight:bold', fixed: true, highlight: false });
+
+        // ── Triangle WXY (right side, reflected/rotated) ────────────────
+        var W = board.create('point', [6.5, -2.5], { visible: false, fixed: true, name: '' });
+        var X = board.create('point', [2, -0.5], { visible: false, fixed: true, name: '' });
+        var Y = board.create('point', [5, 3], { visible: false, fixed: true, name: '' });
+
+        var triWXY = board.create('polygon', [W, X, Y], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: OUTLINE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true
+        });
+
+        // Vertex labels for WXY
+        board.create('text', [6.8, -3.1, 'W'], { fontSize: 15, color: LABEL_COL, cssStyle: 'font-weight:bold', fixed: true, highlight: false });
+        board.create('text', [1.2, -1.0, 'X'], { fontSize: 15, color: LABEL_COL, cssStyle: 'font-weight:bold', fixed: true, highlight: false });
+        board.create('text', [5.2, 3.4, 'Y'], { fontSize: 15, color: LABEL_COL, cssStyle: 'font-weight:bold', fixed: true, highlight: false });
+
+        // ── Helper: tick marks on a segment ─────────────────────────────
+        function drawTicks(p1, p2, n) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var tickHalf = 0.28;
+            var spacing = 0.22;
+
+            var startOffset = -(n - 1) / 2 * spacing;
+            for (var i = 0; i < n; i++) {
+                var offset = startOffset + i * spacing;
+                var cx = mx + offset * (dx / len);
+                var cy = my + offset * (dy / len);
+                board.create('segment', [
+                    [cx + px * tickHalf, cy + py * tickHalf],
+                    [cx - px * tickHalf, cy - py * tickHalf]
+                ], {
+                    strokeColor: MARK, strokeWidth: 1.8, fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── Helper: angle arcs ──────────────────────────────────────────
+        function drawAngleArcs(arm1, vertex, arm2, n) {
+            var baseRadius = 0.55;
+            var arcSpacing = 0.18;
+            for (var i = 0; i < n; i++) {
+                var r = baseRadius + i * arcSpacing;
+                board.create('nonReflexAngle', [arm1, vertex, arm2], {
+                    radius: r,
+                    fillColor: 'none', fillOpacity: 0,
+                    strokeColor: MARK, strokeWidth: 1.5,
+                    fixed: true, name: '', withLabel: false,
+                    highlight: false
+                });
+            }
+        }
+
+        // ── Tick marks — correspondences: JK↔WX (1), KL↔WY (2), JL↔XY (3) ──
+        drawTicks(J, K, 1);
+        drawTicks(W, X, 1);
+
+        drawTicks(K, L, 2);
+        drawTicks(W, Y, 2);
+
+        drawTicks(J, L, 3);
+        drawTicks(X, Y, 3);
+
+        // ── Angle arcs — correspondences: ∠J↔∠X (1), ∠K↔∠W (2), ∠L↔∠Y (3) ──
+        drawAngleArcs(K, J, L, 1);
+        drawAngleArcs(W, X, Y, 1);
+
+        drawAngleArcs(J, K, L, 2);
+        drawAngleArcs(X, W, Y, 2);
+
+        drawAngleArcs(J, L, K, 3);
+        drawAngleArcs(X, Y, W, 3);
+
+    </script>
+</body>
+</html>
