@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangles DEF and JKL — Congruent Sides</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 7.5, 18.5, -2.5],
+            axis: false, grid: false,
+            keepAspectRatio: true,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false }
+        });
+
+        var COL_OUTLINE = '#555555';
+        var COL_MEASURE = '#3B82F6';
+        var COL_VERTEX = '#222222';
+
+        function vertex(x, y, name, offsetX, offsetY) {
+            return board.create('point', [x, y], {
+                name: name, fixed: true, size: 2, color: COL_VERTEX,
+                showInfobox: false, highlight: false,
+                label: { fontSize: 14, color: COL_VERTEX, offset: [offsetX, offsetY] }
+            });
+        }
+
+        // ══════════════════════════════════════════════════════════════════
+        // TRIANGLE DEF
+        // E bottom-left, F bottom-right, D top
+        // DE = 7 cm (left slanted side), EF = 9 cm (base)
+        // ══════════════════════════════════════════════════════════════════
+
+        var EF_vis = 5.4;
+        var DE_vis = 4.2;
+
+        var Ex = 1.8, Ey = 1.0;
+        var Fx = Ex + EF_vis, Fy = Ey;
+
+        var angE = 58 * Math.PI / 180;
+        var Dx = Ex + DE_vis * Math.cos(angE);
+        var Dy = Ey + DE_vis * Math.sin(angE);
+
+        var pD = vertex(Dx, Dy, 'D', -2, 14);
+        var pE = vertex(Ex, Ey, 'E', -14, -12);
+        var pF = vertex(Fx, Fy, 'F', 8, -12);
+
+        board.create('polygon', [pD, pE, pF], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_OUTLINE, strokeWidth: 2, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // DE = 7 cm label — OUTSIDE (to the LEFT of segment E→D)
+        var de_dx = Dx - Ex;
+        var de_dy = Dy - Ey;
+        var de_len = Math.sqrt(de_dx * de_dx + de_dy * de_dy);
+        var de_px = -de_dy / de_len;
+        var de_py = de_dx / de_len;
+        var de_mx = (Ex + Dx) / 2;
+        var de_my = (Ey + Dy) / 2;
+        var de_off = 0.75;
+
+        board.create('text', [
+            de_mx + de_px * de_off,
+            de_my + de_py * de_off,
+            '7 \\text{ cm}'
+        ], {
+            useKatex: true, fontSize: 12, color: COL_MEASURE,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // EF = 9 cm label — OUTSIDE (BELOW the base)
+        var ef_mx = (Ex + Fx) / 2;
+        var ef_my = Ey;
+        var ef_off = 0.75;
+
+        board.create('text', [
+            ef_mx,
+            ef_my - ef_off,
+            '9 \\text{ cm}'
+        ], {
+            useKatex: true, fontSize: 12, color: COL_MEASURE,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ══════════════════════════════════════════════════════════════════
+        // TRIANGLE JKL — same shape, shifted right
+        // K bottom-left, L bottom-right, J top
+        // JK = 7 cm (left slanted side), KL = 9 cm (base)
+        // ══════════════════════════════════════════════════════════════════
+
+        var gap = 3.2;
+        var shiftX = Fx + gap - Ex;
+
+        var Kx = Ex + shiftX, Ky = Ey;
+        var Jx = Dx + shiftX, Jy = Dy;
+        var Lx = Fx + shiftX, Ly = Fy;
+
+        var pJ = vertex(Jx, Jy, 'J', -2, 14);
+        var pK = vertex(Kx, Ky, 'K', -14, -12);
+        var pL = vertex(Lx, Ly, 'L', 8, -12);
+
+        board.create('polygon', [pJ, pK, pL], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_OUTLINE, strokeWidth: 2, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // JK = 7 cm label — OUTSIDE (to the LEFT of segment K→J)
+        var jk_dx = Jx - Kx;
+        var jk_dy = Jy - Ky;
+        var jk_len = Math.sqrt(jk_dx * jk_dx + jk_dy * jk_dy);
+        var jk_px = -jk_dy / jk_len;
+        var jk_py = jk_dx / jk_len;
+        var jk_mx = (Kx + Jx) / 2;
+        var jk_my = (Ky + Jy) / 2;
+        var jk_off = 0.75;
+
+        board.create('text', [
+            jk_mx + jk_px * jk_off,
+            jk_my + jk_py * jk_off,
+            '7 \\text{ cm}'
+        ], {
+            useKatex: true, fontSize: 12, color: COL_MEASURE,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // KL = 9 cm label — OUTSIDE (BELOW the base)
+        var kl_mx = (Kx + Lx) / 2;
+        var kl_my = Ky;
+        var kl_off = 0.75;
+
+        board.create('text', [
+            kl_mx,
+            kl_my - kl_off,
+            '9 \\text{ cm}'
+        ], {
+            useKatex: true, fontSize: 12, color: COL_MEASURE,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
