@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle M Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 6.5, 6.5, -6.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 4;
+        var cx = 0, cy = 0;
+
+        var M = board.create('point', [cx, cy], {
+            name: 'M', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -10] }
+        });
+
+        var circle = board.create('circle', [M, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var angQ = 90 * Math.PI / 180;
+        var angP = 145 * Math.PI / 180;
+        var angT = 215 * Math.PI / 180;
+        var angR = 295 * Math.PI / 180;
+        var angS = 15 * Math.PI / 180;
+
+        var Q = board.create('point', [cx + R * Math.cos(angQ), cy + R * Math.sin(angQ)], {
+            name: 'Q', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [0, 12] }
+        });
+
+        var P = board.create('point', [cx + R * Math.cos(angP), cy + R * Math.sin(angP)], {
+            name: 'P', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-16, 8] }
+        });
+
+        var T = board.create('point', [cx + R * Math.cos(angT), cy + R * Math.sin(angT)], {
+            name: 'T', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-16, -10] }
+        });
+
+        var ptR = board.create('point', [cx + R * Math.cos(angR), cy + R * Math.sin(angR)], {
+            name: 'R', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, -14] }
+        });
+
+        var S = board.create('point', [cx + R * Math.cos(angS), cy + R * Math.sin(angS)], {
+            name: 'S', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [10, 6] }
+        });
+
+        var rxVal = cx + R * Math.cos(angR);
+        var ryVal = cy + R * Math.sin(angR);
+        var sxVal = cx + R * Math.cos(angS);
+        var syVal = cy + R * Math.sin(angS);
+
+        var dx = sxVal - rxVal;
+        var dy = syVal - ryVal;
+        var len = Math.sqrt(dx * dx + dy * dy);
+        var ux = dx / len;
+        var uy = dy / len;
+        var ext = 2.0;
+
+        var V = board.create('point', [rxVal - ux * ext, ryVal - uy * ext], {
+            name: 'V', fixed: true, size: 0, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [2, -14] }
+        });
+
+        var W = board.create('point', [sxVal + ux * ext, syVal + uy * ext], {
+            name: 'W', fixed: true, size: 0, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, 6] }
+        });
+
+        board.create('segment', [V, W], {
+            strokeColor: '#555555', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        board.create('segment', [P, T], {
+            strokeColor: '#555555', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        board.create('segment', [M, Q], {
+            strokeColor: '#555555', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
