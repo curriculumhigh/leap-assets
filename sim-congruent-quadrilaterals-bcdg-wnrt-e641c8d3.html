@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Quadrilaterals BCDG and WNRT</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 7.5, 18, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var OUTLINE = '#555555';
+        var MARK = '#DC2626';
+        var LABEL_COL = '#222222';
+        var LABEL_SIZE = 14;
+
+        // ── Quadrilateral BCDG ──────────────────────────────────────────
+        var B = [1, 4.5];
+        var C = [3.8, 6];
+        var D = [6.5, 4.2];
+        var G = [4, 1];
+
+        var pB = board.create('point', B, { name: 'B', fixed: true, size: 2, color: LABEL_COL, highlight: false, label: { fontSize: LABEL_SIZE, color: LABEL_COL, offset: [-14, 4], cssStyle: 'font-weight:bold' } });
+        var pC = board.create('point', C, { name: 'C', fixed: true, size: 2, color: LABEL_COL, highlight: false, label: { fontSize: LABEL_SIZE, color: LABEL_COL, offset: [-4, 12], cssStyle: 'font-weight:bold' } });
+        var pD = board.create('point', D, { name: 'D', fixed: true, size: 2, color: LABEL_COL, highlight: false, label: { fontSize: LABEL_SIZE, color: LABEL_COL, offset: [8, 4], cssStyle: 'font-weight:bold' } });
+        var pG = board.create('point', G, { name: 'G', fixed: true, size: 2, color: LABEL_COL, highlight: false, label: { fontSize: LABEL_SIZE, color: LABEL_COL, offset: [-2, -16], cssStyle: 'font-weight:bold' } });
+
+        board.create('polygon', [pB, pC, pD, pG], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: OUTLINE, strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Quadrilateral WNRT ──────────────────────────────────────────
+        var ox = 10.5;
+        var W = [ox + 0.5, 4.8];
+        var N = [ox + 3.5, 6.2];
+        var R = [ox + 5.8, 3.8];
+        var T = [ox + 3.2, 1.2];
+
+        var pW = board.create('point', W, { name: 'W', fixed: true, size: 2, color: LABEL_COL, highlight: false, label: { fontSize: LABEL_SIZE, color: LABEL_COL, offset: [-16, 4], cssStyle: 'font-weight:bold' } });
+        var pN = board.create('point', N, { name: 'N', fixed: true, size: 2, color: LABEL_COL, highlight: false, label: { fontSize: LABEL_SIZE, color: LABEL_COL, offset: [-4, 12], cssStyle: 'font-weight:bold' } });
+        var pR = board.create('point', R, { name: 'R', fixed: true, size: 2, color: LABEL_COL, highlight: false, label: { fontSize: LABEL_SIZE, color: LABEL_COL, offset: [8, 2], cssStyle: 'font-weight:bold' } });
+        var pT = board.create('point', T, { name: 'T', fixed: true, size: 2, color: LABEL_COL, highlight: false, label: { fontSize: LABEL_SIZE, color: LABEL_COL, offset: [-2, -16], cssStyle: 'font-weight:bold' } });
+
+        board.create('polygon', [pW, pN, pR, pT], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: OUTLINE, strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Helper: draw angle arc(s) ───────────────────────────────────
+        function drawAngleArcs(p1, vertex, p2, count, radius0) {
+            var spacing = 0.15;
+            for (var i = 0; i < count; i++) {
+                var r = radius0 + i * spacing;
+                board.create('nonReflexAngle', [p1, vertex, p2], {
+                    radius: r,
+                    fillColor: 'none', fillOpacity: 0,
+                    strokeColor: MARK, strokeWidth: 1.5,
+                    fixed: true, name: '', withLabel: false, highlight: false
+                });
+            }
+        }
+
+        // ── Helper: draw right angle box ────────────────────────────────
+        function drawRightAngle(p1, vertex, p2, size) {
+            var vx = vertex.X(), vy = vertex.Y();
+            var dx1 = p1.X() - vx, dy1 = p1.Y() - vy;
+            var len1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+            var ux1 = dx1 / len1, uy1 = dy1 / len1;
+            var dx2 = p2.X() - vx, dy2 = p2.Y() - vy;
+            var len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+            var ux2 = dx2 / len2, uy2 = dy2 / len2;
+
+            var a = [vx + size * ux1, vy + size * uy1];
+            var b = [vx + size * (ux1 + ux2), vy + size * (uy1 + uy2)];
+            var c = [vx + size * ux2, vy + size * uy2];
+
+            board.create('segment', [a, b], { strokeColor: MARK, strokeWidth: 1.5, fixed: true, highlight: false });
+            board.create('segment', [b, c], { strokeColor: MARK, strokeWidth: 1.5, fixed: true, highlight: false });
+        }
+
+        // ── Helper: draw tick marks on a side ───────────────────────────
+        function drawTicks(p1, p2, count) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var nx = -dy / len;
+            var ny = dx / len;
+            var tx = dx / len;
+            var ty = dy / len;
+
+            var tickLen = 0.3;
+            var spacing = 0.2;
+
+            var totalWidth = (count - 1) * spacing;
+            var startOffset = -totalWidth / 2;
+
+            for (var i = 0; i < count; i++) {
+                var offset = startOffset + i * spacing;
+                var cx = mx + offset * tx;
+                var cy = my + offset * ty;
+                var a = [cx + tickLen * nx, cy + tickLen * ny];
+                var b = [cx - tickLen * nx, cy - tickLen * ny];
+                board.create('segment', [a, b], {
+                    strokeColor: MARK, strokeWidth: 1.8, fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── Angle marks — BCDG ──────────────────────────────────────────
+        drawAngleArcs(pG, pB, pC, 1, 0.55);
+        drawAngleArcs(pB, pC, pD, 2, 0.5);
+        drawAngleArcs(pC, pD, pG, 3, 0.45);
+        drawRightAngle(pD, pG, pB, 0.45);
+
+        // ── Angle marks — WNRT ──────────────────────────────────────────
+        drawAngleArcs(pT, pW, pN, 1, 0.55);
+        drawAngleArcs(pW, pN, pR, 2, 0.5);
+        drawAngleArcs(pN, pR, pT, 3, 0.45);
+        drawRightAngle(pR, pT, pW, 0.45);
+
+        // ── Tick marks — BCDG sides ─────────────────────────────────────
+        drawTicks(pB, pC, 1);
+        drawTicks(pC, pD, 2);
+        drawTicks(pD, pG, 3);
+        drawTicks(pG, pB, 4);
+
+        // ── Tick marks — WNRT sides ─────────────────────────────────────
+        drawTicks(pW, pN, 1);
+        drawTicks(pN, pR, 2);
+        drawTicks(pR, pT, 3);
+        drawTicks(pT, pW, 4);
+
+    </script>
+</body>
+</html>
