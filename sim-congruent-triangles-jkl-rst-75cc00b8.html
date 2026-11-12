@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Triangles JKL and RST</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 6.8, 16.8, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var OUTLINE = '#555555';
+        var TICK_COL = '#DC2626';
+        var LABEL_COL = '#222222';
+
+        // ── Triangle JKL (left) ─────────────────────────────────────────
+        var J = board.create('point', [0.8, 5.2], { name: '', visible: false, fixed: true });
+        var K = board.create('point', [5.8, 6.0], { name: '', visible: false, fixed: true });
+        var L = board.create('point', [3.2, 1.0], { name: '', visible: false, fixed: true });
+
+        var triJKL = board.create('polygon', [J, K, L], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: OUTLINE, strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Vertex labels — JKL
+        board.create('text', [0.0, 5.5, '\\textit{J}'], {
+            useKatex: true, fontSize: 15, color: LABEL_COL, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+        board.create('text', [6.4, 6.3, '\\textit{K}'], {
+            useKatex: true, fontSize: 15, color: LABEL_COL, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+        board.create('text', [3.2, 0.3, '\\textit{L}'], {
+            useKatex: true, fontSize: 15, color: LABEL_COL, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ── Triangle RST (right) ────────────────────────────────────────
+        var dx = 8.8;
+        var R = board.create('point', [0.8 + dx, 5.2], { name: '', visible: false, fixed: true });
+        var S = board.create('point', [5.8 + dx, 6.0], { name: '', visible: false, fixed: true });
+        var T = board.create('point', [3.2 + dx, 1.0], { name: '', visible: false, fixed: true });
+
+        var triRST = board.create('polygon', [R, S, T], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: OUTLINE, strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Vertex labels — RST
+        board.create('text', [0.0 + dx, 5.5, '\\textit{R}'], {
+            useKatex: true, fontSize: 15, color: LABEL_COL, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+        board.create('text', [6.4 + dx, 6.3, '\\textit{S}'], {
+            useKatex: true, fontSize: 15, color: LABEL_COL, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+        board.create('text', [3.2 + dx, 0.3, '\\textit{T}'], {
+            useKatex: true, fontSize: 15, color: LABEL_COL, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ── Angle arcs ──────────────────────────────────────────────────
+        board.create('nonReflexAngle', [L, J, K], {
+            radius: 0.7, fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        board.create('nonReflexAngle', [K, L, J], {
+            radius: 0.7, fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        board.create('nonReflexAngle', [T, R, S], {
+            radius: 0.7, fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        board.create('nonReflexAngle', [S, T, R], {
+            radius: 0.7, fillColor: '#222222', fillOpacity: 0.06,
+            strokeColor: '#222222', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // ── Angle measure labels ────────────────────────────────────────
+        function angleBisectorPos(vertex, p1, p2, dist) {
+            var a1 = Math.atan2(p1.Y() - vertex.Y(), p1.X() - vertex.X());
+            var a2 = Math.atan2(p2.Y() - vertex.Y(), p2.X() - vertex.X());
+            var diff = a2 - a1;
+            if (diff > Math.PI) diff -= 2 * Math.PI;
+            if (diff < -Math.PI) diff += 2 * Math.PI;
+            var mid = a1 + diff / 2;
+            return [vertex.X() + dist * Math.cos(mid), vertex.Y() + dist * Math.sin(mid)];
+        }
+
+        var posJ = angleBisectorPos(J, L, K, 1.6);
+        board.create('text', [posJ[0], posJ[1], '(5x - 8)^\\circ'], {
+            useKatex: true, fontSize: 12, color: LABEL_COL, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var posL = angleBisectorPos(L, K, J, 1.4);
+        board.create('text', [posL[0], posL[1], '47^\\circ'], {
+            useKatex: true, fontSize: 12, color: LABEL_COL, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var posR = angleBisectorPos(R, T, S, 1.4);
+        board.create('text', [posR[0], posR[1], '62^\\circ'], {
+            useKatex: true, fontSize: 12, color: LABEL_COL, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        var posT = angleBisectorPos(T, S, R, 1.6);
+        board.create('text', [posT[0], posT[1], '(3y + 2)^\\circ'], {
+            useKatex: true, fontSize: 12, color: LABEL_COL, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        // ── Congruence tick marks ───────────────────────────────────────
+        function drawTicks(p1, p2, count, color, len, gap) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            var ddx = p2.X() - p1.X();
+            var ddy = p2.Y() - p1.Y();
+            var segLen = Math.sqrt(ddx * ddx + ddy * ddy);
+            var nx = -ddy / segLen;
+            var ny = ddx / segLen;
+            var tx = ddx / segLen;
+            var ty = ddy / segLen;
+            var startOffset = -(count - 1) * gap / 2;
+            for (var i = 0; i < count; i++) {
+                var offset = startOffset + i * gap;
+                var cx = mx + offset * tx;
+                var cy = my + offset * ty;
+                board.create('segment', [
+                    [cx - len * nx, cy - len * ny],
+                    [cx + len * nx, cy + len * ny]
+                ], {
+                    strokeColor: color, strokeWidth: 1.8,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        drawTicks(J, K, 1, TICK_COL, 0.3, 0.2);
+        drawTicks(R, S, 1, TICK_COL, 0.3, 0.2);
+
+        drawTicks(K, L, 2, TICK_COL, 0.3, 0.2);
+        drawTicks(S, T, 2, TICK_COL, 0.3, 0.2);
+
+        drawTicks(J, L, 3, TICK_COL, 0.3, 0.2);
+        drawTicks(R, T, 3, TICK_COL, 0.3, 0.2);
+
+    </script>
+</body>
+</html>
