@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Five Circles — Congruence and Similarity</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var COL_C1 = '#222222';
+        var COL_C2 = '#2563EB';
+        var COL_C3 = '#059669';
+        var COL_C4 = '#D97706';
+        var COL_C5 = '#7C3AED';
+
+        // Center positions
+        var Mx = -8, My = 0;
+        var Nx = 4, Ny = 0;
+        var Tx = 16, Ty = 0;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-15, 10, 25, -10],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Helper: draw a radius line (dashed) with label ──────────────
+        function drawRadius(center, radius, angle, color, labelText, labelOffset) {
+            var endX = center[0] + radius * Math.cos(angle);
+            var endY = center[1] + radius * Math.sin(angle);
+            board.create('segment', [center, [endX, endY]], {
+                strokeColor: color, strokeWidth: 1.0, dash: 2,
+                fixed: true, highlight: false
+            });
+            var midX = center[0] + (radius / 2) * Math.cos(angle) + (labelOffset ? labelOffset[0] : 0);
+            var midY = center[1] + (radius / 2) * Math.sin(angle) + (labelOffset ? labelOffset[1] : 0);
+            board.create('text', [midX, midY, labelText], {
+                fontSize: 12, color: color, anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false, useKatex: true
+            });
+        }
+
+        // ── LEFT GROUP: Center M, C₁ (r=5), C₂ (r=3) ──────────────────
+
+        var M = board.create('point', [Mx, My], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+
+        board.create('text', [Mx, My - 0.9, 'M'], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+
+        board.create('circle', [M, 5], {
+            strokeColor: COL_C1, strokeWidth: 1.8, fillColor: 'none', fillOpacity: 0,
+            fixed: true, highlight: false
+        });
+
+        board.create('circle', [M, 3], {
+            strokeColor: COL_C2, strokeWidth: 1.8, fillColor: 'none', fillOpacity: 0,
+            fixed: true, highlight: false
+        });
+
+        // C₁ radius — label shifted right
+        drawRadius([Mx, My], 5, 0.6, COL_C1, '5', [1.0, 0.3]);
+        // C₂ radius — label shifted 0.5 units right
+        drawRadius([Mx, My], 3, 3.6, COL_C2, '3', [0.1, -0.4]);
+
+        board.create('text', [Mx + 4.2, My + 3.6, 'C_1'], {
+            fontSize: 13, color: COL_C1, anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [Mx + 2.0, My - 2.4, 'C_2'], {
+            fontSize: 13, color: COL_C2, anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        // ── MIDDLE GROUP: Center N, C₃ (r=5) ───────────────────────────
+
+        var N = board.create('point', [Nx, Ny], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+
+        board.create('text', [Nx, Ny - 0.9, 'N'], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+
+        board.create('circle', [N, 5], {
+            strokeColor: COL_C3, strokeWidth: 1.8, fillColor: 'none', fillOpacity: 0,
+            fixed: true, highlight: false
+        });
+
+        drawRadius([Nx, Ny], 5, 0.85, COL_C3, '5', [0.5, 0.3]);
+
+        board.create('text', [Nx + 4.2, Ny + 3.9, 'C_3'], {
+            fontSize: 13, color: COL_C3, anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        // ── RIGHT GROUP: Center T, C₄ (r=3), C₅ (r=7) ─────────────────
+
+        var T = board.create('point', [Tx, Ty], {
+            name: '', size: 2, color: '#222222', fixed: true, highlight: false
+        });
+
+        board.create('text', [Tx, Ty - 0.9, 'T'], {
+            fontSize: 14, color: '#222222', anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+        });
+
+        board.create('circle', [T, 7], {
+            strokeColor: COL_C5, strokeWidth: 1.8, fillColor: 'none', fillOpacity: 0,
+            fixed: true, highlight: false
+        });
+
+        board.create('circle', [T, 3], {
+            strokeColor: COL_C4, strokeWidth: 1.8, fillColor: 'none', fillOpacity: 0,
+            fixed: true, highlight: false
+        });
+
+        // C₅ radius
+        drawRadius([Tx, Ty], 7, 0.44, COL_C5, '7', [0.4, 0.5]);
+        // C₄ radius — label shifted 0.5 units right
+        drawRadius([Tx, Ty], 3, 3.8, COL_C4, '3', [0.1, -0.4]);
+
+        board.create('text', [Tx + 5.8, Ty + 4.5, 'C_5'], {
+            fontSize: 13, color: COL_C5, anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+        board.create('text', [Tx + 1.8, Ty - 2.6, 'C_4'], {
+            fontSize: 13, color: COL_C4, anchorX: 'left', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+    </script>
+</body>
+</html>
