@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Isosceles Triangle JKL with Angle Bisector</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var DEG = Math.PI / 180;
+
+        var sideLen = 4.8;
+
+        var Jx = 0, Jy = 3.8;
+
+        var angK = (-90 - 25) * DEG;
+        var angL = (-90 + 25) * DEG;
+
+        var Kx = Jx + sideLen * Math.cos(angK);
+        var Ky = Jy + sideLen * Math.sin(angK);
+        var Lx = Jx + sideLen * Math.cos(angL);
+        var Ly = Jy + sideLen * Math.sin(angL);
+
+        var Mx = (Kx + Lx) / 2;
+        var My = (Ky + Ly) / 2;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4.5, 5.2, 4.5, -3.2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Points ──────────────────────────────────────────────────────
+        var J = board.create('point', [Jx, Jy], {
+            name: 'J', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-2, 12] }
+        });
+        var K = board.create('point', [Kx, Ky], {
+            name: 'K', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-18, -6] }
+        });
+        var L = board.create('point', [Lx, Ly], {
+            name: 'L', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [8, -6] }
+        });
+        var M = board.create('point', [Mx, My], {
+            name: 'M', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [2, -14] }
+        });
+
+        // ── Triangle sides ──────────────────────────────────────────────
+        board.create('segment', [J, K], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [J, L], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+        board.create('segment', [K, L], { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false });
+
+        // ── Angle bisector JM (dashed) ──────────────────────────────────
+        board.create('segment', [J, M], { strokeColor: '#555555', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false });
+
+        // ── Congruence tick marks on JK and JL ──────────────────────────
+        function drawTick(p1, p2, color) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var nx = -dy / len;
+            var ny = dx / len;
+            var tickSize = 0.22;
+            board.create('segment',
+                [[mx - nx * tickSize, my - ny * tickSize],
+                 [mx + nx * tickSize, my + ny * tickSize]], {
+                strokeColor: color, strokeWidth: 2.0, fixed: true, highlight: false
+            });
+        }
+        drawTick(J, K, '#DC2626');
+        drawTick(J, L, '#DC2626');
+
+        // ── Angle arcs ──────────────────────────────────────────────────
+        // ∠KJM (left 25°)
+        board.create('nonReflexAngle', [K, J, M], {
+            radius: 0.6, fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // ∠MJL (right 25°)
+        board.create('nonReflexAngle', [M, J, L], {
+            radius: 0.6, fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // ∠JKM = x° (at vertex K)
+        board.create('nonReflexAngle', [J, K, M], {
+            radius: 0.55, fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // ∠JMK = y° (at vertex M) — manual circular arc to avoid right-angle square
+        var arcRadius = 0.55;
+        var angMJ = Math.atan2(Jy - My, Jx - Mx);
+        var angMK = Math.atan2(Ky - My, Kx - Mx);
+
+        var startAng = angMK;
+        var endAng = angMJ;
+        if (endAng < startAng) endAng += 2 * Math.PI;
+        if (endAng - startAng > Math.PI) {
+            startAng = angMJ;
+            endAng = angMK;
+            if (endAng < startAng) endAng += 2 * Math.PI;
+        }
+
+        board.create('curve', [
+            function(t) { return Mx + arcRadius * Math.cos(t); },
+            function(t) { return My + arcRadius * Math.sin(t); },
+            startAng,
+            endAng
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        var wedgePts = [[Mx, My]];
+        var nSegs = 30;
+        for (var i = 0; i <= nSegs; i++) {
+            var t = startAng + (endAng - startAng) * i / nSegs;
+            wedgePts.push([Mx + arcRadius * Math.cos(t), My + arcRadius * Math.sin(t)]);
+        }
+        var wedgePoints = [];
+        for (var j = 0; j < wedgePts.length; j++) {
+            wedgePoints.push(board.create('point', wedgePts[j], { visible: false, fixed: true, name: '' }));
+        }
+        board.create('polygon', wedgePoints, {
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            borders: { strokeWidth: 0, strokeColor: 'none' },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        // ── Angle labels (KaTeX) ────────────────────────────────────────
+        function angleLabelPos(pA, vertex, pB, dist) {
+            var a1 = Math.atan2(pA.Y() - vertex.Y(), pA.X() - vertex.X());
+            var a2 = Math.atan2(pB.Y() - vertex.Y(), pB.X() - vertex.X());
+            var diff = a2 - a1;
+            if (diff > Math.PI) diff -= 2 * Math.PI;
+            if (diff < -Math.PI) diff += 2 * Math.PI;
+            var mid = a1 + diff / 2;
+            return [vertex.X() + dist * Math.cos(mid), vertex.Y() + dist * Math.sin(mid)];
+        }
+
+        // x° label at vertex K
+        var posX = angleLabelPos(J, K, M, 1.0);
+        board.create('text', [posX[0], posX[1], 'x^\\circ'], {
+            useKatex: true, fontSize: 10, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // y° label at vertex M
+        var midAng = (startAng + endAng) / 2;
+        var posYx = Mx + 1.0 * Math.cos(midAng) + 0.35;
+        var posYy = My + 1.0 * Math.sin(midAng);
+        board.create('text', [posYx, posYy, 'y^\\circ'], {
+            useKatex: true, fontSize: 10, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
