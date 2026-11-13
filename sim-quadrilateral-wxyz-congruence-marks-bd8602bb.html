@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadrilateral WXYZ with Congruence Marks</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 6.5, 9.5, 0.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var Wx = 2.34, Wy = 4.88;
+        var Yx = 6.66, Yy = 4.88;
+        var Xx = 0.9,  Xy = 2.0;
+        var Zx = 8.1,  Zy = 2.0;
+        var Mmx = 4.5, Mmy = 3.8;
+
+        var pW = board.create('point', [Wx, Wy], {
+            name: 'W', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-8, 10] }
+        });
+        var pY = board.create('point', [Yx, Yy], {
+            name: 'Y', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [4, 10] }
+        });
+        var pX = board.create('point', [Xx, Xy], {
+            name: 'X', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, -8] }
+        });
+        var pZ = board.create('point', [Zx, Zy], {
+            name: 'Z', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, -8] }
+        });
+        var pM = board.create('point', [Mmx, Mmy], {
+            name: 'M', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, 12] }
+        });
+
+        board.create('segment', [pW, pX], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [pY, pZ], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [pW, pZ], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [pY, pX], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        function drawRightAngleMark(vertex, arm1End, arm2End, sz) {
+            var vx = vertex[0], vy = vertex[1];
+            var d1x = arm1End[0] - vx, d1y = arm1End[1] - vy;
+            var d2x = arm2End[0] - vx, d2y = arm2End[1] - vy;
+            var len1 = Math.sqrt(d1x * d1x + d1y * d1y);
+            var len2 = Math.sqrt(d2x * d2x + d2y * d2y);
+            var u1x = d1x / len1 * sz, u1y = d1y / len1 * sz;
+            var u2x = d2x / len2 * sz, u2y = d2y / len2 * sz;
+
+            var a = [vx + u1x, vy + u1y];
+            var b = [vx + u1x + u2x, vy + u1y + u2y];
+            var c = [vx + u2x, vy + u2y];
+
+            board.create('segment', [a, b], {
+                strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+            });
+            board.create('segment', [b, c], {
+                strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+            });
+        }
+
+        drawRightAngleMark([Wx, Wy], [Xx, Xy], [Mmx, Mmy], 0.4);
+        drawRightAngleMark([Yx, Yy], [Zx, Zy], [Mmx, Mmy], 0.4);
+
+        function drawTickMarks(p1, p2, numTicks) {
+            var mx = (p1[0] + p2[0]) / 2;
+            var my = (p1[1] + p2[1]) / 2;
+            var dx = p2[0] - p1[0];
+            var dy = p2[1] - p1[1];
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var ax = dx / len;
+            var ay = dy / len;
+            var tl = 0.25;
+            var spacing = 0.18;
+            var startOffset = -(numTicks - 1) * spacing / 2;
+
+            for (var i = 0; i < numTicks; i++) {
+                var s = startOffset + i * spacing;
+                var cx = mx + s * ax;
+                var cy = my + s * ay;
+                board.create('segment', [
+                    [cx - px * tl, cy - py * tl],
+                    [cx + px * tl, cy + py * tl]
+                ], {
+                    strokeColor: '#DC2626', strokeWidth: 1.8, fixed: true, highlight: false
+                });
+            }
+        }
+
+        drawTickMarks([Wx, Wy], [Mmx, Mmy], 1);
+        drawTickMarks([Yx, Yy], [Mmx, Mmy], 1);
+        drawTickMarks([Xx, Xy], [Mmx, Mmy], 2);
+        drawTickMarks([Zx, Zy], [Mmx, Mmy], 2);
+    </script>
+</body>
+</html>
