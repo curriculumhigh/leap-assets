@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perpendicular Chord Bisector Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var R_CIRCLE = 3.2;
+        var CX = 0, CY = 0.3;
+        var TY = CY - 1.0;
+
+        var halfChord = Math.sqrt(R_CIRCLE * R_CIRCLE - (TY - CY) * (TY - CY));
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.2, 6.2, 6.2, -6.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var C = board.create('point', [CX, CY], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        board.create('circle', [C, R_CIRCLE], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var W = board.create('point', [CX, CY + R_CIRCLE], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var X = board.create('point', [CX, CY - R_CIRCLE], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        board.create('segment', [W, X], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var ptR = board.create('point', [CX - halfChord, TY], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+        var ptS = board.create('point', [CX + halfChord, TY], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        board.create('segment', [ptR, ptS], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var T = board.create('point', [CX, TY], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        var sq = 0.42;
+        board.create('segment', [[CX + sq, TY], [CX + sq, TY + sq]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[CX + sq, TY + sq], [CX, TY + sq]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        board.create('text', [CX + 0.45, CY + 0.45, 'C'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'bottom'
+        });
+
+        board.create('text', [CX + 0.4, CY + R_CIRCLE + 0.25, 'W'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'bottom'
+        });
+
+        board.create('text', [CX + 0.4, CY - R_CIRCLE - 0.25, 'X'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'top'
+        });
+
+        board.create('text', [CX - halfChord - 0.35, TY + 0.3, 'R'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'right', anchorY: 'bottom'
+        });
+
+        board.create('text', [CX + halfChord + 0.35, TY + 0.3, 'S'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'bottom'
+        });
+
+        board.create('text', [CX - 0.35, TY - 0.25, 'T'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'right', anchorY: 'top'
+        });
+
+        var rtMidX = (CX - halfChord + CX) / 2;
+        board.create('text', [rtMidX, TY - 0.75, '4x - 5'], {
+            fontSize: 12, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'top', useKatex: true
+        });
+
+        var tsMidX = (CX + CX + halfChord) / 2;
+        board.create('text', [tsMidX, TY - 0.75, '2x + 9'], {
+            fontSize: 12, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'top', useKatex: true
+        });
+    </script>
+</body>
+</html>
