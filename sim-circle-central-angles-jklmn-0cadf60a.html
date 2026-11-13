@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle with Central Angles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 6.5, 6.5, -6.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 4;
+        var cx = 0, cy = 0;
+
+        var angJ = 90;
+        var angK = 185;
+        var angL = 240;
+        var angM = 320;
+        var angN = 35;
+
+        function degToRad(d) { return d * Math.PI / 180; }
+        function ptOnCircle(angleDeg) {
+            return [cx + R * Math.cos(degToRad(angleDeg)), cy + R * Math.sin(degToRad(angleDeg))];
+        }
+
+        var P = board.create('point', [cx, cy], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false
+        });
+        board.create('text', [cx + 0.35, cy - 0.35, 'P'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+
+        var circle = board.create('circle', [P, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none'
+        });
+
+        var angles = [
+            { name: 'J', ang: angJ, offX: -0.15, offY: 0.7 },
+            { name: 'K', ang: angK, offX: -0.9, offY: 0.15 },
+            { name: 'L', ang: angL, offX: -0.6, offY: -0.7 },
+            { name: 'M', ang: angM, offX: 0.5, offY: -0.65 },
+            { name: 'N', ang: angN, offX: 0.7, offY: 0.4 }
+        ];
+
+        var pts = {};
+        for (var i = 0; i < angles.length; i++) {
+            var info = angles[i];
+            var pos = ptOnCircle(info.ang);
+            pts[info.name] = board.create('point', pos, {
+                name: '', fixed: true, size: 2, color: '#222222', highlight: false,
+                showInfobox: false
+            });
+            var labelR = R + 0.55;
+            var lx = cx + labelR * Math.cos(degToRad(info.ang)) + info.offX;
+            var ly = cy + labelR * Math.sin(degToRad(info.ang)) + info.offY;
+            board.create('text', [lx, ly, info.name], {
+                fontSize: 14, color: '#222222', fixed: true, highlight: false,
+                anchorX: 'middle', anchorY: 'middle', useKatex: true
+            });
+        }
+
+        var pointNames = ['J', 'K', 'L', 'M', 'N'];
+        for (var i = 0; i < pointNames.length; i++) {
+            board.create('segment', [P, pts[pointNames[i]]], {
+                strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+        }
+
+        var arcData = [
+            { from: angJ, to: angK, label: '95°' },
+            { from: angK, to: angL, label: '55°' },
+            { from: angL, to: angM, label: '80°' },
+            { from: angM, to: angN, label: '75°' },
+            { from: angN, to: angJ, label: '55°' }
+        ];
+
+        var arcRadius = 1.0;
+        var labelRadius = 1.55;
+
+        for (var i = 0; i < arcData.length; i++) {
+            var ad = arcData[i];
+            var fromRad = degToRad(ad.from);
+            var toRad = degToRad(ad.to);
+
+            var startAng = fromRad;
+            var endAng = toRad;
+            if (endAng <= startAng) {
+                endAng += 2 * Math.PI;
+            }
+
+            (function(startAng, endAng, label) {
+                board.create('curve', [
+                    function(t) { return cx + arcRadius * Math.cos(t); },
+                    function(t) { return cy + arcRadius * Math.sin(t); },
+                    startAng,
+                    endAng
+                ], {
+                    strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false
+                });
+
+                var midAng = (startAng + endAng) / 2;
+                var lx = cx + labelRadius * Math.cos(midAng);
+                var ly = cy + labelRadius * Math.sin(midAng);
+
+                board.create('text', [lx, ly, label], {
+                    fontSize: 12, color: '#222222', fixed: true, highlight: false,
+                    anchorX: 'middle', anchorY: 'middle', useKatex: true
+                });
+            })(startAng, endAng, ad.label);
+        }
+    </script>
+</body>
+</html>
