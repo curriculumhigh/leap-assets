@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perpendicular Chord Bisector — Q9</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.8, 5.8, 5.8, -5.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 3.8;
+        var cx = 0, cy = 0;
+
+        var C = board.create('point', [cx, cy], {
+            name: 'C', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [10, -2] }
+        });
+
+        var circle = board.create('circle', [C, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var Q = board.create('point', [cx, cy + R], {
+            name: 'Q', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-4, 10] }
+        });
+
+        var S = board.create('point', [cx, cy - R], {
+            name: 'S', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-4, -16] }
+        });
+
+        var my = -1.0;
+
+        var M = board.create('point', [cx, my], {
+            name: 'M', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [8, -10] }
+        });
+
+        var halfChord = Math.sqrt(R * R - my * my);
+
+        var ptR = board.create('point', [cx - halfChord, my], {
+            name: 'R', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-16, -10] }
+        });
+
+        var T = board.create('point', [cx + halfChord, my], {
+            name: 'T', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [8, -10] }
+        });
+
+        board.create('segment', [Q, S], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('segment', [ptR, T], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var sqSize = 0.4;
+        board.create('polygon', [
+            [cx + sqSize, my],
+            [cx + sqSize, my + sqSize],
+            [cx, my + sqSize],
+            [cx, my]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#222222', strokeWidth: 1.2 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        var labelRM_x = (ptR.X() + M.X()) / 2;
+        var labelRM_y = my - 0.7;
+        board.create('text', [labelRM_x, labelRM_y, '4x + 1'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var labelMT_x = (M.X() + T.X()) / 2;
+        var labelMT_y = my - 0.7;
+        board.create('text', [labelMT_x, labelMT_y, '2x + 9'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
