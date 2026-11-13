@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphs of f and g</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+        .tick-lbl { text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff, 0 0 3px #fff; color: #222222; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board" role="img" aria-label="Graphs of f and g"></div>
+        </div>
+    </div>
+    <script>
+      var BB = [-5.6, 6.9, 5.6, -7.5];
+      var COL_F = '#222222', COL_G = '#2563EB';
+      var FS = 11, AXFS = 14, TICK_H = 8;
+      var XLAB = [-5, -4, -3, -2, -1, 1, 2, 3, 4, 5];
+      var YLAB = [-7, -6, -5, -4, -3, -1, 1, 2, 3, 5, 6];   // 4 and -2 placed in build()
+      var AXN = [0.25, 0.42, 0.28, 0.35];   // [x-label inset, x-label y, y-label x, y-label inset]
+
+      var board = null;
+      var el = document.getElementById('board');
+
+      // Fixed plotting window, stretched to the board (non-square scale, keepAspectRatio false)
+      // so the window always fills the card exactly regardless of iframe size.
+      function fitBox(w, h) { return BB.slice(); }
+
+      var AXIS = {
+        strokeColor: '#444444', strokeWidth: 1.2, highlight: false, fixed: true,
+        lastArrow: { type: 2, size: 6 },
+        ticks: { strokeColor: '#444444', strokeWidth: 1, majorHeight: TICK_H, minorTicks: 0,
+                 ticksDistance: 1, insertTicks: false, drawLabels: false, drawZero: false }
+      };
+
+      // Tick labels (labels only, no marks) at fixed positions.
+      function tickLabels(axis, pos, isX) {
+        board.create('ticks', [axis, pos], {
+          minorTicks: 0, majorHeight: 0, drawZero: false, drawLabels: true,
+          strokeOpacity: 0, highlight: false,
+          label: isX
+            ? { fontSize: FS, anchorX: 'middle', anchorY: 'top', offset: [0, -3], cssClass: 'tick-lbl', highlightCssClass: 'tick-lbl' }
+            : { fontSize: FS, anchorX: 'right', anchorY: 'middle', offset: [-4, 0], cssClass: 'tick-lbl', highlightCssClass: 'tick-lbl' }
+        });
+      }
+
+      function initBoard() {
+        board = JXG.JSXGraph.initBoard('board', {
+          boundingbox: fitBox(el.clientWidth, el.clientHeight),
+          keepAspectRatio: false,
+          axis: true,
+          grid: false,
+          showNavigation: false,
+          showCopyright: false,
+          pan: { enabled: false },
+          zoom: { enabled: false, wheel: false },
+          defaultAxes: { x: AXIS, y: AXIS }
+        });
+        board.create('grid', [], {
+          majorStep: [1, 1], minorElements: 0,
+          strokeColor: '#D1D5DB', strokeWidth: 0.4, strokeOpacity: 1,
+          major: { face: 'line', strokeColor: '#D1D5DB', strokeWidth: 0.4, strokeOpacity: 1 },
+          minor: { visible: false },
+          highlight: false, fixed: true, layer: 0
+        });
+        tickLabels(board.defaultAxes.x, XLAB, true);
+        if (YLAB.length) { tickLabels(board.defaultAxes.y, YLAB, false); }
+        // Axis-name labels
+        board.create('text', [function () { return board.getBoundingBox()[2] - AXN[0]; }, AXN[1], 'x'], {
+          useKatex: true, fontSize: AXFS, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+        board.create('text', [AXN[2], function () { return board.getBoundingBox()[1] - AXN[3]; }, 'y'], {
+          useKatex: true, fontSize: AXFS, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle'
+        });
+      }
+
+      function build() {
+        initBoard();
+        // y-intercept labels 4 (f) and -2 (g) sit just above their gridline so neither curve crosses them
+        board.create('ticks', [board.defaultAxes.y, [-2, 4]], {
+          minorTicks: 0, majorHeight: 0, drawZero: false, drawLabels: true, strokeOpacity: 0, highlight: false,
+          label: { fontSize: FS, anchorX: 'right', anchorY: 'bottom', offset: [-4, 0], cssClass: 'tick-lbl', highlightCssClass: 'tick-lbl' }
+        });
+        // Curves: g (secondary) first, f (primary) on top
+        board.create('functiongraph', [function (x) { return x - 2; }], {
+          strokeColor: COL_G, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('functiongraph', [function (x) { return -x * x + 4; }], {
+          strokeColor: COL_F, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        // Name-only function labels
+        board.create('text', [-3.0, 2.5, 'f(x)'], {
+          useKatex: true, fontSize: 13, color: COL_F, fixed: true, highlight: false, anchorX: 'left', anchorY: 'middle'
+        });
+        board.create('text', [4.0, 0.9, 'g(x)'], {
+          useKatex: true, fontSize: 13, color: COL_G, fixed: true, highlight: false, anchorX: 'left', anchorY: 'middle'
+        });
+      }
+
+      // Build only once the board has a real size (the editor may load this iframe while hidden),
+      // and refit the bounding box whenever the iframe is resized.
+      function sync() {
+        var w = el.clientWidth, h = el.clientHeight;
+        if (w < 20 || h < 20) return;
+        if (!board) { build(); return; }
+        board.resizeContainer(w, h, true, true);
+        board.setBoundingBox(fitBox(w, h), false);
+        board.fullUpdate();
+      }
+      if (window.ResizeObserver) { new ResizeObserver(sync).observe(el); }
+      window.addEventListener('resize', sync);
+      window.addEventListener('load', sync);
+      sync();
+    </script>
+</body>
+</html>

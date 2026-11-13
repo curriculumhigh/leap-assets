@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lifeguard Run and Swim</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+      // Units: meters. A = (0,0), C = (60,0), B = (60,40), D schematic at 45.
+      var BB = [-9, 48, 74, -17];
+      var board = null;
+      var el = document.getElementById('board');
+      // Smallest box containing BB with the board's pixel aspect ratio (equal x/y scale, nothing clipped).
+      function fitBox(w, h) {
+        var bw = BB[2] - BB[0], bh = BB[1] - BB[3];
+        var cx = (BB[0] + BB[2]) / 2, cy = (BB[1] + BB[3]) / 2;
+        if (w / h > bw / bh) { bw = bh * w / h; } else { bh = bw * h / w; }
+        return [cx - bw / 2, cy + bh / 2, cx + bw / 2, cy - bh / 2];
+      }
+      function txt(x, y, s, opts) {
+        var o = { useKatex: true, fontSize: 14, color: '#222222', fixed: true, highlight: false,
+                  anchorX: 'middle', anchorY: 'middle' };
+        for (var k in opts) { o[k] = opts[k]; }
+        return board.create('text', [x, y, s], o);
+      }
+      // Build only once the board has a real size (the editor may load this iframe while hidden),
+      // and refit the bounding box whenever the iframe is resized.
+      function build() {
+        board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: fitBox(el.clientWidth, el.clientHeight),
+            keepAspectRatio: false,
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var AX = 0, DX = 45, CX = 60, BY = 40;
+
+        // Water (subtle fill above the shoreline, extends past any refit box)
+        board.create('polygon', [[-400, 0], [400, 0], [400, 400], [-400, 400]], {
+            fillColor: '#2563EB', fillOpacity: 0.06, borders: { visible: false },
+            vertices: { visible: false }, fixed: true, highlight: false, hasInnerPoints: false
+        });
+        // Shoreline
+        board.create('line', [[0, 0], [1, 0]], {
+            strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        txt(8, 30, 'water', { useKatex: false, fontSize: 12, color: '#6B7280', cssStyle: 'font-style:italic' });
+        txt(70, -4.2, 'shore', { useKatex: false, fontSize: 12, color: '#6B7280', cssStyle: 'font-style:italic' });
+
+        // CB (perpendicular distance to the swimmer)
+        board.create('segment', [[CX, 0], [CX, BY]], {
+            strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        // Right-angle marker at C (inside, toward D)
+        var RA = 3;
+        board.create('curve', [[CX - RA, CX - RA, CX], [0, RA, RA]], {
+            strokeColor: '#DC2626', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        // Running path A -> D (solid) and swimming path D -> B (dashed)
+        board.create('segment', [[AX, 0], [DX, 0]], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+        board.create('segment', [[DX, 0], [CX, BY]], {
+            strokeColor: '#2563EB', strokeWidth: 1.5, dash: 2, fixed: true, highlight: false
+        });
+
+        // Dimension labels just below the shore
+        txt((AX + DX) / 2, -4.2, 'x', { color: '#3B82F6' });
+        txt((DX + CX) / 2, -4.2, '60 - x', { color: '#3B82F6' });
+        txt(CX + 4.5, BY / 2, '40\\text{ m}', { color: '#3B82F6', anchorX: 'left' });
+
+        // Overall dimension line A–C (60 m), lower, with end ticks
+        var DY = -10, T = 1.6;
+        board.create('segment', [[AX, DY], [CX, DY]], {
+            strokeColor: '#3B82F6', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[AX, DY - T], [AX, DY + T]], {
+            strokeColor: '#3B82F6', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        board.create('segment', [[CX, DY - T], [CX, DY + T]], {
+            strokeColor: '#3B82F6', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+        txt((AX + CX) / 2, DY - 4, '60\\text{ m}', { color: '#3B82F6' });
+
+        // Points
+        var PT = { name: '', size: 3, color: '#222222', fixed: true, showInfobox: false, highlight: false };
+        board.create('point', [AX, 0], PT);
+        board.create('point', [DX, 0], PT);
+        board.create('point', [CX, 0], PT);
+        board.create('point', [CX, BY], PT);
+        txt(AX - 3, 3.5, 'A');
+        txt(DX - 3, 3.5, 'D');
+        txt(CX + 3, 3.5, 'C');
+        txt(CX + 3.5, BY + 2, 'B');
+      }
+      function sync() {
+        var w = el.clientWidth, h = el.clientHeight;
+        if (w < 20 || h < 20) return;
+        if (!board) { build(); return; }
+        board.resizeContainer(w, h, true, true);
+        board.setBoundingBox(fitBox(w, h), false);
+        board.fullUpdate();
+      }
+      if (window.ResizeObserver) { new ResizeObserver(sync).observe(el); }
+      window.addEventListener('resize', sync);
+      window.addEventListener('load', sync);
+      sync();
+    </script>
+</body>
+</html>
