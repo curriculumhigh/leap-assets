@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Arcs — Circle P</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.8, 5.8, 5.8, -5.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 3.8;
+        var DEG = Math.PI / 180;
+
+        var aE = 150 * DEG;
+        var aF = 255 * DEG;
+        var aG = 30 * DEG;
+        var aH = 285 * DEG;
+
+        // ── Center point P ──
+        var P = board.create('point', [0, 0], {
+            name: 'P', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -10] }
+        });
+
+        // ── Circle ──
+        var circle = board.create('circle', [P, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Points on the circle ──
+        var E = board.create('point', [R * Math.cos(aE), R * Math.sin(aE)], {
+            name: 'E', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-14, 6] }
+        });
+
+        var F = board.create('point', [R * Math.cos(aF), R * Math.sin(aF)], {
+            name: 'F', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-14, -8] }
+        });
+
+        var G = board.create('point', [R * Math.cos(aG), R * Math.sin(aG)], {
+            name: 'G', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, 6] }
+        });
+
+        var H = board.create('point', [R * Math.cos(aH), R * Math.sin(aH)], {
+            name: 'H', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -10] }
+        });
+
+        // ── Radii ──
+        board.create('segment', [P, E], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [P, F], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [P, G], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [P, H], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // ── Red highlighted arcs (EF and GH) ──
+        board.create('curve', [
+            function(t) { return R * Math.cos(t); },
+            function(t) { return R * Math.sin(t); },
+            aE,
+            aF
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 5, fixed: true, highlight: false, layer: 8
+        });
+
+        board.create('curve', [
+            function(t) { return R * Math.cos(t); },
+            function(t) { return R * Math.sin(t); },
+            aH,
+            aG + 2 * Math.PI
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 5, fixed: true, highlight: false, layer: 8
+        });
+
+        // ── Angle markers at P ──
+        board.create('nonReflexAngle', [E, P, F], {
+            radius: 0.6,
+            fillColor: '#888888', fillOpacity: 0.08,
+            strokeColor: '#555555', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        board.create('nonReflexAngle', [H, P, G], {
+            radius: 0.6,
+            fillColor: '#888888', fillOpacity: 0.08,
+            strokeColor: '#555555', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // ── Angle labels (105°) ──
+        var bisEF = (150 + 255) / 2 * DEG;
+        var labelR_angle = 1.1;
+        board.create('text', [
+            labelR_angle * Math.cos(bisEF),
+            labelR_angle * Math.sin(bisEF),
+            '105\u00B0'
+        ], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+        var bisGH = (285 + 390) / 2 * DEG;
+        board.create('text', [
+            labelR_angle * Math.cos(bisGH),
+            labelR_angle * Math.sin(bisGH),
+            '105\u00B0'
+        ], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 12, color: '#222222', fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
