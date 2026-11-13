@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadrilateral SVWT</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 5.5, 8.5, -0.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var S = board.create('point', [1, 4.3], {
+            name: 'S', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-14, 8] }
+        });
+        var V = board.create('point', [6.5, 3.8], {
+            name: 'V', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, 8] }
+        });
+        var W = board.create('point', [6.5, 1.2], {
+            name: 'W', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -10] }
+        });
+        var T = board.create('point', [1, 0.7], {
+            name: 'T', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-14, -10] }
+        });
+
+        // ── Quadrilateral edges ─────────────────────────────────────────
+        board.create('polygon', [S, V, W, T], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Diagonals SW and TV ─────────────────────────────────────────
+        board.create('segment', [S, W], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [T, V], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Angle mark helpers ──────────────────────────────────────────
+        var MARK_COL = '#DC2626';
+
+        function bisectorAngle(vertex, p1, p2) {
+            var a1 = Math.atan2(p1.Y() - vertex.Y(), p1.X() - vertex.X());
+            var a2 = Math.atan2(p2.Y() - vertex.Y(), p2.X() - vertex.X());
+            var diff = a2 - a1;
+            if (diff < 0) diff += 2 * Math.PI;
+            return a1 + diff / 2;
+        }
+
+        function drawSingleTick(vertex, p1, p2, radius, color) {
+            var mid = bisectorAngle(vertex, p1, p2);
+            var r1 = radius - 0.14;
+            var r2 = radius + 0.14;
+            board.create('segment', [
+                [vertex.X() + r1 * Math.cos(mid), vertex.Y() + r1 * Math.sin(mid)],
+                [vertex.X() + r2 * Math.cos(mid), vertex.Y() + r2 * Math.sin(mid)]
+            ], { strokeColor: color, strokeWidth: 1.5, fixed: true, highlight: false });
+        }
+
+        function drawDoubleTick(vertex, p1, p2, radius, color) {
+            var mid = bisectorAngle(vertex, p1, p2);
+            var r1 = radius - 0.14;
+            var r2 = radius + 0.14;
+            var perpX = -Math.sin(mid);
+            var perpY = Math.cos(mid);
+            var gap = 0.08;
+            for (var i = -1; i <= 1; i += 2) {
+                var ox = i * gap * perpX;
+                var oy = i * gap * perpY;
+                board.create('segment', [
+                    [vertex.X() + r1 * Math.cos(mid) + ox, vertex.Y() + r1 * Math.sin(mid) + oy],
+                    [vertex.X() + r2 * Math.cos(mid) + ox, vertex.Y() + r2 * Math.sin(mid) + oy]
+                ], { strokeColor: color, strokeWidth: 1.5, fixed: true, highlight: false });
+            }
+        }
+
+        // ── Pair 1 (single tick): ∠VSW ≅ ∠WTV ─────────────────────────
+        board.create('nonReflexAngle', [W, S, V], {
+            radius: 0.55,
+            fillColor: MARK_COL, fillOpacity: 0.06,
+            strokeColor: MARK_COL, strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        drawSingleTick(S, W, V, 0.55, MARK_COL);
+
+        board.create('nonReflexAngle', [W, T, V], {
+            radius: 0.55,
+            fillColor: MARK_COL, fillOpacity: 0.06,
+            strokeColor: MARK_COL, strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        drawSingleTick(T, W, V, 0.55, MARK_COL);
+
+        // ── Pair 2 (double tick): ∠SVW ≅ ∠TWV ─────────────────────────
+        board.create('nonReflexAngle', [S, V, W], {
+            radius: 0.55,
+            fillColor: MARK_COL, fillOpacity: 0.06,
+            strokeColor: MARK_COL, strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        drawDoubleTick(V, S, W, 0.55, MARK_COL);
+
+        board.create('nonReflexAngle', [V, W, T], {
+            radius: 0.55,
+            fillColor: MARK_COL, fillOpacity: 0.06,
+            strokeColor: MARK_COL, strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        drawDoubleTick(W, V, T, 0.55, MARK_COL);
+
+    </script>
+</body>
+</html>
