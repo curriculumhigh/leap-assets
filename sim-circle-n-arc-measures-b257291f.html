@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle N — Arc Measures</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 6.5, 6.5, -6.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 4;
+
+        var arcAB = 50;
+        var arcBC = 35;
+        var arcCD = 80;
+        var arcDE = 30;
+
+        var angA = 90;
+        var angB = angA + arcAB;
+        var angC = angB + arcBC;
+        var angD = angC + arcCD;
+        var angE = angD + arcDE;
+
+        function degToRad(d) { return d * Math.PI / 180; }
+
+        var aA = degToRad(angA);
+        var aB = degToRad(angB);
+        var aC = degToRad(angC);
+        var aD = degToRad(angD);
+        var aE = degToRad(angE);
+
+        var COL_AB = '#2563EB';
+        var COL_BC = '#059669';
+        var COL_CD = '#D97706';
+        var COL_DE = '#7C3AED';
+
+        board.create('point', [0, 0], {
+            name: 'N', fixed: true, size: 2.5, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -10] }
+        });
+
+        board.create('circle', [[0, 0], R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none'
+        });
+
+        function makePoint(angle, name, offsetX, offsetY) {
+            var x = R * Math.cos(angle);
+            var y = R * Math.sin(angle);
+            return board.create('point', [x, y], {
+                name: name, fixed: true, size: 2, color: '#222222', highlight: false,
+                label: {
+                    fontSize: 15, color: '#222222', fontWeight: 'bold',
+                    offset: [offsetX, offsetY]
+                }
+            });
+        }
+
+        var ptA = makePoint(aA, 'A', -2, 12);
+        var ptB = makePoint(aB, 'B', -14, 8);
+        var ptC = makePoint(aC, 'C', -16, -2);
+        var ptD = makePoint(aD, 'D', -6, -14);
+        var ptE = makePoint(aE, 'E', 8, -12);
+
+        function drawArc(startAngle, endAngle, color) {
+            board.create('curve', [
+                function(t) { return R * Math.cos(t); },
+                function(t) { return R * Math.sin(t); },
+                startAngle,
+                endAngle
+            ], {
+                strokeColor: color, strokeWidth: 5, fixed: true,
+                highlight: false, layer: 8
+            });
+        }
+
+        function arcLabel(startAngleDeg, endAngleDeg, text, color) {
+            var midDeg = (startAngleDeg + endAngleDeg) / 2;
+            var midRad = degToRad(midDeg);
+            var labelR = R + 0.85;
+            var lx = labelR * Math.cos(midRad);
+            var ly = labelR * Math.sin(midRad);
+            board.create('text', [lx, ly, text], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 13, color: color,
+                cssStyle: 'font-weight:bold',
+                fixed: true, highlight: false,
+                useKatex: true
+            });
+        }
+
+        drawArc(aA, aB, COL_AB);
+        drawArc(aB, aC, COL_BC);
+        drawArc(aC, aD, COL_CD);
+        drawArc(aD, aE, COL_DE);
+
+        arcLabel(angA, angB, '50^\\circ', COL_AB);
+        arcLabel(angB, angC, '35^\\circ', COL_BC);
+        arcLabel(angC, angD, '80^\\circ', COL_CD);
+        arcLabel(angD, angE, '30^\\circ', COL_DE);
+
+        board.create('curve', [
+            function(t) { return R * Math.cos(t); },
+            function(t) { return R * Math.sin(t); },
+            aE,
+            aA + 2 * Math.PI
+        ], {
+            strokeColor: '#9CA3AF', strokeWidth: 2.5, dash: 3,
+            fixed: true, highlight: false, layer: 7
+        });
+
+        var unknownMidDeg = (angE + (angA + 360)) / 2;
+        var unknownMidRad = degToRad(unknownMidDeg);
+        var qR = R + 0.85;
+        board.create('text', [
+            qR * Math.cos(unknownMidRad),
+            qR * Math.sin(unknownMidRad),
+            '\\overset{\\frown}{AE} = \\,?'
+        ], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#6B7280',
+            cssStyle: 'font-weight:bold',
+            fixed: true, highlight: false,
+            useKatex: true
+        });
+
+    </script>
+</body>
+</html>
