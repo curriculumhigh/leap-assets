@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Right Triangles — DEF and GHI</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 7.5, 17, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_OUTLINE = '#555555';
+        var COL_RIGHT_ANGLE = '#DC2626';
+        var COL_LABEL = '#222222';
+
+        var Ex = 1, Ey = 1;
+        var raSize = 0.45;
+
+        var D = board.create('point', [Ex, Ey + 5], {
+            name: 'D', fixed: true, size: 0, showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [-18, 4] }
+        });
+        var E = board.create('point', [Ex, Ey], {
+            name: 'E', fixed: true, size: 0, showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [-18, -10] }
+        });
+        var F = board.create('point', [Ex + 5, Ey], {
+            name: 'F', fixed: true, size: 0, showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [6, -10] }
+        });
+
+        board.create('polygon', [D, E, F], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_OUTLINE, strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true
+        });
+
+        board.create('segment', [[Ex + raSize, Ey], [Ex + raSize, Ey + raSize]], {
+            strokeColor: COL_RIGHT_ANGLE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[Ex + raSize, Ey + raSize], [Ex, Ey + raSize]], {
+            strokeColor: COL_RIGHT_ANGLE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var dfMidX = (D.X() + F.X()) / 2;
+        var dfMidY = (D.Y() + F.Y()) / 2;
+        board.create('text', [dfMidX + 0.45, dfMidY + 0.2, '13\\text{ cm}'], {
+            useKatex: true, fontSize: 13, color: COL_LABEL, fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+
+        var offsetX = 9;
+
+        var G = board.create('point', [Ex + offsetX, Ey + 5], {
+            name: 'G', fixed: true, size: 0, showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [-18, 4] }
+        });
+        var H = board.create('point', [Ex + offsetX, Ey], {
+            name: 'H', fixed: true, size: 0, showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [-18, -10] }
+        });
+        var I = board.create('point', [Ex + offsetX + 5, Ey], {
+            name: 'I', fixed: true, size: 0, showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [6, -10] }
+        });
+
+        board.create('polygon', [G, H, I], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_OUTLINE, strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true
+        });
+
+        var hx = Ex + offsetX;
+        board.create('segment', [[hx + raSize, Ey], [hx + raSize, Ey + raSize]], {
+            strokeColor: COL_RIGHT_ANGLE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[hx + raSize, Ey + raSize], [hx, Ey + raSize]], {
+            strokeColor: COL_RIGHT_ANGLE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var giMidX = (G.X() + I.X()) / 2;
+        var giMidY = (G.Y() + I.Y()) / 2;
+        board.create('text', [giMidX + 0.45, giMidY + 0.2, '13\\text{ cm}'], {
+            useKatex: true, fontSize: 13, color: COL_LABEL, fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
