@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangles PQR and WXY — Congruence Marks</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8, 5.5, 8, -5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var EDGE_COL = '#555555';
+        var MARK_COL = '#DC2626';
+        var LABEL_COL = '#222222';
+
+        // ── Triangle PQR (left side) ────────────────────────────────
+        var Q = board.create('point', [-5.5, -2.5], {
+            name: 'Q', fixed: true, size: 2, color: LABEL_COL,
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: LABEL_COL, offset: [-8, -16] }
+        });
+        var P = board.create('point', [-4.2, 2.8], {
+            name: 'P', fixed: true, size: 2, color: LABEL_COL,
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: LABEL_COL, offset: [-6, 10] }
+        });
+        var R = board.create('point', [-1.2, -2.5], {
+            name: 'R', fixed: true, size: 2, color: LABEL_COL,
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: LABEL_COL, offset: [6, -16] }
+        });
+
+        board.create('polygon', [P, Q, R], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: EDGE_COL, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true
+        });
+        Q.setAttribute({ visible: true });
+        P.setAttribute({ visible: true });
+        R.setAttribute({ visible: true });
+
+        // ── Triangle WXY (right side) ───────────────────────────────
+        var X = board.create('point', [1.5, -2.5], {
+            name: 'X', fixed: true, size: 2, color: LABEL_COL,
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: LABEL_COL, offset: [-8, -16] }
+        });
+
+        var angleXY_dir = 5 * Math.PI / 180;
+        var angleQ = Math.atan2(2.8 - (-2.5), -4.2 - (-5.5));
+        var angleXW_dir = angleXY_dir + angleQ;
+        var lenPQ = Math.sqrt(1.3 * 1.3 + 5.3 * 5.3);
+
+        var Wx = 1.5 + lenPQ * Math.cos(angleXW_dir);
+        var Wy = -2.5 + lenPQ * Math.sin(angleXW_dir);
+
+        var lenXY = 3.5;
+        var Yx = 1.5 + lenXY * Math.cos(angleXY_dir);
+        var Yy = -2.5 + lenXY * Math.sin(angleXY_dir);
+
+        var W = board.create('point', [Wx, Wy], {
+            name: 'W', fixed: true, size: 2, color: LABEL_COL,
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: LABEL_COL, offset: [0, 10] }
+        });
+        var Y = board.create('point', [Yx, Yy], {
+            name: 'Y', fixed: true, size: 2, color: LABEL_COL,
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: LABEL_COL, offset: [6, -16] }
+        });
+
+        board.create('polygon', [W, X, Y], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: EDGE_COL, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true
+        });
+        X.setAttribute({ visible: true });
+        W.setAttribute({ visible: true });
+        Y.setAttribute({ visible: true });
+
+        // ── Congruence tick marks on PQ and WX ──────────────────────
+        function addTickMark(ptA, ptB, color) {
+            var mx = (ptA.X() + ptB.X()) / 2;
+            var my = (ptA.Y() + ptB.Y()) / 2;
+            var dx = ptB.X() - ptA.X();
+            var dy = ptB.Y() - ptA.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var tickLen = 0.3;
+            board.create('segment',
+                [[mx - px * tickLen, my - py * tickLen],
+                 [mx + px * tickLen, my + py * tickLen]], {
+                strokeColor: color, strokeWidth: 2.0, fixed: true, highlight: false
+            });
+        }
+
+        addTickMark(P, Q, MARK_COL);
+        addTickMark(W, X, MARK_COL);
+
+        // ── Congruence angle arcs at ∠Q and ∠X ─────────────────────
+        board.create('nonReflexAngle', [P, Q, R], {
+            radius: 0.7,
+            fillColor: MARK_COL, fillOpacity: 0.08,
+            strokeColor: MARK_COL, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        board.create('nonReflexAngle', [W, X, Y], {
+            radius: 0.7,
+            fillColor: MARK_COL, fillOpacity: 0.08,
+            strokeColor: MARK_COL, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+    </script>
+</body>
+</html>
