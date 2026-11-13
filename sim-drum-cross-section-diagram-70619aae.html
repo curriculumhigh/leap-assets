@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drum Cross-Section Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 7, 6.5, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Circle parameters
+        var R = 3.5;
+        var centerX = 0;
+        var centerY = R; // center is R above the ground so circle is tangent at y=0
+
+        // Center point (hidden)
+        var O = board.create('point', [centerX, centerY], {
+            visible: false, fixed: true, name: ''
+        });
+
+        // Circle — drum cross-section
+        var circle = board.create('circle', [O, R], {
+            strokeColor: '#555555', strokeWidth: 2.0,
+            fillColor: 'none', fillOpacity: 0,
+            fixed: true, highlight: false
+        });
+
+        // Ground line — horizontal, tangent at bottom of circle
+        var groundY = 0;
+        board.create('segment', [[-6, groundY], [6, groundY]], {
+            strokeColor: '#444444', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        // Point T — tangent point at bottom of circle
+        var T = board.create('point', [centerX, groundY], {
+            name: '', size: 3, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [centerX + 0.3, groundY - 0.55, 'T'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        // Chord PQ — horizontal, in the lower portion of the circle, parallel to ground
+        // Place chord at y = 1.2 (lower portion of circle)
+        var chordY = 1.2;
+        // Find x-coordinates where horizontal line y=chordY intersects circle
+        // (x - centerX)^2 + (chordY - centerY)^2 = R^2
+        var dx = Math.sqrt(R * R - (chordY - centerY) * (chordY - centerY));
+
+        var P = board.create('point', [centerX - dx, chordY], {
+            name: '', size: 3, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [centerX - dx - 0.55, chordY - 0.55, 'P'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        var Q = board.create('point', [centerX + dx, chordY], {
+            name: '', size: 3, color: '#222222',
+            fixed: true, highlight: false, showInfobox: false
+        });
+        board.create('text', [centerX + dx + 0.35, chordY - 0.55, 'Q'], {
+            fontSize: 15, color: '#222222', fixed: true, highlight: false,
+            useKatex: true
+        });
+
+        // Chord segment PQ
+        board.create('segment', [[centerX - dx, chordY], [centerX + dx, chordY]], {
+            strokeColor: '#555555', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
