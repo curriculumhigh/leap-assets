@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equidistant Chords Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.2, 6.2, 6.2, -6.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 4;
+        var COL_CIRCLE = '#555555';
+        var COL_POINT = '#222222';
+        var COL_MEASURE = '#3B82F6';
+        var COL_SEGMENT = '#555555';
+        var RA_SIZE = 0.35;
+
+        var C = board.create('point', [0, 0], {
+            name: 'C', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [8, 6] }
+        });
+
+        var circle = board.create('circle', [C, R], {
+            strokeColor: COL_CIRCLE, strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none'
+        });
+
+        var yEF = 1.8;
+        var halfChordEF = Math.sqrt(R * R - yEF * yEF);
+
+        var E = board.create('point', [-halfChordEF, yEF], {
+            name: 'E', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [-16, 2] }
+        });
+        var F = board.create('point', [halfChordEF, yEF], {
+            name: 'F', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [8, 2] }
+        });
+
+        board.create('segment', [E, F], {
+            strokeColor: COL_SEGMENT, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var P = board.create('point', [0, yEF], {
+            name: 'P', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [8, 4] }
+        });
+
+        board.create('segment', [C, P], {
+            strokeColor: COL_SEGMENT, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var yGH = -1.8;
+        var halfChordGH = Math.sqrt(R * R - yGH * yGH);
+
+        var G = board.create('point', [-halfChordGH, yGH], {
+            name: 'G', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [-16, -8] }
+        });
+        var H = board.create('point', [halfChordGH, yGH], {
+            name: 'H', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [8, -8] }
+        });
+
+        board.create('segment', [G, H], {
+            strokeColor: COL_SEGMENT, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var Q = board.create('point', [0, yGH], {
+            name: 'Q', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [8, -10] }
+        });
+
+        board.create('segment', [C, Q], {
+            strokeColor: COL_SEGMENT, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var raP1 = board.create('point', [RA_SIZE, yEF], { visible: false, fixed: true, name: '' });
+        var raP2 = board.create('point', [RA_SIZE, yEF - RA_SIZE], { visible: false, fixed: true, name: '' });
+        var raP3 = board.create('point', [0, yEF - RA_SIZE], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [raP1, raP2], {
+            strokeColor: COL_POINT, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [raP2, raP3], {
+            strokeColor: COL_POINT, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        var raQ1 = board.create('point', [RA_SIZE, yGH], { visible: false, fixed: true, name: '' });
+        var raQ2 = board.create('point', [RA_SIZE, yGH + RA_SIZE], { visible: false, fixed: true, name: '' });
+        var raQ3 = board.create('point', [0, yGH + RA_SIZE], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [raQ1, raQ2], {
+            strokeColor: COL_POINT, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [raQ2, raQ3], {
+            strokeColor: COL_POINT, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        board.create('text', [-1.4, yEF / 2, '2x + 1'], {
+            fontSize: 14, color: COL_MEASURE, useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+
+        board.create('text', [-1.4, yGH / 2, '5x - 8'], {
+            fontSize: 14, color: COL_MEASURE, useKatex: true, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
