@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorite Movie Genre — Circle Graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px);
+        }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7.5, 7.8, 7.5, -7.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var CX = 0, CY = -0.2;
+        var R = 4.2;
+
+        var sectors = [
+            { name: 'Comedy',      deg: 82,  fill: '#93C5FD' },
+            { name: 'Action',      deg: 58,  fill: '#FCA5A5' },
+            { name: 'Horror',      deg: 45,  fill: '#A5B4FC' },
+            { name: 'Drama',       deg: 63,  fill: '#FDE68A' },
+            { name: 'Sci-Fi',      deg: 38,  fill: '#6EE7B7' },
+            { name: 'Animation',   deg: 51,  fill: '#FDBA74' },
+            { name: 'Documentary', deg: 23,  fill: '#D8B4FE' }
+        ];
+
+        var pointLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+
+        var startAngle = 90;
+
+        var boundaryAngles = [];
+        var angle = startAngle;
+        for (var i = 0; i < sectors.length; i++) {
+            boundaryAngles.push(angle);
+            angle -= sectors[i].deg;
+        }
+
+        function degToRad(d) { return d * Math.PI / 180; }
+
+        function drawSector(aStartDeg, aEndDeg, fillColor) {
+            var a1 = degToRad(aEndDeg);
+            var a2 = degToRad(aStartDeg);
+            var nPts = 60;
+            var step = (a2 - a1) / nPts;
+            var coords = [[CX, CY]];
+            for (var j = 0; j <= nPts; j++) {
+                var a = a1 + j * step;
+                coords.push([CX + R * Math.cos(a), CY + R * Math.sin(a)]);
+            }
+            coords.push([CX, CY]);
+
+            var xCoords = [];
+            var yCoords = [];
+            for (var k = 0; k < coords.length; k++) {
+                xCoords.push(coords[k][0]);
+                yCoords.push(coords[k][1]);
+            }
+
+            board.create('curve', [xCoords, yCoords], {
+                strokeWidth: 0,
+                fillColor: fillColor,
+                fillOpacity: 0.7,
+                fixed: true,
+                highlight: false,
+                layer: 3
+            });
+        }
+
+        var currentAngle = startAngle;
+        for (var i = 0; i < sectors.length; i++) {
+            var sectorStart = currentAngle;
+            var sectorEnd = currentAngle - sectors[i].deg;
+            drawSector(sectorStart, sectorEnd, sectors[i].fill);
+            currentAngle = sectorEnd;
+        }
+
+        var center = board.create('point', [CX, CY], {
+            visible: false, fixed: true, name: ''
+        });
+        board.create('circle', [center, R], {
+            strokeColor: '#555555', strokeWidth: 2.0,
+            fillColor: 'none', fixed: true, highlight: false, layer: 6
+        });
+
+        for (var i = 0; i < boundaryAngles.length; i++) {
+            var ba = degToRad(boundaryAngles[i]);
+            var ex = CX + R * Math.cos(ba);
+            var ey = CY + R * Math.sin(ba);
+            board.create('segment', [[CX, CY], [ex, ey]], {
+                strokeColor: '#ffffff', strokeWidth: 2.5,
+                fixed: true, highlight: false, layer: 5
+            });
+            board.create('segment', [[CX, CY], [ex, ey]], {
+                strokeColor: '#888888', strokeWidth: 0.8,
+                fixed: true, highlight: false, layer: 7
+            });
+        }
+
+        for (var i = 0; i < boundaryAngles.length; i++) {
+            var ba = degToRad(boundaryAngles[i]);
+            var px = CX + R * Math.cos(ba);
+            var py = CY + R * Math.sin(ba);
+
+            var offDist = 0.65;
+            var ox = offDist * Math.cos(ba);
+            var oy = offDist * Math.sin(ba);
+
+            board.create('point', [px, py], {
+                name: '', size: 2.5, color: '#222222', fixed: true,
+                highlight: false, showInfobox: false, layer: 9
+            });
+
+            board.create('text', [px + ox, py + oy, '<b>' + pointLabels[i] + '</b>'], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 14, color: '#222222',
+                fixed: true, highlight: false, layer: 9
+            });
+        }
+
+        currentAngle = startAngle;
+        for (var i = 0; i < sectors.length; i++) {
+            var midAngleDeg = currentAngle - sectors[i].deg / 2;
+            var midAngleRad = degToRad(midAngleDeg);
+
+            var isNarrow = sectors[i].deg < 30;
+            var labelR = isNarrow ? R * 0.62 : R * 0.58;
+
+            var lx = CX + labelR * Math.cos(midAngleRad);
+            var ly = CY + labelR * Math.sin(midAngleRad);
+
+            if (sectors[i].deg < 28) {
+                var outerR = R + 1.2;
+                lx = CX + outerR * Math.cos(midAngleRad);
+                ly = CY + outerR * Math.sin(midAngleRad);
+
+                var edgeX = CX + R * Math.cos(midAngleRad);
+                var edgeY = CY + R * Math.sin(midAngleRad);
+                var leaderEndX = CX + (R + 0.6) * Math.cos(midAngleRad);
+                var leaderEndY = CY + (R + 0.6) * Math.sin(midAngleRad);
+                board.create('segment', [[edgeX, edgeY], [leaderEndX, leaderEndY]], {
+                    strokeColor: '#888888', strokeWidth: 1.0,
+                    fixed: true, highlight: false, layer: 7
+                });
+            }
+
+            board.create('text', [lx, ly + 0.28, sectors[i].name], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 11, color: '#333333',
+                cssStyle: 'font-weight:600;',
+                fixed: true, highlight: false, layer: 8
+            });
+
+            board.create('text', [lx, ly - 0.28, sectors[i].deg + '\u00B0'], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 11, color: '#555555',
+                fixed: true, highlight: false, layer: 8
+            });
+
+            currentAngle -= sectors[i].deg;
+        }
+
+        board.create('text', [CX, CY + R + 2.6, '<b>Favorite Movie Genre</b>'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 16, color: '#222222',
+            fixed: true, highlight: false, layer: 9
+        });
+
+    </script>
+</body>
+</html>
