@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Chords FG and HJ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 5.5, 5.5, -5.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 3.8;
+
+        // Center point P
+        var P = board.create('point', [0, 0], {
+            name: 'P', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, -10] }
+        });
+
+        // Circle
+        var circle = board.create('circle', [P, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none', fillOpacity: 0
+        });
+
+        // Point angles on the circle
+        var angF = 133 * Math.PI / 180;  // upper-left
+        var angG = 313 * Math.PI / 180;  // lower-right
+        var angH = 47 * Math.PI / 180;   // upper-right
+        var angJ = 227 * Math.PI / 180;  // lower-left
+
+        // Points on the circle
+        var F = board.create('point', [R * Math.cos(angF), R * Math.sin(angF)], {
+            name: 'F', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-14, 6] }
+        });
+
+        var G = board.create('point', [R * Math.cos(angG), R * Math.sin(angG)], {
+            name: 'G', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -10] }
+        });
+
+        var H = board.create('point', [R * Math.cos(angH), R * Math.sin(angH)], {
+            name: 'H', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, 6] }
+        });
+
+        var J = board.create('point', [R * Math.cos(angJ), R * Math.sin(angJ)], {
+            name: 'J', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-12, -10] }
+        });
+
+        // Chord FG
+        var chordFG = board.create('segment', [F, G], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Chord HJ
+        var chordHJ = board.create('segment', [H, J], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Tick marks for congruence on chord FG
+        var midFG_x = (F.X() + G.X()) / 2;
+        var midFG_y = (F.Y() + G.Y()) / 2;
+
+        var dxFG = G.X() - F.X();
+        var dyFG = G.Y() - F.Y();
+        var lenFG = Math.sqrt(dxFG * dxFG + dyFG * dyFG);
+        var perpFG_x = -dyFG / lenFG;
+        var perpFG_y = dxFG / lenFG;
+
+        var tickLen = 0.28;
+
+        // Single tick mark on FG
+        board.create('segment', [
+            [midFG_x + perpFG_x * tickLen, midFG_y + perpFG_y * tickLen],
+            [midFG_x - perpFG_x * tickLen, midFG_y - perpFG_y * tickLen]
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Tick marks for congruence on chord HJ
+        var midHJ_x = (H.X() + J.X()) / 2;
+        var midHJ_y = (H.Y() + J.Y()) / 2;
+
+        var dxHJ = J.X() - H.X();
+        var dyHJ = J.Y() - H.Y();
+        var lenHJ = Math.sqrt(dxHJ * dxHJ + dyHJ * dyHJ);
+        var perpHJ_x = -dyHJ / lenHJ;
+        var perpHJ_y = dxHJ / lenHJ;
+
+        // Single tick mark on HJ
+        board.create('segment', [
+            [midHJ_x + perpHJ_x * tickLen, midHJ_y + perpHJ_y * tickLen],
+            [midHJ_x - perpHJ_x * tickLen, midHJ_y - perpHJ_y * tickLen]
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
