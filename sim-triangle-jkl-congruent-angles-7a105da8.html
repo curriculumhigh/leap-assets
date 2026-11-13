@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle JKL</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 7, 10, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertex coordinates ──────────────────────────────────────────
+        var Jx = 1, Jy = 0;
+        var Lx = 8, Ly = 0;
+        var Kx = 4.5, Ky = 5.5;
+
+        // ── Triangle vertices ───────────────────────────────────────────
+        var ptJ = board.create('point', [Jx, Jy], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false
+        });
+        var ptK = board.create('point', [Kx, Ky], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false
+        });
+        var ptL = board.create('point', [Lx, Ly], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false
+        });
+
+        // ── Triangle edges ──────────────────────────────────────────────
+        board.create('polygon', [ptJ, ptK, ptL], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Vertex labels ───────────────────────────────────────────────
+        board.create('text', [Jx - 0.6, Jy - 0.5, 'J'], {
+            fontSize: 15, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle',
+            useKatex: true
+        });
+        board.create('text', [Kx, Ky + 0.6, 'K'], {
+            fontSize: 15, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle',
+            useKatex: true
+        });
+        board.create('text', [Lx + 0.6, Ly - 0.5, 'L'], {
+            fontSize: 15, color: '#222222',
+            fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle',
+            useKatex: true
+        });
+
+        // ── Side labels ─────────────────────────────────────────────────
+        var midJKx = (Jx + Kx) / 2;
+        var midJKy = (Jy + Ky) / 2;
+        var dxJK = Kx - Jx, dyJK = Ky - Jy;
+        var lenJK = Math.sqrt(dxJK * dxJK + dyJK * dyJK);
+        var nxJK = -dyJK / lenJK, nyJK = dxJK / lenJK;
+        board.create('text', [midJKx + nxJK * 0.6, midJKy + nyJK * 0.6, '9'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+
+        var midJLx = (Jx + Lx) / 2;
+        var midJLy = (Jy + Ly) / 2;
+        board.create('text', [midJLx, midJLy - 0.6, '14'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+
+        // ── Congruence angle marks at J and L ───────────────────────────
+        var angleJ = board.create('nonReflexAngle', [ptL, ptJ, ptK], {
+            radius: 0.8,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, highlight: false,
+            name: '', withLabel: false
+        });
+
+        var angleL = board.create('nonReflexAngle', [ptK, ptL, ptJ], {
+            radius: 0.8,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, highlight: false,
+            name: '', withLabel: false
+        });
+
+        // ── Congruence tick marks on the angle arcs ─────────────────────
+        var angJ1 = Math.atan2(Ly - Jy, Lx - Jx);
+        var angJ2 = Math.atan2(Ky - Jy, Kx - Jx);
+        var bisJ = (angJ1 + angJ2) / 2;
+        if (bisJ < 0) bisJ += Math.PI;
+        var tickR = 0.8;
+        var tickLen = 0.18;
+        var tcJx = Jx + tickR * Math.cos(bisJ);
+        var tcJy = Jy + tickR * Math.sin(bisJ);
+        var tpJx = -Math.sin(bisJ) * tickLen;
+        var tpJy = Math.cos(bisJ) * tickLen;
+        board.create('segment', [
+            [tcJx - tpJx, tcJy - tpJy],
+            [tcJx + tpJx, tcJy + tpJy]
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+
+        var angL1 = Math.atan2(Ky - Ly, Kx - Lx);
+        var angL2 = Math.atan2(Jy - Ly, Jx - Lx);
+        var bisL = (angL1 + angL2) / 2;
+        var tcLx = Lx + tickR * Math.cos(bisL);
+        var tcLy = Ly + tickR * Math.sin(bisL);
+        var tpLx = -Math.sin(bisL) * tickLen;
+        var tpLy = Math.cos(bisL) * tickLen;
+        board.create('segment', [
+            [tcLx - tpLx, tcLy - tpLy],
+            [tcLx + tpLx, tcLy + tpLy]
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 1.8,
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
