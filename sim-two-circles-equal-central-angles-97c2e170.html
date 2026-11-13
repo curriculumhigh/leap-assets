@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Circles — Equal Central Angles, Different Radii</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 700px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-16, 12, 20, -12],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_CIRCLE = '#555555';
+        var COL_POINT = '#222222';
+        var COL_ARC = '#DC2626';
+        var COL_ANGLE = '#222222';
+
+        function deg2rad(d) { return d * Math.PI / 180; }
+
+        // ── LEFT CIRCLE — center P, radius 5, central angle APB = 80° ───
+        var Px = -7, Py = 0, r1 = 5;
+        var angA = deg2rad(130);
+        var angB = deg2rad(50);
+
+        var P = board.create('point', [Px, Py], {
+            name: '', fixed: true, size: 2, color: COL_POINT, highlight: false
+        });
+
+        var circleP = board.create('circle', [P, r1], {
+            strokeColor: COL_CIRCLE, strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none'
+        });
+
+        var A = board.create('point', [Px + r1 * Math.cos(angA), Py + r1 * Math.sin(angA)], {
+            name: '', fixed: true, size: 2, color: COL_POINT, highlight: false
+        });
+
+        var B = board.create('point', [Px + r1 * Math.cos(angB), Py + r1 * Math.sin(angB)], {
+            name: '', fixed: true, size: 2, color: COL_POINT, highlight: false
+        });
+
+        board.create('segment', [P, A], {
+            strokeColor: COL_CIRCLE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [P, B], {
+            strokeColor: COL_CIRCLE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('nonReflexAngle', [A, P, B], {
+            radius: 1.0,
+            fillColor: COL_ANGLE, fillOpacity: 0.06,
+            strokeColor: COL_ANGLE, strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        var angleMidLeft = deg2rad(90);
+        board.create('text', [
+            Px + 1.55 * Math.cos(angleMidLeft),
+            Py + 1.55 * Math.sin(angleMidLeft),
+            '80^\\circ'
+        ], {
+            useKatex: true, fontSize: 12, color: COL_ANGLE,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('arc', [P, B, A], {
+            strokeColor: COL_ARC, strokeWidth: 5, fixed: true, highlight: false,
+            layer: 8, firstArrow: false, lastArrow: false
+        });
+
+        board.create('text', [Px - 0.3, Py - 0.9, 'P'], {
+            useKatex: true, fontSize: 14, color: COL_POINT,
+            anchorX: 'middle', anchorY: 'top', fixed: true, highlight: false
+        });
+        board.create('text', [
+            Px + r1 * Math.cos(angA) - 0.8,
+            Py + r1 * Math.sin(angA) + 0.4,
+            'A'
+        ], {
+            useKatex: true, fontSize: 14, color: COL_POINT,
+            anchorX: 'middle', anchorY: 'bottom', fixed: true, highlight: false
+        });
+        board.create('text', [
+            Px + r1 * Math.cos(angB) + 0.8,
+            Py + r1 * Math.sin(angB) + 0.4,
+            'B'
+        ], {
+            useKatex: true, fontSize: 14, color: COL_POINT,
+            anchorX: 'middle', anchorY: 'bottom', fixed: true, highlight: false
+        });
+
+        var midPBx = (Px + Px + r1 * Math.cos(angB)) / 2;
+        var midPBy = (Py + Py + r1 * Math.sin(angB)) / 2;
+        board.create('text', [midPBx + 0.5, midPBy - 0.5, '5'], {
+            useKatex: true, fontSize: 13, color: COL_CIRCLE,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // ── RIGHT CIRCLE — center Q, radius 9, central angle CQD = 80° ──
+        var Qx = 8, Qy = 0, r2 = 9;
+        var angC = deg2rad(130);
+        var angD = deg2rad(50);
+
+        var Q = board.create('point', [Qx, Qy], {
+            name: '', fixed: true, size: 2, color: COL_POINT, highlight: false
+        });
+
+        var circleQ = board.create('circle', [Q, r2], {
+            strokeColor: COL_CIRCLE, strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none'
+        });
+
+        var C = board.create('point', [Qx + r2 * Math.cos(angC), Qy + r2 * Math.sin(angC)], {
+            name: '', fixed: true, size: 2, color: COL_POINT, highlight: false
+        });
+
+        var D = board.create('point', [Qx + r2 * Math.cos(angD), Qy + r2 * Math.sin(angD)], {
+            name: '', fixed: true, size: 2, color: COL_POINT, highlight: false
+        });
+
+        board.create('segment', [Q, C], {
+            strokeColor: COL_CIRCLE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [Q, D], {
+            strokeColor: COL_CIRCLE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('nonReflexAngle', [C, Q, D], {
+            radius: 1.0,
+            fillColor: COL_ANGLE, fillOpacity: 0.06,
+            strokeColor: COL_ANGLE, strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        var angleMidRight = deg2rad(90);
+        board.create('text', [
+            Qx + 1.55 * Math.cos(angleMidRight),
+            Qy + 1.55 * Math.sin(angleMidRight),
+            '80^\\circ'
+        ], {
+            useKatex: true, fontSize: 12, color: COL_ANGLE,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('arc', [Q, D, C], {
+            strokeColor: COL_ARC, strokeWidth: 5, fixed: true, highlight: false,
+            layer: 8, firstArrow: false, lastArrow: false
+        });
+
+        board.create('text', [Qx - 0.3, Qy - 0.9, 'Q'], {
+            useKatex: true, fontSize: 14, color: COL_POINT,
+            anchorX: 'middle', anchorY: 'top', fixed: true, highlight: false
+        });
+        board.create('text', [
+            Qx + r2 * Math.cos(angC) - 1.0,
+            Qy + r2 * Math.sin(angC) + 0.5,
+            'C'
+        ], {
+            useKatex: true, fontSize: 14, color: COL_POINT,
+            anchorX: 'middle', anchorY: 'bottom', fixed: true, highlight: false
+        });
+        board.create('text', [
+            Qx + r2 * Math.cos(angD) + 1.0,
+            Qy + r2 * Math.sin(angD) + 0.5,
+            'D'
+        ], {
+            useKatex: true, fontSize: 14, color: COL_POINT,
+            anchorX: 'middle', anchorY: 'bottom', fixed: true, highlight: false
+        });
+
+        var midQDx = (Qx + Qx + r2 * Math.cos(angD)) / 2;
+        var midQDy = (Qy + Qy + r2 * Math.sin(angD)) / 2;
+        board.create('text', [midQDx + 0.6, midQDy - 0.6, '9'], {
+            useKatex: true, fontSize: 13, color: COL_CIRCLE,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
