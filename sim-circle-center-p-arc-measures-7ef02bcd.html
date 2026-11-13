@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle with Center P — Arc Measures</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 6, 6, -6],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 4;
+
+        var angE = 135 * Math.PI / 180;
+        var angF = 40 * Math.PI / 180;
+        var angG = 326 * Math.PI / 180;
+        var angH = 218 * Math.PI / 180;
+
+        // ── Center point P ──────────────────────────────────────────────
+        var P = board.create('point', [0, 0], {
+            name: 'P', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [6, -10] }
+        });
+
+        // ── Circle ──────────────────────────────────────────────────────
+        var circle = board.create('circle', [P, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Points on circle ────────────────────────────────────────────
+        var E = board.create('point', [R * Math.cos(angE), R * Math.sin(angE)], {
+            name: 'E', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-14, 6] }
+        });
+
+        var F = board.create('point', [R * Math.cos(angF), R * Math.sin(angF)], {
+            name: 'F', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [8, 6] }
+        });
+
+        var G = board.create('point', [R * Math.cos(angG), R * Math.sin(angG)], {
+            name: 'G', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [8, -10] }
+        });
+
+        var H = board.create('point', [R * Math.cos(angH), R * Math.sin(angH)], {
+            name: 'H', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-14, -10] }
+        });
+
+        // ── Radii (segments from P to each point) ───────────────────────
+        var radii = [E, F, G, H];
+        for (var i = 0; i < radii.length; i++) {
+            board.create('segment', [P, radii[i]], {
+                strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+
+        // ── Central angle arc markers and labels ────────────────────────
+        function cwMidAngle(a1, a2) {
+            var diff = a1 - a2;
+            if (diff < 0) diff += 2 * Math.PI;
+            var mid = a1 - diff / 2;
+            return mid;
+        }
+
+        function makeAngleArc(startAng, endAng, col) {
+            var arcR = 0.7;
+            var diff = startAng - endAng;
+            if (diff < 0) diff += 2 * Math.PI;
+
+            board.create('curve', [
+                function(t) { return arcR * Math.cos(t); },
+                function(t) { return arcR * Math.sin(t); },
+                endAng,
+                startAng
+            ], {
+                strokeColor: col || '#888888', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+
+        makeAngleArc(angE, angF, '#888888');
+        makeAngleArc(angF, angG, '#888888');
+        makeAngleArc(angG, angH, '#888888');
+
+        // ── Angle measure labels ────────────────────────────────────────
+        var labelR = 1.5;
+
+        var midEF = cwMidAngle(angE, angF);
+        board.create('text', [
+            labelR * Math.cos(midEF),
+            labelR * Math.sin(midEF),
+            '95°'
+        ], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12,
+            color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+
+        var midFG = cwMidAngle(angF, angG);
+        board.create('text', [
+            labelR * Math.cos(midFG),
+            labelR * Math.sin(midFG),
+            '74°'
+        ], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12,
+            color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+
+        var midGH = cwMidAngle(angG, angH);
+        board.create('text', [
+            labelR * Math.cos(midGH),
+            labelR * Math.sin(midGH),
+            '108°'
+        ], {
+            anchorX: 'middle', anchorY: 'middle', fontSize: 12,
+            color: '#222222', fixed: true, highlight: false, useKatex: true
+        });
+    </script>
+</body>
+</html>
