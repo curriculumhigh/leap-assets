@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parallelogram PQRS with Diagonal QS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 5.8, 8, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var P = board.create('point', [1, 4.5], {
+            name: 'P', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, 5] }
+        });
+        var Q = board.create('point', [6, 4.5], {
+            name: 'Q', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, 5] }
+        });
+        var R = board.create('point', [5, 1], {
+            name: 'R', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, -12] }
+        });
+        var S = board.create('point', [0, 1], {
+            name: 'S', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, -12] }
+        });
+
+        // ── Polygon (no fill) ───────────────────────────────────────────
+        board.create('polygon', [P, Q, R, S], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Diagonal QS ────────────────────────────────────────────────
+        board.create('segment', [Q, S], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Parallel tick mark helpers ──────────────────────────────────
+        function drawParallelTicks(p1, p2, arrowCount) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var ux = dx / len;
+            var uy = dy / len;
+
+            var arrowLen = 0.28;
+            var arrowSpread = 0.18;
+            var spacing = 0.18;
+
+            if (arrowCount === 1) {
+                var tipX = mx + ux * arrowLen;
+                var tipY = my + uy * arrowLen;
+
+                var arm1X = tipX - ux * arrowLen * 1.1 + uy * arrowSpread;
+                var arm1Y = tipY - uy * arrowLen * 1.1 - ux * arrowSpread;
+                var arm2X = tipX - ux * arrowLen * 1.1 - uy * arrowSpread;
+                var arm2Y = tipY - uy * arrowLen * 1.1 + ux * arrowSpread;
+
+                board.create('segment', [[tipX, tipY], [arm1X, arm1Y]], {
+                    strokeColor: '#555555', strokeWidth: 1.3, fixed: true, highlight: false
+                });
+                board.create('segment', [[tipX, tipY], [arm2X, arm2Y]], {
+                    strokeColor: '#555555', strokeWidth: 1.3, fixed: true, highlight: false
+                });
+            } else if (arrowCount === 2) {
+                for (var i = -1; i <= 1; i += 2) {
+                    var cx = mx + ux * spacing * i;
+                    var cy = my + uy * spacing * i;
+
+                    var tipX2 = cx + ux * arrowLen;
+                    var tipY2 = cy + uy * arrowLen;
+
+                    var a1X = tipX2 - ux * arrowLen * 1.1 + uy * arrowSpread;
+                    var a1Y = tipY2 - uy * arrowLen * 1.1 - ux * arrowSpread;
+                    var a2X = tipX2 - ux * arrowLen * 1.1 - uy * arrowSpread;
+                    var a2Y = tipY2 - uy * arrowLen * 1.1 + ux * arrowSpread;
+
+                    board.create('segment', [[tipX2, tipY2], [a1X, a1Y]], {
+                        strokeColor: '#555555', strokeWidth: 1.3, fixed: true, highlight: false
+                    });
+                    board.create('segment', [[tipX2, tipY2], [a2X, a2Y]], {
+                        strokeColor: '#555555', strokeWidth: 1.3, fixed: true, highlight: false
+                    });
+                }
+            }
+        }
+
+        // ── Single arrows on PQ and SR (PQ ∥ SR) ───────────────────────
+        drawParallelTicks(P, Q, 1);
+        drawParallelTicks(S, R, 1);
+
+        // ── Double arrows on PS and QR (PS ∥ QR) ───────────────────────
+        drawParallelTicks(P, S, 2);
+        drawParallelTicks(Q, R, 2);
+
+    </script>
+</body>
+</html>
