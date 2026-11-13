@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collinear Points with Segments to N</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 5.5, 8.5, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var yLine = 1;
+        var xJ = 1, xK = 3, xL = 5, xM = 7;
+        var ptStyle = { fixed: true, size: 2, color: '#222222', highlight: false, showInfobox: false };
+
+        var J = board.create('point', [xJ, yLine], JXG.merge(ptStyle, {
+            name: 'J',
+            label: { fontSize: 14, color: '#222222', offset: [-4, -18] }
+        }));
+        var K = board.create('point', [xK, yLine], JXG.merge(ptStyle, {
+            name: 'K',
+            label: { fontSize: 14, color: '#222222', offset: [-4, -18] }
+        }));
+        var L = board.create('point', [xL, yLine], JXG.merge(ptStyle, {
+            name: 'L',
+            label: { fontSize: 14, color: '#222222', offset: [-4, -18] }
+        }));
+        var M = board.create('point', [xM, yLine], JXG.merge(ptStyle, {
+            name: 'M',
+            label: { fontSize: 14, color: '#222222', offset: [-4, -18] }
+        }));
+
+        var N = board.create('point', [4, 4.5], JXG.merge(ptStyle, {
+            name: 'N',
+            label: { fontSize: 14, color: '#222222', offset: [0, 14] }
+        }));
+
+        var segStyle = { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false };
+
+        board.create('segment', [J, M], segStyle);
+        board.create('segment', [J, N], segStyle);
+        board.create('segment', [K, N], segStyle);
+        board.create('segment', [L, N], segStyle);
+        board.create('segment', [M, N], segStyle);
+    </script>
+</body>
+</html>
