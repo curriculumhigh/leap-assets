@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle with Central Angles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 7, 7, -7],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 4.5;
+
+        var angA_deg = 80;
+        var angB_deg = angA_deg - 100;
+        var angC_deg = angB_deg - 80;
+        var angD_deg = angC_deg - 120;
+
+        var angA = angA_deg * Math.PI / 180;
+        var angB = angB_deg * Math.PI / 180;
+        var angC = angC_deg * Math.PI / 180;
+        var angD = angD_deg * Math.PI / 180;
+
+        var P = board.create('point', [0, 0], {
+            name: 'P', fixed: true, size: 2.5, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-18, -14] }
+        });
+
+        board.create('circle', [P, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none', fillOpacity: 0
+        });
+
+        function circPt(ang) {
+            return [R * Math.cos(ang), R * Math.sin(ang)];
+        }
+
+        function labelOffset(ang) {
+            var dx = Math.cos(ang);
+            var dy = Math.sin(ang);
+            return [Math.round(dx * 20), Math.round(dy * 20)];
+        }
+
+        var A = board.create('point', circPt(angA), {
+            name: 'A', fixed: true, size: 2.5, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: labelOffset(angA) }
+        });
+
+        var B = board.create('point', circPt(angB), {
+            name: 'B', fixed: true, size: 2.5, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: labelOffset(angB) }
+        });
+
+        var C = board.create('point', circPt(angC), {
+            name: 'C', fixed: true, size: 2.5, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: labelOffset(angC) }
+        });
+
+        var D = board.create('point', circPt(angD), {
+            name: 'D', fixed: true, size: 2.5, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: labelOffset(angD) }
+        });
+
+        board.create('segment', [P, A], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [P, B], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [P, C], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [P, D], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        board.create('arc', [P, B, A], {
+            strokeColor: '#DC2626', strokeWidth: 5.5, fixed: true, highlight: false, layer: 8
+        });
+
+        var lblR = R * 0.52;
+
+        function bisector(a1_deg, a2_deg) {
+            var a1 = a1_deg;
+            var a2 = a2_deg;
+            var span = a1 - a2;
+            if (span < 0) span += 360;
+            var mid = a2 + span / 2;
+            return mid * Math.PI / 180;
+        }
+
+        var bisAPB = bisector(angA_deg, angB_deg);
+        board.create('text', [
+            lblR * Math.cos(bisAPB), lblR * Math.sin(bisAPB), '5x^\\circ'
+        ], {
+            useKatex: true, fontSize: 15, color: '#333333',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        var bisBPC = bisector(angB_deg, angC_deg);
+        board.create('text', [
+            lblR * Math.cos(bisBPC), lblR * Math.sin(bisBPC), '4x^\\circ'
+        ], {
+            useKatex: true, fontSize: 15, color: '#333333',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        var bisCPD = bisector(angC_deg, angD_deg);
+        board.create('text', [
+            lblR * Math.cos(bisCPD), lblR * Math.sin(bisCPD), '6x^\\circ'
+        ], {
+            useKatex: true, fontSize: 15, color: '#333333',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        var bisDPA = bisector(140, angA_deg);
+        board.create('text', [
+            lblR * Math.cos(bisDPA), lblR * Math.sin(bisDPA), '3x^\\circ'
+        ], {
+            useKatex: true, fontSize: 15, color: '#333333',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
