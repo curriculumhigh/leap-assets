@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perpendicular Chord Bisector Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.8, 6.2, 5.8, -6.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 3.8;
+
+        var P = board.create('point', [0, 0], {
+            name: 'P', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [8, -8] }
+        });
+
+        var circle = board.create('circle', [P, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var Q = board.create('point', [0, R], {
+            name: 'Q', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-4, 10] }
+        });
+        var Rpt = board.create('point', [0, -R], {
+            name: 'R', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-4, -14] }
+        });
+
+        board.create('segment', [Q, Rpt], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var My = 1.2;
+        var halfChord = Math.sqrt(R * R - My * My);
+
+        var M = board.create('point', [0, My], {
+            name: 'M', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [8, -4] }
+        });
+
+        var E = board.create('point', [-halfChord, My], {
+            name: 'E', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-16, -4] }
+        });
+
+        var F = board.create('point', [halfChord, My], {
+            name: 'F', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [8, -4] }
+        });
+
+        board.create('segment', [E, F], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var sq = 0.35;
+        board.create('polygon', [
+            [sq, My], [sq, My + sq], [0, My + sq], [0, My]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false },
+            vertices: { visible: false },
+            fixed: true, highlight: false, hasInnerPoints: false
+        });
+
+        var angE_deg = Math.atan2(E.Y(), E.X());
+        var angQ = Math.PI / 2;
+        var angF_rad = Math.atan2(F.Y(), F.X());
+
+        var midQE_angle = (angQ + angE_deg) / 2;
+        var labelR = R + 0.9;
+
+        board.create('text', [
+            labelR * Math.cos(midQE_angle), labelR * Math.sin(midQE_angle),
+            '(3x+5)^{\\circ}'
+        ], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var midQF_angle = (angQ + angF_rad) / 2;
+
+        board.create('text', [
+            labelR * Math.cos(midQF_angle), labelR * Math.sin(midQF_angle),
+            '35^{\\circ}'
+        ], {
+            useKatex: true, fontSize: 12, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        board.create('curve', [
+            function(t) { return (R + 0.3) * Math.cos(t); },
+            function(t) { return (R + 0.3) * Math.sin(t); },
+            angE_deg, angQ
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        board.create('curve', [
+            function(t) { return (R + 0.3) * Math.cos(t); },
+            function(t) { return (R + 0.3) * Math.sin(t); },
+            angF_rad, angQ
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
