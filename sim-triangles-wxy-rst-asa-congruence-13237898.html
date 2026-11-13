@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangles WXY and RST — ASA Congruence</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white; border-radius: 8px; padding: 10px;
+            height: calc(100% - 20px);
+        }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1, 6.5, 15, -1.5],
+            axis: false, grid: false,
+            keepAspectRatio: true,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false }, zoom: { enabled: false }
+        });
+
+        var COL_OUTLINE = '#555555';
+        var COL_ANGLE1 = '#2563EB';
+        var COL_ANGLE2 = '#059669';
+        var COL_TICK = '#DC2626';
+
+        // ── Triangle WXY (left) ─────────────────────────────────────────
+        var W = board.create('point', [0.5, 5.0], {
+            name: 'W', fixed: true, size: 2, color: COL_OUTLINE,
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-14, 6], useKatex: true }
+        });
+        var X = board.create('point', [4.8, 5.3], {
+            name: 'X', fixed: true, size: 2, color: COL_OUTLINE,
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, 6], useKatex: true }
+        });
+        var Y = board.create('point', [2.0, 0.5], {
+            name: 'Y', fixed: true, size: 2, color: COL_OUTLINE,
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, -16], useKatex: true }
+        });
+
+        board.create('polygon', [W, X, Y], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_OUTLINE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        W.setAttribute({ visible: true });
+        X.setAttribute({ visible: true });
+        Y.setAttribute({ visible: true });
+
+        // ── Triangle RST (right) ────────────────────────────────────────
+        var R = board.create('point', [8.5, 4.8], {
+            name: 'R', fixed: true, size: 2, color: COL_OUTLINE,
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-14, 6], useKatex: true }
+        });
+        var S = board.create('point', [13.2, 5.2], {
+            name: 'S', fixed: true, size: 2, color: COL_OUTLINE,
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [6, 6], useKatex: true }
+        });
+        var T = board.create('point', [10.2, 0.3], {
+            name: 'T', fixed: true, size: 2, color: COL_OUTLINE,
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, -16], useKatex: true }
+        });
+
+        board.create('polygon', [R, S, T], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_OUTLINE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+        R.setAttribute({ visible: true });
+        S.setAttribute({ visible: true });
+        T.setAttribute({ visible: true });
+
+        // ── Angle marks ─────────────────────────────────────────────────
+
+        // Single arc: ∠W
+        board.create('nonReflexAngle', [X, W, Y], {
+            radius: 0.55,
+            fillColor: COL_ANGLE1, fillOpacity: 0.10,
+            strokeColor: COL_ANGLE1, strokeWidth: 1.8,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Single arc: ∠R
+        board.create('nonReflexAngle', [S, R, T], {
+            radius: 0.55,
+            fillColor: COL_ANGLE1, fillOpacity: 0.10,
+            strokeColor: COL_ANGLE1, strokeWidth: 1.8,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Double arc: ∠X (inner)
+        board.create('nonReflexAngle', [Y, X, W], {
+            radius: 0.45,
+            fillColor: COL_ANGLE2, fillOpacity: 0.08,
+            strokeColor: COL_ANGLE2, strokeWidth: 1.8,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        // Double arc: ∠X (outer)
+        board.create('nonReflexAngle', [Y, X, W], {
+            radius: 0.65,
+            fillColor: 'none', fillOpacity: 0,
+            strokeColor: COL_ANGLE2, strokeWidth: 1.8,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // Double arc: ∠S (inner)
+        board.create('nonReflexAngle', [T, S, R], {
+            radius: 0.45,
+            fillColor: COL_ANGLE2, fillOpacity: 0.08,
+            strokeColor: COL_ANGLE2, strokeWidth: 1.8,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+        // Double arc: ∠S (outer)
+        board.create('nonReflexAngle', [T, S, R], {
+            radius: 0.65,
+            fillColor: 'none', fillOpacity: 0,
+            strokeColor: COL_ANGLE2, strokeWidth: 1.8,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // ── Tick marks on congruent sides XY and ST ─────────────────────
+
+        function drawTickMark(p1, p2, color) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var tickLen = 0.3;
+            board.create('segment', [
+                [mx + px * tickLen, my + py * tickLen],
+                [mx - px * tickLen, my - py * tickLen]
+            ], {
+                strokeColor: color, strokeWidth: 2.2,
+                fixed: true, highlight: false
+            });
+        }
+
+        drawTickMark(X, Y, COL_TICK);
+        drawTickMark(S, T, COL_TICK);
+
+    </script>
+</body>
+</html>
