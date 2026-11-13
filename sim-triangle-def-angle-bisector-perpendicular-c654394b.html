@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle DEF with Angle Bisector EG</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4, 6.5, 4, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var Gx = 0, Gy = 0;
+        var halfBase = 2.8;
+        var height = 4.5;
+
+        var D = board.create('point', [-halfBase, Gy], {
+            name: 'D', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-16, -10] }
+        });
+
+        var F = board.create('point', [halfBase, Gy], {
+            name: 'F', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -10] }
+        });
+
+        var E = board.create('point', [Gx, height], {
+            name: 'E', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, 12] }
+        });
+
+        var G = board.create('point', [Gx, Gy], {
+            name: 'G', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, -16] }
+        });
+
+        // ── Triangle edges ──────────────────────────────────────────────
+        board.create('segment', [D, E], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [E, F], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [D, F], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Segment EG (perpendicular / angle bisector) ─────────────────
+        board.create('segment', [E, G], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Right-angle mark at G ───────────────────────────────────────
+        var sqSize = 0.35;
+        var sq1 = board.create('point', [Gx + sqSize, Gy], { visible: false, fixed: true, name: '' });
+        var sq2 = board.create('point', [Gx + sqSize, Gy + sqSize], { visible: false, fixed: true, name: '' });
+        var sq3 = board.create('point', [Gx, Gy + sqSize], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [sq1, sq2], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [sq2, sq3], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Congruent angle arcs at E (∠DEG and ∠FEG) ──────────────────
+        var arcDEG = board.create('nonReflexAngle', [D, E, G], {
+            radius: 0.7,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fillColor: '#DC2626', fillOpacity: 0.06,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        var arcFEG = board.create('nonReflexAngle', [G, E, F], {
+            radius: 0.7,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fillColor: '#DC2626', fillOpacity: 0.06,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        // ── Congruence tick marks on the angle arcs ─────────────────────
+        var angToD = Math.atan2(D.Y() - E.Y(), D.X() - E.X());
+        var angToG = Math.atan2(G.Y() - E.Y(), G.X() - E.X());
+        var angToF = Math.atan2(F.Y() - E.Y(), F.X() - E.X());
+
+        function midAngle(a1, a2) {
+            var diff = a2 - a1;
+            if (diff > Math.PI) diff -= 2 * Math.PI;
+            if (diff < -Math.PI) diff += 2 * Math.PI;
+            return a1 + diff / 2;
+        }
+
+        var midDEG = midAngle(angToD, angToG);
+        var midFEG = midAngle(angToG, angToF);
+
+        var tickR = 0.7;
+        var tickLen = 0.15;
+
+        // Tick on arc DEG
+        var tdx = E.X() + tickR * Math.cos(midDEG);
+        var tdy = E.Y() + tickR * Math.sin(midDEG);
+        var perpDEGx = -Math.sin(midDEG);
+        var perpDEGy = Math.cos(midDEG);
+
+        board.create('segment', [
+            [tdx - tickLen * perpDEGx, tdy - tickLen * perpDEGy],
+            [tdx + tickLen * perpDEGx, tdy + tickLen * perpDEGy]
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Tick on arc FEG
+        var tfx = E.X() + tickR * Math.cos(midFEG);
+        var tfy = E.Y() + tickR * Math.sin(midFEG);
+        var perpFEGx = -Math.sin(midFEG);
+        var perpFEGy = Math.cos(midFEG);
+
+        board.create('segment', [
+            [tfx - tickLen * perpFEGx, tfy - tickLen * perpFEGy],
+            [tfx + tickLen * perpFEGx, tfy + tickLen * perpFEGy]
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
