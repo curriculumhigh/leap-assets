@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadrilateral QPSR</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 6.2, 8, -2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var pP = [0, 0];
+        var pS = [6, 0];
+        var pQ = [0, 4];
+        var pR = [6, 4];
+        var pN = [3, 0];
+
+        var ptStyle = { size: 2, color: '#222222', fixed: true, highlight: false, showInfobox: false };
+
+        var P = board.create('point', pP, JXG.merge(ptStyle, {
+            name: 'P', label: { fontSize: 14, color: '#222222', offset: [-18, -14] }
+        }));
+        var S = board.create('point', pS, JXG.merge(ptStyle, {
+            name: 'S', label: { fontSize: 14, color: '#222222', offset: [8, -14] }
+        }));
+        var Q = board.create('point', pQ, JXG.merge(ptStyle, {
+            name: 'Q', label: { fontSize: 14, color: '#222222', offset: [-18, 6] }
+        }));
+        var R = board.create('point', pR, JXG.merge(ptStyle, {
+            name: 'R', label: { fontSize: 14, color: '#222222', offset: [8, 6] }
+        }));
+        var N = board.create('point', pN, JXG.merge(ptStyle, {
+            name: 'N', label: { fontSize: 14, color: '#222222', offset: [6, -16] }
+        }));
+
+        var segStyle = { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false };
+
+        board.create('segment', [Q, P], segStyle);
+        board.create('segment', [S, R], segStyle);
+        board.create('segment', [P, N], segStyle);
+        board.create('segment', [N, S], segStyle);
+        board.create('segment', [Q, N], segStyle);
+        board.create('segment', [N, R], segStyle);
+
+        var raSize = 0.4;
+        var raStyle = { strokeColor: '#DC2626', strokeWidth: 1.5, fixed: true, highlight: false };
+
+        board.create('segment', [[pP[0] + raSize, pP[1]], [pP[0] + raSize, pP[1] + raSize]], raStyle);
+        board.create('segment', [[pP[0] + raSize, pP[1] + raSize], [pP[0], pP[1] + raSize]], raStyle);
+
+        board.create('segment', [[pS[0] - raSize, pS[1]], [pS[0] - raSize, pS[1] + raSize]], raStyle);
+        board.create('segment', [[pS[0] - raSize, pS[1] + raSize], [pS[0], pS[1] + raSize]], raStyle);
+
+        function drawTicks(p1, p2, numTicks) {
+            var mx = (p1[0] + p2[0]) / 2;
+            var my = (p1[1] + p2[1]) / 2;
+            var dx = p2[0] - p1[0];
+            var dy = p2[1] - p1[1];
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var ux = dx / len;
+            var uy = dy / len;
+            var px = -uy;
+            var py = ux;
+            var tickHalf = 0.28;
+            var spacing = 0.2;
+
+            for (var i = 0; i < numTicks; i++) {
+                var offset = (i - (numTicks - 1) / 2) * spacing;
+                var cx = mx + offset * ux;
+                var cy = my + offset * uy;
+                board.create('segment', [
+                    [cx - tickHalf * px, cy - tickHalf * py],
+                    [cx + tickHalf * px, cy + tickHalf * py]
+                ], {
+                    strokeColor: '#DC2626',
+                    strokeWidth: 2.0,
+                    fixed: true,
+                    highlight: false
+                });
+            }
+        }
+
+        drawTicks(pQ, pN, 1);
+        drawTicks(pR, pN, 1);
+
+        drawTicks(pP, pN, 2);
+        drawTicks(pN, pS, 2);
+
+    </script>
+</body>
+</html>
