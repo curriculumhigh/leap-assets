@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collinear Points with Point T</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.5, 7.5, 13.5, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var Px = 1, Py = 1;
+        var Qx = 4, Qy = 1;
+        var Rx = 7, Ry = 1;
+        var Sx = 10, Sy = 1;
+
+        var qtAngle = 70 * Math.PI / 180;
+        var Tx = Qx + 3 * Math.cos(qtAngle);
+        var Ty = Qy + 3 * Math.sin(qtAngle);
+
+        var ptsStyle = {
+            size: 2, color: '#222222', fixed: true, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [0, -18] }
+        };
+
+        var P = board.create('point', [Px, Py], JXG.merge(ptsStyle, { name: 'P' }));
+        var Q = board.create('point', [Qx, Qy], JXG.merge(ptsStyle, { name: 'Q' }));
+        var R = board.create('point', [Rx, Ry], JXG.merge(ptsStyle, { name: 'R' }));
+        var S = board.create('point', [Sx, Sy], JXG.merge(ptsStyle, { name: 'S' }));
+
+        var T = board.create('point', [Tx, Ty], {
+            name: 'T', size: 2, color: '#222222', fixed: true, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: '#222222', offset: [0, 14] }
+        });
+
+        board.create('segment', [P, S], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var segStyle = { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false };
+
+        board.create('segment', [P, T], segStyle);
+        board.create('segment', [Q, T], segStyle);
+        board.create('segment', [R, T], segStyle);
+        board.create('segment', [S, T], segStyle);
+
+    </script>
+</body>
+</html>
