@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle with Central Angles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 6.5, 6.5, -6.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 4.2;
+
+        var COL_PCQ = '#2563EB';
+        var COL_QCR = '#059669';
+        var COL_RCS = '#D97706';
+        var COL_SCT = '#7C3AED';
+        var COL_TCP = '#DC2626';
+
+        var ANG_PCQ = 95;
+        var ANG_QCR = 50;
+        var ANG_RCS = 80;
+        var ANG_SCT = 75;
+        var ANG_TCP = 60;
+
+        var angP_deg = 90;
+        var angQ_deg = angP_deg - ANG_PCQ;
+        var angR_deg = angQ_deg - ANG_QCR;
+        var angS_deg = angR_deg - ANG_RCS;
+        var angT_deg = angS_deg - ANG_SCT;
+
+        function degToRad(d) { return d * Math.PI / 180; }
+
+        var angP = degToRad(angP_deg);
+        var angQ = degToRad(angQ_deg);
+        var angR = degToRad(angR_deg);
+        var angS = degToRad(angS_deg);
+        var angT = degToRad(angT_deg);
+
+        var C = board.create('point', [0, 0], {
+            name: 'C', fixed: true, size: 2.5, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, -10] }
+        });
+
+        var circle = board.create('circle', [C, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none', fillOpacity: 0
+        });
+
+        function makeCirclePoint(angle, name, labelOffset) {
+            var x = R * Math.cos(angle);
+            var y = R * Math.sin(angle);
+            return board.create('point', [x, y], {
+                name: name, fixed: true, size: 2.5, color: '#222222', highlight: false,
+                label: { fontSize: 15, color: '#222222', offset: labelOffset, fontWeight: 'bold' }
+            });
+        }
+
+        var P = makeCirclePoint(angP, 'P', [0, 14]);
+        var Q = makeCirclePoint(angQ, 'Q', [12, 2]);
+        var Rpt = makeCirclePoint(angR, 'R', [10, -10]);
+        var S = makeCirclePoint(angS, 'S', [-16, -10]);
+        var T = makeCirclePoint(angT, 'T', [-16, 8]);
+
+        var points = [P, Q, Rpt, S, T];
+        for (var i = 0; i < points.length; i++) {
+            board.create('segment', [C, points[i]], {
+                strokeColor: '#555555', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+        }
+
+        var ARC_RADIUS = 1.05;
+        var LABEL_RADIUS = 1.55;
+
+        function makeAngleArc(fromPt, toPt, color, degreeMeasure) {
+            var arcPt = board.create('point', [
+                ARC_RADIUS * Math.cos(Math.atan2(toPt.Y(), toPt.X())),
+                ARC_RADIUS * Math.sin(Math.atan2(toPt.Y(), toPt.X()))
+            ], { visible: false, fixed: true, name: '' });
+
+            board.create('arc', [C, arcPt, fromPt], {
+                strokeColor: color, strokeWidth: 2.5, fixed: true, highlight: false,
+                fillColor: color, fillOpacity: 0.08,
+                firstArrow: false, lastArrow: false
+            });
+        }
+
+        function makeArcLabel(fromAngle, toAngle, color, text) {
+            var sweep = fromAngle - toAngle;
+            if (sweep < 0) sweep += 2 * Math.PI;
+            var midAngle = fromAngle - sweep / 2;
+            var lx = LABEL_RADIUS * Math.cos(midAngle);
+            var ly = LABEL_RADIUS * Math.sin(midAngle);
+            board.create('text', [lx, ly, text], {
+                useKatex: true, fontSize: 12, color: color,
+                anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false,
+                cssStyle: 'font-weight:bold'
+            });
+        }
+
+        makeAngleArc(P, Q, COL_PCQ, ANG_PCQ);
+        makeAngleArc(Q, Rpt, COL_QCR, ANG_QCR);
+        makeAngleArc(Rpt, S, COL_RCS, ANG_RCS);
+        makeAngleArc(S, T, COL_SCT, ANG_SCT);
+        makeAngleArc(T, P, COL_TCP, ANG_TCP);
+
+        makeArcLabel(angP, angQ, COL_PCQ, '95^\\circ');
+        makeArcLabel(angQ, angR, COL_QCR, '50^\\circ');
+        makeArcLabel(angR, angS, COL_RCS, '80^\\circ');
+        makeArcLabel(angS, angT, COL_SCT, '75^\\circ');
+        makeArcLabel(angT, angP, COL_TCP, '60^\\circ');
+
+    </script>
+</body>
+</html>
