@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equidistant Chords Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 6.5, 6.5, -6.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 4.2;
+
+        // ── Center point C ──────────────────────────────────────────────
+        var C = board.create('point', [0, 0], {
+            name: 'C', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, -2] }
+        });
+
+        // ── Circle ──────────────────────────────────────────────────────
+        var circle = board.create('circle', [C, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        // ── Chord VW (near top) ─────────────────────────────────────────
+        var My = 1.8;
+        var halfChordVW = Math.sqrt(R * R - My * My);
+
+        var V = board.create('point', [-halfChordVW, My], {
+            name: 'V', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-14, 4] }
+        });
+        var W = board.create('point', [halfChordVW, My], {
+            name: 'W', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, 4] }
+        });
+        var M = board.create('point', [0, My], {
+            name: 'M', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, 6] }
+        });
+
+        board.create('segment', [V, W], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Chord XY (near bottom) ──────────────────────────────────────
+        var Ny = -My;
+        var halfChordXY = Math.sqrt(R * R - Ny * Ny);
+
+        var X = board.create('point', [-halfChordXY, Ny], {
+            name: 'X', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [-14, -10] }
+        });
+        var Y = board.create('point', [halfChordXY, Ny], {
+            name: 'Y', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, -10] }
+        });
+        var N = board.create('point', [0, Ny], {
+            name: 'N', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 15, color: '#222222', offset: [8, -10] }
+        });
+
+        board.create('segment', [X, Y], {
+            strokeColor: '#555555', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // ── Perpendicular segments CM and CN ────────────────────────────
+        board.create('segment', [C, M], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [C, N], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marks at M and N ────────────────────────────────
+        var raSize = 0.35;
+
+        var raM = board.create('polygon', [
+            [raSize, My],
+            [raSize, My - raSize],
+            [0, My - raSize],
+            [0, My]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 1.2 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        var raN = board.create('polygon', [
+            [raSize, Ny],
+            [raSize, Ny + raSize],
+            [0, Ny + raSize],
+            [0, Ny]
+        ], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 1.2 },
+            vertices: { visible: false },
+            fixed: true, highlight: false
+        });
+
+        // ── Tick marks on CM and CN (congruence marks) ──────────────────
+        var tickLen = 0.3;
+        var tickColor = '#DC2626';
+        var tickWidth = 2.0;
+
+        var cmMidY = My / 2;
+        board.create('segment', [[-tickLen, cmMidY], [tickLen, cmMidY]], {
+            strokeColor: tickColor, strokeWidth: tickWidth, fixed: true, highlight: false
+        });
+
+        var cnMidY = Ny / 2;
+        board.create('segment', [[-tickLen, cnMidY], [tickLen, cnMidY]], {
+            strokeColor: tickColor, strokeWidth: tickWidth, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
