@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Triangles — PQ SR Congruence</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.8, 6.5, 12.8, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Point coordinates ───────────────────────────────────────────
+        var pX = 1, qX = 3.5, rX = 5.5, sX = 8;
+        var lineY = 0;
+        var tX = 4.5, tY = 5;
+
+        // ── Points (all fixed, small, no infobox) ───────────────────────
+        var P = board.create('point', [pX, lineY], {
+            name: 'P', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-5, -18] }
+        });
+        var Q = board.create('point', [qX, lineY], {
+            name: 'Q', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-5, -18] }
+        });
+        var R = board.create('point', [rX, lineY], {
+            name: 'R', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-5, -18] }
+        });
+        var S = board.create('point', [sX, lineY], {
+            name: 'S', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-5, -18] }
+        });
+        var T = board.create('point', [tX, tY], {
+            name: 'T', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [0, 12] }
+        });
+
+        // ── Horizontal line through P, Q, R, S ─────────────────────────
+        board.create('segment', [[-0.2, lineY], [9.2, lineY]], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Segments from T to each point ───────────────────────────────
+        board.create('segment', [T, P], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [T, Q], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [T, R], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [T, S], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Congruence tick marks on PQ and SR (red) ────────────────────
+        var TICK_COLOR = '#DC2626';
+        var TICK_LEN = 0.3;
+        var TICK_WIDTH = 2.0;
+
+        function drawTick(x, y, dx, dy) {
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var nx = -dy / len * TICK_LEN;
+            var ny = dx / len * TICK_LEN;
+            board.create('segment', [[x - nx, y - ny], [x + nx, y + ny]], {
+                strokeColor: TICK_COLOR, strokeWidth: TICK_WIDTH, fixed: true, highlight: false
+            });
+        }
+
+        // PQ midpoint tick
+        var midPQ_x = (pX + qX) / 2;
+        drawTick(midPQ_x, lineY, 1, 0);
+
+        // SR midpoint tick
+        var midSR_x = (sX + rX) / 2;
+        drawTick(midSR_x, lineY, 1, 0);
+
+        // ── Angle arcs ──────────────────────────────────────────────────
+        var COL_ANGLE1 = '#2563EB';   // blue — single arc pair
+        var COL_ANGLE2 = '#059669';   // green — double arc pair
+
+        // ── Blue single arcs: ∠TPQ (at P) ≅ ∠TSR (at S) ────────────────
+
+        // ∠TPQ at vertex P: between rays PQ (right) and PT (up-right)
+        board.create('nonReflexAngle', [Q, P, T], {
+            radius: 0.7,
+            fillColor: COL_ANGLE1, fillOpacity: 0.08,
+            strokeColor: COL_ANGLE1, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // ∠TSR at vertex S: between rays ST (up-left) and SR (left)
+        board.create('nonReflexAngle', [T, S, R], {
+            radius: 0.7,
+            fillColor: COL_ANGLE1, fillOpacity: 0.08,
+            strokeColor: COL_ANGLE1, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // ── Green double arcs: ∠TQR (at Q) ≅ ∠TRQ (at R) ──────────────
+
+        // ∠TQR at vertex Q: between rays QT (up) and QR (right)
+        board.create('nonReflexAngle', [T, Q, R], {
+            radius: 0.7,
+            fillColor: COL_ANGLE2, fillOpacity: 0.08,
+            strokeColor: COL_ANGLE2, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+        // Inner arc for double-arc effect
+        board.create('nonReflexAngle', [T, Q, R], {
+            radius: 0.5,
+            fillColor: 'none', fillOpacity: 0,
+            strokeColor: COL_ANGLE2, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // ∠TRQ at vertex R: between rays RQ (left) and RT (up)
+        board.create('nonReflexAngle', [Q, R, T], {
+            radius: 0.7,
+            fillColor: COL_ANGLE2, fillOpacity: 0.08,
+            strokeColor: COL_ANGLE2, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+        // Inner arc for double-arc effect
+        board.create('nonReflexAngle', [Q, R, T], {
+            radius: 0.5,
+            fillColor: 'none', fillOpacity: 0,
+            strokeColor: COL_ANGLE2, strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+    </script>
+</body>
+</html>
