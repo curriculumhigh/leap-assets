@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perpendicular Chord Bisector — Arc Measures</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden;
+            height: 100%; background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 300px;
+            margin: 0 auto;
+            padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .board-wrapper {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            height: calc(100% - 20px);
+        }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.8, 6.2, 5.8, -6.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        /* ── Constants ───────────────────────────────────────────────── */
+        var R  = 3.5;
+        var MY = 0.5;
+        var hc = Math.sqrt(R * R - MY * MY);
+
+        var COL_ARC_EQ = '#2563EB';
+        var COL_ARC_FQ = '#059669';
+
+        /* ── Angles of key points on the circle ──────────────────────── */
+        var angE = Math.atan2(MY, -hc);
+        var angF = Math.atan2(MY,  hc);
+        var angQ = Math.PI / 2;
+
+        /* ── Circle ──────────────────────────────────────────────────── */
+        var P = board.create('point', [0, 0], {
+            name: 'P', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [8, -10] }
+        });
+
+        board.create('circle', [P, R], {
+            strokeColor: '#555555', strokeWidth: 2.0,
+            fixed: true, highlight: false,
+            fillColor: 'none', fillOpacity: 0
+        });
+
+        /* ── Highlighted arcs (layer 8, on top of circle) ────────────── */
+        board.create('curve', [
+            function(t) { return R * Math.cos(t); },
+            function(t) { return R * Math.sin(t); },
+            angE, angQ
+        ], {
+            strokeColor: COL_ARC_EQ, strokeWidth: 4,
+            fixed: true, highlight: false, layer: 8
+        });
+
+        board.create('curve', [
+            function(t) { return R * Math.cos(t); },
+            function(t) { return R * Math.sin(t); },
+            angF, angQ
+        ], {
+            strokeColor: COL_ARC_FQ, strokeWidth: 4,
+            fixed: true, highlight: false, layer: 8
+        });
+
+        /* ── Points on circle ────────────────────────────────────────── */
+        var Qpt = board.create('point', [0, R], {
+            name: 'Q', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [8, 8] }
+        });
+
+        var Rpt = board.create('point', [0, -R], {
+            name: 'R', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [8, -14] }
+        });
+
+        var Ept = board.create('point', [-hc, MY], {
+            name: 'E', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-18, -4] }
+        });
+
+        var Fpt = board.create('point', [hc, MY], {
+            name: 'F', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [10, -4] }
+        });
+
+        /* ── Diameter QR ─────────────────────────────────────────────── */
+        board.create('segment', [Qpt, Rpt], {
+            strokeColor: '#555555', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        /* ── Chord EF ────────────────────────────────────────────────── */
+        board.create('segment', [Ept, Fpt], {
+            strokeColor: '#555555', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        /* ── Intersection point M ────────────────────────────────────── */
+        board.create('point', [0, MY], {
+            name: 'M', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-18, 6] }
+        });
+
+        /* ── Right-angle marker at M ──────────────────────────────────── */
+        var ra = 0.32;
+        board.create('segment', [[ra, MY], [ra, MY + ra]], {
+            strokeColor: '#555555', strokeWidth: 1.2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [[ra, MY + ra], [0, MY + ra]], {
+            strokeColor: '#555555', strokeWidth: 1.2,
+            fixed: true, highlight: false
+        });
+
+        /* ── Arc measure labels (KaTeX, colored to match arcs) ───────── */
+        var labelR = R + 0.95;
+
+        var midEQ = (angE + angQ) / 2;
+        board.create('text', [
+            labelR * Math.cos(midEQ) - 0.3,
+            labelR * Math.sin(midEQ),
+            '(4x + 5)\\degree'
+        ], {
+            useKatex: true, fontSize: 11, color: COL_ARC_EQ,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var midFQ = (angF + angQ) / 2;
+        board.create('text', [
+            labelR * Math.cos(midFQ) + 0.3,
+            labelR * Math.sin(midFQ),
+            '(6x - 11)\\degree'
+        ], {
+            useKatex: true, fontSize: 11, color: COL_ARC_FQ,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
