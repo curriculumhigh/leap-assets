@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle with Equidistant Chords</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 6.5, 6.5, -6.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_SHAPE = '#555555';
+        var COL_MARK = '#DC2626';
+        var COL_LABEL = '#222222';
+
+        // ── Circle ──────────────────────────────────────────────────────
+        var R = 4;
+        var P = board.create('point', [0, 0], {
+            name: 'P', fixed: true, size: 2.5, color: COL_LABEL, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [8, -8] }
+        });
+
+        var circle = board.create('circle', [P, R], {
+            strokeColor: COL_SHAPE, strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none'
+        });
+
+        // ── Chord VW (upper chord) ─────────────────────────────────────
+        var perpDistUpper = 1.8;
+        var halfChordUpper = Math.sqrt(R * R - perpDistUpper * perpDistUpper);
+
+        var Q = board.create('point', [0, perpDistUpper], {
+            name: '', fixed: true, size: 0, visible: false
+        });
+
+        var V = board.create('point', [-halfChordUpper, perpDistUpper], {
+            name: 'V', fixed: true, size: 2, color: COL_LABEL, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [-14, 4] }
+        });
+
+        var W = board.create('point', [halfChordUpper, perpDistUpper], {
+            name: 'W', fixed: true, size: 2, color: COL_LABEL, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [8, 4] }
+        });
+
+        board.create('segment', [V, W], {
+            strokeColor: COL_SHAPE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Chord XY (lower chord) ─────────────────────────────────────
+        var perpDistLower = perpDistUpper;
+        var halfChordLower = Math.sqrt(R * R - perpDistLower * perpDistLower);
+
+        var lowerCenterX = 0;
+
+        var S = board.create('point', [lowerCenterX, -perpDistLower], {
+            name: '', fixed: true, size: 0, visible: false
+        });
+
+        var X = board.create('point', [lowerCenterX - halfChordLower, -perpDistLower], {
+            name: 'X', fixed: true, size: 2, color: COL_LABEL, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [-14, -10] }
+        });
+
+        var Y = board.create('point', [lowerCenterX + halfChordLower, -perpDistLower], {
+            name: 'Y', fixed: true, size: 2, color: COL_LABEL, highlight: false,
+            label: { fontSize: 14, color: COL_LABEL, offset: [8, -10] }
+        });
+
+        board.create('segment', [X, Y], {
+            strokeColor: COL_SHAPE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Perpendicular segments from P to each chord ─────────────────
+        var footQ = board.create('point', [0, perpDistUpper], {
+            name: '', fixed: true, size: 1.5, color: COL_LABEL, highlight: false
+        });
+
+        board.create('segment', [P, footQ], {
+            strokeColor: COL_SHAPE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var footS = board.create('point', [lowerCenterX, -perpDistLower], {
+            name: '', fixed: true, size: 1.5, color: COL_LABEL, highlight: false
+        });
+
+        board.create('segment', [P, footS], {
+            strokeColor: COL_SHAPE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Right-angle marks ───────────────────────────────────────────
+        var RA_SIZE = 0.35;
+
+        var raQ1 = board.create('point', [footQ.X() + RA_SIZE, footQ.Y()], { visible: false, fixed: true, name: '' });
+        var raQ2 = board.create('point', [footQ.X() + RA_SIZE, footQ.Y() - RA_SIZE], { visible: false, fixed: true, name: '' });
+        var raQ3 = board.create('point', [footQ.X(), footQ.Y() - RA_SIZE], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [raQ1, raQ2], {
+            strokeColor: COL_MARK, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [raQ2, raQ3], {
+            strokeColor: COL_MARK, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        var raS1 = board.create('point', [footS.X() + RA_SIZE, footS.Y()], { visible: false, fixed: true, name: '' });
+        var raS2 = board.create('point', [footS.X() + RA_SIZE, footS.Y() + RA_SIZE], { visible: false, fixed: true, name: '' });
+        var raS3 = board.create('point', [footS.X(), footS.Y() + RA_SIZE], { visible: false, fixed: true, name: '' });
+
+        board.create('segment', [raS1, raS2], {
+            strokeColor: COL_MARK, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        board.create('segment', [raS2, raS3], {
+            strokeColor: COL_MARK, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Congruence tick marks on perpendicular segments ─────────────
+        var midPQ_x = (P.X() + footQ.X()) / 2;
+        var midPQ_y = (P.Y() + footQ.Y()) / 2;
+        var TICK_LEN = 0.25;
+
+        board.create('segment', [
+            [midPQ_x - TICK_LEN, midPQ_y],
+            [midPQ_x + TICK_LEN, midPQ_y]
+        ], {
+            strokeColor: COL_MARK, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        var midPS_x = (P.X() + footS.X()) / 2;
+        var midPS_y = (P.Y() + footS.Y()) / 2;
+
+        board.create('segment', [
+            [midPS_x - TICK_LEN, midPS_y],
+            [midPS_x + TICK_LEN, midPS_y]
+        ], {
+            strokeColor: COL_MARK, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
