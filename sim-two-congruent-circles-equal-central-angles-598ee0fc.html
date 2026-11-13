@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Congruent Circles with Equal Central Angles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 4px; height: calc(100% - 8px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 6px; height: calc(100% - 12px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8.5, 5.5, 8.5, -5.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 3;
+        var ANG = 75 * Math.PI / 180;
+
+        // ── Left circle (center P) ─────────────────────────────────────
+        var cxL = -4.2;
+        var cyL = -0.2;
+
+        var angStartL = 20 * Math.PI / 180;
+        var angEndL = angStartL + ANG;
+
+        var P = board.create('point', [cxL, cyL], {
+            name: 'P', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 11, color: '#222222', offset: [-2, -14] }
+        });
+
+        var circleL = board.create('circle', [P, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var E = board.create('point', [cxL + R * Math.cos(angEndL), cyL + R * Math.sin(angEndL)], {
+            name: 'E', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 11, color: '#222222', offset: [2, 8] }
+        });
+
+        var F = board.create('point', [cxL + R * Math.cos(angStartL), cyL + R * Math.sin(angStartL)], {
+            name: 'F', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 11, color: '#222222', offset: [8, -4] }
+        });
+
+        board.create('segment', [P, E], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [P, F], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('curve', [
+            function(t) { return cxL + R * Math.cos(t); },
+            function(t) { return cyL + R * Math.sin(t); },
+            angStartL,
+            angEndL
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 5, fixed: true, highlight: false, layer: 8
+        });
+
+        board.create('curve', [
+            function(t) { return cxL + 0.6 * Math.cos(t); },
+            function(t) { return cyL + 0.6 * Math.sin(t); },
+            angStartL,
+            angEndL
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        var angMidL = (angStartL + angEndL) / 2;
+        board.create('text', [cxL + 1.15 * Math.cos(angMidL), cyL + 1.15 * Math.sin(angMidL), '75°'], {
+            fontSize: 9, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        var radMidLx = (cxL + F.X()) / 2;
+        var radMidLy = (cyL + F.Y()) / 2;
+        board.create('text', [radMidLx + 0.1, radMidLy - 0.55, '6'], {
+            fontSize: 10, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        // ── Right circle (center Q) ────────────────────────────────────
+        var cxR = 4.2;
+        var cyR = -0.2;
+
+        var angStartR = 20 * Math.PI / 180;
+        var angEndR = angStartR + ANG;
+
+        var Q = board.create('point', [cxR, cyR], {
+            name: 'Q', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 11, color: '#222222', offset: [-2, -14] }
+        });
+
+        var circleR = board.create('circle', [Q, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var G = board.create('point', [cxR + R * Math.cos(angEndR), cyR + R * Math.sin(angEndR)], {
+            name: 'G', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 11, color: '#222222', offset: [2, 8] }
+        });
+
+        var H = board.create('point', [cxR + R * Math.cos(angStartR), cyR + R * Math.sin(angStartR)], {
+            name: 'H', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 11, color: '#222222', offset: [8, -4] }
+        });
+
+        board.create('segment', [Q, G], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [Q, H], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('curve', [
+            function(t) { return cxR + R * Math.cos(t); },
+            function(t) { return cyR + R * Math.sin(t); },
+            angStartR,
+            angEndR
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 5, fixed: true, highlight: false, layer: 8
+        });
+
+        board.create('curve', [
+            function(t) { return cxR + 0.6 * Math.cos(t); },
+            function(t) { return cyR + 0.6 * Math.sin(t); },
+            angStartR,
+            angEndR
+        ], {
+            strokeColor: '#222222', strokeWidth: 1.0, fixed: true, highlight: false
+        });
+
+        var angMidR = (angStartR + angEndR) / 2;
+        board.create('text', [cxR + 1.15 * Math.cos(angMidR), cyR + 1.15 * Math.sin(angMidR), '75°'], {
+            fontSize: 9, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        var radMidRx = (cxR + H.X()) / 2;
+        var radMidRy = (cyR + H.Y()) / 2;
+        board.create('text', [radMidRx + 0.1, radMidRy - 0.55, '6'], {
+            fontSize: 10, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+    </script>
+</body>
+</html>
