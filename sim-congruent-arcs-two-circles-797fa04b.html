@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congruent Arcs — Two Congruent Circles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 4.5, 7, -4.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Constants ───────────────────────────────────────────────────
+        var R = 2.5;
+        var cxM = -2.3;   // center of circle M
+        var cxN = 2.3;    // center of circle N
+        var cy = 0;
+
+        var COL_CIRCLE = '#555555';
+        var COL_RADII = '#555555';
+        var COL_POINT = '#222222';
+        var COL_ARC = '#DC2626';
+        var COL_LABEL = '#222222';
+
+        // ── Central angle parameters ────────────────────────────────────
+        // Points A, B on circle M — central angle ~80°
+        var angA = 140 * Math.PI / 180;   // upper-left
+        var angB = 60 * Math.PI / 180;    // upper-right
+
+        // Points D, E on circle N — same central angle ~80°
+        var angD = 120 * Math.PI / 180;   // upper-left
+        var angE = 40 * Math.PI / 180;    // upper-right
+
+        // ── Circle M (left) ────────────────────────────────────────────
+        var centerM = board.create('point', [cxM, cy], {
+            name: 'M', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 13, color: COL_LABEL, offset: [-4, -14] }
+        });
+
+        var circleM = board.create('circle', [centerM, R], {
+            strokeColor: COL_CIRCLE, strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none', fillOpacity: 0
+        });
+
+        // Points A and B on circle M
+        var ptA = board.create('point', [cxM + R * Math.cos(angA), cy + R * Math.sin(angA)], {
+            name: 'A', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 13, color: COL_LABEL, offset: [-14, 4] }
+        });
+
+        var ptB = board.create('point', [cxM + R * Math.cos(angB), cy + R * Math.sin(angB)], {
+            name: 'B', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 13, color: COL_LABEL, offset: [6, 4] }
+        });
+
+        // Radii MA and MB
+        board.create('segment', [centerM, ptA], {
+            strokeColor: COL_RADII, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [centerM, ptB], {
+            strokeColor: COL_RADII, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Red arc AB (minor arc from A to B, going counterclockwise through the top)
+        board.create('arc', [centerM, ptB, ptA], {
+            strokeColor: COL_ARC, strokeWidth: 5, fixed: true, highlight: false, layer: 8
+        });
+
+        // Angle marker at M
+        board.create('nonReflexAngle', [ptB, centerM, ptA], {
+            radius: 0.45,
+            fillColor: COL_POINT, fillOpacity: 0.06,
+            strokeColor: COL_POINT, strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // ── Circle N (right) ───────────────────────────────────────────
+        var centerN = board.create('point', [cxN, cy], {
+            name: 'N', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 13, color: COL_LABEL, offset: [-4, -14] }
+        });
+
+        var circleN = board.create('circle', [centerN, R], {
+            strokeColor: COL_CIRCLE, strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none', fillOpacity: 0
+        });
+
+        // Points D and E on circle N
+        var ptD = board.create('point', [cxN + R * Math.cos(angD), cy + R * Math.sin(angD)], {
+            name: 'D', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 13, color: COL_LABEL, offset: [-14, 4] }
+        });
+
+        var ptE = board.create('point', [cxN + R * Math.cos(angE), cy + R * Math.sin(angE)], {
+            name: 'E', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 13, color: COL_LABEL, offset: [6, 4] }
+        });
+
+        // Radii ND and NE
+        board.create('segment', [centerN, ptD], {
+            strokeColor: COL_RADII, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [centerN, ptE], {
+            strokeColor: COL_RADII, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Red arc DE (minor arc from D to E, going counterclockwise through the top)
+        board.create('arc', [centerN, ptE, ptD], {
+            strokeColor: COL_ARC, strokeWidth: 5, fixed: true, highlight: false, layer: 8
+        });
+
+        // Angle marker at N
+        board.create('nonReflexAngle', [ptE, centerN, ptD], {
+            radius: 0.45,
+            fillColor: COL_POINT, fillOpacity: 0.06,
+            strokeColor: COL_POINT, strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+    </script>
+</body>
+</html>
