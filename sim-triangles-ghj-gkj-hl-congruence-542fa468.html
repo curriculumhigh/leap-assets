@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangles GHJ and GKJ — HL Congruence</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 5.5, 5, -5.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertex coordinates ──────────────────────────────────────────
+        var Gx = 0, Gy = 3.5;
+        var Jx = 0, Jy = -3.5;
+        var Hx = -3, Hy = 0;
+        var Kx = 3, Ky = 0;
+
+        // ── Vertices (small fixed points, no infobox) ───────────────────
+        var G = board.create('point', [Gx, Gy], {
+            name: 'G', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, 12] }
+        });
+        var J = board.create('point', [Jx, Jy], {
+            name: 'J', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, -18] }
+        });
+        var H = board.create('point', [Hx, Hy], {
+            name: 'H', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, -4] }
+        });
+        var K = board.create('point', [Kx, Ky], {
+            name: 'K', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [10, -4] }
+        });
+
+        // ── Triangle edges ──────────────────────────────────────────────
+        board.create('segment', [G, H], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [H, J], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [G, K], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [K, J], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [G, J], { strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false });
+
+        // ── Right angle markers at H and K ──────────────────────────────
+        var RA_SIZE = 0.45;
+        var RA_COLOR = '#DC2626';
+        var RA_WIDTH = 1.8;
+
+        function drawRightAngle(vertex, p1, p2) {
+            var vx = vertex.X(), vy = vertex.Y();
+            var dx1 = p1.X() - vx, dy1 = p1.Y() - vy;
+            var len1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+            var ux1 = dx1 / len1, uy1 = dy1 / len1;
+
+            var dx2 = p2.X() - vx, dy2 = p2.Y() - vy;
+            var len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+            var ux2 = dx2 / len2, uy2 = dy2 / len2;
+
+            var a = [vx + RA_SIZE * ux1, vy + RA_SIZE * uy1];
+            var b = [vx + RA_SIZE * (ux1 + ux2), vy + RA_SIZE * (uy1 + uy2)];
+            var c = [vx + RA_SIZE * ux2, vy + RA_SIZE * uy2];
+
+            board.create('segment', [a, b], { strokeColor: RA_COLOR, strokeWidth: RA_WIDTH, fixed: true, highlight: false });
+            board.create('segment', [b, c], { strokeColor: RA_COLOR, strokeWidth: RA_WIDTH, fixed: true, highlight: false });
+        }
+
+        drawRightAngle(H, G, J);
+        drawRightAngle(K, G, J);
+
+        // ── Congruence tick marks on GH and GK ─────────────────────────
+        var TICK_LEN = 0.3;
+        var TICK_COLOR = '#DC2626';
+        var TICK_WIDTH = 1.8;
+
+        function drawTickMark(p1, p2) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+
+            var px = -dy / len;
+            var py = dx / len;
+
+            var t1 = [mx + TICK_LEN * px, my + TICK_LEN * py];
+            var t2 = [mx - TICK_LEN * px, my - TICK_LEN * py];
+
+            board.create('segment', [t1, t2], { strokeColor: TICK_COLOR, strokeWidth: TICK_WIDTH, fixed: true, highlight: false });
+        }
+
+        drawTickMark(G, H);
+        drawTickMark(G, K);
+
+    </script>
+</body>
+</html>
