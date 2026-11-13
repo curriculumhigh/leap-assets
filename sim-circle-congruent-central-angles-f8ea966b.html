@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle with Congruent Central Angles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 6, 6, -6],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 4.0;
+        var COL_SHAPE = '#555555';
+        var COL_POINT = '#222222';
+        var COL_MARK = '#DC2626';
+
+        var angEqual = 40 * Math.PI / 180;
+        var angB = 90 * Math.PI / 180;
+        var angA = angB + angEqual;
+        var angC = angB - angEqual;
+        var angD = 270 * Math.PI / 180;
+
+        var P = board.create('point', [0, 0], {
+            name: 'P', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [-16, -12] }
+        });
+
+        var circle = board.create('circle', [P, R], {
+            strokeColor: COL_SHAPE, strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var A = board.create('point', [R * Math.cos(angA), R * Math.sin(angA)], {
+            name: 'A', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [-16, 4] }
+        });
+
+        var B = board.create('point', [R * Math.cos(angB), R * Math.sin(angB)], {
+            name: 'B', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [-2, 14] }
+        });
+
+        var C = board.create('point', [R * Math.cos(angC), R * Math.sin(angC)], {
+            name: 'C', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [10, 4] }
+        });
+
+        var D = board.create('point', [R * Math.cos(angD), R * Math.sin(angD)], {
+            name: 'D', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [-2, -16] }
+        });
+
+        board.create('segment', [P, A], {
+            strokeColor: COL_SHAPE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [P, B], {
+            strokeColor: COL_SHAPE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [P, C], {
+            strokeColor: COL_SHAPE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('segment', [A, C], {
+            strokeColor: COL_SHAPE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('segment', [B, D], {
+            strokeColor: COL_SHAPE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var ax = R * Math.cos(angA), ay = R * Math.sin(angA);
+        var cx = R * Math.cos(angC), cy = R * Math.sin(angC);
+        var bx = R * Math.cos(angB), by = R * Math.sin(angB);
+        var dx = R * Math.cos(angD), dy = R * Math.sin(angD);
+
+        var dxAC = cx - ax, dyAC = cy - ay;
+        var dxBD = dx - bx, dyBD = dy - by;
+        var det = dxAC * (-dyBD) - dyAC * (-dxBD);
+        var t = ((bx - ax) * (-dyBD) - (by - ay) * (-dxBD)) / det;
+        var lx = ax + t * dxAC;
+        var ly = ay + t * dyAC;
+
+        var L = board.create('point', [lx, ly], {
+            name: 'L', fixed: true, size: 2, color: COL_POINT, highlight: false,
+            label: { fontSize: 14, color: COL_POINT, offset: [10, -10] }
+        });
+
+        var arcRadius = 1.1;
+
+        board.create('nonReflexAngle', [A, P, B], {
+            radius: arcRadius,
+            fillColor: COL_MARK, fillOpacity: 0.06,
+            strokeColor: COL_MARK, strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false,
+            highlight: false
+        });
+
+        board.create('nonReflexAngle', [B, P, C], {
+            radius: arcRadius,
+            fillColor: COL_MARK, fillOpacity: 0.06,
+            strokeColor: COL_MARK, strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false,
+            highlight: false
+        });
+
+        function angleMidTick(cx, cy, p1x, p1y, p2x, p2y, radius, tickLen) {
+            var a1 = Math.atan2(p1y - cy, p1x - cx);
+            var a2 = Math.atan2(p2y - cy, p2x - cx);
+            var diff = a2 - a1;
+            if (diff > Math.PI) diff -= 2 * Math.PI;
+            if (diff < -Math.PI) diff += 2 * Math.PI;
+            var mid = a1 + diff / 2;
+            var mx = cx + radius * Math.cos(mid);
+            var my = cy + radius * Math.sin(mid);
+            var nx = -Math.sin(mid);
+            var ny = Math.cos(mid);
+            var half = tickLen / 2;
+            return [[mx - half * nx, my - half * ny], [mx + half * nx, my + half * ny]];
+        }
+
+        var tick1 = angleMidTick(0, 0, ax, ay, bx, by, arcRadius, 0.3);
+        board.create('segment', [tick1[0], tick1[1]], {
+            strokeColor: COL_MARK, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var tick2 = angleMidTick(0, 0, bx, by, cx, cy, arcRadius, 0.3);
+        board.create('segment', [tick2[0], tick2[1]], {
+            strokeColor: COL_MARK, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
