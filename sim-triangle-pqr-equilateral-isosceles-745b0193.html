@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle PQR with Equilateral PQS and Isosceles QSR</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 5.5, 10.5, -2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Coordinates ─────────────────────────────────────────────────
+        var sideEq = 3.5;
+        var Px = 1, Py = 0;
+        var Sx = Px + sideEq, Sy = 0;
+        var Qx = Px + sideEq / 2, Qy = sideEq * Math.sqrt(3) / 2;
+        var Rx = 9, Ry = 0;
+
+        // ── Points ──────────────────────────────────────────────────────
+        var P = board.create('point', [Px, Py], {
+            name: 'P', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, -10] }
+        });
+        var Q = board.create('point', [Qx, Qy], {
+            name: 'Q', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, 12] }
+        });
+        var S = board.create('point', [Sx, Sy], {
+            name: 'S', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, -16] }
+        });
+        var R = board.create('point', [Rx, Ry], {
+            name: 'R', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -10] }
+        });
+
+        // ── Segments ────────────────────────────────────────────────────
+        board.create('segment', [P, Q], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [Q, S], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [S, P], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [Q, R], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+        board.create('segment', [S, R], { strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false });
+
+        // ── Tick mark helper ────────────────────────────────────────────
+        function drawTicks(p1, p2, n, color) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var ax = dx / len;
+            var ay = dy / len;
+            var tickHalf = 0.22;
+            var spacing = 0.15;
+
+            for (var i = 0; i < n; i++) {
+                var offset = (i - (n - 1) / 2) * spacing;
+                var cx = mx + offset * ax;
+                var cy = my + offset * ay;
+                board.create('segment', [
+                    [cx - tickHalf * px, cy - tickHalf * py],
+                    [cx + tickHalf * px, cy + tickHalf * py]
+                ], {
+                    strokeColor: color, strokeWidth: 1.8, fixed: true, highlight: false
+                });
+            }
+        }
+
+        // Single ticks on PQ, QS, SP (equilateral)
+        drawTicks(P, Q, 1, '#DC2626');
+        drawTicks(Q, S, 1, '#DC2626');
+        drawTicks(S, P, 1, '#DC2626');
+
+        // Double ticks on QR, SR (isosceles)
+        drawTicks(Q, R, 2, '#DC2626');
+        drawTicks(S, R, 2, '#DC2626');
+
+        // ── Angle helper: interior bisector ─────────────────────────────
+        function interiorBisector(vx, vy, ax, ay, bx, by) {
+            var a1 = Math.atan2(ay - vy, ax - vx);
+            var a2 = Math.atan2(by - vy, bx - vx);
+            var diff = a2 - a1;
+            while (diff < 0) diff += 2 * Math.PI;
+            while (diff >= 2 * Math.PI) diff -= 2 * Math.PI;
+            var bisect;
+            if (diff <= Math.PI) {
+                bisect = a1 + diff / 2;
+            } else {
+                bisect = a1 + diff / 2 + Math.PI;
+            }
+            return bisect;
+        }
+
+        // ── Angle x° at R (interior of triangle QSR) ───────────────────
+        var aRS = Math.atan2(Sy - Ry, Sx - Rx);
+        var aRQ = Math.atan2(Qy - Ry, Qx - Rx);
+        var interiorAngleR = aRQ - aRS;
+        while (interiorAngleR < 0) interiorAngleR += 2 * Math.PI;
+        if (interiorAngleR > Math.PI) interiorAngleR = 2 * Math.PI - interiorAngleR;
+
+        var arcRadR = interiorAngleR < 0.5 ? 1.0 : 0.7;
+
+        board.create('nonReflexAngle', [S, R, Q], {
+            radius: arcRadR,
+            fillColor: '#DC2626', fillOpacity: 0.06,
+            strokeColor: '#DC2626', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        var bisR = interiorBisector(Rx, Ry, Sx, Sy, Qx, Qy);
+        var labelDistR = arcRadR + 0.55;
+
+        board.create('text', [
+            Rx + labelDistR * Math.cos(bisR),
+            Ry + labelDistR * Math.sin(bisR),
+            'x^{\\circ}'
+        ], {
+            useKatex: true, fontSize: 13, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Angle y° at Q (interior angle PQR) ─────────────────────────
+        var arcRadQ = 0.55;
+
+        board.create('nonReflexAngle', [R, Q, P], {
+            radius: arcRadQ,
+            fillColor: '#DC2626', fillOpacity: 0.06,
+            strokeColor: '#DC2626', strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+
+        var bisQ = interiorBisector(Qx, Qy, Rx, Ry, Px, Py);
+        var labelDistQ = arcRadQ + 0.55;
+
+        board.create('text', [
+            Qx + labelDistQ * Math.cos(bisQ),
+            Qy + labelDistQ * Math.sin(bisQ),
+            'y^{\\circ}'
+        ], {
+            useKatex: true, fontSize: 13, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
