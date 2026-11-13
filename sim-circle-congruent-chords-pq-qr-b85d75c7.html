@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle with Congruent Chords PQ and QR</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4.8, 4.8, 4.8, -4.8],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 3.2;
+
+        var angP = 202 * Math.PI / 180;
+        var angQ = 90 * Math.PI / 180;
+        var angR = 338 * Math.PI / 180;
+
+        var E = board.create('point', [0, 0], {
+            name: 'E', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 12, color: '#222222', offset: [6, -8] }
+        });
+
+        var circle = board.create('circle', [E, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        var P = board.create('point', [R * Math.cos(angP), R * Math.sin(angP)], {
+            name: 'P', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 12, color: '#222222', offset: [-14, -4] }
+        });
+        var Q = board.create('point', [R * Math.cos(angQ), R * Math.sin(angQ)], {
+            name: 'Q', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 12, color: '#222222', offset: [-4, 10] }
+        });
+        var Rpt = board.create('point', [R * Math.cos(angR), R * Math.sin(angR)], {
+            name: 'R', fixed: true, size: 2, color: '#222222', highlight: false,
+            label: { fontSize: 12, color: '#222222', offset: [8, -6] }
+        });
+
+        var chordPQ = board.create('segment', [P, Q], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        var chordQR = board.create('segment', [Q, Rpt], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        function drawTick(ptA, ptB, color, width, len) {
+            var mx = (ptA.X() + ptB.X()) / 2;
+            var my = (ptA.Y() + ptB.Y()) / 2;
+            var dx = ptB.X() - ptA.X();
+            var dy = ptB.Y() - ptA.Y();
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / dist;
+            var py = dx / dist;
+            var half = len / 2;
+            board.create('segment',
+                [[mx - px * half, my - py * half], [mx + px * half, my + py * half]], {
+                strokeColor: color, strokeWidth: width, fixed: true, highlight: false
+            });
+        }
+
+        drawTick(P, Q, '#DC2626', 1.8, 0.4);
+        drawTick(Q, Rpt, '#DC2626', 1.8, 0.4);
+
+        var arcStartAngle = angP;
+        var arcEndAngle = angR;
+
+        board.create('curve', [
+            function(t) { return R * Math.cos(t); },
+            function(t) { return R * Math.sin(t); },
+            arcStartAngle,
+            arcEndAngle
+        ], {
+            strokeColor: '#2563EB', strokeWidth: 4, fixed: true, highlight: false, layer: 8
+        });
+
+        var arcMidAngle = (angP + angR) / 2;
+        var labelR = R + 0.75;
+        board.create('text', [
+            labelR * Math.cos(arcMidAngle),
+            labelR * Math.sin(arcMidAngle),
+            '136^\\circ'
+        ], {
+            useKatex: true, fontSize: 12, color: '#2563EB',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight:bold'
+        });
+
+    </script>
+</body>
+</html>
