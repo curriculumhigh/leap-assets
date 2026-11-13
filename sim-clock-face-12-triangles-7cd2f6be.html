@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clock Face — 12 Isosceles Triangles</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 6.5, 6.5, -6.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 4.2;
+        var LABEL_R = 5.1;
+
+        function hourAngle(h) {
+            return Math.PI / 2 - (h * Math.PI / 6);
+        }
+
+        var hourPts = [];
+        for (var h = 0; h < 12; h++) {
+            var a = hourAngle(h);
+            hourPts.push(board.create('point', [R * Math.cos(a), R * Math.sin(a)], {
+                visible: false, fixed: true, name: ''
+            }));
+        }
+
+        var center = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222', highlight: false
+        });
+
+        var tri12 = board.create('polygon', [center, hourPts[0], hourPts[11]], {
+            fillColor: '#2563EB', fillOpacity: 0.25,
+            borders: { strokeColor: '#2563EB', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        var tri6 = board.create('polygon', [center, hourPts[6], hourPts[5]], {
+            fillColor: '#D97706', fillOpacity: 0.25,
+            borders: { strokeColor: '#D97706', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        for (var i = 0; i < 12; i++) {
+            board.create('segment', [center, hourPts[i]], {
+                strokeColor: '#555555', strokeWidth: 1.0, fixed: true, highlight: false
+            });
+        }
+
+        board.create('circle', [center, R], {
+            strokeColor: '#555555', strokeWidth: 2.0, fillColor: 'none',
+            fixed: true, highlight: false
+        });
+
+        var hourLabels = ['12', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'];
+        for (var j = 0; j < 12; j++) {
+            var la = hourAngle(j);
+            board.create('text', [
+                LABEL_R * Math.cos(la),
+                LABEL_R * Math.sin(la),
+                hourLabels[j]
+            ], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 13, color: '#222222',
+                fixed: true, highlight: false,
+                cssStyle: 'font-weight:600'
+            });
+        }
+    </script>
+</body>
+</html>
