@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equilateral Triangle DEF</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 7.5, 10.5, -2.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var Ex = 0, Ey = 0;
+        var Fx = 7, Fy = 0;
+        var Dx = 3.5, Dy = 7 * Math.sqrt(3) / 2;
+
+        var E = board.create('point', [Ex, Ey], {
+            name: 'E', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-16, -14] }
+        });
+        var F = board.create('point', [Fx, Fy], {
+            name: 'F', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -14] }
+        });
+        var D = board.create('point', [Dx, Dy], {
+            name: 'D', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, 12] }
+        });
+
+        board.create('polygon', [D, E, F], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        var ARC_RADIUS = 0.7;
+        var ARC_COL = '#DC2626';
+
+        board.create('nonReflexAngle', [F, E, D], {
+            radius: ARC_RADIUS,
+            fillColor: ARC_COL, fillOpacity: 0.08,
+            strokeColor: ARC_COL, strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        board.create('nonReflexAngle', [D, F, E], {
+            radius: ARC_RADIUS,
+            fillColor: ARC_COL, fillOpacity: 0.08,
+            strokeColor: ARC_COL, strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        board.create('nonReflexAngle', [E, D, F], {
+            radius: ARC_RADIUS,
+            fillColor: ARC_COL, fillOpacity: 0.08,
+            strokeColor: ARC_COL, strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false, highlight: false
+        });
+
+        var LABEL_R = 1.3;
+
+        var eAngle = Math.PI / 6;
+        board.create('text', [Ex + LABEL_R * Math.cos(eAngle), Ey + LABEL_R * Math.sin(eAngle), '60\u00B0'], {
+            fontSize: 12, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var fAngle = Math.PI - Math.PI / 6;
+        board.create('text', [Fx + LABEL_R * Math.cos(fAngle), Fy + LABEL_R * Math.sin(fAngle), '60\u00B0'], {
+            fontSize: 12, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var dAngle = -Math.PI / 2;
+        board.create('text', [Dx + LABEL_R * Math.cos(dAngle), Dy + LABEL_R * Math.sin(dAngle), '60\u00B0'], {
+            fontSize: 12, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var cx = (Dx + Ex + Fx) / 3;
+        var cy = (Dy + Ey + Fy) / 3;
+        var SIDE_OFFSET = 0.55;
+
+        var midDE_x = (Dx + Ex) / 2;
+        var midDE_y = (Dy + Ey) / 2;
+        var nDE_x = midDE_x - cx;
+        var nDE_y = midDE_y - cy;
+        var nDE_len = Math.sqrt(nDE_x * nDE_x + nDE_y * nDE_y);
+        board.create('text', [
+            midDE_x + SIDE_OFFSET * nDE_x / nDE_len,
+            midDE_y + SIDE_OFFSET * nDE_y / nDE_len,
+            'x'
+        ], {
+            fontSize: 14, color: '#222222', useKatex: true,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var midDF_x = (Dx + Fx) / 2;
+        var midDF_y = (Dy + Fy) / 2;
+        var nDF_x = midDF_x - cx;
+        var nDF_y = midDF_y - cy;
+        var nDF_len = Math.sqrt(nDF_x * nDF_x + nDF_y * nDF_y);
+        board.create('text', [
+            midDF_x + SIDE_OFFSET * nDF_x / nDF_len,
+            midDF_y + SIDE_OFFSET * nDF_y / nDF_len,
+            'x'
+        ], {
+            fontSize: 14, color: '#222222', useKatex: true,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        var midEF_x = (Ex + Fx) / 2;
+        var midEF_y = (Ey + Fy) / 2;
+        var nEF_x = midEF_x - cx;
+        var nEF_y = midEF_y - cy;
+        var nEF_len = Math.sqrt(nEF_x * nEF_x + nEF_y * nEF_y);
+        board.create('text', [
+            midEF_x + SIDE_OFFSET * nEF_x / nEF_len,
+            midEF_y + SIDE_OFFSET * nEF_y / nEF_len,
+            '21'
+        ], {
+            fontSize: 14, color: '#222222', useKatex: true,
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
