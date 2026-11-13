@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Isosceles Triangle with Algebraic Sides</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 8.5, 10.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var Bx = 1.5, By = 1;
+        var Cx = 8.5, Cy = 1;
+        var Ax = 5, Ay = 7;
+
+        var B = board.create('point', [Bx, By], {
+            name: '', fixed: true, size: 0, visible: false, showInfobox: false
+        });
+        var C = board.create('point', [Cx, Cy], {
+            name: '', fixed: true, size: 0, visible: false, showInfobox: false
+        });
+        var A = board.create('point', [Ax, Ay], {
+            name: '', fixed: true, size: 0, visible: false, showInfobox: false
+        });
+
+        board.create('polygon', [A, B, C], {
+            fillColor: 'none',
+            fillOpacity: 0,
+            borders: {
+                strokeColor: '#555555',
+                strokeWidth: 2.0,
+                fixed: true,
+                highlight: false
+            },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        board.create('text', [1.7, 4.4, '(4x-3)\\text{ in.}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('text', [8.3, 4.4, '(2x+5)\\text{ in.}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('text', [5, 0.15, '(x+11)\\text{ in.}'], {
+            useKatex: true, fontSize: 13, color: '#222222',
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        var ARC_R = 0.8;
+
+        var angB_to_C = Math.atan2(Cy - By, Cx - Bx);
+        var angB_to_A = Math.atan2(Ay - By, Ax - Bx);
+        var angB_start = angB_to_C;
+        var angB_end = angB_to_A;
+        if (angB_end < angB_start) angB_end += 2 * Math.PI;
+
+        board.create('curve', [
+            function(t) { return Bx + ARC_R * Math.cos(t); },
+            function(t) { return By + ARC_R * Math.sin(t); },
+            angB_start, angB_end
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        var angC_to_A = Math.atan2(Ay - Cy, Ax - Cx);
+        var angC_to_B = Math.atan2(By - Cy, Bx - Cx);
+        var angC_start = angC_to_A;
+        var angC_end = angC_to_B;
+        if (angC_end < angC_start) angC_end += 2 * Math.PI;
+
+        board.create('curve', [
+            function(t) { return Cx + ARC_R * Math.cos(t); },
+            function(t) { return Cy + ARC_R * Math.sin(t); },
+            angC_start, angC_end
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        var TICK_INNER = 0.55;
+        var TICK_OUTER = 1.05;
+
+        var bisB = (angB_start + angB_end) / 2;
+        board.create('segment', [
+            [Bx + TICK_INNER * Math.cos(bisB), By + TICK_INNER * Math.sin(bisB)],
+            [Bx + TICK_OUTER * Math.cos(bisB), By + TICK_OUTER * Math.sin(bisB)]
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+        var bisC = (angC_start + angC_end) / 2;
+        board.create('segment', [
+            [Cx + TICK_INNER * Math.cos(bisC), Cy + TICK_INNER * Math.sin(bisC)],
+            [Cx + TICK_OUTER * Math.cos(bisC), Cy + TICK_OUTER * Math.sin(bisC)]
+        ], {
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
