@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph of a quartic function</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+        .tick-lbl { text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff, 0 0 3px #fff; color: #222222; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board" role="img" aria-label="Graph of a quartic function"></div>
+        </div>
+    </div>
+    <script>
+      // Plot window [xmin, ymax, xmax, ymin]; x and y use different scales, so the board
+      // always shows exactly this window (plus a small margin) at any iframe size.
+      var WIN = [-2.5, 5, 2.5, -3];
+      var COL_F = '#222222';
+      var board = null;
+      var el = document.getElementById('board');
+
+      function paddedBox() {
+        var dx = (WIN[2] - WIN[0]) * 0.02, dy = (WIN[1] - WIN[3]) * 0.02;
+        return [WIN[0] - dx, WIN[1] + dy, WIN[2] + dx, WIN[3] - dy];
+      }
+
+      var CFG = {"curve": [-2.5, 2.5], "yl": [{"pos": [-3, -2, 1, 2, 3, 4]}, {"pos": [-1], "ay": "bottom", "off": [-6, 2]}], "texts": [{"x": 2.35, "y": 0.4, "s": "x"}, {"x": 0.17500000000000002, "y": 4.76, "s": "y"}, {"x": 1.68, "y": 3.6, "s": "y = f(x)", "fs": 13, "ax": "right"}], "points": [{"x": -1, "y": -2, "size": 3}, {"x": 0, "y": -1, "size": 3}, {"x": 1, "y": -2, "size": 3}]};
+      function f(x) { return x * x * x * x - 2 * x * x - 1; }
+
+      var AXIS = {
+        strokeColor: '#444444', strokeWidth: 1.2, highlight: false, fixed: true,
+        lastArrow: { type: 2, size: 6 },
+        ticks: { visible: false, drawLabels: false, drawZero: false, insertTicks: false, minorTicks: 0 }
+      };
+
+      // Major tick marks at fixed positions (no labels).
+      function tickMarks(axis, pos) {
+        board.create('ticks', [axis, pos], {
+          minorTicks: 0, majorHeight: 8, drawZero: false, drawLabels: false,
+          strokeColor: '#444444', strokeWidth: 1, highlight: false
+        });
+      }
+      // Tick labels (no marks). Each group may sit on its own side of the axis / gridline so a
+      // label never lands on the curve: g = {pos, ax, ay, off}.
+      function tickLabels(axis, g, isX) {
+        board.create('ticks', [axis, g.pos], {
+          minorTicks: 0, majorHeight: 0, drawZero: false, drawLabels: true,
+          strokeOpacity: 0, highlight: false,
+          label: { fontSize: 11, anchorX: g.ax || (isX ? 'middle' : 'right'), anchorY: g.ay || (isX ? 'top' : 'middle'),
+                   offset: g.off || (isX ? [0, -5] : [-6, 0]), cssClass: 'tick-lbl', highlightCssClass: 'tick-lbl' }
+        });
+      }
+
+      function build() {
+        board = JXG.JSXGraph.initBoard('board', {
+          boundingbox: paddedBox(),
+          keepAspectRatio: false,
+          axis: true,
+          grid: false,
+          showNavigation: false,
+          showCopyright: false,
+          pan: { enabled: false },
+          zoom: { enabled: false },
+          defaultAxes: { x: AXIS, y: AXIS }
+        });
+
+        board.create('grid', [], {
+          majorStep: [1, 1], minorElements: 0,
+          strokeColor: '#D1D5DB', strokeWidth: 0.4, strokeOpacity: 1,
+          major: { face: 'line', strokeColor: '#D1D5DB', strokeWidth: 0.4, strokeOpacity: 1 },
+          minor: { visible: false },
+          highlight: false, fixed: true, layer: 0
+        });
+        tickMarks(board.defaultAxes.x, [-2, -1, 1, 2]);
+        tickMarks(board.defaultAxes.y, [-3, -2, -1, 1, 2, 3, 4]);
+        (CFG.xl || [{ pos: [-2, -1, 1, 2] }]).forEach(function (g) { tickLabels(board.defaultAxes.x, g, true); });
+        (CFG.yl || [{ pos: [-3, -2, -1, 1, 2, 3, 4] }]).forEach(function (g) { tickLabels(board.defaultAxes.y, g, false); });
+
+        // Axis-name labels / axis titles (positions in board units, from the config)
+        CFG.texts.forEach(function (t) {
+          board.create('text', [t.x, t.y, t.s], {
+            useKatex: true, fontSize: t.fs || 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: t.ax || 'middle', anchorY: t.ay || 'middle', cssClass: 'tick-lbl', highlightCssClass: 'tick-lbl'
+          });
+        });
+
+        // The curve (optionally domain-restricted)
+        if (CFG.curve) {
+          board.create('functiongraph', [f, CFG.curve[0], CFG.curve[1]], {
+            strokeColor: COL_F, strokeWidth: 1.8, fixed: true, highlight: false,
+            numberPointsHigh: 3000, numberPointsLow: 1000
+          });
+        }
+
+        // Points (intercepts, key points, endpoints, data)
+        CFG.points.forEach(function (p) {
+          board.create('point', [p.x, p.y], {
+            name: '', size: p.size || 2, color: COL_F, fixed: true, showInfobox: false, highlight: false, layer: 9
+          });
+          if (p.lbl) {
+            board.create('text', [p.x + (p.dx || 0), p.y + (p.dy || 0), p.lbl], {
+              useKatex: true, fontSize: 13, color: COL_F, fixed: true, highlight: false, layer: 9,
+              anchorX: p.ax || 'middle', anchorY: p.ay || 'middle', cssClass: 'tick-lbl', highlightCssClass: 'tick-lbl'
+            });
+          }
+        });
+      }
+
+      // Build only once the board has a real size (the editor may load this iframe while hidden),
+      // and refit whenever the iframe is resized.
+      function sync() {
+        var w = el.clientWidth, h = el.clientHeight;
+        if (w < 20 || h < 20) return;
+        if (!board) { build(); return; }
+        board.resizeContainer(w, h, true, true);
+        board.setBoundingBox(paddedBox(), false);
+        board.fullUpdate();
+      }
+      if (window.ResizeObserver) { new ResizeObserver(sync).observe(el); }
+      window.addEventListener('resize', sync);
+      window.addEventListener('load', sync);
+      sync();
+    </script>
+</body>
+</html>
