@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperature model graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+        .tick-lbl { text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff, 0 0 3px #fff; color: #222222; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+      // Plot window [xmin, ymax, xmax, ymin]; x and y use different scales, so the board
+      // always shows exactly this window (plus a small margin) at any iframe size.
+      var WIN = [-0.5, 18, 10.5, -2];
+      var COL_F = '#222222';
+      var board = null;
+      var el = document.getElementById('board');
+
+      function paddedBox() {
+        var dx = (WIN[2] - WIN[0]) * 0.02, dy = (WIN[1] - WIN[3]) * 0.02;
+        return [WIN[0] - dx, WIN[1] + dy, WIN[2] + dx, WIN[3] - dy];
+      }
+
+      var CFG = {"curve": [0, 10], "texts": [{"x": 10.3, "y": 0.5, "s": "\\text{Hours after 6 a.m., }t", "fs": 13, "ax": "right", "ay": "bottom"}, {"x": 0.25, "y": 17.3, "s": "\\text{Temperature (}{}^{\\circ}\\text{C), }T", "fs": 13, "ax": "left"}], "points": [{"x": 0, "y": 10, "size": 3}, {"x": 10, "y": 8, "size": 3}, {"x": 2, "y": 14.4, "size": 3, "lbl": "(2,\\ 14.4)", "dy": 0.5, "ay": "bottom"}, {"x": 8, "y": 3.6, "size": 3, "lbl": "(8,\\ 3.6)", "dy": -0.5, "ay": "top"}]};
+      function f(x) { return 0.1 * x * x * x - 1.5 * x * x + 4.8 * x + 10; }
+
+      var AXIS = {
+        strokeColor: '#444444', strokeWidth: 1.2, highlight: false, fixed: true,
+        lastArrow: { type: 2, size: 6 },
+        ticks: { visible: false, drawLabels: false, drawZero: false, insertTicks: false, minorTicks: 0 }
+      };
+
+      // Major tick marks + labels at fixed positions.
+      function tickSet(axis, pos, isX, labels) {
+        board.create('ticks', [axis, pos], {
+          minorTicks: 0, majorHeight: labels ? 8 : 0, drawZero: false, drawLabels: labels,
+          strokeColor: '#444444', strokeWidth: 1, highlight: false,
+          label: isX
+            ? { fontSize: 11, anchorX: 'middle', anchorY: 'top', offset: [0, -5], cssClass: 'tick-lbl', highlightCssClass: 'tick-lbl' }
+            : { fontSize: 11, anchorX: 'right', anchorY: 'middle', offset: [-6, 0], cssClass: 'tick-lbl', highlightCssClass: 'tick-lbl' }
+        });
+      }
+
+      function build() {
+        board = JXG.JSXGraph.initBoard('board', {
+          boundingbox: paddedBox(),
+          keepAspectRatio: false,
+          axis: true,
+          grid: false,
+          showNavigation: false,
+          showCopyright: false,
+          pan: { enabled: false },
+          zoom: { enabled: false },
+          defaultAxes: { x: AXIS, y: AXIS }
+        });
+
+        board.create('grid', [], {
+          majorStep: [1, 2], minorElements: 0,
+          strokeColor: '#D1D5DB', strokeWidth: 0.4, strokeOpacity: 1,
+          major: { face: 'line', strokeColor: '#D1D5DB', strokeWidth: 0.4, strokeOpacity: 1 },
+          minor: { visible: false },
+          highlight: false, fixed: true, layer: 0
+        });
+        tickSet(board.defaultAxes.x, [2, 4, 6, 8, 10], true, true);
+        tickSet(board.defaultAxes.y, [4, 8, 12, 16], false, true);
+
+        // Axis-name labels / axis titles (positions in board units, from the config)
+        CFG.texts.forEach(function (t) {
+          board.create('text', [t.x, t.y, t.s], {
+            useKatex: true, fontSize: t.fs || 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: t.ax || 'middle', anchorY: t.ay || 'middle', cssClass: 'tick-lbl', highlightCssClass: 'tick-lbl'
+          });
+        });
+
+        // The curve (optionally domain-restricted)
+        if (CFG.curve) {
+          board.create('functiongraph', [f, CFG.curve[0], CFG.curve[1]], {
+            strokeColor: COL_F, strokeWidth: 1.8, fixed: true, highlight: false,
+            numberPointsHigh: 3000, numberPointsLow: 1000
+          });
+        }
+
+        // Points (intercepts, key points, endpoints, data)
+        CFG.points.forEach(function (p) {
+          board.create('point', [p.x, p.y], {
+            name: '', size: p.size || 2, color: COL_F, fixed: true, showInfobox: false, highlight: false, layer: 9
+          });
+          if (p.lbl) {
+            board.create('text', [p.x + (p.dx || 0), p.y + (p.dy || 0), p.lbl], {
+              useKatex: true, fontSize: 13, color: COL_F, fixed: true, highlight: false, layer: 9,
+              anchorX: p.ax || 'middle', anchorY: p.ay || 'middle', cssClass: 'tick-lbl', highlightCssClass: 'tick-lbl'
+            });
+          }
+        });
+      }
+
+      // Build only once the board has a real size (the editor may load this iframe while hidden),
+      // and refit whenever the iframe is resized.
+      function sync() {
+        var w = el.clientWidth, h = el.clientHeight;
+        if (w < 20 || h < 20) return;
+        if (!board) { build(); return; }
+        board.resizeContainer(w, h, true, true);
+        board.setBoundingBox(paddedBox(), false);
+        board.fullUpdate();
+      }
+      if (window.ResizeObserver) { new ResizeObserver(sync).observe(el); }
+      window.addEventListener('resize', sync);
+      window.addEventListener('load', sync);
+      sync();
+    </script>
+</body>
+</html>
