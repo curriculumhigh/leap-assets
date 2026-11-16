@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle PQR with Midsegment Triangle DEF</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 8.5, 10.5, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertex coordinates
+        var pxP = 1, pyP = 0;
+        var pxR = 9, pyR = 0;
+        var pxQ = 4, pyQ = 7.5;
+
+        // Midpoints
+        var pxD = (pxP + pxQ) / 2, pyD = (pyP + pyQ) / 2;
+        var pxE = (pxQ + pxR) / 2, pyE = (pyQ + pyR) / 2;
+        var pxF = (pxP + pxR) / 2, pyF = (pyP + pyR) / 2;
+
+        // Vertices
+        var P = board.create('point', [pxP, pyP], {
+            name: 'P', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, -10] }
+        });
+        var R = board.create('point', [pxR, pyR], {
+            name: 'R', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -10] }
+        });
+        var Q = board.create('point', [pxQ, pyQ], {
+            name: 'Q', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, 12] }
+        });
+
+        // Outer triangle PQR
+        board.create('polygon', [P, Q, R], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Midpoints
+        var D = board.create('point', [pxD, pyD], {
+            name: 'D', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, 2] }
+        });
+        var E = board.create('point', [pxE, pyE], {
+            name: 'E', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, 2] }
+        });
+        var F = board.create('point', [pxF, pyF], {
+            name: 'F', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-2, -16] }
+        });
+
+        // Midsegment triangle DEF
+        board.create('polygon', [D, E, F], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#2563EB', strokeWidth: 1.5, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
