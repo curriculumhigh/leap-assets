@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle Midsegment EF</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var scale = 20;
+        var AB = 6, BC = 4.8, AC = 4.2;
+
+        var cosB = (AB * AB + BC * BC - AC * AC) / (2 * AB * BC);
+        var angB = Math.acos(cosB);
+
+        var Bx = 0, By = 0;
+        var Cx = BC, Cy = 0;
+        var Ax = AB * Math.cos(angB);
+        var Ay = AB * Math.sin(angB);
+
+        // Midpoints
+        var Dx = (Ax + Bx) / 2, Dy = (Ay + By) / 2;
+        var Ex = (Bx + Cx) / 2, Ey = (By + Cy) / 2;
+        var Fx = (Ax + Cx) / 2, Fy = (Ay + Cy) / 2;
+
+        // Bounding box with margin
+        var margin = 1.4;
+        var xMin = Math.min(Ax, Bx, Cx) - margin;
+        var xMax = Math.max(Ax, Bx, Cx) + margin;
+        var yMin = Math.min(Ay, By, Cy) - margin;
+        var yMax = Math.max(Ay, By, Cy) + margin;
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [xMin, yMax, xMax, yMin],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Vertices ────────────────────────────────────────────────────
+        var A = board.create('point', [Ax, Ay], {
+            name: 'A', fixed: true, size: 1.5, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-2, 12], fontWeight: 'bold' }
+        });
+        var B = board.create('point', [Bx, By], {
+            name: 'B', fixed: true, size: 1.5, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-16, -10], fontWeight: 'bold' }
+        });
+        var C = board.create('point', [Cx, Cy], {
+            name: 'C', fixed: true, size: 1.5, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -10], fontWeight: 'bold' }
+        });
+
+        // ── Triangle sides ──────────────────────────────────────────────
+        board.create('polygon', [A, B, C], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Midpoints ───────────────────────────────────────────────────
+        var D = board.create('point', [Dx, Dy], {
+            name: 'D', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [-16, 4] }
+        });
+        var E = board.create('point', [Ex, Ey], {
+            name: 'E', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [0, -14] }
+        });
+        var F = board.create('point', [Fx, Fy], {
+            name: 'F', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 13, color: '#222222', offset: [8, 4] }
+        });
+
+        // ── Other midsegments (dashed, subtle) ─────────────────────────
+        board.create('segment', [D, E], {
+            strokeColor: '#AAAAAA', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+        board.create('segment', [D, F], {
+            strokeColor: '#AAAAAA', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        // ── Highlighted midsegment EF ───────────────────────────────────
+        board.create('segment', [E, F], {
+            strokeColor: '#2563EB', strokeWidth: 2.5,
+            fixed: true, highlight: false
+        });
+
+        // ── Tick marks for midpoints (congruent halves) ─────────────────
+        function drawTick(p1x, p1y, p2x, p2y, count) {
+            var mx = (p1x + p2x) / 2;
+            var my = (p1y + p2y) / 2;
+            var dx = p2x - p1x;
+            var dy = p2y - p1y;
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var tickLen = 0.18;
+            var spacing = 0.12;
+
+            for (var i = 0; i < count; i++) {
+                var offset = (i - (count - 1) / 2) * spacing;
+                var cx = mx + offset * dx / len;
+                var cy = my + offset * dy / len;
+                board.create('segment',
+                    [[cx - px * tickLen, cy - py * tickLen],
+                     [cx + px * tickLen, cy + py * tickLen]], {
+                    strokeColor: '#555555', strokeWidth: 1.5,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        // Single ticks on each half of AB
+        drawTick(Ax, Ay, Dx, Dy, 1);
+        drawTick(Dx, Dy, Bx, By, 1);
+
+        // Double ticks on each half of BC
+        drawTick(Bx, By, Ex, Ey, 2);
+        drawTick(Ex, Ey, Cx, Cy, 2);
+
+        // Triple ticks on each half of AC
+        drawTick(Ax, Ay, Fx, Fy, 3);
+        drawTick(Fx, Fy, Cx, Cy, 3);
+
+        // ── Side length labels ──────────────────────────────────────────
+        // AB label — to the LEFT of AB (outside the triangle)
+        var abDx = Bx - Ax, abDy = By - Ay;
+        var abLen = Math.sqrt(abDx * abDx + abDy * abDy);
+        var abPx = abDy / abLen;
+        var abPy = -abDx / abLen;
+        var abLblX = (Ax + Bx) / 2 + abPx * 0.65;
+        var abLblY = (Ay + By) / 2 + abPy * 0.65;
+        board.create('text', [abLblX, abLblY, '120'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        // BC label — below BC
+        var bcMx = (Bx + Cx) / 2;
+        board.create('text', [bcMx, -0.75, '96'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+
+        // AC label — to the right of AC
+        var acDx = Cx - Ax, acDy = Cy - Ay;
+        var acLen = Math.sqrt(acDx * acDx + acDy * acDy);
+        var acPx = -acDy / acLen, acPy = acDx / acLen;
+        var acLblX = (Ax + Cx) / 2 + acPx * 0.7;
+        var acLblY = (Ay + Cy) / 2 + acPy * 0.7;
+        board.create('text', [acLblX, acLblY, '84'], {
+            fontSize: 13, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, useKatex: true
+        });
+    </script>
+</body>
+</html>
