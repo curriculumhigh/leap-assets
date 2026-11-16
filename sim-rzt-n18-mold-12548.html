@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Square-Base Mold</title>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #fig { width: 100%; height: 100%; display: block; }
+        .edge { stroke: #555555; stroke-width: 1.8; fill: none; stroke-linejoin: round; }
+        .hidden-edge { stroke: #555555; stroke-width: 1; fill: none; stroke-dasharray: 5 4; }
+        .face-top { fill: #F3F4F6; stroke: none; }
+        .face-side { fill: #E5E7EB; stroke: none; }
+        .dim { fill: #3B82F6; font-size: 17px; font-family: 'Times New Roman', 'Latin Modern Roman', serif; }
+        .dim .v { font-style: italic; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <!-- Pure SVG with a viewBox: scales to any container size (including after the iframe
+                 is shown from display:none) with no JS initialization needed. -->
+            <svg id="fig" viewBox="0 0 380 260" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+                <!-- Oblique projection: front face 150 wide x 100 tall, depth offset (+75, -45) -->
+                <polygon class="face-top" points="85,90 235,90 310,45 160,45"/>
+                <polygon class="face-side" points="235,190 310,145 310,45 235,90"/>
+
+                <!-- Hidden edges (dashed) meeting at the back-bottom-left corner -->
+                <line class="hidden-edge" x1="85" y1="190" x2="160" y2="145"/>
+                <line class="hidden-edge" x1="160" y1="145" x2="310" y2="145"/>
+                <line class="hidden-edge" x1="160" y1="145" x2="160" y2="45"/>
+
+                <!-- Visible edges -->
+                <polygon class="edge" points="85,190 235,190 235,90 85,90"/>
+                <polyline class="edge" points="85,90 160,45 310,45 235,90"/>
+                <polyline class="edge" points="235,190 310,145 310,45"/>
+
+                <!-- Dimension labels -->
+                <text class="dim" x="160" y="213" text-anchor="middle"><tspan class="v">x</tspan> cm</text>
+                <text class="dim" x="279.5" y="183.5" text-anchor="start"><tspan class="v">x</tspan> cm</text>
+                <text class="dim" x="74" y="145" text-anchor="end"><tspan class="v">x</tspan> − 2 cm</text>
+            </svg>
+        </div>
+    </div>
+</body>
+</html>
