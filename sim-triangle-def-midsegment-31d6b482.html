@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle DEF Midsegment</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 6.5, 8.5, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var D = board.create('point', [1, 5.5], {
+            name: 'D', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, 2] }
+        });
+
+        var F = board.create('point', [7, 5.5], {
+            name: 'F', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, 2] }
+        });
+
+        var E = board.create('point', [3, 0], {
+            name: 'E', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-4, -18] }
+        });
+
+        board.create('segment', [D, E], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [E, F], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [D, F], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        var G = board.create('midpoint', [D, E], {
+            name: 'G', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, -8] }
+        });
+
+        var H = board.create('midpoint', [E, F], {
+            name: 'H', fixed: true, size: 2, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -8] }
+        });
+
+        board.create('segment', [G, H], {
+            strokeColor: '#2563EB', strokeWidth: 2.0, fixed: true, highlight: false
+        });
+
+        board.create('text', [
+            function() { return (G.X() + H.X()) / 2; },
+            function() { return (G.Y() + H.Y()) / 2 - 0.55; },
+            '4x + 1'
+        ], {
+            useKatex: true, fontSize: 13, color: '#2563EB',
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [
+            function() { return (D.X() + F.X()) / 2; },
+            function() { return (D.Y() + F.Y()) / 2 + 0.5; },
+            '26'
+        ], {
+            useKatex: true, fontSize: 13, color: '#555555',
+            anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
