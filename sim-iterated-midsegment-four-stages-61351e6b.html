@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iterated Midsegment Design — Four Stages</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2, 15.5, 16, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_OUTLINE = '#555555';
+        var COL_FILL = '#2563EB';
+        var FILL_OPACITY = 0.30;
+        var STROKE_W_OUTER = 1.5;
+        var STROKE_W_INNER = 0.6;
+
+        /* ── Geometry helpers ─────────────────────────────────── */
+        function equiTri(bx, by, s) {
+            return [
+                [bx, by],
+                [bx + s, by],
+                [bx + s / 2, by + s * Math.sqrt(3) / 2]
+            ];
+        }
+
+        function mid(a, b) {
+            return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+        }
+
+        function centralMidTri(verts) {
+            return [mid(verts[0], verts[1]), mid(verts[1], verts[2]), mid(verts[0], verts[2])];
+        }
+
+        function cornerSubTris(verts) {
+            var m01 = mid(verts[0], verts[1]);
+            var m12 = mid(verts[1], verts[2]);
+            var m02 = mid(verts[0], verts[2]);
+            return [
+                [verts[0], m01, m02],
+                [m01, verts[1], m12],
+                [m02, m12, verts[2]]
+            ];
+        }
+
+        /* ── Drawing helpers ──────────────────────────────────── */
+        function drawOutline(verts) {
+            var pts = [];
+            for (var i = 0; i < 3; i++) {
+                pts.push(board.create('point', verts[i], { visible: false, fixed: true, name: '' }));
+            }
+            board.create('polygon', pts, {
+                fillColor: 'none', fillOpacity: 0,
+                borders: { strokeColor: COL_OUTLINE, strokeWidth: STROKE_W_OUTER },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        function drawShaded(verts) {
+            var pts = [];
+            for (var i = 0; i < 3; i++) {
+                pts.push(board.create('point', verts[i], { visible: false, fixed: true, name: '' }));
+            }
+            board.create('polygon', pts, {
+                fillColor: COL_FILL, fillOpacity: FILL_OPACITY,
+                borders: { strokeColor: COL_FILL, strokeWidth: STROKE_W_INNER },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+        }
+
+        function drawMidLines(verts) {
+            var m01 = mid(verts[0], verts[1]);
+            var m12 = mid(verts[1], verts[2]);
+            var m02 = mid(verts[0], verts[2]);
+            var pairs = [[m01, m12], [m12, m02], [m01, m02]];
+            for (var i = 0; i < pairs.length; i++) {
+                board.create('segment', [pairs[i][0], pairs[i][1]], {
+                    strokeColor: COL_OUTLINE, strokeWidth: STROKE_W_INNER,
+                    fixed: true, highlight: false
+                });
+            }
+        }
+
+        /* ── Edge label helper (offset outward from midpoint) ── */
+        function edgeLabel(a, b, text, offset) {
+            var mx = (a[0] + b[0]) / 2;
+            var my = (a[1] + b[1]) / 2;
+            board.create('text', [mx + offset[0], my + offset[1], text], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 12, color: '#222222', fixed: true, highlight: false,
+                useKatex: true
+            });
+        }
+
+        /* ── Layout: 2×2 grid ─────────────────────────────────── */
+        var S = 6;
+        var H = S * Math.sqrt(3) / 2;
+        var gapX = 2;
+        var gapY = 3;
+
+        var totalW = 2 * S + gapX;
+        var col0X = 7 - totalW / 2;
+        var col1X = col0X + S + gapX;
+
+        var totalH = 2 * H + gapY;
+        var row1Y = 6.5 + totalH / 2 - H;
+        var row0Y = row1Y - H - gapY;
+
+        var origins = [
+            [col0X, row1Y],
+            [col1X, row1Y],
+            [col0X, row0Y],
+            [col1X, row0Y]
+        ];
+
+        /* ── Stage 0: plain outline + side labels ─────────────── */
+        var tri0 = equiTri(origins[0][0], origins[0][1], S);
+        drawOutline(tri0);
+
+        edgeLabel(tri0[0], tri0[1], '12', [0, -0.65]);
+        edgeLabel(tri0[0], tri0[2], '12', [-0.75, 0.15]);
+        edgeLabel(tri0[1], tri0[2], '12', [0.75, 0.15]);
+
+        /* ── Stage 1: outline + 1 shaded central triangle ──── */
+        var tri1 = equiTri(origins[1][0], origins[1][1], S);
+        drawOutline(tri1);
+        drawMidLines(tri1);
+        drawShaded(centralMidTri(tri1));
+
+        /* ── Stage 2: + 3 more shaded triangles ───────────── */
+        var tri2 = equiTri(origins[2][0], origins[2][1], S);
+        drawOutline(tri2);
+        drawMidLines(tri2);
+        drawShaded(centralMidTri(tri2));
+        var corners2 = cornerSubTris(tri2);
+        for (var i = 0; i < 3; i++) {
+            drawMidLines(corners2[i]);
+            drawShaded(centralMidTri(corners2[i]));
+        }
+
+        /* ── Stage 3: + 9 more shaded triangles ───────────── */
+        var tri3 = equiTri(origins[3][0], origins[3][1], S);
+        drawOutline(tri3);
+        drawMidLines(tri3);
+        drawShaded(centralMidTri(tri3));
+        var corners3 = cornerSubTris(tri3);
+        for (var j = 0; j < 3; j++) {
+            drawMidLines(corners3[j]);
+            drawShaded(centralMidTri(corners3[j]));
+            var subCorners = cornerSubTris(corners3[j]);
+            for (var k = 0; k < 3; k++) {
+                drawMidLines(subCorners[k]);
+                drawShaded(centralMidTri(subCorners[k]));
+            }
+        }
+
+        /* ── Stage labels ─────────────────────────────────────── */
+        var stageLabels = ['Stage 0', 'Stage 1', 'Stage 2', 'Stage 3'];
+        for (var s = 0; s < 4; s++) {
+            board.create('text', [
+                origins[s][0] + S / 2,
+                origins[s][1] - 1.4,
+                stageLabels[s]
+            ], {
+                anchorX: 'middle', anchorY: 'top',
+                fontSize: 13, color: '#222222', fixed: true, highlight: false,
+                cssStyle: 'font-weight: 600;'
+            });
+        }
+    </script>
+</body>
+</html>
