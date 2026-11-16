@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle KLM Midsegment Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 6.5, 8.5, -1.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertices
+        var K = board.create('point', [3.5, 5.5], {
+            name: 'K', fixed: true, size: 1.5, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-2, 12] }
+        });
+        var L = board.create('point', [0.5, 0.5], {
+            name: 'L', fixed: true, size: 1.5, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, -8] }
+        });
+        var M = board.create('point', [7, 0.5], {
+            name: 'M', fixed: true, size: 1.5, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -8] }
+        });
+
+        // Triangle polygon
+        board.create('polygon', [K, L, M], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Midpoints
+        var N = board.create('midpoint', [K, L], {
+            name: 'N', fixed: true, size: 1.5, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [-18, -2] }
+        });
+        var P = board.create('midpoint', [K, M], {
+            name: 'P', fixed: true, size: 1.5, color: '#222222',
+            showInfobox: false, highlight: false,
+            label: { fontSize: 14, color: '#222222', offset: [8, -2] }
+        });
+
+        // Midsegment NP
+        board.create('segment', [N, P], {
+            strokeColor: '#555555', strokeWidth: 2, fixed: true, highlight: false
+        });
+
+        // Segment label "20" near KP
+        var kpMidX = (K.X() + P.X()) / 2;
+        var kpMidY = (K.Y() + P.Y()) / 2;
+        board.create('text', [kpMidX + 0.45, kpMidY + 0.15, '20'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+
+        // Segment label "x" near PM
+        var pmMidX = (P.X() + M.X()) / 2;
+        var pmMidY = (P.Y() + M.Y()) / 2;
+        board.create('text', [pmMidX + 0.45, pmMidY + 0.15, '<i>x</i>'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'left', anchorY: 'middle'
+        });
+    </script>
+</body>
+</html>
