@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle with Center P — Parts of a Circle</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6.5, 7, 7.5, -7.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var R = 4;
+        var CX = 0, CY = 0;
+        var SEG_COL = '#555555';
+        var SEG_W = 1.5;
+        var PT_COL = '#222222';
+        var LBL_SIZE = 14;
+
+        function circPt(angleDeg) {
+            var a = angleDeg * Math.PI / 180;
+            return [CX + R * Math.cos(a), CY + R * Math.sin(a)];
+        }
+
+        /* ── Center P ──────────────────────────────────────────────────── */
+        var P = board.create('point', [CX, CY], {
+            name: 'P', fixed: true, size: 2, color: PT_COL, highlight: false,
+            label: { fontSize: LBL_SIZE, color: PT_COL, offset: [6, 6] }
+        });
+
+        /* ── Circle ────────────────────────────────────────────────────── */
+        var circle = board.create('circle', [P, R], {
+            strokeColor: SEG_COL, strokeWidth: 2.0, fixed: true, highlight: false,
+            fillColor: 'none', fillOpacity: 0
+        });
+
+        /* ── Points on the circle ──────────────────────────────────────── */
+        var angD = 72;
+        var angM = angD + 180;
+
+        var posD = circPt(angD);
+        var D = board.create('point', posD, {
+            name: 'D', fixed: true, size: 2, color: PT_COL, highlight: false,
+            label: { fontSize: LBL_SIZE, color: PT_COL, offset: [4, 8] }
+        });
+
+        var posM = circPt(angM);
+        var M = board.create('point', posM, {
+            name: 'M', fixed: true, size: 2, color: PT_COL, highlight: false,
+            label: { fontSize: LBL_SIZE, color: PT_COL, offset: [-18, -8] }
+        });
+
+        var angN = 148;
+        var posN = circPt(angN);
+        var N = board.create('point', posN, {
+            name: 'N', fixed: true, size: 2, color: PT_COL, highlight: false,
+            label: { fontSize: LBL_SIZE, color: PT_COL, offset: [-10, 10] }
+        });
+
+        var angF = 352;
+        var posF = circPt(angF);
+        var F = board.create('point', posF, {
+            name: 'F', fixed: true, size: 2, color: PT_COL, highlight: false,
+            label: { fontSize: LBL_SIZE, color: PT_COL, offset: [10, -2] }
+        });
+
+        var angH = 305;
+        var posH = circPt(angH);
+        var H = board.create('point', posH, {
+            name: 'H', fixed: true, size: 2, color: PT_COL, highlight: false,
+            label: { fontSize: LBL_SIZE, color: PT_COL, offset: [8, -10] }
+        });
+
+        /* ── Diameter DM (passes through P) ────────────────────────────── */
+        board.create('segment', [D, M], {
+            strokeColor: SEG_COL, strokeWidth: SEG_W, fixed: true, highlight: false
+        });
+
+        /* ── Radii PF, PN, and PH ─────────────────────────────────────── */
+        board.create('segment', [P, F], {
+            strokeColor: SEG_COL, strokeWidth: SEG_W, fixed: true, highlight: false
+        });
+        board.create('segment', [P, N], {
+            strokeColor: SEG_COL, strokeWidth: SEG_W, fixed: true, highlight: false
+        });
+        board.create('segment', [P, H], {
+            strokeColor: SEG_COL, strokeWidth: SEG_W, fixed: true, highlight: false
+        });
+
+        /* ── Chord NH ──────────────────────────────────────────────────── */
+        board.create('segment', [N, H], {
+            strokeColor: SEG_COL, strokeWidth: SEG_W, fixed: true, highlight: false
+        });
+
+        /* ── Chord DF ──────────────────────────────────────────────────── */
+        board.create('segment', [D, F], {
+            strokeColor: SEG_COL, strokeWidth: SEG_W, fixed: true, highlight: false
+        });
+
+        /* ── Secant line through F and H (extends both directions) ─────── */
+        board.create('line', [F, H], {
+            strokeColor: SEG_COL, strokeWidth: SEG_W, fixed: true, highlight: false,
+            firstArrow: { type: 2, size: 5 },
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        /* ── Tangent ray from W through H ──────────────────────────────── */
+        var angHrad = angH * Math.PI / 180;
+        var tangAngle = angHrad - Math.PI / 2;
+        var tangDirX = Math.cos(tangAngle);
+        var tangDirY = Math.sin(tangAngle);
+
+        var wDist = 3.5;
+        var posW = [posH[0] + wDist * tangDirX, posH[1] + wDist * tangDirY];
+
+        var W = board.create('point', posW, {
+            name: 'W', fixed: true, size: 2, color: PT_COL, highlight: false,
+            label: { fontSize: LBL_SIZE, color: PT_COL, offset: [2, -14] }
+        });
+
+        var rayExtend = 3.0;
+        var rayEndPos = [posH[0] - rayExtend * tangDirX, posH[1] - rayExtend * tangDirY];
+        var rayEndPt = board.create('point', rayEndPos, {
+            visible: false, fixed: true, name: ''
+        });
+
+        board.create('arrow', [W, rayEndPt], {
+            strokeColor: SEG_COL, strokeWidth: SEG_W, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+
+    </script>
+</body>
+</html>
