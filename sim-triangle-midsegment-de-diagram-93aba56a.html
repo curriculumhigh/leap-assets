@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle Midsegment DE</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 300px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 8.5, 10.5, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Vertices
+        var A = board.create('point', [0, 0], {
+            name: 'A', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 13, color: '#222222', offset: [-16, -8] }
+        });
+        var B = board.create('point', [7, 7.5], {
+            name: 'B', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 13, color: '#222222', offset: [6, 6] }
+        });
+        var C = board.create('point', [9, 0], {
+            name: 'C', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 13, color: '#222222', offset: [6, -8] }
+        });
+
+        // Midpoints
+        var D = board.create('midpoint', [B, C], {
+            name: 'D', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 13, color: '#222222', offset: [8, 2] }
+        });
+        var E = board.create('midpoint', [A, C], {
+            name: 'E', fixed: true, size: 2, color: '#222222', highlight: false,
+            showInfobox: false,
+            label: { fontSize: 13, color: '#222222', offset: [0, -18] }
+        });
+
+        // Triangle sides
+        board.create('segment', [A, B], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [B, C], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [A, C], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Midsegment DE
+        board.create('segment', [D, E], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Congruence tick marks on BD ≅ DC (single tick)
+        var tickBD = board.create('segment', [B, D], { visible: false, fixed: true });
+        board.create('ticks', [tickBD], {
+            drawLabels: false, drawZero: false, minorTicks: 0,
+            majorHeight: 8, ticksDistance: 0.5,
+            strokeColor: '#DC2626', strokeWidth: 1.8,
+            fixed: true, highlight: false,
+            anchor: 'middle', includeBoundaries: false,
+            generateLabelText: function() { return ''; }
+        });
+
+        var tickDC = board.create('segment', [D, C], { visible: false, fixed: true });
+        board.create('ticks', [tickDC], {
+            drawLabels: false, drawZero: false, minorTicks: 0,
+            majorHeight: 8, ticksDistance: 0.5,
+            strokeColor: '#DC2626', strokeWidth: 1.8,
+            fixed: true, highlight: false,
+            anchor: 'middle', includeBoundaries: false,
+            generateLabelText: function() { return ''; }
+        });
+
+        // Congruence tick marks on AE ≅ EC (double tick)
+        var tickAE = board.create('segment', [A, E], { visible: false, fixed: true });
+        board.create('ticks', [tickAE], {
+            drawLabels: false, drawZero: false, minorTicks: 0,
+            majorHeight: 8, ticksDistance: 0.15,
+            strokeColor: '#DC2626', strokeWidth: 1.8,
+            fixed: true, highlight: false,
+            anchor: 'middle', includeBoundaries: false,
+            generateLabelText: function() { return ''; }
+        });
+
+        var tickEC = board.create('segment', [E, C], { visible: false, fixed: true });
+        board.create('ticks', [tickEC], {
+            drawLabels: false, drawZero: false, minorTicks: 0,
+            majorHeight: 8, ticksDistance: 0.15,
+            strokeColor: '#DC2626', strokeWidth: 1.8,
+            fixed: true, highlight: false,
+            anchor: 'middle', includeBoundaries: false,
+            generateLabelText: function() { return ''; }
+        });
+
+        // Segment labels: AE = 6, EC = x
+        board.create('text', [2.1, -1.2, '6'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:600'
+        });
+        board.create('text', [6.9, -1.2, 'x'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-weight:600; font-style:italic'
+        });
+    </script>
+</body>
+</html>
