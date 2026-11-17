@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Rectangles Side by Side</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 7.5, 15.5, -3],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var LEFT_X = 1;
+        var LEFT_W = 6;
+        var LEFT_H = 5;
+        var TOP_Y = 6;
+        var GAP = 1.5;
+
+        var RIGHT_X = LEFT_X + LEFT_W + GAP;
+        var RIGHT_W = 5;
+        var RIGHT_H = 4;
+
+        function drawRect(x, y, w, h) {
+            var p1 = board.create('point', [x, y], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [x + w, y], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [x + w, y - h], { visible: false, fixed: true, name: '' });
+            var p4 = board.create('point', [x, y - h], { visible: false, fixed: true, name: '' });
+            var poly = board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: 'none', fillOpacity: 0,
+                borders: { strokeColor: '#555555', strokeWidth: 2 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+            return { poly: poly, pts: [p1, p2, p3, p4] };
+        }
+
+        var leftRect = drawRect(LEFT_X, TOP_Y, LEFT_W, LEFT_H);
+
+        board.create('text', [LEFT_X - 0.6, TOP_Y - LEFT_H / 2, '5'], {
+            anchorX: 'right', anchorY: 'middle',
+            fontSize: 15, color: '#222222', useKatex: true,
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [LEFT_X + LEFT_W / 2, TOP_Y - LEFT_H - 0.6, '(x + 3)'], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 15, color: '#222222', useKatex: true,
+            fixed: true, highlight: false
+        });
+
+        var rightRect = drawRect(RIGHT_X, TOP_Y, RIGHT_W, RIGHT_H);
+
+        board.create('text', [RIGHT_X + RIGHT_W + 0.6, TOP_Y - RIGHT_H / 2, '4'], {
+            anchorX: 'left', anchorY: 'middle',
+            fontSize: 15, color: '#222222', useKatex: true,
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [RIGHT_X + RIGHT_W / 2, TOP_Y - RIGHT_H - 0.6, '5'], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 15, color: '#222222', useKatex: true,
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
