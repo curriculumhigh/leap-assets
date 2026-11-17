@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Four Number Lines A–D</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4.2, 10.5, 8.2, -1],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var BLUE = '#2563EB';
+        var AXIS_COL = '#444444';
+        var LINE_Y = [9, 6.5, 4, 1.5];
+        var LEFT = -3;
+        var RIGHT = 7;
+        var P1 = -1/3;
+        var P2 = 5;
+        var LABELS = ['A', 'B', 'C', 'D'];
+        var TICK_INTS = [-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7];
+        var SHADE_WIDTH = 4;
+        var TICK_LEN = 0.25;
+
+        function drawNumberLine(y, label, closedLeft, closedRight, shadeBetween) {
+            board.create('text', [-3.8, y, '<b>' + label + '</b>'], {
+                fontSize: 16, color: '#222222', fixed: true, highlight: false,
+                anchorX: 'middle', anchorY: 'middle'
+            });
+
+            board.create('arrow', [[LEFT - 0.3, y], [RIGHT + 0.3, y]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false,
+                lastArrow: { type: 2, size: 6 },
+                firstArrow: { type: 2, size: 6 }
+            });
+
+            var i;
+            for (i = 0; i < TICK_INTS.length; i++) {
+                var tx = TICK_INTS[i];
+                board.create('segment', [[tx, y - TICK_LEN], [tx, y + TICK_LEN]], {
+                    strokeColor: AXIS_COL, strokeWidth: 1.0, fixed: true, highlight: false
+                });
+                board.create('text', [tx, y - 0.65, String(tx)], {
+                    fontSize: 11, color: '#222222', fixed: true, highlight: false,
+                    anchorX: 'middle', anchorY: 'middle'
+                });
+            }
+
+            board.create('segment', [[P1, y - TICK_LEN], [P1, y + TICK_LEN]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.0, fixed: true, highlight: false
+            });
+            board.create('text', [P1, y + 0.7, '-\\tfrac{1}{3}'], {
+                fontSize: 11, color: '#222222', fixed: true, highlight: false,
+                anchorX: 'middle', anchorY: 'middle', useKatex: true
+            });
+
+            if (shadeBetween) {
+                board.create('segment', [[P1, y], [P2, y]], {
+                    strokeColor: BLUE, strokeWidth: SHADE_WIDTH, fixed: true, highlight: false
+                });
+            } else {
+                board.create('arrow', [[P1, y], [LEFT - 0.3, y]], {
+                    strokeColor: BLUE, strokeWidth: SHADE_WIDTH, fixed: true, highlight: false,
+                    lastArrow: { type: 2, size: 6 }
+                });
+                board.create('arrow', [[P2, y], [RIGHT + 0.3, y]], {
+                    strokeColor: BLUE, strokeWidth: SHADE_WIDTH, fixed: true, highlight: false,
+                    lastArrow: { type: 2, size: 6 }
+                });
+            }
+
+            if (closedLeft) {
+                board.create('point', [P1, y], {
+                    name: '', size: 5, fillColor: BLUE, strokeColor: BLUE, strokeWidth: 1.8,
+                    fixed: true, highlight: false, showInfobox: false
+                });
+            } else {
+                board.create('point', [P1, y], {
+                    name: '', size: 5, fillColor: '#ffffff', strokeColor: BLUE, strokeWidth: 1.8,
+                    fixed: true, highlight: false, showInfobox: false
+                });
+            }
+
+            if (closedRight) {
+                board.create('point', [P2, y], {
+                    name: '', size: 5, fillColor: BLUE, strokeColor: BLUE, strokeWidth: 1.8,
+                    fixed: true, highlight: false, showInfobox: false
+                });
+            } else {
+                board.create('point', [P2, y], {
+                    name: '', size: 5, fillColor: '#ffffff', strokeColor: BLUE, strokeWidth: 1.8,
+                    fixed: true, highlight: false, showInfobox: false
+                });
+            }
+        }
+
+        drawNumberLine(LINE_Y[0], 'A', true, true, true);
+        drawNumberLine(LINE_Y[1], 'B', false, false, true);
+        drawNumberLine(LINE_Y[2], 'C', true, true, false);
+        drawNumberLine(LINE_Y[3], 'D', false, false, false);
+    </script>
+</body>
+</html>
