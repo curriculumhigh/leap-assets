@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Four Number Lines A–D</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7.5, 10.5, 7.5, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var LINE_COLOR = '#444444';
+        var LINE_WIDTH = 1.2;
+        var RAY_COLOR = '#2563EB';
+        var RAY_WIDTH = 2.5;
+        var TICK_LEN = 0.25;
+        var X_MIN = -5;
+        var X_MAX = 5;
+        var CIRCLE_PT = 3;
+
+        var yPositions = [9, 6.5, 4, 1.5];
+        var labels = ['A', 'B', 'C', 'D'];
+
+        var configs = [
+            { open: true,  dir: 'right' },
+            { open: false, dir: 'left'  },
+            { open: true,  dir: 'left'  },
+            { open: false, dir: 'right' }
+        ];
+
+        function drawNumberLine(yPos, label, config) {
+            board.create('segment', [[X_MIN - 0.5, yPos], [X_MAX + 0.5, yPos]], {
+                strokeColor: LINE_COLOR, strokeWidth: LINE_WIDTH,
+                fixed: true, highlight: false
+            });
+
+            for (var i = X_MIN; i <= X_MAX; i++) {
+                board.create('segment', [[i, yPos - TICK_LEN], [i, yPos + TICK_LEN]], {
+                    strokeColor: LINE_COLOR, strokeWidth: 1.0,
+                    fixed: true, highlight: false
+                });
+                board.create('text', [i, yPos - 0.65, String(i)], {
+                    fontSize: 11, color: '#444444',
+                    anchorX: 'middle', anchorY: 'middle',
+                    fixed: true, highlight: false
+                });
+            }
+
+            board.create('text', [X_MIN - 1.6, yPos, '<b>' + label + '</b>'], {
+                fontSize: 15, color: '#222222',
+                anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+
+            var rayStart = CIRCLE_PT;
+            var rayEnd;
+            if (config.dir === 'right') {
+                rayEnd = X_MAX + 0.5;
+            } else {
+                rayEnd = X_MIN - 0.5;
+            }
+            board.create('arrow', [[rayStart, yPos], [rayEnd, yPos]], {
+                strokeColor: RAY_COLOR, strokeWidth: RAY_WIDTH,
+                lastArrow: { type: 2, size: 6 },
+                fixed: true, highlight: false,
+                touchLastPoint: false
+            });
+
+            if (config.open) {
+                board.create('point', [CIRCLE_PT, yPos], {
+                    name: '', size: 5,
+                    fillColor: '#ffffff',
+                    strokeColor: RAY_COLOR,
+                    strokeWidth: 2,
+                    fixed: true, highlight: false,
+                    showInfobox: false
+                });
+            } else {
+                board.create('point', [CIRCLE_PT, yPos], {
+                    name: '', size: 5,
+                    fillColor: RAY_COLOR,
+                    strokeColor: RAY_COLOR,
+                    strokeWidth: 1.5,
+                    fixed: true, highlight: false,
+                    showInfobox: false
+                });
+            }
+        }
+
+        for (var n = 0; n < 4; n++) {
+            drawNumberLine(yPositions[n], labels[n], configs[n]);
+        }
+    </script>
+</body>
+</html>
