@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Square-root curve graph</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+        #board, #board * { cursor: default !important; }
+        #board .JXGtext { pointer-events: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+    (function () {
+        // Static figure: no interaction. Window is fixed; the board refits on resize.
+        var CFG = {"axis": true, "ticks": true, "grid": [1, 1], "step": [1, 1], "xt": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "yt": [1, 2, 3, 4, 5, 6, 7], "xname": "x", "yname": "y", "skip": [], "yright": [], "auto": true, "bb": [-0.8675, 7.5625, 10.7875, -1.1]};
+        var C1 = '#222222';
+        var board = null, lastW = 0, lastH = 0;
+        var el = document.getElementById('board');
+        var CURVES = [], DOTS = [], KEEP = [], TICKS = [];
+        JXG.Options.elements.highlight = false;
+        JXG.Options.text.highlight = false;
+        JXG.Options.point.showInfobox = false;
+
+        var CURVE = { strokeColor: C1, strokeWidth: 1.8, fixed: true, highlight: false,
+                      numberPointsHigh: 1600, numberPointsLow: 800, layer: 6 };
+
+        function axisAttr(step) {
+            return {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+                lastArrow: { type: 2, size: 6 },
+                ticks: { visible: CFG.ticks, strokeColor: '#444444', strokeWidth: 1, highlight: false,
+                         minorTicks: 0, ticksDistance: step, insertTicks: false, drawZero: false,
+                         drawLabels: false, majorHeight: 8, label: { fontSize: 11 } }
+            };
+        }
+
+        function px(n) { return n / board.unitX; }
+        function py(n) { return n / board.unitY; }
+
+        function txt(x, y, s, o) {
+            var a = { fixed: true, highlight: false, fontSize: 13, color: C1, anchorX: 'middle', anchorY: 'middle' };
+            for (var k in o) { a[k] = o[k]; }
+            return board.create('text', [x, y, s], a);
+        }
+        // Math label (KaTeX). Kept clear of the curve by hand placement.
+        function mlab(x, y, tex, o) { var a = { useKatex: true }; for (var k in o) { a[k] = o[k]; } var t = txt(x, y, tex, a); KEEP.push(t); return t; }
+        // Key point: size 5, #222222. Optional letter label offset (dx, dy) in screen px.
+        function dot(x, y, name, dx, dy) {
+            var p = board.create('point', [x, y], { name: '', withLabel: false, size: 5, fillColor: C1, strokeColor: C1,
+                fixed: true, highlight: false, showInfobox: false, layer: 9 });
+            DOTS.push(p);
+            if (name) {
+                mlab(function () { return x + px(dx); }, function () { return y + py(dy); }, name, { fontSize: 13 });
+            }
+            return p;
+        }
+        function curve(el2) { CURVES.push(el2); return el2; }
+        function fmt(v) { return (v < 0 ? '−' : '') + Math.abs(v); }
+
+        function tickLabels() {
+            var i, t;
+            for (i = 0; i < CFG.xt.length; i++) {
+                (function (v) {
+                    t = txt(v, function () { return -py(6); }, fmt(v), { fontSize: 11, anchorY: 'top', display: 'html' });
+                    t.isTick = 'x:' + v; TICKS.push(t);
+                })(CFG.xt[i]);
+            }
+            for (i = 0; i < CFG.yt.length; i++) {
+                (function (v) {
+                    var rt = CFG.yright.indexOf(v) >= 0;   // shifted to the clear side of the y-axis
+                    t = txt(function () { return rt ? px(7) : -px(7); }, v, fmt(v), { fontSize: 11, anchorX: rt ? 'left' : 'right', display: 'html' });
+                    t.isTick = 'y:' + v; TICKS.push(t);
+                })(CFG.yt[i]);
+            }
+        }
+
+        function axisNames() {
+            var bb = CFG.bb;
+            if (CFG.xname) { mlab(function () { return bb[2] - px(9); }, function () { return -py(13); }, CFG.xname, { fontSize: 14 }); }
+            if (CFG.yname) { mlab(function () { return px(12); }, function () { return bb[1] - py(12); }, CFG.yname, { fontSize: 14 }); }
+        }
+
+        // Hide any tick number that would touch a curve, a key point or a math label.
+        function rectOf(t) {
+            var r = t.rendNode.getBoundingClientRect(), b = el.getBoundingClientRect();
+            return { l: r.left - b.left - 2, t: r.top - b.top - 1, r: r.right - b.left + 2, b: r.bottom - b.top + 1 };
+        }
+        function inR(R, x, y) { return x >= R.l && x <= R.r && y >= R.t && y <= R.b; }
+        function curveHits(R, c) {
+            var P = c.points, i, j, a, d, n;
+            for (i = 0; i + 1 < P.length; i++) {
+                a = P[i].scrCoords; d = P[i + 1].scrCoords;
+                if (!isFinite(a[1]) || !isFinite(a[2]) || !isFinite(d[1]) || !isFinite(d[2])) { continue; }
+                n = Math.min(2000, Math.max(1, Math.ceil(Math.max(Math.abs(d[1] - a[1]), Math.abs(d[2] - a[2])) / 1.5)));
+                for (j = 0; j <= n; j++) { if (inR(R, a[1] + (d[1] - a[1]) * j / n, a[2] + (d[2] - a[2]) * j / n)) { return true; } }
+            }
+            return false;
+        }
+        function overlaps(A, B) { return A.l < B.r && A.r > B.l && A.t < B.b && A.b > B.t; }
+        function declutter() {
+            var i, k, R, hide, keepR = [];
+            for (i = 0; i < TICKS.length; i++) {
+                TICKS[i].setAttribute({ visible: CFG.skip.indexOf(TICKS[i].isTick) < 0 });
+            }
+            board.fullUpdate();
+            board.fullUpdate();   // second pass: HTML text sizes/anchors settle after first render
+            if (!CFG.auto) { return; }
+            for (k = 0; k < KEEP.length; k++) { keepR.push(rectOf(KEEP[k])); }
+            for (i = 0; i < TICKS.length; i++) {
+                if (!TICKS[i].visProp.visible) { continue; }
+                R = rectOf(TICKS[i]); hide = false;
+                for (k = 0; k < CURVES.length && !hide; k++) { hide = curveHits(R, CURVES[k]); }
+                for (k = 0; k < DOTS.length && !hide; k++) {
+                    var s = DOTS[k].coords.scrCoords, r = DOTS[k].visProp.size + 1;
+                    hide = overlaps(R, { l: s[1] - r, r: s[1] + r, t: s[2] - r, b: s[2] + r });
+                }
+                for (k = 0; k < keepR.length && !hide; k++) { hide = overlaps(R, keepR[k]); }
+                if (hide) { TICKS[i].setAttribute({ visible: false }); }
+            }
+            board.update();
+        }
+
+        function build(w, h) {
+            var attrs = {
+                boundingbox: CFG.bb, keepAspectRatio: false, axis: CFG.axis,
+                showNavigation: false, showCopyright: false, showInfobox: false,
+                pan: { enabled: false }, zoom: { enabled: false, wheel: false },
+                registerEvents: false,
+                grid: CFG.grid ? { majorStep: CFG.grid, minorElements: 0, strokeColor: '#D1D5DB', strokeWidth: 0.4,
+                                   strokeOpacity: 1, highlight: false, fixed: true, layer: 0 } : false
+            };
+            if (CFG.axis) { attrs.defaultAxes = { x: axisAttr(CFG.step[0]), y: axisAttr(CFG.step[1]) }; }
+            board = JXG.JSXGraph.initBoard('board', attrs);
+            board.suspendUpdate();
+            if (CFG.axis && CFG.ticks) { tickLabels(); }
+            axisNames();
+            draw();
+            board.unsuspendUpdate();
+            declutter();
+            lastW = w; lastH = h;
+            setTimeout(declutter, 60);
+            if (document.fonts && document.fonts.ready) { document.fonts.ready.then(declutter); }
+        }
+
+        function draw() {
+
+            function G(x) { return 2 * Math.sqrt(x); }
+            curve(board.create('functiongraph', [G, 1, 9], CURVE));
+            dot(1, 2); dot(9, 6);
+            mlab(7, 4.75, 'g', { anchorX: 'middle' });
+
+        }
+
+        function fit() {
+            var w = el.clientWidth, h = el.clientHeight;
+            if (w < 20 || h < 20) { return; }          // hidden / zero-size iframe: wait
+            if (!board) { build(w, h); return; }
+            if (w === lastW && h === lastH) { return; }
+            board.resizeContainer(w, h, true, true);
+            board.setBoundingBox(CFG.bb, false);
+            declutter();
+            lastW = w; lastH = h;
+        }
+
+        if (window.ResizeObserver) { new ResizeObserver(fit).observe(el); }
+        window.addEventListener('resize', fit);
+        window.addEventListener('load', fit);
+        fit();
+    })();
+    </script>
+</body>
+</html>
