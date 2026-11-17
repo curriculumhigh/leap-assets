@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Line — x ≥ 2.51</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [2.43, 1.6, 2.675, -1.6],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var Y = 0;
+        var LEFT = 2.445;
+        var RIGHT = 2.66;
+        var TICK_HALF = 0.18;
+
+        // Base number line
+        board.create('segment', [[LEFT, Y], [RIGHT, Y]], {
+            strokeColor: '#444444',
+            strokeWidth: 1.2,
+            fixed: true,
+            highlight: false,
+            lastArrow: false
+        });
+
+        // Tick marks and labels
+        var ticks = [2.47, 2.49, 2.51, 2.53, 2.55, 2.57, 2.59, 2.61, 2.63];
+
+        for (var i = 0; i < ticks.length; i++) {
+            var tx = ticks[i];
+
+            board.create('segment', [[tx, Y - TICK_HALF], [tx, Y + TICK_HALF]], {
+                strokeColor: '#444444',
+                strokeWidth: 1.2,
+                fixed: true,
+                highlight: false
+            });
+
+            board.create('text', [tx, Y - TICK_HALF - 0.28, tx.toFixed(2)], {
+                anchorX: 'middle',
+                anchorY: 'top',
+                fontSize: 11,
+                color: '#333333',
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // Solution ray: blue arrow from 2.51 to the right
+        board.create('arrow', [[2.51, Y], [RIGHT, Y]], {
+            strokeColor: '#2563EB',
+            strokeWidth: 3,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true,
+            highlight: false,
+            layer: 7
+        });
+
+        // Closed circle at 2.51
+        board.create('point', [2.51, Y], {
+            name: '',
+            size: 5,
+            fillColor: '#2563EB',
+            strokeColor: '#2563EB',
+            strokeWidth: 1.5,
+            fixed: true,
+            highlight: false,
+            showInfobox: false,
+            layer: 8
+        });
+    </script>
+</body>
+</html>
