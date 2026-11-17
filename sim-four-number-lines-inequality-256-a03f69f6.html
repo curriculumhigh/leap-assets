@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Four Number Lines — Inequality Types at 256</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-3.5, 10, 14, -1.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Layout constants
+        var LEFT = 0;
+        var RIGHT = 12;
+        var CENTER = 6;
+        var TICK_H = 0.35;
+
+        // Y positions for four lines (top to bottom: A, B, C, D)
+        var yPositions = [8.2, 6.0, 3.8, 1.6];
+        var labels = ['A', 'B', 'C', 'D'];
+
+        // Open (true) or closed (false) circle
+        var isOpen = [true, false, true, false];
+
+        // Shade left (true) or right (false)
+        var shadeLeft = [true, true, false, false];
+
+        var SHADE_COL = '#2563EB';
+        var LINE_COL = '#444444';
+        var LABEL_COL = '#222222';
+
+        for (var i = 0; i < 4; i++) {
+            var y = yPositions[i];
+
+            // Number line with arrows on both ends
+            board.create('arrow', [[LEFT, y], [RIGHT, y]], {
+                strokeColor: LINE_COL, strokeWidth: 1.2, fixed: true, highlight: false,
+                lastArrow: { type: 2, size: 6 },
+                firstArrow: { type: 2, size: 6 }
+            });
+
+            // Tick mark at center (256)
+            board.create('segment', [[CENTER, y - TICK_H], [CENTER, y + TICK_H]], {
+                strokeColor: LINE_COL, strokeWidth: 1.5, fixed: true, highlight: false
+            });
+
+            // "256" label below tick
+            board.create('text', [CENTER, y - 0.75, '256'], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 13, color: LABEL_COL, fixed: true, highlight: false
+            });
+
+            // Letter label (A, B, C, D) to the left
+            board.create('text', [-1.8, y, '\\textbf{' + labels[i] + '}'], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 16, color: LABEL_COL, fixed: true, highlight: false,
+                useKatex: true
+            });
+
+            // Shading ray
+            if (shadeLeft[i]) {
+                board.create('arrow', [[CENTER, y], [LEFT, y]], {
+                    strokeColor: SHADE_COL, strokeWidth: 3.5, fixed: true, highlight: false,
+                    lastArrow: { type: 2, size: 6 },
+                    layer: 5
+                });
+            } else {
+                board.create('arrow', [[CENTER, y], [RIGHT, y]], {
+                    strokeColor: SHADE_COL, strokeWidth: 3.5, fixed: true, highlight: false,
+                    lastArrow: { type: 2, size: 6 },
+                    layer: 5
+                });
+            }
+
+            // Circle marker at 256
+            if (isOpen[i]) {
+                board.create('point', [CENTER, y], {
+                    name: '', fixed: true, highlight: false,
+                    size: 5,
+                    fillColor: '#ffffff',
+                    strokeColor: SHADE_COL,
+                    strokeWidth: 2,
+                    layer: 7
+                });
+            } else {
+                board.create('point', [CENTER, y], {
+                    name: '', fixed: true, highlight: false,
+                    size: 5,
+                    fillColor: SHADE_COL,
+                    strokeColor: SHADE_COL,
+                    strokeWidth: 1.5,
+                    layer: 7
+                });
+            }
+        }
+    </script>
+</body>
+</html>
