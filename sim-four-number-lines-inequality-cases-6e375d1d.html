@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Four Number Lines A–D</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 450px; margin: 0; padding: 6px;
+            height: calc(100% - 12px);
+            display: flex; flex-direction: column; gap: 0;
+        }
+        .nl-row {
+            flex: 1; display: flex; align-items: center; gap: 0;
+            background: white; padding: 0 10px;
+        }
+        .nl-row:first-child { border-radius: 8px 8px 0 0; padding-top: 6px; }
+        .nl-row:last-child { border-radius: 0 0 8px 8px; padding-bottom: 6px; }
+        .nl-label {
+            width: 28px; flex-shrink: 0;
+            font-size: 18px; font-weight: 700; color: #222222;
+            text-align: center;
+        }
+        .nl-board { flex: 1; height: 100%; }
+        .jxgbox { width: 100% !important; height: 100% !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nl-row">
+            <div class="nl-label">A</div>
+            <div class="nl-board" id="boardA"></div>
+        </div>
+        <div class="nl-row">
+            <div class="nl-label">B</div>
+            <div class="nl-board" id="boardB"></div>
+        </div>
+        <div class="nl-row">
+            <div class="nl-label">C</div>
+            <div class="nl-board" id="boardC"></div>
+        </div>
+        <div class="nl-row">
+            <div class="nl-label">D</div>
+            <div class="nl-board" id="boardD"></div>
+        </div>
+    </div>
+
+    <script>
+        var configs = [
+            { id: 'boardA', open: true,  dir: 'right' },
+            { id: 'boardB', open: false, dir: 'right' },
+            { id: 'boardC', open: true,  dir: 'left'  },
+            { id: 'boardD', open: false, dir: 'left'  }
+        ];
+
+        var RAY_COLOR = '#2563EB';
+        var AXIS_COLOR = '#444444';
+        var POINT_COLOR = '#222222';
+
+        function buildNumberLine(cfg) {
+            var board = JXG.JSXGraph.initBoard(cfg.id, {
+                boundingbox: [-1.2, 1.8, 11.5, -1.4],
+                axis: false,
+                grid: false,
+                showNavigation: false,
+                showCopyright: false,
+                pan: { enabled: false },
+                zoom: { enabled: false }
+            });
+
+            board.create('arrow', [[-0.6, 0], [11.0, 0]], {
+                strokeColor: AXIS_COLOR, strokeWidth: 1.2,
+                lastArrow: { type: 2, size: 6 },
+                fixed: true, highlight: false
+            });
+            board.create('arrow', [[11.0, 0], [-0.6, 0]], {
+                strokeColor: AXIS_COLOR, strokeWidth: 1.2,
+                lastArrow: { type: 2, size: 6 },
+                fixed: true, highlight: false
+            });
+
+            var i;
+            for (i = 0; i <= 10; i++) {
+                board.create('segment', [[i, -0.25], [i, 0.25]], {
+                    strokeColor: AXIS_COLOR, strokeWidth: 1.0,
+                    fixed: true, highlight: false
+                });
+                board.create('text', [i, -0.7, String(i)], {
+                    fontSize: 11, color: '#333333',
+                    anchorX: 'middle', anchorY: 'middle',
+                    fixed: true, highlight: false
+                });
+            }
+
+            if (cfg.dir === 'right') {
+                board.create('arrow', [[5, 0], [10.8, 0]], {
+                    strokeColor: RAY_COLOR, strokeWidth: 3.5,
+                    lastArrow: { type: 2, size: 7 },
+                    fixed: true, highlight: false, layer: 7
+                });
+            } else {
+                board.create('arrow', [[5, 0], [-0.4, 0]], {
+                    strokeColor: RAY_COLOR, strokeWidth: 3.5,
+                    lastArrow: { type: 2, size: 7 },
+                    fixed: true, highlight: false, layer: 7
+                });
+            }
+
+            if (cfg.open) {
+                board.create('point', [5, 0], {
+                    name: '', size: 5,
+                    fillColor: '#ffffff',
+                    strokeColor: POINT_COLOR,
+                    strokeWidth: 1.8,
+                    fixed: true, highlight: false,
+                    layer: 8
+                });
+            } else {
+                board.create('point', [5, 0], {
+                    name: '', size: 5,
+                    fillColor: POINT_COLOR,
+                    strokeColor: POINT_COLOR,
+                    strokeWidth: 1.8,
+                    fixed: true, highlight: false,
+                    layer: 8
+                });
+            }
+
+            return board;
+        }
+
+        for (var c = 0; c < configs.length; c++) {
+            buildNumberLine(configs[c]);
+        }
+    </script>
+</body>
+</html>
