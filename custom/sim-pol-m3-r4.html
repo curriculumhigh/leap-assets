@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>r4</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+  html,body{margin:0;padding:0;overflow:hidden;height:100%;background:transparent;
+            pointer-events:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .container{width:400px;height:400px;margin:0;padding:0;}
+  .board-wrapper{background:white;border-radius:8px;padding:10px;
+                 width:calc(100% - 20px);height:calc(100% - 20px);}
+  #board{width:100%;height:100%;}
+</style></head>
+<body><div class="container"><div class="board-wrapper"><div id="board"></div></div></div>
+<script>
+  var RMAX=7, SPAN=9.3;
+  var board=JXG.JSXGraph.initBoard('board',{
+    boundingbox:[-SPAN,SPAN,SPAN,-SPAN],axis:false,grid:false,keepAspectRatio:true,
+    showNavigation:false,showCopyright:false,pan:{enabled:false},zoom:{enabled:false}});
+  var GC='#D1D5DB', GW=0.4;
+  for(var i=1;i<=RMAX;i++)
+    board.create('circle',[[0,0],i],{strokeColor:GC,strokeWidth:GW,fillColor:'none',fixed:true,highlight:false});
+  for(var i=0;i<24;i++){ var a=i*Math.PI/12;
+    board.create('segment',[[0,0],[RMAX*Math.cos(a),RMAX*Math.sin(a)]],{strokeColor:GC,strokeWidth:GW,fixed:true,highlight:false}); }
+  board.create('arrow',[[0,0],[RMAX+1.2,0]],{strokeColor:'#444',strokeWidth:1.0,lastArrow:{type:2,size:5},fixed:true,highlight:false});
+  board.create('point',[0,0],{name:'',size:2,color:'#222',fixed:true,highlight:false});
+  board.create('text',[RMAX+1.1,-0.35,'<i>polar axis</i>'],{fontSize:10,color:'#444',fixed:true,highlight:false,anchorX:'right',anchorY:'top'});
+  var HIDE=[1, 2, 3, 4, 5, 6, 7];
+  for(var i=1;i<=RMAX;i+=1) if(HIDE.indexOf(i)<0)
+    board.create('text',[i,-0.45,String(i)],{fontSize:9,color:'#666',fixed:true,highlight:false,anchorX:'middle',anchorY:'top'});
+  board.create('text',[7.0148,4.0500,'\\tfrac{\\pi}{6}'],{fontSize:11,color:'#555',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',useKatex:true});
+  board.create('text',[5.7276,5.7276,'\\tfrac{\\pi}{4}'],{fontSize:11,color:'#555',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',useKatex:true});
+  board.create('text',[4.0500,7.0148,'\\tfrac{\\pi}{3}'],{fontSize:11,color:'#555',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',useKatex:true});
+  board.create('text',[0.0000,8.1000,'\\tfrac{\\pi}{2}'],{fontSize:11,color:'#555',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',useKatex:true});
+  board.create('text',[-4.0500,7.0148,'\\tfrac{2\\pi}{3}'],{fontSize:11,color:'#555',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',useKatex:true});
+  board.create('text',[-5.7276,5.7276,'\\tfrac{3\\pi}{4}'],{fontSize:11,color:'#555',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',useKatex:true});
+  board.create('text',[-7.0148,4.0500,'\\tfrac{5\\pi}{6}'],{fontSize:11,color:'#555',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',useKatex:true});
+  board.create('text',[-8.1000,0.0000,'\\pi'],{fontSize:11,color:'#555',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',useKatex:true});
+  board.create('text',[-7.0148,-4.0500,'\\tfrac{7\\pi}{6}'],{fontSize:11,color:'#555',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',useKatex:true});
+  board.create('text',[-5.7276,-5.7276,'\\tfrac{5\\pi}{4}'],{fontSize:11,color:'#555',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',useKatex:true});
+  board.create('text',[-4.0500,-7.0148,'\\tfrac{4\\pi}{3}'],{fontSize:11,color:'#555',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',useKatex:true});
+  board.create('text',[-0.0000,-8.1000,'\\tfrac{3\\pi}{2}'],{fontSize:11,color:'#555',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',useKatex:true});
+  board.create('text',[4.0500,-7.0148,'\\tfrac{5\\pi}{3}'],{fontSize:11,color:'#555',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',useKatex:true});
+  board.create('text',[5.7276,-5.7276,'\\tfrac{7\\pi}{4}'],{fontSize:11,color:'#555',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',useKatex:true});
+  board.create('text',[7.0148,-4.0500,'\\tfrac{11\\pi}{6}'],{fontSize:11,color:'#555',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',useKatex:true});
+  board.create('curve',[function(t){return (6*Math.cos(2*t))*Math.cos(t);},function(t){return (6*Math.cos(2*t))*Math.sin(t);},0,2*Math.PI],{strokeColor:'#2563EB',strokeWidth:2.4,fixed:true,highlight:false});
+  board.create('point',[6.0000,0.0000],{name:'',size:3,color:'#DC2626',fixed:true,highlight:false});
+  board.create('text',[6.2000,0.7500,'A'],{fontSize:14,color:'#DC2626',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',cssStyle:'font-weight:700'});
+  board.create('point',[0.0000,6.0000],{name:'',size:3,color:'#DC2626',fixed:true,highlight:false});
+  board.create('text',[0.7500,6.2000,'B'],{fontSize:14,color:'#DC2626',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',cssStyle:'font-weight:700'});
+  board.create('point',[-6.0000,0.0000],{name:'',size:3,color:'#DC2626',fixed:true,highlight:false});
+  board.create('text',[-6.2000,0.7500,'C'],{fontSize:14,color:'#DC2626',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',cssStyle:'font-weight:700'});
+  board.create('point',[0.0000,-6.0000],{name:'',size:3,color:'#DC2626',fixed:true,highlight:false});
+  board.create('text',[0.7500,-6.2000,'D'],{fontSize:14,color:'#DC2626',fixed:true,highlight:false,anchorX:'middle',anchorY:'middle',cssStyle:'font-weight:700'});
+</script></body></html>
