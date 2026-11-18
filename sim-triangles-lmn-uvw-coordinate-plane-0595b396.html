@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangles LMN and UVW</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var COL_BLUE = '#2563EB';
+        var COL_RED = '#DC2626';
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 15, 15, -2],
+            axis: true,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    firstArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        ticksDistance: 2,
+                        minorTicks: 1,
+                        minorHeight: -1,
+                        drawZero: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    firstArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        ticksDistance: 2,
+                        minorTicks: 1,
+                        minorHeight: -1,
+                        drawZero: false
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4
+            }
+        });
+
+        // Axis labels
+        board.create('text', [14.5, -0.6, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.3, 14.5, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // ── Triangle LMN (blue) ─────────────────────────────────────────
+        var ptL = board.create('point', [3, 6], {
+            name: 'L', fixed: true, size: 2, color: COL_BLUE, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 13, color: COL_BLUE, offset: [-16, -12], useKatex: true }
+        });
+        var ptM = board.create('point', [12, 6], {
+            name: 'M', fixed: true, size: 2, color: COL_BLUE, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 13, color: COL_BLUE, offset: [8, -12], useKatex: true }
+        });
+        var ptN = board.create('point', [3, 12], {
+            name: 'N', fixed: true, size: 2, color: COL_BLUE, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 13, color: COL_BLUE, offset: [-16, 4], useKatex: true }
+        });
+
+        board.create('polygon', [ptL, ptM, ptN], {
+            fillColor: COL_BLUE, fillOpacity: 0.12,
+            borders: { strokeColor: COL_BLUE, strokeWidth: 2, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Right-angle marker at L
+        var raSize1 = 0.6;
+        board.create('segment', [[3 + raSize1, 6], [3 + raSize1, 6 + raSize1]], {
+            strokeColor: COL_BLUE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[3 + raSize1, 6 + raSize1], [3, 6 + raSize1]], {
+            strokeColor: COL_BLUE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Triangle UVW (red) ──────────────────────────────────────────
+        var ptU = board.create('point', [-1, 2], {
+            name: 'U', fixed: true, size: 2, color: COL_RED, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 13, color: COL_RED, offset: [-16, -12], useKatex: true }
+        });
+        var ptV = board.create('point', [-4, 2], {
+            name: 'V', fixed: true, size: 2, color: COL_RED, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 13, color: COL_RED, offset: [-16, -12], useKatex: true }
+        });
+        var ptW = board.create('point', [-1, 4], {
+            name: 'W', fixed: true, size: 2, color: COL_RED, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 13, color: COL_RED, offset: [-16, 4], useKatex: true }
+        });
+
+        board.create('polygon', [ptU, ptV, ptW], {
+            fillColor: COL_RED, fillOpacity: 0.12,
+            borders: { strokeColor: COL_RED, strokeWidth: 2, fixed: true, highlight: false },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Right-angle marker at U
+        var raSize2 = 0.4;
+        board.create('segment', [[-1 - raSize2, 2], [-1 - raSize2, 2 + raSize2]], {
+            strokeColor: COL_RED, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+        board.create('segment', [[-1 - raSize2, 2 + raSize2], [-1, 2 + raSize2]], {
+            strokeColor: COL_RED, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
