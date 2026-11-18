@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangles ABC and PQR</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var BB = [-2, 4, 8, -6];
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: BB,
+            axis: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            grid: false
+        });
+
+        // ── Manual 1×1 grid ────────────────────────────────────────────
+        var gridAttrs = { strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false };
+        var i;
+        for (i = Math.ceil(BB[0]); i <= Math.floor(BB[2]); i++) {
+            if (i === 0) continue;
+            board.create('segment', [[i, BB[3]], [i, BB[1]]], gridAttrs);
+        }
+        for (i = Math.ceil(BB[3]); i <= Math.floor(BB[1]); i++) {
+            if (i === 0) continue;
+            board.create('segment', [[BB[0], i], [BB[2], i]], gridAttrs);
+        }
+
+        // ── Manual axes ────────────────────────────────────────────────
+        var axAttrs = { strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false, lastArrow: { type: 2, size: 6 } };
+        board.create('arrow', [[BB[0], 0], [BB[2], 0]], axAttrs);
+        board.create('arrow', [[0, BB[3]], [0, BB[1]]], axAttrs);
+
+        // ── Manual tick marks and labels ────────────────────────────────
+        var tickLen = 0.12;
+        var tickAttrs = { strokeColor: '#444444', strokeWidth: 1.0, fixed: true, highlight: false };
+        var lblAttrs = { fontSize: 11, color: '#444444', fixed: true, highlight: false, anchorX: 'middle', anchorY: 'top' };
+
+        // X-axis ticks and labels
+        for (i = Math.ceil(BB[0]); i <= Math.floor(BB[2]); i++) {
+            if (i === 0) continue;
+            board.create('segment', [[i, -tickLen], [i, tickLen]], tickAttrs);
+            board.create('text', [i, -0.35, String(i)], lblAttrs);
+        }
+
+        // Y-axis ticks and labels
+        for (i = Math.ceil(BB[3]); i <= Math.floor(BB[1]); i++) {
+            if (i === 0) continue;
+            board.create('segment', [[-tickLen, i], [tickLen, i]], tickAttrs);
+            board.create('text', [-0.45, i + 0.05, String(i)], { fontSize: 11, color: '#444444', fixed: true, highlight: false, anchorX: 'right', anchorY: 'middle' });
+        }
+
+        // Axis labels
+        board.create('text', [7.6, -0.4, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.3, 3.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        var COL_BLUE = '#2563EB';
+        var COL_RED = '#DC2626';
+
+        // ── Triangle ABC ────────────────────────────────────────────────
+        var A = board.create('point', [1, 1], {
+            name: 'A', size: 1.5, color: COL_BLUE, fixed: true, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 13, color: COL_BLUE, useKatex: true, offset: [-16, -10] }
+        });
+        var B = board.create('point', [3, 1], {
+            name: 'B', size: 1.5, color: COL_BLUE, fixed: true, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 13, color: COL_BLUE, useKatex: true, offset: [8, -10] }
+        });
+        var C = board.create('point', [1, 2], {
+            name: 'C', size: 1.5, color: COL_BLUE, fixed: true, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 13, color: COL_BLUE, useKatex: true, offset: [-16, 4] }
+        });
+
+        board.create('polygon', [A, B, C], {
+            fillColor: COL_BLUE, fillOpacity: 0.20,
+            borders: { strokeColor: COL_BLUE, strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Triangle PQR ────────────────────────────────────────────────
+        var P = board.create('point', [2, -2], {
+            name: 'P', size: 1.5, color: COL_RED, fixed: true, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 13, color: COL_RED, useKatex: true, offset: [-16, 4] }
+        });
+        var Q = board.create('point', [6, -2], {
+            name: 'Q', size: 1.5, color: COL_RED, fixed: true, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 13, color: COL_RED, useKatex: true, offset: [8, 4] }
+        });
+        var R = board.create('point', [2, -4], {
+            name: 'R', size: 1.5, color: COL_RED, fixed: true, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 13, color: COL_RED, useKatex: true, offset: [-16, -10] }
+        });
+
+        board.create('polygon', [P, Q, R], {
+            fillColor: COL_RED, fillOpacity: 0.20,
+            borders: { strokeColor: COL_RED, strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
