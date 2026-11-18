@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Rectangles — JKLM and PQRS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 8, 18.5, -3],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Rectangle JKLM (larger): width 6b, height 6a ───────────────
+        var jklm_x = 0;
+        var jklm_y = 6;
+        var jklm_w = 7;
+        var jklm_h = 5.5;
+
+        var J = board.create('point', [jklm_x, jklm_y], {
+            name: '', size: 1.5, color: '#222222', fixed: true,
+            showInfobox: false, highlight: false
+        });
+        var K = board.create('point', [jklm_x + jklm_w, jklm_y], {
+            name: '', size: 1.5, color: '#222222', fixed: true,
+            showInfobox: false, highlight: false
+        });
+        var L = board.create('point', [jklm_x + jklm_w, jklm_y - jklm_h], {
+            name: '', size: 1.5, color: '#222222', fixed: true,
+            showInfobox: false, highlight: false
+        });
+        var M = board.create('point', [jklm_x, jklm_y - jklm_h], {
+            name: '', size: 1.5, color: '#222222', fixed: true,
+            showInfobox: false, highlight: false
+        });
+
+        board.create('polygon', [J, K, L, M], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true
+        });
+
+        // JKLM vertex labels
+        board.create('text', [jklm_x - 0.55, jklm_y + 0.5, 'J'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+        board.create('text', [jklm_x + jklm_w + 0.55, jklm_y + 0.5, 'K'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+        board.create('text', [jklm_x + jklm_w + 0.55, jklm_y - jklm_h - 0.5, 'L'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+        board.create('text', [jklm_x - 0.55, jklm_y - jklm_h - 0.5, 'M'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+
+        // JKLM dimension labels
+        board.create('text', [jklm_x - 1.5, jklm_y - jklm_h / 2, '6a'], {
+            fontSize: 14, color: '#3B82F6', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+        board.create('text', [jklm_x + jklm_w / 2, jklm_y - jklm_h - 1.0, '6b'], {
+            fontSize: 14, color: '#3B82F6', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+
+        // ── Rectangle PQRS (smaller): width 2b, height 2a ──────────────
+        var pqrs_x = 10;
+        var pqrs_y = 6;
+        var pqrs_w = 3.5;
+        var pqrs_h = 2.75;
+
+        var P = board.create('point', [pqrs_x, pqrs_y], {
+            name: '', size: 1.5, color: '#222222', fixed: true,
+            showInfobox: false, highlight: false
+        });
+        var Q = board.create('point', [pqrs_x + pqrs_w, pqrs_y], {
+            name: '', size: 1.5, color: '#222222', fixed: true,
+            showInfobox: false, highlight: false
+        });
+        var R = board.create('point', [pqrs_x + pqrs_w, pqrs_y - pqrs_h], {
+            name: '', size: 1.5, color: '#222222', fixed: true,
+            showInfobox: false, highlight: false
+        });
+        var S = board.create('point', [pqrs_x, pqrs_y - pqrs_h], {
+            name: '', size: 1.5, color: '#222222', fixed: true,
+            showInfobox: false, highlight: false
+        });
+
+        board.create('polygon', [P, Q, R, S], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true
+        });
+
+        // PQRS vertex labels
+        board.create('text', [pqrs_x - 0.55, pqrs_y + 0.5, 'P'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+        board.create('text', [pqrs_x + pqrs_w + 0.55, pqrs_y + 0.5, 'Q'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+        board.create('text', [pqrs_x + pqrs_w + 0.55, pqrs_y - pqrs_h - 0.5, 'R'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+        board.create('text', [pqrs_x - 0.55, pqrs_y - pqrs_h - 0.5, 'S'], {
+            fontSize: 14, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+
+        // PQRS dimension labels
+        board.create('text', [pqrs_x - 1.5, pqrs_y - pqrs_h / 2, '2a'], {
+            fontSize: 14, color: '#3B82F6', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+        board.create('text', [pqrs_x + pqrs_w / 2, pqrs_y - pqrs_h - 1.0, '2b'], {
+            fontSize: 14, color: '#3B82F6', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle', useKatex: true
+        });
+
+        // ── Parallel tick marks on JM and PS ────────────────────────────
+        var tickCol = '#DC2626';
+        var tickW = 1.8;
+        var chevronSize = 0.3;
+        var chevronGap = 0.35;
+
+        function drawParallelTicks(mx, my) {
+            var cy1 = my + chevronGap / 2;
+            board.create('segment',
+                [[mx - chevronSize, cy1 - chevronSize], [mx, cy1]], {
+                strokeColor: tickCol, strokeWidth: tickW, fixed: true, highlight: false
+            });
+            board.create('segment',
+                [[mx + chevronSize, cy1 - chevronSize], [mx, cy1]], {
+                strokeColor: tickCol, strokeWidth: tickW, fixed: true, highlight: false
+            });
+
+            var cy2 = my - chevronGap / 2;
+            board.create('segment',
+                [[mx - chevronSize, cy2 - chevronSize], [mx, cy2]], {
+                strokeColor: tickCol, strokeWidth: tickW, fixed: true, highlight: false
+            });
+            board.create('segment',
+                [[mx + chevronSize, cy2 - chevronSize], [mx, cy2]], {
+                strokeColor: tickCol, strokeWidth: tickW, fixed: true, highlight: false
+            });
+        }
+
+        drawParallelTicks(jklm_x, jklm_y - jklm_h / 2);
+        drawParallelTicks(pqrs_x, pqrs_y - pqrs_h / 2);
+    </script>
+</body>
+</html>
