@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Isosceles Triangles JKL and MNP</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 8.5, 18.5, -2.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_OUTLINE = '#555555';
+        var COL_LABEL = '#222222';
+        var COL_MEASURE = '#3B82F6';
+        var COL_MARK = '#DC2626';
+
+        var apexHalfAngle = 27 * Math.PI / 180;
+
+        var leg1 = 6;
+        var halfBase1 = leg1 * Math.sin(apexHalfAngle);
+        var height1 = leg1 * Math.cos(apexHalfAngle);
+
+        var leg2 = 9;
+        var halfBase2 = leg2 * Math.sin(apexHalfAngle);
+        var height2 = leg2 * Math.cos(apexHalfAngle);
+
+        var baseY = 0;
+        var cx1 = 4;
+        var cx2 = 13;
+
+        var ptAttr = { fixed: true, size: 2, color: COL_LABEL, highlight: false, showInfobox: false };
+
+        var J = board.create('point', [cx1 - halfBase1, baseY], JXG.merge(ptAttr, {
+            name: 'J', label: { fontSize: 14, color: COL_LABEL, offset: [-16, -10] }
+        }));
+        var L = board.create('point', [cx1 + halfBase1, baseY], JXG.merge(ptAttr, {
+            name: 'L', label: { fontSize: 14, color: COL_LABEL, offset: [6, -10] }
+        }));
+        var K = board.create('point', [cx1, baseY + height1], JXG.merge(ptAttr, {
+            name: 'K', label: { fontSize: 14, color: COL_LABEL, offset: [-4, 10] }
+        }));
+
+        board.create('segment', [J, K], { strokeColor: COL_OUTLINE, strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [K, L], { strokeColor: COL_OUTLINE, strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [J, L], { strokeColor: COL_OUTLINE, strokeWidth: 2, fixed: true, highlight: false });
+
+        var M = board.create('point', [cx2 - halfBase2, baseY], JXG.merge(ptAttr, {
+            name: 'M', label: { fontSize: 14, color: COL_LABEL, offset: [-18, -10] }
+        }));
+        var P = board.create('point', [cx2 + halfBase2, baseY], JXG.merge(ptAttr, {
+            name: 'P', label: { fontSize: 14, color: COL_LABEL, offset: [6, -10] }
+        }));
+        var N = board.create('point', [cx2, baseY + height2], JXG.merge(ptAttr, {
+            name: 'N', label: { fontSize: 14, color: COL_LABEL, offset: [-4, 10] }
+        }));
+
+        board.create('segment', [M, N], { strokeColor: COL_OUTLINE, strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [N, P], { strokeColor: COL_OUTLINE, strokeWidth: 2, fixed: true, highlight: false });
+        board.create('segment', [M, P], { strokeColor: COL_OUTLINE, strokeWidth: 2, fixed: true, highlight: false });
+
+        function addTickMark(p1, p2, count, color) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var tickLen = 0.35;
+            var spacing = 0.25;
+
+            for (var i = 0; i < count; i++) {
+                var offset = (i - (count - 1) / 2) * spacing;
+                var cx = mx + offset * (dx / len);
+                var cy = my + offset * (dy / len);
+                board.create('segment', [
+                    [cx - px * tickLen, cy - py * tickLen],
+                    [cx + px * tickLen, cy + py * tickLen]
+                ], { strokeColor: color, strokeWidth: 1.8, fixed: true, highlight: false });
+            }
+        }
+
+        addTickMark(J, K, 1, COL_MARK);
+        addTickMark(K, L, 1, COL_MARK);
+        addTickMark(M, N, 2, COL_MARK);
+        addTickMark(N, P, 2, COL_MARK);
+
+        function addParallelArrow(p1, p2, color) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var ux = dx / len;
+            var uy = dy / len;
+            var px = -uy;
+            var py = ux;
+            var arrowSize = 0.4;
+
+            var tipX = mx + ux * arrowSize * 0.5;
+            var tipY = my + uy * arrowSize * 0.5;
+            var backX = mx - ux * arrowSize * 0.5;
+            var backY = my - uy * arrowSize * 0.5;
+
+            board.create('segment', [
+                [backX + px * arrowSize * 0.5, backY + py * arrowSize * 0.5],
+                [tipX, tipY]
+            ], { strokeColor: color, strokeWidth: 1.8, fixed: true, highlight: false });
+
+            board.create('segment', [
+                [backX - px * arrowSize * 0.5, backY - py * arrowSize * 0.5],
+                [tipX, tipY]
+            ], { strokeColor: color, strokeWidth: 1.8, fixed: true, highlight: false });
+        }
+
+        addParallelArrow(J, L, COL_MARK);
+        addParallelArrow(M, P, COL_MARK);
+
+        function legLabel(p1, p2, centerX, text, color) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            var dx = p2.X() - p1.X();
+            var dy = p2.Y() - p1.Y();
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var px = -dy / len;
+            var py = dx / len;
+            var testX = mx + px;
+            if (Math.abs(testX - centerX) < Math.abs(mx - centerX)) {
+                px = -px;
+                py = -py;
+            }
+            var off = 0.7;
+            board.create('text', [mx + px * off, my + py * off, text], {
+                fontSize: 13, color: color, anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false, useKatex: true
+            });
+        }
+
+        legLabel(J, K, cx1, '6', COL_MEASURE);
+        legLabel(K, L, cx1, '6', COL_MEASURE);
+        legLabel(M, N, cx2, '9', COL_MEASURE);
+        legLabel(N, P, cx2, '9', COL_MEASURE);
+
+        function baseLabel(p1, p2, text, color) {
+            var mx = (p1.X() + p2.X()) / 2;
+            var my = (p1.Y() + p2.Y()) / 2;
+            board.create('text', [mx, my - 1.0, text], {
+                fontSize: 13, color: color, anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false, useKatex: true
+            });
+        }
+
+        baseLabel(J, L, '3', COL_MEASURE);
+        baseLabel(M, P, '4.5', COL_MEASURE);
+
+    </script>
+</body>
+</html>
