@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Parallelograms — EFGH and ABCD</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 8.5, 19.5, -3.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_OUTLINE = '#555555';
+        var COL_LABEL = '#222222';
+        var COL_RED = '#DC2626';
+
+        // ── EFGH — larger parallelogram (left) ─────────────────────────
+        var pH = board.create('point', [0.5, 0], { visible: false, fixed: true, name: '' });
+        var pG = board.create('point', [7.5, 0], { visible: false, fixed: true, name: '' });
+        var pF = board.create('point', [9.0, 5.5], { visible: false, fixed: true, name: '' });
+        var pE = board.create('point', [2.0, 5.5], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [pE, pF, pG, pH], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_OUTLINE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true
+        });
+
+        // Vertex labels EFGH
+        board.create('text', [1.55, 6.1, '\\textbf{E}'], { useKatex: true, fontSize: 14, color: COL_LABEL, fixed: true, highlight: false, anchorX: 'middle' });
+        board.create('text', [9.45, 6.1, '\\textbf{F}'], { useKatex: true, fontSize: 14, color: COL_LABEL, fixed: true, highlight: false, anchorX: 'middle' });
+        board.create('text', [7.9, -0.7, '\\textbf{G}'], { useKatex: true, fontSize: 14, color: COL_LABEL, fixed: true, highlight: false, anchorX: 'middle' });
+        board.create('text', [0.1, -0.7, '\\textbf{H}'], { useKatex: true, fontSize: 14, color: COL_LABEL, fixed: true, highlight: false, anchorX: 'middle' });
+
+        // Side labels
+        var midEH_x = (2.0 + 0.5) / 2;
+        var midEH_y = (5.5 + 0) / 2;
+        board.create('text', [midEH_x - 0.9, midEH_y, '8p'], { useKatex: true, fontSize: 13, color: COL_LABEL, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+        var midHG_x = (0.5 + 7.5) / 2;
+        var midHG_y = 0;
+        board.create('text', [midHG_x, midHG_y - 0.7, '8q'], { useKatex: true, fontSize: 13, color: COL_LABEL, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+        // ── ABCD — smaller parallelogram (right) ───────────────────────
+        var pD = board.create('point', [12.25, 0], { visible: false, fixed: true, name: '' });
+        var pC = board.create('point', [15.75, 0], { visible: false, fixed: true, name: '' });
+        var pB = board.create('point', [16.5, 2.75], { visible: false, fixed: true, name: '' });
+        var pA = board.create('point', [13.0, 2.75], { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [pA, pB, pC, pD], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_OUTLINE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true
+        });
+
+        // Vertex labels ABCD
+        board.create('text', [12.65, 3.35, '\\textbf{A}'], { useKatex: true, fontSize: 14, color: COL_LABEL, fixed: true, highlight: false, anchorX: 'middle' });
+        board.create('text', [16.85, 3.35, '\\textbf{B}'], { useKatex: true, fontSize: 14, color: COL_LABEL, fixed: true, highlight: false, anchorX: 'middle' });
+        board.create('text', [16.1, -0.7, '\\textbf{C}'], { useKatex: true, fontSize: 14, color: COL_LABEL, fixed: true, highlight: false, anchorX: 'middle' });
+        board.create('text', [11.85, -0.7, '\\textbf{D}'], { useKatex: true, fontSize: 14, color: COL_LABEL, fixed: true, highlight: false, anchorX: 'middle' });
+
+        // Side labels
+        var midAD_x = (13.0 + 12.25) / 2;
+        var midAD_y = (2.75 + 0) / 2;
+        board.create('text', [midAD_x - 0.9, midAD_y, '2p'], { useKatex: true, fontSize: 13, color: COL_LABEL, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+        var midDC_x = (12.25 + 15.75) / 2;
+        var midDC_y = 0;
+        board.create('text', [midDC_x, midDC_y - 0.7, '2q'], { useKatex: true, fontSize: 13, color: COL_LABEL, fixed: true, highlight: false, anchorX: 'middle', anchorY: 'middle' });
+
+        // ── Double chevron parallel tick marks (red) on EH and AD ────────
+        function drawDoubleChevron(board, x1, y1, x2, y2, color) {
+            var dx = x2 - x1;
+            var dy = y2 - y1;
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var tx = dx / len;
+            var ty = dy / len;
+            var nx = -ty;
+            var ny = tx;
+
+            var mx = (x1 + x2) / 2;
+            var my = (y1 + y2) / 2;
+
+            var chevSize = 0.25;
+            var chevDepth = 0.18;
+            var spacing = 0.2;
+
+            for (var i = -1; i <= 1; i += 2) {
+                var cx = mx + i * spacing * tx;
+                var cy = my + i * spacing * ty;
+
+                var tipX = cx + chevDepth * tx;
+                var tipY = cy + chevDepth * ty;
+
+                var armTopX = cx - chevDepth * tx + chevSize * nx;
+                var armTopY = cy - chevDepth * ty + chevSize * ny;
+                var armBotX = cx - chevDepth * tx - chevSize * nx;
+                var armBotY = cy - chevDepth * ty - chevSize * ny;
+
+                board.create('segment', [[armTopX, armTopY], [tipX, tipY]], {
+                    strokeColor: color, strokeWidth: 1.8, fixed: true, highlight: false
+                });
+                board.create('segment', [[armBotX, armBotY], [tipX, tipY]], {
+                    strokeColor: color, strokeWidth: 1.8, fixed: true, highlight: false
+                });
+            }
+        }
+
+        drawDoubleChevron(board, 2.0, 5.5, 0.5, 0, COL_RED);
+        drawDoubleChevron(board, 13.0, 2.75, 12.25, 0, COL_RED);
+    </script>
+</body>
+</html>
