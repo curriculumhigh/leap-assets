@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equilateral Triangles DEF and WXY</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 11, 20, -2.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_EDGE = '#555555';
+        var COL_VERTEX = '#222222';
+        var COL_MEASURE = '#3B82F6';
+        var COL_MARK = '#DC2626';
+
+        // ── Triangle DEF (side = 5) ─────────────────────────────────────
+        var h5 = 5 * Math.sqrt(3) / 2;
+        var D = board.create('point', [1.5, 0], {
+            name: 'D', fixed: true, size: 2, color: COL_VERTEX, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: COL_VERTEX, offset: [-16, -10] }
+        });
+        var F = board.create('point', [6.5, 0], {
+            name: 'F', fixed: true, size: 2, color: COL_VERTEX, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: COL_VERTEX, offset: [6, -10] }
+        });
+        var E = board.create('point', [4, h5], {
+            name: 'E', fixed: true, size: 2, color: COL_VERTEX, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: COL_VERTEX, offset: [-4, 10] }
+        });
+
+        board.create('polygon', [D, F, E], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_EDGE, strokeWidth: 2.0 },
+            vertices: { visible: true },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Triangle WXY (side = 10) ────────────────────────────────────
+        var h10 = 10 * Math.sqrt(3) / 2;
+        var W = board.create('point', [9, 0], {
+            name: 'W', fixed: true, size: 2, color: COL_VERTEX, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: COL_VERTEX, offset: [-18, -10] }
+        });
+        var Y = board.create('point', [19, 0], {
+            name: 'Y', fixed: true, size: 2, color: COL_VERTEX, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: COL_VERTEX, offset: [6, -10] }
+        });
+        var X = board.create('point', [14, h10], {
+            name: 'X', fixed: true, size: 2, color: COL_VERTEX, highlight: false,
+            showInfobox: false,
+            label: { fontSize: 14, color: COL_VERTEX, offset: [-4, 10] }
+        });
+
+        board.create('polygon', [W, Y, X], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_EDGE, strokeWidth: 2.0 },
+            vertices: { visible: true },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Helpers ─────────────────────────────────────────────────────
+        function mid(p1, p2) {
+            return [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2];
+        }
+
+        function outwardNormal(p1, p2, interior) {
+            var mx = (p1[0] + p2[0]) / 2;
+            var my = (p1[1] + p2[1]) / 2;
+            var dx = p2[0] - p1[0];
+            var dy = p2[1] - p1[1];
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var n1x = -dy / len, n1y = dx / len;
+            var toInt_x = interior[0] - mx;
+            var toInt_y = interior[1] - my;
+            var dot = n1x * toInt_x + n1y * toInt_y;
+            if (dot > 0) { n1x = -n1x; n1y = -n1y; }
+            return [n1x, n1y];
+        }
+
+        function drawParallelArrows(p1, p2) {
+            var mx = (p1[0] + p2[0]) / 2;
+            var my = (p1[1] + p2[1]) / 2;
+            var dx = p2[0] - p1[0];
+            var dy = p2[1] - p1[1];
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var tx = dx / len;
+            var ty = dy / len;
+            var nx = -ty;
+            var ny = tx;
+            var chevSize = 0.35;
+            var chevHalf = 0.3;
+            var tipX = mx + tx * chevSize;
+            var tipY = my + ty * chevSize;
+            var t1x = mx - tx * 0.05 + nx * chevHalf;
+            var t1y = my - ty * 0.05 + ny * chevHalf;
+            var t2x = mx - tx * 0.05 - nx * chevHalf;
+            var t2y = my - ty * 0.05 - ny * chevHalf;
+
+            board.create('segment', [[t1x, t1y], [tipX, tipY]], {
+                strokeColor: COL_MARK, strokeWidth: 1.6, fixed: true, highlight: false
+            });
+            board.create('segment', [[t2x, t2y], [tipX, tipY]], {
+                strokeColor: COL_MARK, strokeWidth: 1.6, fixed: true, highlight: false
+            });
+        }
+
+        // ── Side length labels — DEF ────────────────────────────────────
+        var defInterior = [4, h5 / 3];
+        var labelOffset = 0.6;
+        var dCoords = [1.5, 0], eCoords = [4, h5], fCoords = [6.5, 0];
+
+        var nDE = outwardNormal(dCoords, eCoords, defInterior);
+        var mDE = mid(dCoords, eCoords);
+        board.create('text', [mDE[0] + nDE[0] * labelOffset, mDE[1] + nDE[1] * labelOffset, '5'], {
+            fontSize: 13, color: COL_MEASURE, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+
+        var nEF = outwardNormal(eCoords, fCoords, defInterior);
+        var mEF = mid(eCoords, fCoords);
+        board.create('text', [mEF[0] + nEF[0] * labelOffset, mEF[1] + nEF[1] * labelOffset, '5'], {
+            fontSize: 13, color: COL_MEASURE, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+
+        var nDF = outwardNormal(dCoords, fCoords, defInterior);
+        var mDF = mid(dCoords, fCoords);
+        board.create('text', [mDF[0] + nDF[0] * labelOffset, mDF[1] + nDF[1] * labelOffset, '5'], {
+            fontSize: 13, color: COL_MEASURE, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+
+        // ── Side length labels — WXY ────────────────────────────────────
+        var wxyInterior = [14, h10 / 3];
+        var wCoords = [9, 0], yCoords = [19, 0], xCoords = [14, h10];
+        var labelOffset2 = 0.8;
+
+        var nWX = outwardNormal(wCoords, xCoords, wxyInterior);
+        var mWX = mid(wCoords, xCoords);
+        board.create('text', [mWX[0] + nWX[0] * labelOffset2, mWX[1] + nWX[1] * labelOffset2, '10'], {
+            fontSize: 13, color: COL_MEASURE, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+
+        var nXY = outwardNormal(xCoords, yCoords, wxyInterior);
+        var mXY = mid(xCoords, yCoords);
+        board.create('text', [mXY[0] + nXY[0] * labelOffset2, mXY[1] + nXY[1] * labelOffset2, '10'], {
+            fontSize: 13, color: COL_MEASURE, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+
+        var nWY = outwardNormal(wCoords, yCoords, wxyInterior);
+        var mWY = mid(wCoords, yCoords);
+        board.create('text', [mWY[0] + nWY[0] * labelOffset2, mWY[1] + nWY[1] * labelOffset2, '10'], {
+            fontSize: 13, color: COL_MEASURE, anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false, cssStyle: 'font-weight:600'
+        });
+
+        // ── Parallel arrows on bases DF and WY ──────────────────────────
+        drawParallelArrows(dCoords, fCoords);
+        drawParallelArrows(wCoords, yCoords);
+
+    </script>
+</body>
+</html>
