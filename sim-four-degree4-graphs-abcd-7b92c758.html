@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Four Degree-4 Graphs A–D</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 600px; margin: 0; padding: 6px;
+            height: calc(100% - 12px);
+        }
+        .grid-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 8px;
+            height: 100%;
+        }
+        .board-cell {
+            background: white;
+            border-radius: 8px;
+            padding: 6px;
+            position: relative;
+        }
+        .board-div {
+            width: 100%;
+            height: 100%;
+        }
+        .graph-label {
+            position: absolute;
+            top: 10px; left: 14px;
+            font-size: 16px; font-weight: 700;
+            color: #222222;
+            z-index: 10;
+            background: rgba(255,255,255,0.85);
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="grid-wrapper">
+            <div class="board-cell">
+                <div class="graph-label">A</div>
+                <div class="board-div" id="boardA"></div>
+            </div>
+            <div class="board-cell">
+                <div class="graph-label">B</div>
+                <div class="board-div" id="boardB"></div>
+            </div>
+            <div class="board-cell">
+                <div class="graph-label">C</div>
+                <div class="board-div" id="boardC"></div>
+            </div>
+            <div class="board-cell">
+                <div class="graph-label">D</div>
+                <div class="board-div" id="boardD"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Helper: create a board with standard styling ────────────────
+        function makeBoard(id, bb) {
+            var b = JXG.JSXGraph.initBoard(id, {
+                boundingbox: bb,
+                axis: true,
+                showNavigation: false,
+                showCopyright: false,
+                pan: { enabled: false },
+                zoom: { enabled: false },
+                defaultAxes: {
+                    x: {
+                        strokeColor: '#444444', strokeWidth: 1.2,
+                        lastArrow: { type: 2, size: 5 },
+                        ticks: {
+                            strokeColor: '#444444',
+                            label: { fontSize: 10 },
+                            minorTicks: 0,
+                            ticksDistance: 1
+                        }
+                    },
+                    y: {
+                        strokeColor: '#444444', strokeWidth: 1.2,
+                        lastArrow: { type: 2, size: 5 },
+                        ticks: {
+                            strokeColor: '#444444',
+                            label: { fontSize: 10 },
+                            minorTicks: 0,
+                            ticksDistance: 5
+                        }
+                    }
+                },
+                grid: {
+                    strokeColor: '#D1D5DB',
+                    strokeWidth: 0.4
+                }
+            });
+
+            // Axis labels near arrow tips
+            var xMax = bb[2];
+            var yMax = bb[1];
+            b.create('text', [xMax - 0.5, -1.2, '<i>x</i>'], {
+                fontSize: 12, fixed: true, highlight: false
+            });
+            b.create('text', [0.3, yMax - 0.8, '<i>y</i>'], {
+                fontSize: 12, fixed: true, highlight: false
+            });
+
+            return b;
+        }
+
+        // ── Helper: plot a degree-4 polynomial from roots + sign ────────
+        function plotPoly(board, roots, negative, bb) {
+            var r = roots.slice().sort(function(a, b) { return a - b; });
+
+            var rawPoly = function(x) {
+                var val = 1;
+                for (var i = 0; i < r.length; i++) {
+                    val *= (x - r[i]);
+                }
+                return negative ? -val : val;
+            };
+
+            // Sample to find max absolute value in the visible x-range
+            var xMin = bb[0] + 0.5;
+            var xMax = bb[2] - 0.5;
+            var maxAbs = 0;
+            for (var x = xMin; x <= xMax; x += 0.05) {
+                var v = Math.abs(rawPoly(x));
+                if (v > maxAbs) maxAbs = v;
+            }
+
+            // Target: extrema around y = ±12 so the shape is clear
+            var targetMax = 12;
+            var k = (maxAbs > 0.01) ? targetMax / maxAbs : 1;
+
+            board.create('functiongraph', [
+                function(x) { return k * rawPoly(x); }
+            ], {
+                strokeColor: '#222222',
+                strokeWidth: 1.8,
+                fixed: true
+            });
+
+            // Mark x-intercepts
+            for (var i = 0; i < r.length; i++) {
+                board.create('point', [r[i], 0], {
+                    name: '', size: 3, color: '#222222',
+                    fixed: true, highlight: false, showInfobox: false
+                });
+            }
+        }
+
+        // ── Bounding boxes — consistent x-range, y tuned per graph ──────
+        var bbA = [-4.5, 15, 5.5, -15];
+        var bbB = [-5.5, 15, 4.5, -15];
+        var bbC = [-4.5, 15, 5.5, -15];
+        var bbD = [-4.5, 15, 5.5, -15];
+
+        // ── Create boards and plot ──────────────────────────────────────
+        var boardA = makeBoard('boardA', bbA);
+        plotPoly(boardA, [-3, 0, 1, 4], false, bbA);
+
+        var boardB = makeBoard('boardB', bbB);
+        plotPoly(boardB, [-4, 0, 1, 3], false, bbB);
+
+        var boardC = makeBoard('boardC', bbC);
+        plotPoly(boardC, [-3, 0, 1, 4], true, bbC);
+
+        var boardD = makeBoard('boardD', bbD);
+        plotPoly(boardD, [-3, -1, 0, 4], false, bbD);
+    </script>
+</body>
+</html>
