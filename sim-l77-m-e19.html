@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Semi-log plot of a line</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.css">
+<script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+<style>html,body{margin:0;padding:0;background:transparent;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}</style>
+</head>
+<body>
+<div id="board" style="width:540px;height:440px;background:white;"></div>
+<script>
+var CFG={"xmin": 0, "xmax": 5, "xstep": 1, "d0": 0, "d1": 3, "pts": [{"x": 0, "y": 2}, {"x": 4, "y": 800}], "curves": [{"a": 2, "b": 4.47213595499958, "x0": 0, "x1": 4.1, "color": "#2563EB"}], "xlabel": "x", "ylabel": "y"};
+var SUP=["⁰", "¹", "²", "³", "⁴", "⁵"];
+var L=function(y){return Math.log(y)/Math.LN10;};
+var xr=CFG.xmax-CFG.xmin, yr=CFG.d1-CFG.d0;
+var b=JXG.JSXGraph.initBoard('board',{boundingbox:[CFG.xmin-0.17*xr,CFG.d1+0.11*yr,CFG.xmax+0.06*xr,CFG.d0-0.19*yr],axis:false,showNavigation:false,showCopyright:false,pan:{enabled:false},zoom:{enabled:false},keepAspectRatio:false});
+function seg(p,q,c,w){b.create('line',[p,q],{straightFirst:false,straightLast:false,strokeColor:c,strokeWidth:w,fixed:true,highlight:false});}
+for(var d=CFG.d0;d<CFG.d1;d++){for(var k=2;k<=9;k++){seg([CFG.xmin,d+L(k)],[CFG.xmax,d+L(k)],'#9a9a9a',0.6);}}
+for(var d=CFG.d0;d<=CFG.d1;d++){seg([CFG.xmin,d],[CFG.xmax,d],'#000',1.2);
+  b.create('text',[CFG.xmin-0.03*xr,d,'10'+SUP[d]],{fontSize:15,color:'#000',anchorX:'right',anchorY:'middle',fixed:true,highlight:false,cssStyle:'font-weight:700;'});}
+for(var x=CFG.xmin;x<=CFG.xmax+1e-9;x+=CFG.xstep){seg([x,CFG.d0],[x,CFG.d1],x==CFG.xmin?'#000':'#bdbdbd',x==CFG.xmin?1.2:0.8);
+  b.create('text',[x,CFG.d0-0.035*yr,String(x)],{fontSize:13,color:'#000',anchorX:'middle',anchorY:'top',fixed:true,highlight:false});}
+b.create('text',[(CFG.xmin+CFG.xmax)/2,CFG.d0-0.105*yr,CFG.xlabel],{fontSize:14,color:'#000',anchorX:'middle',anchorY:'top',fixed:true,highlight:false});
+b.create('text',[CFG.xmin-0.15*xr,CFG.d1+0.06*yr,CFG.ylabel],{fontSize:14,color:'#000',anchorX:'left',anchorY:'middle',fixed:true,highlight:false});
+CFG.curves.forEach(function(c){
+  var xs=[],ys=[];for(var i=0;i<=200;i++){var x=c.x0+(c.x1-c.x0)*i/200;xs.push(x);ys.push(L(c.a*Math.pow(c.b,x)));}
+  b.create('curve',[xs,ys],{strokeColor:c.color,strokeWidth:2.4,fixed:true,highlight:false});
+  if(c.label){b.create('text',[c.lx,L(c.a*Math.pow(c.b,c.lx))+c.dy,c.label],{fontSize:16,color:c.color,anchorX:'left',anchorY:'middle',fixed:true,highlight:false,cssStyle:'font-weight:700;'});}
+});
+CFG.pts.forEach(function(p){
+  b.create('point',[p.x,L(p.y)],{name:p.label||'',size:4,fillColor:p.color||'#000',strokeColor:p.color||'#000',fixed:true,highlight:false,showInfobox:false,
+    label:{offset:p.off||[10,8],fontSize:15,color:'#000',cssStyle:'font-weight:700;'}});
+});
+</script>
+</body></html>
