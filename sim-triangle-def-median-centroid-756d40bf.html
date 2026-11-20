@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle DEF — Median and Centroid</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 350px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 11, 13, -2],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Manual axes ─────────────────────────────────────────────────
+        board.create('arrow', [[-2.5, 0], [12.8, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+        board.create('arrow', [[0, -2], [0, 10.8]], {
+            strokeColor: '#444444', strokeWidth: 1.2,
+            lastArrow: { type: 2, size: 6 },
+            fixed: true, highlight: false
+        });
+
+        // X-axis ticks and labels
+        var xTicks = [2, 4, 6, 8, 10, 12];
+        for (var i = 0; i < xTicks.length; i++) {
+            var tx = xTicks[i];
+            board.create('segment', [[tx, -0.2], [tx, 0.2]], {
+                strokeColor: '#444444', strokeWidth: 1, fixed: true, highlight: false
+            });
+            board.create('text', [tx, -0.6, String(tx)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'top',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Y-axis ticks and labels
+        var yTicks = [2, 4, 6, 8, 10];
+        for (var j = 0; j < yTicks.length; j++) {
+            var ty = yTicks[j];
+            board.create('segment', [[-0.2, ty], [0.2, ty]], {
+                strokeColor: '#444444', strokeWidth: 1, fixed: true, highlight: false
+            });
+            board.create('text', [-0.5, ty, String(ty)], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // Axis labels
+        board.create('text', [12.4, -0.6, 'x'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.3, 10.5, 'y'], { useKatex: true, fontSize: 14, fixed: true, highlight: false });
+
+        // ── Geometry ────────────────────────────────────────────────────
+        var PT_SIZE = 1.5;
+        var PT_COLOR = '#222222';
+
+        var D = board.create('point', [1, 2], {
+            name: '', size: PT_SIZE, color: PT_COLOR, fixed: true,
+            highlight: false, showInfobox: false
+        });
+        var E = board.create('point', [7, 8], {
+            name: '', size: PT_SIZE, color: PT_COLOR, fixed: true,
+            highlight: false, showInfobox: false
+        });
+        var F = board.create('point', [10, 2], {
+            name: '', size: PT_SIZE, color: PT_COLOR, fixed: true,
+            highlight: false, showInfobox: false
+        });
+
+        board.create('polygon', [D, E, F], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: '#555555', strokeWidth: 2 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        var M = board.create('point', [5.5, 2], {
+            name: '', size: PT_SIZE, color: PT_COLOR, fixed: true,
+            highlight: false, showInfobox: false
+        });
+
+        board.create('segment', [E, M], {
+            strokeColor: '#0EA5E9', strokeWidth: 1.0, dash: 2,
+            fixed: true, highlight: false
+        });
+
+        var P = board.create('point', [6, 4], {
+            name: '', size: PT_SIZE, color: '#DC2626', fixed: true,
+            highlight: false, showInfobox: false
+        });
+
+        // ── Labels ──────────────────────────────────────────────────────
+
+        board.create('text', [1, 1.2, 'D(1,2)'], {
+            useKatex: true, fontSize: 11, color: PT_COLOR,
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [7, 8.8, 'E(7,8)'], {
+            useKatex: true, fontSize: 11, color: PT_COLOR,
+            anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [10.7, 1.2, 'F(10,2)'], {
+            useKatex: true, fontSize: 11, color: PT_COLOR,
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [5.5, 1.2, 'M(5.5,\\, 2)'], {
+            useKatex: true, fontSize: 11, color: PT_COLOR,
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+
+        board.create('text', [6.7, 4.5, 'P(6,4)'], {
+            useKatex: true, fontSize: 11, color: '#DC2626',
+            anchorX: 'left', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
