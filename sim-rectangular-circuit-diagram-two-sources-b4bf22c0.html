@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circuit Diagram — Two Sources</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 9, 13.5, -2.5],
+            axis: false, grid: false,
+            keepAspectRatio: true,
+            showNavigation: false, showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var WIRE = '#222222';
+        var WIRE_W = 2.0;
+        var RES_COL = '#222222';
+        var MEAS_COL = '#2563EB';
+        var CUR_COL = '#DC2626';
+        var SRC_COL = '#059669';
+
+        // ── Node positions ──────────────────────────────────────────
+        var dX = 2, dY = 7;
+        var aX = 6, aY = 7;
+        var bX = 10, bY = 7;
+        var blX = 2, blY = 1;
+        var bcX = 6, bcY = 1;
+        var brX = 10, brY = 1;
+
+        // ── Helper: draw a wire segment ─────────────────────────────
+        function wire(x1, y1, x2, y2) {
+            board.create('segment', [[x1, y1], [x2, y2]], {
+                strokeColor: WIRE, strokeWidth: WIRE_W, fixed: true, highlight: false
+            });
+        }
+
+        // ── Helper: draw a zigzag resistor between two points ───────
+        function drawResistor(x1, y1, x2, y2) {
+            var dx = x2 - x1;
+            var dy = y2 - y1;
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var ux = dx / len;
+            var uy = dy / len;
+            var px = -uy;
+            var py = ux;
+
+            var margin = 0.25 * len;
+            var zigLen = 0.5 * len;
+            var peaks = 6;
+            var amp = 0.3;
+
+            wire(x1, y1, x1 + ux * margin, y1 + uy * margin);
+            wire(x1 + ux * (margin + zigLen), y1 + uy * (margin + zigLen), x2, y2);
+
+            var pts = [];
+            var segCount = peaks * 2;
+            for (var i = 0; i <= segCount; i++) {
+                var t = margin + (zigLen * i / segCount);
+                var side = 0;
+                if (i === 0 || i === segCount) {
+                    side = 0;
+                } else if (i % 2 === 1) {
+                    side = amp;
+                } else {
+                    side = -amp;
+                }
+                pts.push([x1 + ux * t + px * side, y1 + uy * t + py * side]);
+            }
+            for (var j = 0; j < pts.length - 1; j++) {
+                board.create('segment', [pts[j], pts[j + 1]], {
+                    strokeColor: RES_COL, strokeWidth: WIRE_W, fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── Helper: draw a voltage source (circle with +/−) ────────
+        function drawVoltageSource(x1, y1, x2, y2, posEnd) {
+            var dx = x2 - x1;
+            var dy = y2 - y1;
+            var len = Math.sqrt(dx * dx + dy * dy);
+            var ux = dx / len;
+            var uy = dy / len;
+            var px = -uy;
+            var py = ux;
+
+            var cx = (x1 + x2) / 2;
+            var cy = (y1 + y2) / 2;
+            var r = 0.55;
+
+            wire(x1, y1, cx - ux * r, cy - uy * r);
+            wire(cx + ux * r, cy + uy * r, x2, y2);
+
+            board.create('circle', [[cx, cy], r], {
+                strokeColor: WIRE, strokeWidth: WIRE_W, fillColor: 'white', fillOpacity: 1,
+                fixed: true, highlight: false
+            });
+
+            var plusOffset = (posEnd === 'start') ? -0.28 : 0.28;
+            var minusOffset = (posEnd === 'start') ? 0.28 : -0.28;
+
+            board.create('text', [
+                cx + ux * plusOffset + px * 0.0,
+                cy + uy * plusOffset + py * 0.0,
+                '+'
+            ], {
+                fontSize: 14, color: SRC_COL, anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+            });
+            board.create('text', [
+                cx + ux * minusOffset + px * 0.0,
+                cy + uy * minusOffset + py * 0.0,
+                '\u2212'
+            ], {
+                fontSize: 14, color: SRC_COL, anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false, cssStyle: 'font-weight:bold'
+            });
+        }
+
+        // ── Helper: current arrow ───────────────────────────────────
+        function currentArrow(x1, y1, x2, y2) {
+            board.create('arrow', [[x1, y1], [x2, y2]], {
+                strokeColor: CUR_COL, strokeWidth: 1.8,
+                lastArrow: { type: 2, size: 6 },
+                fixed: true, highlight: false
+            });
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        // DRAW THE CIRCUIT
+        // ══════════════════════════════════════════════════════════════
+
+        drawResistor(dX, dY, aX, aY);
+        drawResistor(aX, aY, bX, bY);
+        drawResistor(aX, aY, bcX, bcY);
+        drawVoltageSource(blX, blY, dX, dY, 'end');
+        drawVoltageSource(brX, brY, bX, bY, 'end');
+
+        wire(blX, blY, bcX, bcY);
+        wire(bcX, bcY, brX, brY);
+
+        // ── Node dots ───────────────────────────────────────────────
+        function nodeDot(x, y) {
+            board.create('point', [x, y], {
+                name: '', size: 3, color: WIRE, fixed: true, highlight: false
+            });
+        }
+        nodeDot(dX, dY);
+        nodeDot(aX, aY);
+        nodeDot(bX, bY);
+        nodeDot(blX, blY);
+        nodeDot(bcX, bcY);
+        nodeDot(brX, brY);
+
+        // ── Node labels ─────────────────────────────────────────────
+        board.create('text', [dX, dY + 0.55, 'd'], {
+            fontSize: 15, color: WIRE, anchorX: 'middle', anchorY: 'bottom',
+            useKatex: true, fixed: true, highlight: false,
+            cssStyle: 'font-weight:bold'
+        });
+        board.create('text', [aX, aY + 0.55, 'a'], {
+            fontSize: 15, color: WIRE, anchorX: 'middle', anchorY: 'bottom',
+            useKatex: true, fixed: true, highlight: false,
+            cssStyle: 'font-weight:bold'
+        });
+        board.create('text', [bX, bY + 0.55, 'b'], {
+            fontSize: 15, color: WIRE, anchorX: 'middle', anchorY: 'bottom',
+            useKatex: true, fixed: true, highlight: false,
+            cssStyle: 'font-weight:bold'
+        });
+
+        // ── Resistor value labels (blue) ────────────────────────────
+        board.create('text', [4, 7.7, '1\\,\\Omega'], {
+            fontSize: 14, color: MEAS_COL, anchorX: 'middle', anchorY: 'bottom',
+            useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [8, 7.7, '1\\,\\Omega'], {
+            fontSize: 14, color: MEAS_COL, anchorX: 'middle', anchorY: 'bottom',
+            useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [6.65, 4, '2\\,\\Omega'], {
+            fontSize: 14, color: MEAS_COL, anchorX: 'left', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Voltage source labels (green) ───────────────────────────
+        board.create('text', [0.9, 4, 'E_1'], {
+            fontSize: 15, color: SRC_COL, anchorX: 'right', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+        board.create('text', [11.1, 4, 'E_2'], {
+            fontSize: 15, color: SRC_COL, anchorX: 'left', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Current arrows and labels (red) ─────────────────────────
+        currentArrow(2.7, 8.0, 3.5, 8.0);
+        board.create('text', [3.1, 8.5, 'I_1'], {
+            fontSize: 14, color: CUR_COL, anchorX: 'middle', anchorY: 'bottom',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        currentArrow(9.3, 8.0, 8.5, 8.0);
+        board.create('text', [8.9, 8.5, 'I_2'], {
+            fontSize: 14, color: CUR_COL, anchorX: 'middle', anchorY: 'bottom',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        currentArrow(5.2, 6.3, 5.2, 5.5);
+        board.create('text', [4.65, 5.9, 'I_3'], {
+            fontSize: 14, color: CUR_COL, anchorX: 'right', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
