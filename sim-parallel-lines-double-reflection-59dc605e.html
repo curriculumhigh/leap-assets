@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reflections Across Parallel Lines</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-7, 10, 7, -10],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Colors
+        var COL_ORIG = '#222222';
+        var COL_PRIME = '#2563EB';
+        var COL_DPRIME = '#059669';
+        var COL_LINE = '#444444';
+        var COL_REF = '#DC2626';
+
+        // ── Mirror lines ────────────────────────────────────────────────
+        var lineN_y = 3;
+        var lineM_y = -3;
+
+        board.create('line', [[0, lineN_y], [1, lineN_y]], {
+            strokeColor: COL_LINE, strokeWidth: 1.2, dash: 2,
+            fixed: true, highlight: false,
+            point1: { visible: false }, point2: { visible: false }
+        });
+
+        board.create('line', [[0, lineM_y], [1, lineM_y]], {
+            strokeColor: COL_LINE, strokeWidth: 1.2, dash: 2,
+            fixed: true, highlight: false,
+            point1: { visible: false }, point2: { visible: false }
+        });
+
+        // Line labels
+        board.create('text', [5.8, lineN_y + 0.5, '<i>n</i>'], {
+            fontSize: 15, color: COL_LINE, fixed: true, highlight: false
+        });
+        board.create('text', [5.8, lineM_y + 0.5, '<i>m</i>'], {
+            fontSize: 15, color: COL_LINE, fixed: true, highlight: false
+        });
+
+        // ── Reflection helper ───────────────────────────────────────────
+        function reflectY(pt, lineY) {
+            return [pt[0], 2 * lineY - pt[1]];
+        }
+
+        // ── Triangle vertices ───────────────────────────────────────────
+        var Jc = [-3, 6];
+        var Kc = [1, 7.5];
+        var Lc = [0, 4.5];
+
+        var Jpc = reflectY(Jc, lineN_y);
+        var Kpc = reflectY(Kc, lineN_y);
+        var Lpc = reflectY(Lc, lineN_y);
+
+        var Jdpc = reflectY(Jpc, lineM_y);
+        var Kdpc = reflectY(Kpc, lineM_y);
+        var Ldpc = reflectY(Lpc, lineM_y);
+
+        // ── Dashed reference lines (vertex correspondences) ─────────────
+        board.create('segment', [Jc, Jpc], {
+            strokeColor: COL_REF, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [Jpc, Jdpc], {
+            strokeColor: COL_REF, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [Kc, Kpc], {
+            strokeColor: COL_REF, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [Kpc, Kdpc], {
+            strokeColor: COL_REF, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        board.create('segment', [Lc, Lpc], {
+            strokeColor: COL_REF, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+        board.create('segment', [Lpc, Ldpc], {
+            strokeColor: COL_REF, strokeWidth: 1.0, dash: 2, fixed: true, highlight: false
+        });
+
+        // ── Helper: create triangle ─────────────────────────────────────
+        function makeTriangle(coords, color, width) {
+            var pts = [];
+            for (var i = 0; i < coords.length; i++) {
+                pts.push(board.create('point', coords[i], {
+                    visible: false, fixed: true, name: ''
+                }));
+            }
+            board.create('polygon', pts, {
+                fillColor: 'none', fillOpacity: 0,
+                borders: { strokeColor: color, strokeWidth: width },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+            return pts;
+        }
+
+        // ── Create triangles ────────────────────────────────────────────
+        makeTriangle([Jc, Kc, Lc], COL_ORIG, 1.8);
+        makeTriangle([Jpc, Kpc, Lpc], COL_PRIME, 1.5);
+        makeTriangle([Jdpc, Kdpc, Ldpc], COL_DPRIME, 1.5);
+
+        // ── Vertex points (size: 2) ─────────────────────────────────────
+        board.create('point', Jc, {
+            name: '', size: 2, color: COL_ORIG, fixed: true,
+            showInfobox: false, highlight: false
+        });
+        board.create('point', Kc, {
+            name: '', size: 2, color: COL_ORIG, fixed: true,
+            showInfobox: false, highlight: false
+        });
+        board.create('point', Lc, {
+            name: '', size: 2, color: COL_ORIG, fixed: true,
+            showInfobox: false, highlight: false
+        });
+
+        board.create('point', Jpc, {
+            name: '', size: 2, color: COL_PRIME, fixed: true,
+            showInfobox: false, highlight: false
+        });
+        board.create('point', Kpc, {
+            name: '', size: 2, color: COL_PRIME, fixed: true,
+            showInfobox: false, highlight: false
+        });
+        board.create('point', Lpc, {
+            name: '', size: 2, color: COL_PRIME, fixed: true,
+            showInfobox: false, highlight: false
+        });
+
+        board.create('point', Jdpc, {
+            name: '', size: 2, color: COL_DPRIME, fixed: true,
+            showInfobox: false, highlight: false
+        });
+        board.create('point', Kdpc, {
+            name: '', size: 2, color: COL_DPRIME, fixed: true,
+            showInfobox: false, highlight: false
+        });
+        board.create('point', Ldpc, {
+            name: '', size: 2, color: COL_DPRIME, fixed: true,
+            showInfobox: false, highlight: false
+        });
+
+        // ── Vertex labels (KaTeX) ───────────────────────────────────────
+        board.create('text', [Jc[0] - 0.6, Jc[1] + 0.1, 'J'], {
+            fontSize: 13, color: COL_ORIG, useKatex: true, fixed: true,
+            anchorX: 'right', highlight: false
+        });
+        board.create('text', [Kc[0] + 0.3, Kc[1] + 0.3, 'K'], {
+            fontSize: 13, color: COL_ORIG, useKatex: true, fixed: true,
+            anchorX: 'left', highlight: false
+        });
+        board.create('text', [Lc[0] + 0.3, Lc[1] - 0.1, 'L'], {
+            fontSize: 13, color: COL_ORIG, useKatex: true, fixed: true,
+            anchorX: 'left', highlight: false
+        });
+
+        board.create('text', [Jpc[0] - 0.6, Jpc[1] - 0.1, "J'"], {
+            fontSize: 13, color: COL_PRIME, useKatex: true, fixed: true,
+            anchorX: 'right', highlight: false
+        });
+        board.create('text', [Kpc[0] + 0.3, Kpc[1] - 0.3, "K'"], {
+            fontSize: 13, color: COL_PRIME, useKatex: true, fixed: true,
+            anchorX: 'left', highlight: false
+        });
+        board.create('text', [Lpc[0] + 0.3, Lpc[1] + 0.1, "L'"], {
+            fontSize: 13, color: COL_PRIME, useKatex: true, fixed: true,
+            anchorX: 'left', highlight: false
+        });
+
+        board.create('text', [Jdpc[0] - 0.6, Jdpc[1] - 0.1, "J''"], {
+            fontSize: 13, color: COL_DPRIME, useKatex: true, fixed: true,
+            anchorX: 'right', highlight: false
+        });
+        board.create('text', [Kdpc[0] + 0.3, Kdpc[1] - 0.3, "K''"], {
+            fontSize: 13, color: COL_DPRIME, useKatex: true, fixed: true,
+            anchorX: 'left', highlight: false
+        });
+        board.create('text', [Ldpc[0] + 0.3, Ldpc[1] + 0.1, "L''"], {
+            fontSize: 13, color: COL_DPRIME, useKatex: true, fixed: true,
+            anchorX: 'left', highlight: false
+        });
+    </script>
+</body>
+</html>
