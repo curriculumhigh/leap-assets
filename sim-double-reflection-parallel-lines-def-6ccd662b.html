@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Reflection — Parallel Lines</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-8.5, 5.5, 11.5, -4.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_D = '#2563EB';
+        var COL_E = '#059669';
+        var COL_F = '#D97706';
+        var COL_LINE = '#555555';
+
+        // ── Reflection lines p and q ────────────────────────────────────
+        var PX = -2;
+        var QX = 3;
+
+        board.create('line', [[PX, 0], [PX, 1]], {
+            strokeColor: COL_LINE, strokeWidth: 1.5, dash: 2,
+            fixed: true, highlight: false,
+            straightFirst: true, straightLast: true,
+            point1: { visible: false }, point2: { visible: false }
+        });
+        board.create('line', [[QX, 0], [QX, 1]], {
+            strokeColor: COL_LINE, strokeWidth: 1.5, dash: 2,
+            fixed: true, highlight: false,
+            straightFirst: true, straightLast: true,
+            point1: { visible: false }, point2: { visible: false }
+        });
+
+        // Line labels
+        board.create('text', [PX - 0.15, 4.8, 'p'], {
+            fontSize: 15, color: COL_LINE, anchorX: 'right',
+            fixed: true, highlight: false,
+            cssStyle: 'font-style:italic; font-weight:600;'
+        });
+        board.create('text', [QX + 0.3, 4.8, 'q'], {
+            fontSize: 15, color: COL_LINE, anchorX: 'left',
+            fixed: true, highlight: false,
+            cssStyle: 'font-style:italic; font-weight:600;'
+        });
+
+        // ── Original triangle DEF ───────────────────────────────────────
+        var Dx = -5.5, Dy = 3;
+        var Ex = -4,   Ey = -2;
+        var Fx = -3.2, Fy = 2;
+
+        // ── Reflect across vertical line x = c ──────────────────────────
+        function reflectX(px, c) { return 2 * c - px; }
+
+        // D'E'F'
+        var D1x = reflectX(Dx, PX), D1y = Dy;
+        var E1x = reflectX(Ex, PX), E1y = Ey;
+        var F1x = reflectX(Fx, PX), F1y = Fy;
+
+        // D''E''F''
+        var D2x = reflectX(D1x, QX), D2y = D1y;
+        var E2x = reflectX(E1x, QX), E2y = E1y;
+        var F2x = reflectX(F1x, QX), F2y = F1y;
+
+        // ── Helper: draw a triangle with colored sides and vertices ─────
+        function drawTriangle(verts, labels, offsets) {
+            var colors = [COL_D, COL_E, COL_F];
+            var sideColors = [COL_D, COL_E, COL_F];
+            var sideIndices = [[0, 1], [1, 2], [0, 2]];
+
+            for (var s = 0; s < sideIndices.length; s++) {
+                var i0 = sideIndices[s][0];
+                var i1 = sideIndices[s][1];
+                board.create('segment', [verts[i0], verts[i1]], {
+                    strokeColor: sideColors[s], strokeWidth: 2.0,
+                    fixed: true, highlight: false
+                });
+            }
+
+            for (var v = 0; v < 3; v++) {
+                board.create('point', verts[v], {
+                    name: '', size: 2, color: colors[v],
+                    fixed: true, highlight: false, showInfobox: false
+                });
+                board.create('text', [
+                    verts[v][0] + offsets[v][0],
+                    verts[v][1] + offsets[v][1],
+                    labels[v]
+                ], {
+                    fontSize: 13, color: colors[v], useKatex: true,
+                    fixed: true, highlight: false,
+                    anchorX: 'middle', anchorY: 'middle'
+                });
+            }
+        }
+
+        // ── Draw the three triangles ────────────────────────────────────
+
+        // Triangle DEF (original — left of p)
+        drawTriangle(
+            [[Dx, Dy], [Ex, Ey], [Fx, Fy]],
+            ['D', 'E', 'F'],
+            [[-0.5, 0.45], [-0.5, -0.5], [0.25, -0.15]]
+        );
+
+        // Triangle D'E'F' (first reflection — between p and q)
+        drawTriangle(
+            [[D1x, D1y], [E1x, E1y], [F1x, F1y]],
+            ["D'", "E'", "F'"],
+            [[0.55, 0.45], [0.55, -0.5], [-0.45, -0.15]]
+        );
+
+        // Triangle D''E''F'' (second reflection — right of q)
+        drawTriangle(
+            [[D2x, D2y], [E2x, E2y], [F2x, F2y]],
+            ["D''", "E''", "F''"],
+            [[-0.65, 0.45], [-0.65, -0.5], [0.35, -0.15]]
+        );
+    </script>
+</body>
+</html>
