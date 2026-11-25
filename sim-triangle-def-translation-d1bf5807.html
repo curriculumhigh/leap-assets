@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle DEF and Translated Image D'E'F'</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 400px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var COL_BLUE = '#2563EB';
+        var COL_RED = '#DC2626';
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5, 7, 8, -4],
+            axis: true,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            defaultAxes: {
+                x: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false
+                    }
+                },
+                y: {
+                    strokeColor: '#444444', strokeWidth: 1.2,
+                    lastArrow: { type: 2, size: 6 },
+                    ticks: {
+                        strokeColor: '#444444',
+                        label: { fontSize: 11 },
+                        minorTicks: 0,
+                        ticksDistance: 1,
+                        insertTicks: false
+                    }
+                }
+            },
+            grid: {
+                strokeColor: '#D1D5DB',
+                strokeWidth: 0.4,
+                gridX: 1,
+                gridY: 1
+            }
+        });
+
+        // Axis labels
+        board.create('text', [7.6, -0.45, '<i>x</i>'], { fontSize: 14, fixed: true, highlight: false });
+        board.create('text', [0.25, 6.6, '<i>y</i>'], { fontSize: 14, fixed: true, highlight: false });
+
+        // ── Triangle DEF (pre-image, blue) ──────────────────────────────
+        var D = board.create('point', [-3, -1], {
+            name: '', size: 2, color: COL_BLUE, fixed: true, highlight: false, showInfobox: false
+        });
+        var E = board.create('point', [0, 2], {
+            name: '', size: 2, color: COL_BLUE, fixed: true, highlight: false, showInfobox: false
+        });
+        var F = board.create('point', [2, -1], {
+            name: '', size: 2, color: COL_BLUE, fixed: true, highlight: false, showInfobox: false
+        });
+
+        board.create('polygon', [D, E, F], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_BLUE, strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Blue labels — name + coordinates
+        board.create('text', [-3, -1.7, 'D(-3,\\,-1)'], {
+            useKatex: true, fontSize: 12, color: COL_BLUE, anchorX: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [-1.2, 2.5, 'E(0,\\,2)'], {
+            useKatex: true, fontSize: 12, color: COL_BLUE, anchorX: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [2, -1.7, 'F(2,\\,-1)'], {
+            useKatex: true, fontSize: 12, color: COL_BLUE, anchorX: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Triangle D'E'F' (image, red) ────────────────────────────────
+        var Dp = board.create('point', [1, 2], {
+            name: '', size: 2, color: COL_RED, fixed: true, highlight: false, showInfobox: false
+        });
+        var Ep = board.create('point', [4, 5], {
+            name: '', size: 2, color: COL_RED, fixed: true, highlight: false, showInfobox: false
+        });
+        var Fp = board.create('point', [6, 2], {
+            name: '', size: 2, color: COL_RED, fixed: true, highlight: false, showInfobox: false
+        });
+
+        board.create('polygon', [Dp, Ep, Fp], {
+            fillColor: 'none', fillOpacity: 0,
+            borders: { strokeColor: COL_RED, strokeWidth: 1.8 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // Red labels — name + coordinates
+        board.create('text', [1.8, 1.3, "D'(1,\\,2)"], {
+            useKatex: true, fontSize: 12, color: COL_RED, anchorX: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [4, 5.5, "E'(4,\\,5)"], {
+            useKatex: true, fontSize: 12, color: COL_RED, anchorX: 'middle',
+            fixed: true, highlight: false
+        });
+        board.create('text', [6, 1.3, "F'(6,\\,2)"], {
+            useKatex: true, fontSize: 12, color: COL_RED, anchorX: 'middle',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
