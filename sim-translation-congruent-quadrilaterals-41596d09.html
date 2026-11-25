@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation — Congruent Quadrilaterals</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-1.5, 8, 17.5, -2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Colors ──────────────────────────────────────────────────────
+        var COL_BLUE = '#2563EB';
+        var COL_RED = '#DC2626';
+
+        // ── Blue quadrilateral vertices ─────────────────────────────────
+        var cosA = Math.cos(150 * Math.PI / 180);
+        var sinA = Math.sin(150 * Math.PI / 180);
+
+        var bA = [2.5, 0.5];
+        var bB = [bA[0] + 4.0, bA[1]];
+        var bD = [bA[0] + 3.2 * cosA, bA[1] + 3.2 * sinA];
+        var bC = [5.5, 4.8];
+
+        var pBA = board.create('point', bA, { visible: false, fixed: true, name: '' });
+        var pBB = board.create('point', bB, { visible: false, fixed: true, name: '' });
+        var pBC = board.create('point', bC, { visible: false, fixed: true, name: '' });
+        var pBD = board.create('point', bD, { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [pBA, pBB, pBC, pBD], {
+            fillColor: COL_BLUE, fillOpacity: 0.10,
+            borders: { strokeColor: COL_BLUE, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Red quadrilateral (translated) ──────────────────────────────
+        var TX = 8.5;
+        var TY = 0;
+        var rA = [bA[0] + TX, bA[1] + TY];
+        var rB = [bB[0] + TX, bB[1] + TY];
+        var rC = [bC[0] + TX, bC[1] + TY];
+        var rD = [bD[0] + TX, bD[1] + TY];
+
+        var pRA = board.create('point', rA, { visible: false, fixed: true, name: '' });
+        var pRB = board.create('point', rB, { visible: false, fixed: true, name: '' });
+        var pRC = board.create('point', rC, { visible: false, fixed: true, name: '' });
+        var pRD = board.create('point', rD, { visible: false, fixed: true, name: '' });
+
+        board.create('polygon', [pRA, pRB, pRC, pRD], {
+            fillColor: COL_RED, fillOpacity: 0.10,
+            borders: { strokeColor: COL_RED, strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false, fixed: true, highlight: false
+        });
+
+        // ── Helpers ─────────────────────────────────────────────────────
+        function labelPos(p1, p2, center, dist) {
+            var mx = (p1[0] + p2[0]) / 2;
+            var my = (p1[1] + p2[1]) / 2;
+            var dx = mx - center[0];
+            var dy = my - center[1];
+            var len = Math.sqrt(dx * dx + dy * dy);
+            if (len < 0.001) return [mx, my];
+            return [mx + dx / len * dist, my + dy / len * dist];
+        }
+
+        function angleLabelPos(vertex, arm1, arm2, dist) {
+            var v1x = arm1[0] - vertex[0], v1y = arm1[1] - vertex[1];
+            var v2x = arm2[0] - vertex[0], v2y = arm2[1] - vertex[1];
+            var l1 = Math.sqrt(v1x * v1x + v1y * v1y);
+            var l2 = Math.sqrt(v2x * v2x + v2y * v2y);
+            var bx = v1x / l1 + v2x / l2;
+            var by = v1y / l1 + v2y / l2;
+            var bl = Math.sqrt(bx * bx + by * by);
+            if (bl < 0.001) return [vertex[0], vertex[1] + dist];
+            return [vertex[0] + bx / bl * dist, vertex[1] + by / bl * dist];
+        }
+
+        var blueCenter = [(bA[0] + bB[0] + bC[0] + bD[0]) / 4, (bA[1] + bB[1] + bC[1] + bD[1]) / 4];
+        var redCenter = [(rA[0] + rB[0] + rC[0] + rD[0]) / 4, (rA[1] + rB[1] + rC[1] + rD[1]) / 4];
+
+        // ── Blue side labels ────────────────────────────────────────────
+        var lbl12 = labelPos(bA, bB, blueCenter, 0.65);
+        board.create('text', [lbl12[0], lbl12[1], '12'], {
+            useKatex: true, fontSize: 14, color: COL_BLUE,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        var lbl2m = labelPos(bC, bD, blueCenter, 0.65);
+        board.create('text', [lbl2m[0], lbl2m[1], '2m'], {
+            useKatex: true, fontSize: 14, color: COL_BLUE,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Blue angle arcs + labels ────────────────────────────────────
+        board.create('nonReflexAngle', [pBD, pBA, pBB], {
+            radius: 0.55, fillColor: COL_BLUE, fillOpacity: 0.08,
+            strokeColor: COL_BLUE, strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+        var lbl150 = angleLabelPos(bA, bD, bB, 1.4);
+        board.create('text', [lbl150[0], lbl150[1], '150^\\circ'], {
+            useKatex: true, fontSize: 12, color: COL_BLUE,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('nonReflexAngle', [pBB, pBC, pBD], {
+            radius: 0.55, fillColor: COL_BLUE, fillOpacity: 0.08,
+            strokeColor: COL_BLUE, strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+        var lblP = angleLabelPos(bC, bB, bD, 1.15);
+        board.create('text', [lblP[0], lblP[1], 'p^\\circ'], {
+            useKatex: true, fontSize: 12, color: COL_BLUE,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Red side labels ─────────────────────────────────────────────
+        var lbl4n = labelPos(rA, rB, redCenter, 0.65);
+        board.create('text', [lbl4n[0], lbl4n[1], '4n'], {
+            useKatex: true, fontSize: 14, color: COL_RED,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        var lbl7 = labelPos(rC, rD, redCenter, 0.65);
+        board.create('text', [lbl7[0], lbl7[1], '7'], {
+            useKatex: true, fontSize: 14, color: COL_RED,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        // ── Red angle arcs + labels ─────────────────────────────────────
+        board.create('nonReflexAngle', [pRD, pRA, pRB], {
+            radius: 0.55, fillColor: COL_RED, fillOpacity: 0.08,
+            strokeColor: COL_RED, strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+        var lbl3q = angleLabelPos(rA, rD, rB, 1.5);
+        board.create('text', [lbl3q[0], lbl3q[1], '(3q)^\\circ'], {
+            useKatex: true, fontSize: 12, color: COL_RED,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+        board.create('nonReflexAngle', [pRB, pRC, pRD], {
+            radius: 0.55, fillColor: COL_RED, fillOpacity: 0.08,
+            strokeColor: COL_RED, strokeWidth: 1.0,
+            fixed: true, name: '', withLabel: false
+        });
+        var lbl75 = angleLabelPos(rC, rB, rD, 1.15);
+        board.create('text', [lbl75[0], lbl75[1], '75^\\circ'], {
+            useKatex: true, fontSize: 12, color: COL_RED,
+            anchorX: 'middle', anchorY: 'middle', fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
