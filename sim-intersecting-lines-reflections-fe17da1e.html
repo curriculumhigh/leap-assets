@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reflections Across Intersecting Lines</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 5, 6, -5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var COL_A   = '#2563EB';
+        var COL_AP  = '#059669';
+        var COL_APP = '#D97706';
+        var COL_LINE = '#444444';
+        var COL_MARK = '#DC2626';
+
+        var ANGLE_DEG = 27;
+        var ANGLE_RAD = ANGLE_DEG * Math.PI / 180;
+
+        var V = board.create('point', [0, 0], {
+            name: '', fixed: true, size: 2, color: '#222222',
+            highlight: false, showInfobox: false
+        });
+
+        board.create('text', [-0.55, -0.55, 'V'], {
+            fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            cssStyle: 'font-style:italic; font-weight:600;'
+        });
+
+        var pEnd1 = board.create('point', [-5.5, 0], { visible: false, fixed: true, name: '' });
+        var pEnd2 = board.create('point', [5.5, 0], { visible: false, fixed: true, name: '' });
+        board.create('line', [pEnd1, pEnd2], {
+            strokeColor: COL_LINE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('text', [5.3, -0.5, 'p'], {
+            fontSize: 13, color: COL_LINE, fixed: true, highlight: false,
+            cssStyle: 'font-style:italic; font-weight:600;'
+        });
+
+        var qAngle = ANGLE_RAD;
+        var qDirX = Math.cos(qAngle);
+        var qDirY = Math.sin(qAngle);
+        var qEnd1 = board.create('point', [-5.5 * qDirX, -5.5 * qDirY], { visible: false, fixed: true, name: '' });
+        var qEnd2 = board.create('point', [5.5 * qDirX, 5.5 * qDirY], { visible: false, fixed: true, name: '' });
+        board.create('line', [qEnd1, qEnd2], {
+            strokeColor: COL_LINE, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        board.create('text', [5.5 * qDirX + 0.15, 5.5 * qDirY + 0.35, 'q'], {
+            fontSize: 13, color: COL_LINE, fixed: true, highlight: false,
+            cssStyle: 'font-style:italic; font-weight:600;'
+        });
+
+        var arcPt1 = board.create('point', [2, 0], { visible: false, fixed: true, name: '' });
+        var arcPt2 = board.create('point', [2 * qDirX, 2 * qDirY], { visible: false, fixed: true, name: '' });
+
+        board.create('nonReflexAngle', [arcPt1, V, arcPt2], {
+            radius: 1.2,
+            fillColor: COL_MARK, fillOpacity: 0.08,
+            strokeColor: COL_MARK, strokeWidth: 1.2,
+            fixed: true, name: '', withLabel: false
+        });
+
+        var bisAngle = ANGLE_RAD / 2;
+        board.create('text', [1.85 * Math.cos(bisAngle), 1.85 * Math.sin(bisAngle), '27^{\\circ}'], {
+            fontSize: 11, color: COL_MARK, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            useKatex: true
+        });
+
+        function reflectAcrossLine(x, y, theta) {
+            var cos2 = Math.cos(2 * theta);
+            var sin2 = Math.sin(2 * theta);
+            return [
+                x * cos2 + y * sin2,
+                x * sin2 - y * cos2
+            ];
+        }
+
+        var triA = [
+            [2.2, 0.35],
+            [4.2, 0.25],
+            [3.1, 1.5]
+        ];
+
+        var triAP = triA.map(function(pt) {
+            return reflectAcrossLine(pt[0], pt[1], 0);
+        });
+
+        var triAPP = triAP.map(function(pt) {
+            return reflectAcrossLine(pt[0], pt[1], qAngle);
+        });
+
+        function drawTriangle(vertices, fillColor, strokeColor) {
+            var pts = vertices.map(function(v) {
+                return board.create('point', v, {
+                    visible: false, fixed: true, name: '', showInfobox: false
+                });
+            });
+            board.create('polygon', pts, {
+                fillColor: fillColor, fillOpacity: 0.20,
+                borders: { strokeColor: strokeColor, strokeWidth: 1.8 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+            return pts;
+        }
+
+        drawTriangle(triA, COL_A, COL_A);
+        drawTriangle(triAP, COL_AP, COL_AP);
+        drawTriangle(triAPP, COL_APP, COL_APP);
+
+        function centroid(vertices) {
+            return [
+                (vertices[0][0] + vertices[1][0] + vertices[2][0]) / 3,
+                (vertices[0][1] + vertices[1][1] + vertices[2][1]) / 3
+            ];
+        }
+
+        var cA   = centroid(triA);
+        var cAP  = centroid(triAP);
+        var cAPP = centroid(triAPP);
+
+        board.create('text', [cA[0], cA[1], '\\color{' + COL_A + '}{\\boldsymbol{A}}'], {
+            fontSize: 9, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            useKatex: true
+        });
+
+        board.create('text', [cAP[0], cAP[1], "\\color{" + COL_AP + "}{\\boldsymbol{A'}}"], {
+            fontSize: 9, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            useKatex: true
+        });
+
+        board.create('text', [cAPP[0], cAPP[1], "\\color{" + COL_APP + "}{\\boldsymbol{A''}}"], {
+            fontSize: 9, fixed: true, highlight: false,
+            anchorX: 'middle', anchorY: 'middle',
+            useKatex: true
+        });
+
+    </script>
+</body>
+</html>
