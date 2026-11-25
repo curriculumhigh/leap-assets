@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Reflection — Lines j and n at 42°</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-6, 5.5, 10, -5.5],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Angle setup ─────────────────────────────────────────────────
+        var angleDeg = 42;
+        var angleRad = angleDeg * Math.PI / 180;
+
+        // Intersection point
+        var O = board.create('point', [0, 0], {
+            name: '', visible: false, fixed: true
+        });
+
+        // Line j: slight tilt
+        var jAngle = -10 * Math.PI / 180;
+        var jDir = [Math.cos(jAngle), Math.sin(jAngle)];
+        var jP1 = board.create('point', [0 + 9 * jDir[0], 0 + 9 * jDir[1]], { visible: false, fixed: true, name: '' });
+        var jP2 = board.create('point', [0 - 6 * jDir[0], 0 - 6 * jDir[1]], { visible: false, fixed: true, name: '' });
+        var lineJ = board.create('line', [jP1, jP2], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // Line n: at 42° above line j
+        var nAngle = jAngle + angleRad;
+        var nDir = [Math.cos(nAngle), Math.sin(nAngle)];
+        var nP1 = board.create('point', [0 + 9 * nDir[0], 0 + 9 * nDir[1]], { visible: false, fixed: true, name: '' });
+        var nP2 = board.create('point', [0 - 6 * nDir[0], 0 - 6 * nDir[1]], { visible: false, fixed: true, name: '' });
+        var lineN = board.create('line', [nP1, nP2], {
+            strokeColor: '#555555', strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Line labels ─────────────────────────────────────────────────
+        board.create('text', [0 + 8.2 * jDir[0] + 0.3, 0 + 8.2 * jDir[1] - 0.5, '<i>j</i>'], {
+            fontSize: 13, color: '#555555', fixed: true, highlight: false
+        });
+        // n label — moved down (offset below the line)
+        var nLabelDist = 8.0;
+        var nPerpDown = [Math.sin(nAngle), -Math.cos(nAngle)];
+        board.create('text', [
+            0 + nLabelDist * nDir[0] + 0.55 * nPerpDown[0],
+            0 + nLabelDist * nDir[1] + 0.55 * nPerpDown[1],
+            '<i>n</i>'
+        ], {
+            fontSize: 13, color: '#555555', fixed: true, highlight: false
+        });
+
+        // ── 42° angle arc ───────────────────────────────────────────────
+        var arcPtJ = board.create('point', [0 + 2 * jDir[0], 0 + 2 * jDir[1]], { visible: false, fixed: true, name: '' });
+        var arcPtN = board.create('point', [0 + 2 * nDir[0], 0 + 2 * nDir[1]], { visible: false, fixed: true, name: '' });
+
+        board.create('nonReflexAngle', [arcPtJ, O, arcPtN], {
+            radius: 1.2,
+            fillColor: '#DC2626', fillOpacity: 0.08,
+            strokeColor: '#DC2626', strokeWidth: 1.5,
+            fixed: true, name: '', withLabel: false
+        });
+
+        // Angle label along bisector
+        var bisectorAngle = jAngle + angleRad / 2;
+        board.create('text', [
+            1.75 * Math.cos(bisectorAngle),
+            1.75 * Math.sin(bisectorAngle),
+            '42°'
+        ], {
+            useKatex: true, fontSize: 11, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Reflection helper ───────────────────────────────────────────
+        function reflectPoint(px, py, ox, oy, theta) {
+            var dx = px - ox;
+            var dy = py - oy;
+            var cosT = Math.cos(-theta);
+            var sinT = Math.sin(-theta);
+            var rx = dx * cosT - dy * sinT;
+            var ry = dx * sinT + dy * cosT;
+            ry = -ry;
+            cosT = Math.cos(theta);
+            sinT = Math.sin(theta);
+            var fx = rx * cosT - ry * sinT;
+            var fy = rx * sinT + ry * cosT;
+            return [fx + ox, fy + oy];
+        }
+
+        // ── Triangle D (original, below line j) ────────────────────────
+        var triD = [
+            [2.5, -2.0],
+            [4.2, -1.5],
+            [3.2, -3.2]
+        ];
+
+        board.create('polygon', [
+            board.create('point', triD[0], { visible: false, fixed: true, name: '', showInfobox: false }),
+            board.create('point', triD[1], { visible: false, fixed: true, name: '', showInfobox: false }),
+            board.create('point', triD[2], { visible: false, fixed: true, name: '', showInfobox: false })
+        ], {
+            fillColor: '#2563EB', fillOpacity: 0.15,
+            borders: { strokeColor: '#2563EB', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, hasInnerPoints: false, highlight: false
+        });
+
+        var dCx = (triD[0][0] + triD[1][0] + triD[2][0]) / 3;
+        var dCy = (triD[0][1] + triD[1][1] + triD[2][1]) / 3;
+        board.create('text', [dCx, dCy - 0.15, 'D'], {
+            fontSize: 12, color: '#2563EB', cssStyle: 'font-weight:bold; font-style:italic',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Triangle D' (reflect D across line j) ──────────────────────
+        var triDprime = [];
+        for (var i = 0; i < 3; i++) {
+            triDprime.push(reflectPoint(triD[i][0], triD[i][1], 0, 0, jAngle));
+        }
+
+        board.create('polygon', [
+            board.create('point', triDprime[0], { visible: false, fixed: true, name: '', showInfobox: false }),
+            board.create('point', triDprime[1], { visible: false, fixed: true, name: '', showInfobox: false }),
+            board.create('point', triDprime[2], { visible: false, fixed: true, name: '', showInfobox: false })
+        ], {
+            fillColor: '#059669', fillOpacity: 0.15,
+            borders: { strokeColor: '#059669', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, hasInnerPoints: false, highlight: false
+        });
+
+        var dpCx = (triDprime[0][0] + triDprime[1][0] + triDprime[2][0]) / 3;
+        var dpCy = (triDprime[0][1] + triDprime[1][1] + triDprime[2][1]) / 3;
+        board.create('text', [dpCx, dpCy - 0.15, "D'"], {
+            fontSize: 12, color: '#059669',
+            cssStyle: 'font-weight:bold; font-style:italic',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Triangle D'' (reflect D' across line n) ────────────────────
+        var triDdprime = [];
+        for (var k = 0; k < 3; k++) {
+            triDdprime.push(reflectPoint(triDprime[k][0], triDprime[k][1], 0, 0, nAngle));
+        }
+
+        board.create('polygon', [
+            board.create('point', triDdprime[0], { visible: false, fixed: true, name: '', showInfobox: false }),
+            board.create('point', triDdprime[1], { visible: false, fixed: true, name: '', showInfobox: false }),
+            board.create('point', triDdprime[2], { visible: false, fixed: true, name: '', showInfobox: false })
+        ], {
+            fillColor: '#D97706', fillOpacity: 0.15,
+            borders: { strokeColor: '#D97706', strokeWidth: 1.5 },
+            vertices: { visible: false },
+            fixed: true, hasInnerPoints: false, highlight: false
+        });
+
+        var ddpCx = (triDdprime[0][0] + triDdprime[1][0] + triDdprime[2][0]) / 3;
+        var ddpCy = (triDdprime[0][1] + triDdprime[1][1] + triDdprime[2][1]) / 3;
+        board.create('text', [ddpCx, ddpCy - 0.15, "D''"], {
+            fontSize: 12, color: '#D97706',
+            cssStyle: 'font-weight:bold; font-style:italic',
+            anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false
+        });
+
+        // ── Intersection point marker ───────────────────────────────────
+        board.create('point', [0, 0], {
+            name: '', size: 2.5, color: '#222222', fixed: true,
+            highlight: false, showInfobox: false
+        });
+
+    </script>
+</body>
+</html>
