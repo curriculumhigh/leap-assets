@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Four Histograms — Shape Comparison</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; overflow: hidden; height: 100%;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 760px; margin: 0; padding: 6px; height: calc(100% - 12px);
+        }
+        .grid-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10px;
+            height: 100%;
+        }
+        .hist-panel {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .hist-title {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 6px 0 2px 0;
+            color: #333;
+        }
+        .hist-board {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+        }
+        .jxgbox { width: 100% !important; height: 100% !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="grid-wrapper">
+            <div class="hist-panel">
+                <div class="hist-title">Histogram A</div>
+                <div class="hist-board" id="boardA"></div>
+            </div>
+            <div class="hist-panel">
+                <div class="hist-title">Histogram B</div>
+                <div class="hist-board" id="boardB"></div>
+            </div>
+            <div class="hist-panel">
+                <div class="hist-title">Histogram C</div>
+                <div class="hist-board" id="boardC"></div>
+            </div>
+            <div class="hist-panel">
+                <div class="hist-title">Histogram D</div>
+                <div class="hist-board" id="boardD"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var dataA = [1, 3, 5, 8, 10, 10, 8, 5, 3, 1];
+        var dataB = [10, 8, 6, 4, 3, 2, 1.5, 1, 0.5, 0.3];
+        var dataC = [0.5, 1, 3, 7, 10, 10, 7, 3, 1, 0.5];
+        var dataD = [3, 5, 7, 8, 9, 9, 8, 7, 5, 3];
+
+        var colors = {
+            A: { fill: '#2563EB', stroke: '#1d4ed8' },
+            B: { fill: '#059669', stroke: '#047857' },
+            C: { fill: '#D97706', stroke: '#b45309' },
+            D: { fill: '#7C3AED', stroke: '#6d28d9' }
+        };
+
+        function buildHistogram(containerId, data, color) {
+            var n = data.length;
+            var maxH = Math.max.apply(null, data);
+
+            var board = JXG.JSXGraph.initBoard(containerId, {
+                boundingbox: [-0.8, maxH + 1.2, n + 0.5, -1.2],
+                axis: false,
+                grid: false,
+                showNavigation: false,
+                showCopyright: false,
+                pan: { enabled: false },
+                zoom: { enabled: false },
+                keepAspectRatio: false
+            });
+
+            board.create('segment', [[-0.3, 0], [n + 0.2, 0]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+
+            board.create('segment', [[-0.3, 0], [-0.3, maxH + 0.5]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+
+            var barGap = 0.06;
+            for (var i = 0; i < n; i++) {
+                var x1 = i + barGap;
+                var x2 = i + 1 - barGap;
+                var h = data[i];
+
+                var p1 = board.create('point', [x1, 0], { visible: false, name: '' });
+                var p2 = board.create('point', [x2, 0], { visible: false, name: '' });
+                var p3 = board.create('point', [x2, h], { visible: false, name: '' });
+                var p4 = board.create('point', [x1, h], { visible: false, name: '' });
+
+                board.create('polygon', [p1, p2, p3, p4], {
+                    fillColor: color.fill,
+                    fillOpacity: 0.55,
+                    borders: {
+                        strokeColor: color.stroke,
+                        strokeWidth: 1.5
+                    },
+                    vertices: { visible: false },
+                    hasInnerPoints: false,
+                    fixed: true,
+                    highlight: false
+                });
+            }
+
+            return board;
+        }
+
+        buildHistogram('boardA', dataA, colors.A);
+        buildHistogram('boardB', dataB, colors.B);
+        buildHistogram('boardC', dataC, colors.C);
+        buildHistogram('boardD', dataD, colors.D);
+    </script>
+</body>
+</html>
