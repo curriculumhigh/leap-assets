@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histogram — Delivery Times</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-12, 11.5, 78, -3.5],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Data ────────────────────────────────────────────────────────
+        var binEdges = [10, 20, 30, 40, 50, 60, 70];
+        var frequencies = [9, 7, 5, 3, 2, 1];
+        var intervalLabels = ['10–19', '20–29', '30–39', '40–49', '50–59', '60–69'];
+        var BAR_COL = '#2563EB';
+        var maxFreq = 9;
+
+        // ── Horizontal gridlines ────────────────────────────────────────
+        var i;
+        for (i = 1; i <= maxFreq; i++) {
+            board.create('segment', [[10, i], [70, i]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Bars ────────────────────────────────────────────────────────
+        for (i = 0; i < frequencies.length; i++) {
+            var x1 = binEdges[i];
+            var x2 = binEdges[i + 1];
+            var h = frequencies[i];
+
+            // Create bar as a polygon
+            var p1 = board.create('point', [x1, 0], { visible: false, name: '' });
+            var p2 = board.create('point', [x2, 0], { visible: false, name: '' });
+            var p3 = board.create('point', [x2, h], { visible: false, name: '' });
+            var p4 = board.create('point', [x1, h], { visible: false, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: BAR_COL, fillOpacity: 0.55,
+                borders: { strokeColor: BAR_COL, strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false, fixed: true, highlight: false
+            });
+
+            // Frequency label centered on top of each bar
+            board.create('text', [x1 + 5, h + 0.4, String(h)], {
+                anchorX: 'middle', anchorY: 'bottom',
+                fontSize: 12, color: '#333', fixed: true, highlight: false,
+                cssStyle: 'font-weight:600'
+            });
+        }
+
+        // ── X-axis ─────────────────────────────────────────────────────
+        board.create('arrow', [[8, 0], [73, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // X-axis ticks and bin-boundary labels
+        for (i = 0; i < binEdges.length; i++) {
+            var bx = binEdges[i];
+            // Tick mark
+            board.create('segment', [[bx, -0.25], [bx, 0.25]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            // Boundary number label
+            board.create('text', [bx, -0.7, String(bx)], {
+                anchorX: 'middle', anchorY: 'top',
+                fontSize: 11, color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        // Interval labels below the boundary numbers (centered in each bin)
+        for (i = 0; i < intervalLabels.length; i++) {
+            board.create('text', [binEdges[i] + 5, -1.6, intervalLabels[i]], {
+                anchorX: 'middle', anchorY: 'top',
+                fontSize: 10, color: '#666666', fixed: true, highlight: false
+            });
+        }
+
+        // X-axis title
+        board.create('text', [40, -2.8, 'Delivery time (min)'], {
+            anchorX: 'middle', anchorY: 'top',
+            fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-style:italic'
+        });
+
+        // ── Y-axis ─────────────────────────────────────────────────────
+        board.create('arrow', [[10, -0.3], [10, 10.8]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // Y-axis ticks and labels
+        for (i = 0; i <= maxFreq; i++) {
+            // Tick mark
+            board.create('segment', [[9.6, i], [10.4, i]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            // Number label
+            board.create('text', [8.8, i, String(i)], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 11, color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        // Y-axis title (rotated via CSS)
+        board.create('text', [-7, 5, 'Frequency'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#222222', fixed: true, highlight: false,
+            cssStyle: 'font-style:italic; transform:rotate(-90deg); transform-origin:center center;'
+        });
+    </script>
+</body>
+</html>
