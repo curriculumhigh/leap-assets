@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Normal Curve — Shaded Sigma Regions</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        // Normal PDF: mu=0, sigma=1
+        var MU = 0;
+        var SIG = 1;
+        var INV_SQRT_2PI = 1 / Math.sqrt(2 * Math.PI);
+
+        function normalPDF(x) {
+            var z = (x - MU) / SIG;
+            return INV_SQRT_2PI / SIG * Math.exp(-0.5 * z * z);
+        }
+
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4.2, 0.52, 4.2, -0.16],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Horizontal baseline ─────────────────────────────────────────
+        board.create('segment', [[-4, 0], [4, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Tick marks at each sigma ────────────────────────────────────
+        var tickHeight = 0.015;
+        var sigmaPositions = [-3, -2, -1, 0, 1, 2, 3];
+        for (var i = 0; i < sigmaPositions.length; i++) {
+            var sx = sigmaPositions[i] * SIG + MU;
+            board.create('segment', [[sx, -tickHeight], [sx, tickHeight]], {
+                strokeColor: '#444444', strokeWidth: 1.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Tick labels (KaTeX) ─────────────────────────────────────────
+        var tickLabels = [
+            '\\mu - 3\\sigma',
+            '\\mu - 2\\sigma',
+            '\\mu - \\sigma',
+            '\\mu',
+            '\\mu + \\sigma',
+            '\\mu + 2\\sigma',
+            '\\mu + 3\\sigma'
+        ];
+        for (var j = 0; j < sigmaPositions.length; j++) {
+            var tx = sigmaPositions[j] * SIG + MU;
+            board.create('text', [tx, -0.045, tickLabels[j]], {
+                useKatex: true, fontSize: 12, anchorX: 'middle', anchorY: 'top',
+                color: '#333333', fixed: true, highlight: false
+            });
+        }
+
+        // ── Shaded region helper ────────────────────────────────────────
+        function shadedRegion(xMin, xMax, fillColor, fillOpacity) {
+            var pts = [];
+            var steps = 80;
+            var dx = (xMax - xMin) / steps;
+            // Bottom-left corner
+            pts.push(board.create('point', [xMin, 0], { visible: false, fixed: true, name: '' }));
+            // Curve points
+            for (var k = 0; k <= steps; k++) {
+                var xk = xMin + k * dx;
+                pts.push(board.create('point', [xk, normalPDF(xk)], { visible: false, fixed: true, name: '' }));
+            }
+            // Bottom-right corner
+            pts.push(board.create('point', [xMax, 0], { visible: false, fixed: true, name: '' }));
+
+            board.create('polygon', pts, {
+                fillColor: fillColor,
+                fillOpacity: fillOpacity,
+                borders: { visible: false },
+                vertices: { visible: false },
+                hasInnerPoints: false,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // ── Shaded regions ──────────────────────────────────────────────
+        // Region 1: mu - 2*sigma to mu - sigma
+        shadedRegion(MU - 2 * SIG, MU - 1 * SIG, '#2563EB', 0.22);
+        // Region 2: mu + sigma to mu + 2*sigma
+        shadedRegion(MU + 1 * SIG, MU + 2 * SIG, '#2563EB', 0.22);
+
+        // ── Normal curve ────────────────────────────────────────────────
+        board.create('functiongraph', [normalPDF, -4, 4], {
+            strokeColor: '#222222', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+    </script>
+</body>
+</html>
