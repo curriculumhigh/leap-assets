@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Normal Curve — Left Half Shaded</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-4.5, 0.55, 4.5, -0.15],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false },
+            keepAspectRatio: false
+        });
+
+        // Standard normal PDF
+        function normalPDF(x) {
+            return (1 / Math.sqrt(2 * Math.PI)) * Math.exp(-0.5 * x * x);
+        }
+
+        // Baseline (horizontal axis)
+        board.create('segment', [[-4.2, 0], [4.2, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Shaded region: left tail to mu (x = 0)
+        var shadedRegion = board.create('curve', [[], []], {
+            strokeWidth: 0,
+            fillColor: '#222222',
+            fillOpacity: 0.12,
+            fixed: true,
+            highlight: false
+        });
+
+        (function() {
+            var xCoords = [];
+            var yCoords = [];
+            var xMin = -4.2;
+            var xMax = 0;
+            var steps = 200;
+            var dx = (xMax - xMin) / steps;
+
+            xCoords.push(xMin);
+            yCoords.push(0);
+
+            for (var i = 0; i <= steps; i++) {
+                var x = xMin + i * dx;
+                xCoords.push(x);
+                yCoords.push(normalPDF(x));
+            }
+
+            xCoords.push(xMax);
+            yCoords.push(0);
+
+            xCoords.push(xMin);
+            yCoords.push(0);
+
+            shadedRegion.dataX = xCoords;
+            shadedRegion.dataY = yCoords;
+        })();
+
+        // Normal curve (full)
+        board.create('functiongraph', [
+            function(x) { return normalPDF(x); },
+            -4.2, 4.2
+        ], {
+            strokeColor: '#222222',
+            strokeWidth: 1.8,
+            fixed: true,
+            highlight: false
+        });
+
+        // Vertical dashed reference line at mu
+        board.create('segment', [[0, 0], [0, normalPDF(0)]], {
+            strokeColor: '#DC2626',
+            strokeWidth: 1.0,
+            dash: 2,
+            fixed: true,
+            highlight: false
+        });
+
+        // Mu label on x-axis
+        board.create('text', [0, -0.06, '\\mu'], {
+            useKatex: true,
+            fontSize: 14,
+            anchorX: 'middle',
+            anchorY: 'middle',
+            color: '#222222',
+            fixed: true,
+            highlight: false
+        });
+    </script>
+</body>
+</html>
