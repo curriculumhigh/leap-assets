@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily High Temperatures Histogram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 500px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [33, 105, 118, -18],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Data ────────────────────────────────────────────────────────
+        var bins = [
+            { lo: 45, hi: 55, freq: 20, label: '45–54' },
+            { lo: 55, hi: 65, freq: 50, label: '55–64' },
+            { lo: 65, hi: 75, freq: 85, label: '65–74' },
+            { lo: 75, hi: 85, freq: 80, label: '75–84' },
+            { lo: 85, hi: 95, freq: 45, label: '85–94' },
+            { lo: 95, hi: 105, freq: 18, label: '95–104' }
+        ];
+
+        var BAR_FILL = '#2563EB';
+        var BAR_FILL_OP = 0.72;
+        var BAR_STROKE = '#1D4ED8';
+        var AXIS_COL = '#444444';
+        var GRID_COL = '#D1D5DB';
+
+        // ── Axes (manual) ───────────────────────────────────────────────
+        // X-axis line
+        board.create('segment', [[44, 0], [107, 0]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+        // Y-axis line
+        board.create('segment', [[44, 0], [44, 95]], {
+            strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // ── Y-axis ticks & horizontal grid lines ────────────────────────
+        var yTicks = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90];
+        for (var i = 0; i < yTicks.length; i++) {
+            var yv = yTicks[i];
+            // Tick mark
+            board.create('segment', [[43, yv], [44, yv]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            // Tick label
+            board.create('text', [41.5, yv, String(yv)], {
+                fontSize: 11, color: '#333', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+            // Horizontal grid line (skip y = 0)
+            if (yv > 0) {
+                board.create('segment', [[44, yv], [105, yv]], {
+                    strokeColor: GRID_COL, strokeWidth: 0.4, fixed: true, highlight: false
+                });
+            }
+        }
+
+        // ── X-axis tick marks at bin boundaries ─────────────────────────
+        var xBounds = [45, 55, 65, 75, 85, 95, 105];
+        for (var j = 0; j < xBounds.length; j++) {
+            board.create('segment', [[xBounds[j], 0], [xBounds[j], -1.5]], {
+                strokeColor: AXIS_COL, strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [xBounds[j], -4, String(xBounds[j])], {
+                fontSize: 11, color: '#333', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Bars ────────────────────────────────────────────────────────
+        for (var b = 0; b < bins.length; b++) {
+            var d = bins[b];
+            // Create rectangle as polygon
+            var p1 = board.create('point', [d.lo, 0], { visible: false, fixed: true, name: '' });
+            var p2 = board.create('point', [d.hi, 0], { visible: false, fixed: true, name: '' });
+            var p3 = board.create('point', [d.hi, d.freq], { visible: false, fixed: true, name: '' });
+            var p4 = board.create('point', [d.lo, d.freq], { visible: false, fixed: true, name: '' });
+            board.create('polygon', [p1, p2, p3, p4], {
+                fillColor: BAR_FILL,
+                fillOpacity: BAR_FILL_OP,
+                borders: { strokeColor: BAR_STROKE, strokeWidth: 1.5 },
+                vertices: { visible: false },
+                hasInnerPoints: false,
+                fixed: true,
+                highlight: false
+            });
+        }
+
+        // ── Title ───────────────────────────────────────────────────────
+        board.create('text', [75, 99, '\\textbf{Daily High Temperatures}'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        // ── Axis labels ─────────────────────────────────────────────────
+        board.create('text', [75, -11, '\\text{Temperature (°F)}'], {
+            fontSize: 13, color: '#333', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false
+        });
+
+        board.create('text', [36, 47, '\\text{Frequency (days)}'], {
+            fontSize: 13, color: '#333', anchorX: 'middle', anchorY: 'middle',
+            useKatex: true, fixed: true, highlight: false,
+            rotate: 90
+        });
+    </script>
+</body>
+</html>
