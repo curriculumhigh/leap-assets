@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dot Plot — Volunteering Hours</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 550px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-0.9, 5.2, 15.9, -1.8],
+            axis: false,
+            grid: false,
+            keepAspectRatio: true,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // Number line
+        board.create('segment', [[-0.5, 0], [15.5, 0]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 5 }
+        });
+
+        // Tick marks and labels
+        var i;
+        for (i = 0; i <= 15; i++) {
+            board.create('segment', [[i, -0.15], [i, 0.15]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [i, -0.55, String(i)], {
+                anchorX: 'middle', anchorY: 'middle',
+                fontSize: 11, color: '#444444', fixed: true, highlight: false
+            });
+        }
+
+        // Axis label
+        board.create('text', [7.5, -1.2, 'Volunteering Hours'], {
+            anchorX: 'middle', anchorY: 'middle',
+            fontSize: 13, color: '#333333', fixed: true, highlight: false
+        });
+
+        // Data and dots
+        var data = [1, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5, 5, 6, 6, 7, 9, 11, 14];
+
+        var counts = {};
+        for (i = 0; i < data.length; i++) {
+            var v = data[i];
+            if (!counts[v]) counts[v] = 0;
+            counts[v]++;
+        }
+
+        var DOT_COLOR = '#2563EB';
+        var DOT_SPACING = 0.65;
+        var BASE_Y = 0.5;
+
+        var values = Object.keys(counts);
+        for (i = 0; i < values.length; i++) {
+            var val = Number(values[i]);
+            var count = counts[val];
+            for (var j = 0; j < count; j++) {
+                board.create('point', [val, BASE_Y + j * DOT_SPACING], {
+                    name: '', size: 4, color: DOT_COLOR,
+                    strokeColor: DOT_COLOR, strokeWidth: 0,
+                    fixed: true, highlight: false, showInfobox: false
+                });
+            }
+        }
+    </script>
+</body>
+</html>
