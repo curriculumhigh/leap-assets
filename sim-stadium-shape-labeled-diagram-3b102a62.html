@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stadium Shape — Labeled Diagram</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 450px; margin: 0 auto; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-5.5, 5.2, 12.5, -5.2],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            keepAspectRatio: true,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        // ── Layout constants ────────────────────────────────────────────
+        var r = 2.5;       // semicircle radius
+        var d = 6;         // straight edge length
+        var cx = d / 2;    // center x of the rectangle
+        var cy = 0;        // center y
+
+        // Rectangle corners (the straight part)
+        var x0 = 0;        // left edge of straight section
+        var x1 = d;        // right edge of straight section
+        var yTop = r;
+        var yBot = -r;
+
+        // Semicircle centers
+        var lcx = x0;      // left semicircle center
+        var rcx = x1;      // right semicircle center
+
+        // ── Filled stadium shape ────────────────────────────────────────
+        var NPTS = 80;
+        var shapeX = [];
+        var shapeY = [];
+        var i, angle;
+
+        // Top edge: left to right
+        shapeX.push(x0); shapeY.push(yTop);
+        shapeX.push(x1); shapeY.push(yTop);
+
+        // Right semicircle: from top (90°) to bottom (-90°), going clockwise
+        for (i = 0; i <= NPTS; i++) {
+            angle = Math.PI / 2 - (Math.PI * i / NPTS);
+            shapeX.push(rcx + r * Math.cos(angle));
+            shapeY.push(cy + r * Math.sin(angle));
+        }
+
+        // Bottom edge: right to left
+        shapeX.push(x1); shapeY.push(yBot);
+        shapeX.push(x0); shapeY.push(yBot);
+
+        // Left semicircle: from bottom (-90°) to top (90°), going clockwise
+        for (i = 0; i <= NPTS; i++) {
+            angle = -Math.PI / 2 - (Math.PI * i / NPTS);
+            shapeX.push(lcx + r * Math.cos(angle));
+            shapeY.push(cy + r * Math.sin(angle));
+        }
+
+        // Draw filled polygon approximation
+        var polyPts = [];
+        for (i = 0; i < shapeX.length; i++) {
+            polyPts.push(board.create('point', [shapeX[i], shapeY[i]], { visible: false, fixed: true, name: '' }));
+        }
+
+        board.create('polygon', polyPts, {
+            fillColor: '#93C5FD',
+            fillOpacity: 0.35,
+            borders: { strokeColor: '#555555', strokeWidth: 2.0 },
+            vertices: { visible: false },
+            hasInnerPoints: false,
+            fixed: true,
+            highlight: false
+        });
+
+        // ── Dimension line for d (above the top straight edge) ──────────
+        var dimY = yTop + 1.0;
+        var tickH = 0.3;
+
+        // Horizontal line
+        board.create('segment', [[x0, dimY], [x1, dimY]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Left tick
+        board.create('segment', [[x0, dimY - tickH], [x0, dimY + tickH]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Right tick
+        board.create('segment', [[x1, dimY - tickH], [x1, dimY + tickH]], {
+            strokeColor: '#222222', strokeWidth: 1.2, fixed: true, highlight: false
+        });
+
+        // Label d centered above the dimension line
+        board.create('text', [d / 2, dimY + 0.6, 'd'], {
+            useKatex: true, fontSize: 16, color: '#222222',
+            anchorX: 'middle', anchorY: 'bottom',
+            fixed: true, highlight: false
+        });
+
+        // ── Radius segment r (right semicircle, red) ────────────────────
+        var rSegY = cy;
+
+        board.create('segment', [[rcx, rSegY], [rcx + r, rSegY]], {
+            strokeColor: '#DC2626', strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Center dot
+        board.create('point', [rcx, rSegY], {
+            name: '', size: 2.5, color: '#222222', fixed: true, highlight: false,
+            showInfobox: false
+        });
+
+        // Label r below the radius segment
+        board.create('text', [rcx + r / 2, rSegY - 0.55, 'r'], {
+            useKatex: true, fontSize: 15, color: '#DC2626',
+            anchorX: 'middle', anchorY: 'top',
+            fixed: true, highlight: false
+        });
+    </script>
+</body>
+</html>
