@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predicted After-School Club Memberships</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraph.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsxgraph@1.9.2/distrib/jsxgraphcore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 600px; margin: 0; padding: 6px; height: calc(100% - 12px); }
+        .board-wrapper { background: white; border-radius: 8px; padding: 10px; height: calc(100% - 20px); }
+        #board { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+    </div>
+    <script>
+        var board = JXG.JSXGraph.initBoard('board', {
+            boundingbox: [-2.5, 560, 10.2, 105],
+            axis: false,
+            grid: false,
+            showNavigation: false,
+            showCopyright: false,
+            pan: { enabled: false },
+            zoom: { enabled: false }
+        });
+
+        var xi, yi;
+
+        // ── Grid lines ──────────────────────────────────────────────────
+        for (xi = 0; xi <= 9; xi++) {
+            board.create('segment', [[xi, 150], [xi, 500]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+        for (yi = 150; yi <= 500; yi += 50) {
+            board.create('segment', [[0, yi], [9, yi]], {
+                strokeColor: '#D1D5DB', strokeWidth: 0.4, fixed: true, highlight: false
+            });
+        }
+
+        // ── Axes ────────────────────────────────────────────────────────
+        board.create('arrow', [[-0.3, 150], [9.8, 150]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+        board.create('arrow', [[0, 140], [0, 520]], {
+            strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false,
+            lastArrow: { type: 2, size: 6 }
+        });
+
+        // ── x-axis tick marks and labels ────────────────────────────────
+        for (xi = 0; xi <= 9; xi++) {
+            board.create('segment', [[xi, 146], [xi, 154]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [xi, 135, String(xi)], {
+                fontSize: 11, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── y-axis tick marks and labels ────────────────────────────────
+        for (yi = 150; yi <= 500; yi += 50) {
+            board.create('segment', [[-0.18, yi], [0.18, yi]], {
+                strokeColor: '#444444', strokeWidth: 1.2, fixed: true, highlight: false
+            });
+            board.create('text', [-0.45, yi, String(yi)], {
+                fontSize: 11, color: '#444444', anchorX: 'right', anchorY: 'middle',
+                fixed: true, highlight: false
+            });
+        }
+
+        // ── Axis name labels ────────────────────────────────────────────
+        board.create('text', [4.5, 118, 'Years from now'], {
+            fontSize: 13, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-style: italic;'
+        });
+
+        // Single rotated y-axis label
+        board.create('text', [-1.9, 325, 'Number of members'], {
+            fontSize: 13, color: '#444444', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-style: italic; transform: rotate(-90deg); white-space: nowrap;'
+        });
+
+        // ── Title ───────────────────────────────────────────────────────
+        board.create('text', [4.5, 545, 'Predicted After-School Club Memberships'], {
+            fontSize: 15, color: '#222222', anchorX: 'middle', anchorY: 'middle',
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight: 600;'
+        });
+
+        // ── Lines ───────────────────────────────────────────────────────
+        var COL_CHESS = '#222222';
+        var COL_ART = '#2563EB';
+
+        // Chess: y = 460 - 20x, domain [0, 9]
+        board.create('functiongraph', [
+            function(x) { return 460 - 20 * x; },
+            0, 9
+        ], {
+            strokeColor: COL_CHESS, strokeWidth: 1.8, fixed: true, highlight: false
+        });
+
+        // Art: y = 220 + 20x, domain [0, 9]
+        board.create('functiongraph', [
+            function(x) { return 220 + 20 * x; },
+            0, 9
+        ], {
+            strokeColor: COL_ART, strokeWidth: 1.5, fixed: true, highlight: false
+        });
+
+        // ── Curve labels (name only) ────────────────────────────────────
+        board.create('text', [0.5, 474, 'Chess'], {
+            fontSize: 13, color: COL_CHESS,
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight: 600;'
+        });
+        board.create('text', [0.5, 232, 'Art'], {
+            fontSize: 13, color: COL_ART,
+            fixed: true, highlight: false,
+            cssStyle: 'font-weight: 600;'
+        });
+
+        // ── Intersection point at (6, 340) ──────────────────────────────
+        board.create('point', [6, 340], {
+            name: '', size: 4, color: '#222222', fixed: true, highlight: false,
+            showInfobox: false
+        });
+    </script>
+</body>
+</html>
